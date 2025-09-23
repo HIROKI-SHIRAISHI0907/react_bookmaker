@@ -1,0 +1,62 @@
+services:
+  db:
+    restart: unless-stopped
+    image: mysql:8.0
+    container_name: mysql-dev
+    ports: ["3306:3306"]
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: soccer_bm_user
+      TZ: Asia/Tokyo
+    command:
+      - "--default-authentication-plugin=mysql_native_password"
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_0900_ai_ci"
+    volumes:
+      - db_data:/var/lib/mysql
+      # 既存DB(soccer_bm)は触らず、ユーザー用DBだけ初期化したい場合は↓を使う（ファイルがあれば）
+      # - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
+
+  frontend:
+    restart: unless-stopped
+    image: node:20-alpine
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+      TZ: Asia/Tokyo
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: >
+      sh -lc "([ -f package-lock.json ] && npm ci || npm install) &&
+              npm start"
+
+  server:
+    restart: unless-stopped
+    image: node:20-alpine # ← これが必須（build を使わない場合） 使うならbuild .serverなどの記述(DockerFileとかある場合)
+    working_dir: /srv
+    depends_on: [db]
+    environment:
+      PORT: 8080
+      CORS_ORIGIN: http://localhost:3000
+      DATABASE_URL: mysql://root:${MYSQL_ROOT_PASSWORD}@db:3306/soccer_bm_user
+      TZ: Asia/Tokyo
+    volumes:
+      - ./server:/srv
+      - /srv/node_modules
+    ports:
+      - "8080:8080"
+    env_file: ./server/.env
+    command: > # 既存データを壊したくないので、pushはuserだけ
+      sh -lc "
+      npm install &&
+      npx prisma generate --schema=prisma-user/schema.prisma &&
+      npx prisma generate --schema=prisma-stats/schema.prisma &&
+      npm run dev
+      "
+
+volumes:
+  db_data: {}

@@ -1,4 +1,12 @@
-/*
-!/.gitignore
-!/bm-live
-!/bm-live/**
+# ---- typical ignores ----
+node_modules/
+dist/
+build/
+coverage/
+*.log
+.DS_Store
+.env
+# ここから上は共通。bm-live だけ入れたいなら下の2行を追加
+# もし bm-live 以外は入れたくない場合のみ ↓ を残す（不要なら消す）
+#/*
+#!/bm-live/**
