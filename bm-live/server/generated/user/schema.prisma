@@ -1,16 +1,15 @@
-// server/prisma-user/schema.prisma
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/user"
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("USER_DATABASE_URL")
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
+  userid       String   @id @default(uuid()) // Postgres では uuid() でOK（アプリ側生成）
   email        String   @unique
   passwordHash String
   createdAt    DateTime @default(now())

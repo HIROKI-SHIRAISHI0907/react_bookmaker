@@ -1,48 +1,35 @@
 services:
   db:
+    image: postgres:15-alpine
+    container_name: postgres-dev
     restart: unless-stopped
-    image: mysql:8.0
-    container_name: mysql-dev
-    ports: ["3306:3306"]
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: soccer_bm_user
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: soccer_bm # ← ここは固定文字列でOK
       TZ: Asia/Tokyo
-    command:
-      - "--default-authentication-plugin=mysql_native_password"
-      - "--character-set-server=utf8mb4"
-      - "--collation-server=utf8mb4_0900_ai_ci"
-    volumes:
-      - db_data:/var/lib/mysql
-      # 既存DB(soccer_bm)は触らず、ユーザー用DBだけ初期化したい場合は↓を使う（ファイルがあれば）
-      # - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
-
-  frontend:
-    restart: unless-stopped
-    image: node:20-alpine
-    working_dir: /app
     ports:
-      - "3000:3000"
-    environment:
-      HOST: 0.0.0.0
-      PORT: 3000
-      TZ: Asia/Tokyo
+      - "127.0.0.1:54320:5432"
     volumes:
-      - .:/app
-      - /app/node_modules
-    command: >
-      sh -lc "([ -f package-lock.json ] && npm ci || npm install) &&
-              npm start"
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d soccer_bm"] # ← 変数参照しない形にして警告回避
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   server:
+    image: node:20-alpine
     restart: unless-stopped
-    image: node:20-alpine # ← これが必須（build を使わない場合） 使うならbuild .serverなどの記述(DockerFileとかある場合)
     working_dir: /srv
-    depends_on: [db]
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
       PORT: 8080
       CORS_ORIGIN: http://localhost:3000
-      DATABASE_URL: mysql://root:${MYSQL_ROOT_PASSWORD}@db:3306/soccer_bm_user
+      USER_DATABASE_URL: "postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/soccer_bm_user?schema=public"
+      STATS_DATABASE_URL: "postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/soccer_bm?schema=public"
       TZ: Asia/Tokyo
     volumes:
       - ./server:/srv
@@ -50,7 +37,7 @@ services:
     ports:
       - "8080:8080"
     env_file: ./server/.env
-    command: > # 既存データを壊したくないので、pushはuserだけ
+    command: >
       sh -lc "
       npm install &&
       npx prisma generate --schema=prisma-user/schema.prisma &&
@@ -59,4 +46,4 @@ services:
       "
 
 volumes:
-  db_data: {}
+  pg_data: {}

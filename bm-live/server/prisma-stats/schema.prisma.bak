@@ -17,9 +17,9 @@ model average_statistics_csv_tmp_data {
   team          String?   @db.VarChar(255)
   game_count    String?   @db.VarChar(255)
   register_id   String?   @db.VarChar(100)
-  register_time DateTime? @db.Timestamptz(0)
+  register_time DateTime? @db.DateTime(0)
   update_id     String?   @db.VarChar(100)
-  update_time   DateTime? @db.Timestamptz(0)
+  update_time   DateTime? @db.DateTime(0)
 }
 
 model average_statistics_team_detail_data {
@@ -57,9 +57,9 @@ model average_statistics_team_detail_data {
   clear_count_stat            String?   @db.VarChar(256)
   intercept_count_stat        String?   @db.VarChar(256)
   register_id                 String?   @db.VarChar(100)
-  register_time               DateTime? @db.Timestamptz(0)
+  register_time               DateTime? @db.DateTime(0)
   update_id                   String?   @db.VarChar(100)
-  update_time                 DateTime? @db.Timestamptz(0)
+  update_time                 DateTime? @db.DateTime(0)
 }
 
 model calc_correlation {
@@ -143,9 +143,9 @@ model calc_correlation {
   away_intercept_count_info                         String?   @db.VarChar(255)
   logic_flg                                         String?   @default("0") @db.VarChar(1)
   register_id                                       String?   @db.VarChar(100)
-  register_time                                     DateTime? @db.Timestamptz(0)
+  register_time                                     DateTime? @db.DateTime(0)
   update_id                                         String?   @db.VarChar(100)
-  update_time                                       DateTime? @db.Timestamptz(0)
+  update_time                                       DateTime? @db.DateTime(0)
 }
 
 model calc_correlation_ranking {
@@ -232,9 +232,9 @@ model calc_correlation_ranking {
   rank_74th     String?   @db.Text
   logic_flg     String?   @default("0") @db.VarChar(1)
   register_id   String?   @db.VarChar(100)
-  register_time DateTime? @db.Timestamptz(0)
+  register_time DateTime? @db.DateTime(0)
   update_id     String?   @db.VarChar(100)
-  update_time   DateTime? @db.Timestamptz(0)
+  update_time   DateTime? @db.DateTime(0)
 }
 
 model condition_result_data {
@@ -250,12 +250,12 @@ model condition_result_data {
   alter_target_mail_fail            String?  @db.Char(30)
   no_result_count                   String?  @db.Char(30)
   err_data                          String?  @db.Char(30)
-  condition_data                    Bytes
+  condition_data                    Bytes    @db.VarBinary(30000)
   hash                              String?  @db.VarChar(256)
   register_id                       String   @db.VarChar(100)
-  register_time                     DateTime @db.Timestamptz(0)
+  register_time                     DateTime @db.DateTime(0)
   update_id                         String   @db.VarChar(100)
-  update_time                       DateTime @db.Timestamptz(0)
+  update_time                       DateTime @db.DateTime(0)
 }
 
 model country_league_master {
@@ -265,9 +265,9 @@ model country_league_master {
   team          String   @db.VarChar(100)
   link          String   @db.VarChar(200)
   register_id   String   @db.VarChar(100)
-  register_time DateTime @db.Timestamptz(0)
+  register_time DateTime @db.DateTime(0)
   update_id     String   @db.VarChar(100)
-  update_time   DateTime @db.Timestamptz(0)
+  update_time   DateTime @db.DateTime(0)
 }
 
 model country_league_season_master {
@@ -281,9 +281,9 @@ model country_league_season_master {
   disp_valid_flg    String    @default("0") @db.VarChar(1)
   upd_stamp         DateTime  @default(now()) @db.Timestamp(0)
   register_id       String?   @db.VarChar(100)
-  register_time     DateTime? @db.Timestamptz(0)
+  register_time     DateTime? @db.DateTime(0)
   update_id         String?   @db.VarChar(100)
-  update_time       DateTime? @db.Timestamptz(0)
+  update_time       DateTime? @db.DateTime(0)
 }
 
 model country_league_summary {
@@ -294,9 +294,9 @@ model country_league_summary {
   csv_count     String   @db.VarChar(100)
   logic_flg     String?  @default("0") @db.VarChar(1)
   register_id   String   @db.VarChar(100)
-  register_time DateTime @db.Timestamptz(0)
+  register_time DateTime @db.DateTime(0)
   update_id     String   @db.VarChar(100)
-  update_time   DateTime @db.Timestamptz(0)
+  update_time   DateTime @db.DateTime(0)
 }
 
 model data {
@@ -401,9 +401,9 @@ model data {
   probablity                             String?   @db.Char(50)
   prediction_score_time                  String?   @db.Char(50)
   register_id                            String?   @db.VarChar(100)
-  register_time                          DateTime? @db.Timestamptz(0)
+  register_time                          DateTime? @db.DateTime(0)
   update_id                              String?   @db.VarChar(100)
-  update_time                            DateTime? @db.Timestamptz(0)
+  update_time                            DateTime? @db.DateTime(0)
 
   @@index([data_category, home_team_name, away_team_name, times, seq], map: "idx_data_keys_times_seq")
 }
@@ -475,15 +475,15 @@ model each_team_score_based_feature_stats {
   away_intercept_count_stat        String?   @db.VarChar(256)
   logic_flg                        String?   @default("0") @db.VarChar(1)
   register_id                      String?   @db.VarChar(100)
-  register_time                    DateTime? @db.Timestamptz(0)
+  register_time                    DateTime? @db.DateTime(0)
   update_id                        String?   @db.VarChar(100)
-  update_time                      DateTime? @db.Timestamptz(0)
+  update_time                      DateTime? @db.DateTime(0)
 }
 
 model future_master {
   seq                     BigInt    @id @default(autoincrement())
   game_team_category      String    @db.VarChar(50)
-  future_time             DateTime  @db.Timestamptz(0)
+  future_time             DateTime  @db.DateTime(0)
   home_rank               String?   @db.Char(30)
   away_rank               String?   @db.Char(30)
   home_team_name          String?   @db.VarChar(100)
@@ -499,12 +499,12 @@ model future_master {
   away_team_away_score    String?   @db.Char(30)
   away_team_away_lost     String?   @db.Char(30)
   game_link               String?   @db.VarChar(255)
-  data_time               DateTime? @db.Timestamptz(0)
+  data_time               DateTime? @db.DateTime(0)
   start_flg               String    @default("0") @db.VarChar(1)
   register_id             String?   @db.VarChar(50)
-  register_time           DateTime? @db.Timestamptz(0)
+  register_time           DateTime? @db.DateTime(0)
   update_id               String?   @db.VarChar(50)
-  update_time             DateTime? @db.Timestamptz(0)
+  update_time             DateTime? @db.DateTime(0)
 }
 
 model league_score_time_band_stats {
@@ -518,9 +518,9 @@ model league_score_time_band_stats {
   ratio           String?   @db.VarChar(50)
   logic_flg       String?   @default("0") @db.VarChar(1)
   register_id     String?   @db.VarChar(100)
-  register_time   DateTime? @db.Timestamptz(0)
+  register_time   DateTime? @db.DateTime(0)
   update_id       String?   @db.VarChar(100)
-  update_time     DateTime? @db.Timestamptz(0)
+  update_time     DateTime? @db.DateTime(0)
 }
 
 model league_score_time_band_stats_split_score {
@@ -536,9 +536,9 @@ model league_score_time_band_stats_split_score {
   ratio                String?   @db.VarChar(50)
   logic_flg            String?   @default("0") @db.VarChar(1)
   register_id          String?   @db.VarChar(100)
-  register_time        DateTime? @db.Timestamptz(0)
+  register_time        DateTime? @db.DateTime(0)
   update_id            String?   @db.VarChar(100)
-  update_time          DateTime? @db.Timestamptz(0)
+  update_time          DateTime? @db.DateTime(0)
 }
 
 model match_classification_result {
@@ -640,9 +640,9 @@ model match_classification_result {
   prediction_score_time                  String?   @db.Char(50)
   logic_flg                              String?   @default("0") @db.VarChar(1)
   register_id                            String?   @db.VarChar(100)
-  register_time                          DateTime? @db.Timestamptz(0)
+  register_time                          DateTime? @db.DateTime(0)
   update_id                              String?   @db.VarChar(100)
-  update_time                            DateTime? @db.Timestamptz(0)
+  update_time                            DateTime? @db.DateTime(0)
 }
 
 model match_classification_result_count {
@@ -654,9 +654,9 @@ model match_classification_result_count {
   remarks       String?   @db.VarChar(3000)
   logic_flg     String?   @default("0") @db.VarChar(1)
   register_id   String?   @db.VarChar(100)
-  register_time DateTime? @db.Timestamptz(0)
+  register_time DateTime? @db.DateTime(0)
   update_id     String?   @db.VarChar(100)
-  update_time   DateTime? @db.Timestamptz(0)
+  update_time   DateTime? @db.DateTime(0)
 }
 
 model no_goal_match_stats {
@@ -762,9 +762,9 @@ model no_goal_match_stats {
   prediction_score_time                  String?   @db.Char(50)
   logic_flg                              String?   @default("0") @db.VarChar(1)
   register_id                            String?   @db.VarChar(100)
-  register_time                          DateTime? @db.Timestamptz(0)
+  register_time                          DateTime? @db.DateTime(0)
   update_id                              String?   @db.VarChar(100)
-  update_time                            DateTime? @db.Timestamptz(0)
+  update_time                            DateTime? @db.DateTime(0)
 }
 
 model score_based_feature_stats {
@@ -833,9 +833,9 @@ model score_based_feature_stats {
   away_intercept_count_stat        String?   @db.VarChar(256)
   logic_flg                        String?   @default("0") @db.VarChar(1)
   register_id                      String?   @db.VarChar(100)
-  register_time                    DateTime? @db.Timestamptz(0)
+  register_time                    DateTime? @db.DateTime(0)
   update_id                        String?   @db.VarChar(100)
-  update_time                      DateTime? @db.Timestamptz(0)
+  update_time                      DateTime? @db.DateTime(0)
 }
 
 model scoring_playstyle_past_data {
@@ -898,9 +898,9 @@ model scoring_playstyle_past_data {
   home_play_style                  String?  @db.VarChar(255)
   away_play_style                  String?  @db.VarChar(255)
   register_id                      String   @db.VarChar(100)
-  register_time                    DateTime @db.Timestamptz(0)
+  register_time                    DateTime @db.DateTime(0)
   update_id                        String   @db.VarChar(100)
-  update_time                      DateTime @db.Timestamptz(0)
+  update_time                      DateTime @db.DateTime(0)
 }
 
 model stat_encryption {
@@ -970,9 +970,9 @@ model stat_encryption {
   home_intercept_count_info                         String?  @db.Text
   away_intercept_count_info                         String?  @db.Text
   register_id                                       String   @db.VarChar(100)
-  register_time                                     DateTime @db.Timestamptz(0)
+  register_time                                     DateTime @db.DateTime(0)
   update_id                                         String   @db.VarChar(100)
-  update_time                                       DateTime @db.Timestamptz(0)
+  update_time                                       DateTime @db.DateTime(0)
 }
 
 model stat_size_finalize_master {
@@ -981,9 +981,9 @@ model stat_size_finalize_master {
   options       String   @db.VarChar(255)
   flg           String   @default("0") @db.VarChar(1)
   register_id   String   @db.VarChar(100)
-  register_time DateTime @db.Timestamptz(0)
+  register_time DateTime @db.DateTime(0)
   update_id     String   @db.VarChar(100)
-  update_time   DateTime @db.Timestamptz(0)
+  update_time   DateTime @db.DateTime(0)
 }
 
 model surface_overview {
@@ -991,14 +991,14 @@ model surface_overview {
   country                      String   @db.VarChar(128)
   league                       String   @db.VarChar(128)
   game_year                    String   @db.Char(4)
-  game_month                   Int      @db.SmallInt
+  game_month                   Int      @db.UnsignedTinyInt
   team                         String   @db.VarChar(128)
-  games                        Int      @default(0) @db.Integer
-  rank                         Int?     @db.Integer
-  win                          Int      @default(0) @db.Integer
-  lose                         Int      @default(0) @db.Integer
-  draw                         Int      @default(0) @db.Integer
-  winning_points               Int      @default(0) @db.Integer
+  games                        Int      @default(0) @db.UnsignedInt
+  rank                         Int?     @db.UnsignedInt
+  win                          Int      @default(0) @db.UnsignedInt
+  lose                         Int      @default(0) @db.UnsignedInt
+  draw                         Int      @default(0) @db.UnsignedInt
+  winning_points               Int      @default(0) @db.UnsignedInt
   home_1st_half_score          String?  @db.Text
   home_2nd_half_score          String?  @db.Text
   home_sum_score               String?  @db.Text
@@ -1011,45 +1011,45 @@ model surface_overview {
   away_1st_half_score_ratio    String?  @db.VarChar(5)
   away_2nd_half_score_ratio    String?  @db.VarChar(5)
   away_clean_sheet             String?  @db.Text
-  fail_to_score_game_count     Int      @default(0) @db.Integer
+  fail_to_score_game_count     Int      @default(0) @db.UnsignedInt
   consecutive_win_disp         String?  @db.VarChar(64)
   consecutive_lose_disp        String?  @db.VarChar(64)
-  unbeaten_streak_count        Int      @default(0) @db.Integer
+  unbeaten_streak_count        Int      @default(0) @db.UnsignedInt
   unbeaten_streak_disp         String?  @db.VarChar(64)
-  consecutive_score_count      Int      @default(0) @db.Integer
+  consecutive_score_count      Int      @default(0) @db.UnsignedInt
   consecutive_score_count_disp String?  @db.VarChar(64)
-  first_week_game_win_count    Int      @default(0) @db.Integer
-  first_week_game_lost_count   Int      @default(0) @db.Integer
+  first_week_game_win_count    Int      @default(0) @db.UnsignedInt
+  first_week_game_lost_count   Int      @default(0) @db.UnsignedInt
   first_week_game_win_disp     String?  @db.VarChar(64)
-  mid_week_game_win_count      Int      @default(0) @db.Integer
-  mid_week_game_lost_count     Int      @default(0) @db.Integer
+  mid_week_game_win_count      Int      @default(0) @db.UnsignedInt
+  mid_week_game_lost_count     Int      @default(0) @db.UnsignedInt
   mid_week_game_win_disp       String?  @db.VarChar(64)
-  last_week_game_win_count     Int      @default(0) @db.Integer
-  last_week_game_lost_count    Int      @default(0) @db.Integer
+  last_week_game_win_count     Int      @default(0) @db.UnsignedInt
+  last_week_game_lost_count    Int      @default(0) @db.UnsignedInt
   last_week_game_win_disp      String?  @db.VarChar(64)
-  home_win_count               Int      @default(0) @db.Integer
-  home_lose_count              Int      @default(0) @db.Integer
-  home_first_goal_count        Int      @default(0) @db.Integer
-  home_win_behind_count        Int      @default(0) @db.Integer
-  home_lose_behind_count       Int      @default(0) @db.Integer
-  home_win_behind_0vs1_count   Int      @default(0) @db.Integer
-  home_lose_behind_1vs0_count  Int      @default(0) @db.Integer
-  home_win_behind_0vs2_count   Int      @default(0) @db.Integer
-  home_lose_behind_2vs0_count  Int      @default(0) @db.Integer
-  home_win_behind_other_count  Int      @default(0) @db.Integer
-  home_lose_behind_other_count Int      @default(0) @db.Integer
+  home_win_count               Int      @default(0) @db.UnsignedInt
+  home_lose_count              Int      @default(0) @db.UnsignedInt
+  home_first_goal_count        Int      @default(0) @db.UnsignedInt
+  home_win_behind_count        Int      @default(0) @db.UnsignedInt
+  home_lose_behind_count       Int      @default(0) @db.UnsignedInt
+  home_win_behind_0vs1_count   Int      @default(0) @db.UnsignedInt
+  home_lose_behind_1vs0_count  Int      @default(0) @db.UnsignedInt
+  home_win_behind_0vs2_count   Int      @default(0) @db.UnsignedInt
+  home_lose_behind_2vs0_count  Int      @default(0) @db.UnsignedInt
+  home_win_behind_other_count  Int      @default(0) @db.UnsignedInt
+  home_lose_behind_other_count Int      @default(0) @db.UnsignedInt
   home_adversity_disp          String?  @db.VarChar(64)
-  away_win_count               Int      @default(0) @db.Integer
-  away_lose_count              Int      @default(0) @db.Integer
-  away_first_goal_count        Int      @default(0) @db.Integer
-  away_win_behind_count        Int      @default(0) @db.Integer
-  away_lose_behind_count       Int      @default(0) @db.Integer
-  away_win_behind_1vs0_count   Int      @default(0) @db.Integer
-  away_lose_behind_0vs1_count  Int      @default(0) @db.Integer
-  away_win_behind_2vs0_count   Int      @default(0) @db.Integer
-  away_lose_behind_0vs2_count  Int      @default(0) @db.Integer
-  away_win_behind_other_count  Int      @default(0) @db.Integer
-  away_lose_behind_other_count Int      @default(0) @db.Integer
+  away_win_count               Int      @default(0) @db.UnsignedInt
+  away_lose_count              Int      @default(0) @db.UnsignedInt
+  away_first_goal_count        Int      @default(0) @db.UnsignedInt
+  away_win_behind_count        Int      @default(0) @db.UnsignedInt
+  away_lose_behind_count       Int      @default(0) @db.UnsignedInt
+  away_win_behind_1vs0_count   Int      @default(0) @db.UnsignedInt
+  away_lose_behind_0vs1_count  Int      @default(0) @db.UnsignedInt
+  away_win_behind_2vs0_count   Int      @default(0) @db.UnsignedInt
+  away_lose_behind_0vs2_count  Int      @default(0) @db.UnsignedInt
+  away_win_behind_other_count  Int      @default(0) @db.UnsignedInt
+  away_lose_behind_other_count Int      @default(0) @db.UnsignedInt
   away_adversity_disp          String?  @db.VarChar(64)
   promote_disp                 String?  @db.VarChar(64)
   descend_disp                 String?  @db.VarChar(64)
@@ -1058,9 +1058,9 @@ model surface_overview {
   round_conc                   String?  @db.Text
   logic_flg                    String?  @default("0") @db.VarChar(1)
   register_id                  String   @db.VarChar(100)
-  register_time                DateTime @db.Timestamptz(0)
+  register_time                DateTime @db.DateTime(0)
   update_id                    String   @db.VarChar(100)
-  update_time                  DateTime @db.Timestamptz(0)
+  update_time                  DateTime @db.DateTime(0)
 
   @@unique([country, league, team, game_year, game_month], map: "uk_team_month")
   @@index([country, league, game_year, game_month, team], map: "idx_lookup")
@@ -1157,9 +1157,9 @@ model team_match_final_stats {
   temperature                                   String?   @db.VarChar(255)
   humid                                         String?   @db.VarChar(255)
   register_id                                   String?   @db.VarChar(100)
-  register_time                                 DateTime? @db.Timestamptz(0)
+  register_time                                 DateTime? @db.DateTime(0)
   update_id                                     String?   @db.VarChar(100)
-  update_time                                   DateTime? @db.Timestamptz(0)
+  update_time                                   DateTime? @db.DateTime(0)
 }
 
 model team_member_master {
@@ -1187,9 +1187,9 @@ model team_member_master {
   latest_info_date       String?  @db.Text
   upd_stamp              String?  @db.Text
   register_id            String   @db.VarChar(100)
-  register_time          DateTime @db.Timestamptz(0)
+  register_time          DateTime @db.DateTime(0)
   update_id              String   @db.VarChar(100)
-  update_time            DateTime @db.Timestamptz(0)
+  update_time            DateTime @db.DateTime(0)
 
   @@id([id, team, jersey, member, face_pic_path])
 }
@@ -1215,9 +1215,9 @@ model team_monthly_score_summary {
   dec_sum_score String?  @db.Char(8)
   logic_flg     String?  @default("0") @db.VarChar(1)
   register_id   String   @db.VarChar(100)
-  register_time DateTime @db.Timestamptz(0)
+  register_time DateTime @db.DateTime(0)
   update_id     String   @db.VarChar(100)
-  update_time   DateTime @db.Timestamptz(0)
+  update_time   DateTime @db.DateTime(0)
 }
 
 model team_time_segment_shooting_stat {
@@ -1315,9 +1315,9 @@ model team_time_segment_shooting_stat {
   team_addi_mean_red_card_count     String?  @db.Char(8)
   logic_flg                         String?  @default("0") @db.VarChar(1)
   register_id                       String   @db.VarChar(100)
-  register_time                     DateTime @db.Timestamptz(0)
+  register_time                     DateTime @db.DateTime(0)
   update_id                         String   @db.VarChar(100)
-  update_time                       DateTime @db.Timestamptz(0)
+  update_time                       DateTime @db.DateTime(0)
 }
 
 model within_data {
@@ -1421,9 +1421,9 @@ model within_data {
   probablity                             String?   @db.Char(50)
   prediction_score_time                  String?   @db.Char(50)
   register_id                            String?   @db.VarChar(100)
-  register_time                          DateTime? @db.Timestamptz(0)
+  register_time                          DateTime? @db.DateTime(0)
   update_id                              String?   @db.VarChar(100)
-  update_time                            DateTime? @db.Timestamptz(0)
+  update_time                            DateTime? @db.DateTime(0)
 }
 
 model within_data_20minutes_away_all_league {
@@ -1435,9 +1435,9 @@ model within_data_20minutes_away_all_league {
   search        String?   @db.VarChar(50)
   ratio         String?   @db.VarChar(50)
   register_id   String?   @db.VarChar(100)
-  register_time DateTime? @db.Timestamptz(0)
+  register_time DateTime? @db.DateTime(0)
   update_id     String?   @db.VarChar(100)
-  update_time   DateTime? @db.Timestamptz(0)
+  update_time   DateTime? @db.DateTime(0)
 }
 
 model within_data_20minutes_away_scored {
@@ -1451,9 +1451,9 @@ model within_data_20minutes_away_scored {
   search        String?   @db.VarChar(50)
   ratio         String?   @db.VarChar(50)
   register_id   String?   @db.VarChar(100)
-  register_time DateTime? @db.Timestamptz(0)
+  register_time DateTime? @db.DateTime(0)
   update_id     String?   @db.VarChar(100)
-  update_time   DateTime? @db.Timestamptz(0)
+  update_time   DateTime? @db.DateTime(0)
 }
 
 model within_data_20minutes_home_all_league {
@@ -1465,9 +1465,9 @@ model within_data_20minutes_home_all_league {
   search        String?   @db.VarChar(50)
   ratio         String?   @db.VarChar(50)
   register_id   String?   @db.VarChar(100)
-  register_time DateTime? @db.Timestamptz(0)
+  register_time DateTime? @db.DateTime(0)
   update_id     String?   @db.VarChar(100)
-  update_time   DateTime? @db.Timestamptz(0)
+  update_time   DateTime? @db.DateTime(0)
 }
 
 model within_data_20minutes_home_scored {
@@ -1481,9 +1481,9 @@ model within_data_20minutes_home_scored {
   search        String?   @db.VarChar(50)
   ratio         String?   @db.VarChar(50)
   register_id   String?   @db.VarChar(100)
-  register_time DateTime? @db.Timestamptz(0)
+  register_time DateTime? @db.DateTime(0)
   update_id     String?   @db.VarChar(100)
-  update_time   DateTime? @db.Timestamptz(0)
+  update_time   DateTime? @db.DateTime(0)
 }
 
 model within_data_20minutes_same_scored {
@@ -1497,9 +1497,9 @@ model within_data_20minutes_same_scored {
   search        String?   @db.VarChar(50)
   ratio         String?   @db.VarChar(50)
   register_id   String?   @db.VarChar(100)
-  register_time DateTime? @db.Timestamptz(0)
+  register_time DateTime? @db.DateTime(0)
   update_id     String?   @db.VarChar(100)
-  update_time   DateTime? @db.Timestamptz(0)
+  update_time   DateTime? @db.DateTime(0)
 }
 
 model within_data_45minutes_away_all_league {
@@ -1511,9 +1511,9 @@ model within_data_45minutes_away_all_league {
   search        String?   @db.VarChar(50)
   ratio         String?   @db.VarChar(50)
   register_id   String?   @db.VarChar(100)
-  register_time DateTime? @db.Timestamptz(0)
+  register_time DateTime? @db.DateTime(0)
   update_id     String?   @db.VarChar(100)
-  update_time   DateTime? @db.Timestamptz(0)
+  update_time   DateTime? @db.DateTime(0)
 }
 
 model within_data_45minutes_away_scored {
@@ -1527,9 +1527,9 @@ model within_data_45minutes_away_scored {
   search        String?   @db.VarChar(50)
   ratio         String?   @db.VarChar(50)
   register_id   String?   @db.VarChar(100)
-  register_time DateTime? @db.Timestamptz(0)
+  register_time DateTime? @db.DateTime(0)
   update_id     String?   @db.VarChar(100)
-  update_time   DateTime? @db.Timestamptz(0)
+  update_time   DateTime? @db.DateTime(0)
 }
 
 model within_data_45minutes_home_all_league {
@@ -1541,9 +1541,9 @@ model within_data_45minutes_home_all_league {
   search        String?   @db.VarChar(50)
   ratio         String?   @db.VarChar(50)
   register_id   String?   @db.VarChar(100)
-  register_time DateTime? @db.Timestamptz(0)
+  register_time DateTime? @db.DateTime(0)
   update_id     String?   @db.VarChar(100)
-  update_time   DateTime? @db.Timestamptz(0)
+  update_time   DateTime? @db.DateTime(0)
 }
 
 model within_data_45minutes_home_scored {
@@ -1557,7 +1557,7 @@ model within_data_45minutes_home_scored {
   search        String?   @db.VarChar(50)
   ratio         String?   @db.VarChar(50)
   register_id   String?   @db.VarChar(100)
-  register_time DateTime? @db.Timestamptz(0)
+  register_time DateTime? @db.DateTime(0)
   update_id     String?   @db.VarChar(100)
-  update_time   DateTime? @db.Timestamptz(0)
+  update_time   DateTime? @db.DateTime(0)
 }
