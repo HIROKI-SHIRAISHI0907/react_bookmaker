@@ -6,17 +6,18 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: soccer_bm # ← ここは固定文字列でOK
+      POSTGRES_DB: soccer_bm # 既定DB
       TZ: Asia/Tokyo
     ports:
       - "127.0.0.1:54320:5432"
     volumes:
-      - pg_data:/var/lib/postgresql/data
+      - pg_data:/var/lib/postgresql/data # ← データ永続化（消さない限り残る）
+      - ./db/init:/docker-entrypoint-initdb.d # ← 初回起動時に DB を自動作成
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d soccer_bm"] # ← 変数参照しない形にして警告回避
+      test: ["CMD-SHELL", "pg_isready -U postgres -d soccer_bm"]
       interval: 5s
       timeout: 3s
-      retries: 10
+      retries: 20
 
   server:
     image: node:20-alpine
@@ -28,8 +29,8 @@ services:
     environment:
       PORT: 8080
       CORS_ORIGIN: http://localhost:3000
-      USER_DATABASE_URL: "postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/soccer_bm_user?schema=public"
-      STATS_DATABASE_URL: "postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/soccer_bm?schema=public"
+      USER_DATABASE_URL: ${USER_DATABASE_URL}
+      STATS_DATABASE_URL: ${STATS_DATABASE_URL}
       TZ: Asia/Tokyo
     volumes:
       - ./server:/srv
@@ -37,13 +38,25 @@ services:
     ports:
       - "8080:8080"
     env_file: ./server/.env
-    command: >
-      sh -lc "
-      npm install &&
-      npx prisma generate --schema=prisma-user/schema.prisma &&
-      npx prisma generate --schema=prisma-stats/schema.prisma &&
-      npm run dev
-      "
+    command: ["/bin/sh", "-lc", "/srv/start.sh"] #改行コードの関係でstart.shを呼び出して修正
+
+  # ブラウザ管理は pgAdmin4 を利用（phpMyAdmin は MySQL 用）
+  pgadmin:
+    image: dpage/pgadmin4:8
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: adminadmin
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      TZ: Asia/Tokyo
+    ports:
+      - "127.0.0.1:54330:80" # http://localhost:54330 でアクセス
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
 
 volumes:
   pg_data: {}
+  pgadmin_data: {}
