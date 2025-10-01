@@ -1,10 +1,11 @@
+// src/auth/Register.tsx （パスはあなたの構成に合わせて）
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function Register() {
   const nav = useNavigate();
   const [email, setEmail] = useState("");
-  const [username, setUsername] = useState("");
+  const [name, setName] = useState(""); // ← username → name に変更
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -14,15 +15,17 @@ export default function Register() {
     setErr(null);
     setBusy(true);
     try {
-      const res = await fetch("/api/auth/register", {
+      // ① API ベースURLの扱い：下の「補足」参照
+      const base = import.meta.env.VITE_API_BASE || "";
+      const res = await fetch(`${base}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // cookie 使う場合
-        body: JSON.stringify({ email, username, password }),
+        credentials: "include",
+        body: JSON.stringify({ email, name, password }), // ← name を送る
       });
 
       if (res.ok) {
-        nav("/login", { replace: true }); // 成功→ログイン画面へ
+        nav("/login", { replace: true });
       } else {
         const body = await res.json().catch(() => ({}));
         setErr(body?.message ?? "登録に失敗しました");
@@ -44,8 +47,8 @@ export default function Register() {
       </label>
 
       <label>
-        <div>ユーザー名</div>
-        <input value={username} onChange={(e) => setUsername(e.target.value)} required minLength={2} />
+        <div>名前</div> {/* ラベルも合わせる */}
+        <input value={name} onChange={(e) => setName(e.target.value)} required minLength={1} />
       </label>
 
       <label>

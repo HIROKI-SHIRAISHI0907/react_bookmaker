@@ -155,7 +155,7 @@ model calc_correlation_ranking {
   home          String?   @db.VarChar(255)
   away          String?   @db.VarChar(255)
   score         String?   @db.VarChar(255)
-  chkBody       String?   @db.Text
+  chk_body      String?   @db.Text
   rank_1th      String?   @db.Text
   rank_2th      String?   @db.Text
   rank_3th      String?   @db.Text
@@ -274,12 +274,11 @@ model country_league_season_master {
   id                Int       @id @default(autoincrement())
   country           String    @db.VarChar(100)
   league            String    @db.VarChar(200)
-  start_season_date DateTime? @db.Timestamp(0)
-  end_season_date   DateTime? @db.Timestamp(0)
+  start_season_date DateTime? @db.Timestamptz(0)
+  end_season_date   DateTime? @db.Timestamptz(0)
   round             String?   @db.VarChar(2)
   path              String?   @db.VarChar(500)
   disp_valid_flg    String    @default("0") @db.VarChar(1)
-  upd_stamp         DateTime  @default(now()) @db.Timestamp(0)
   register_id       String?   @db.VarChar(100)
   register_time     DateTime? @db.Timestamptz(0)
   update_id         String?   @db.VarChar(100)
@@ -368,7 +367,7 @@ model data {
   away_duel_count                        String?   @db.Char(30)
   home_intercept_count                   String?   @db.Char(30)
   away_intercept_count                   String?   @db.Char(30)
-  record_time                            DateTime? @db.Timestamp(0)
+  record_time                            DateTime? @db.Timestamptz(0)
   weather                                String?   @db.Char(5)
   temparature                            String?   @db.Char(10)
   humid                                  String?   @db.Char(5)
@@ -606,7 +605,7 @@ model match_classification_result {
   away_clear_count                       String?   @db.Char(30)
   home_intercept_count                   String?   @db.Char(30)
   away_intercept_count                   String?   @db.Char(30)
-  record_time                            DateTime? @db.Timestamp(0)
+  record_time                            DateTime? @db.Timestamptz(0)
   weather                                String?   @db.Char(5)
   temparature                            String?   @db.Char(10)
   humid                                  String?   @db.Char(5)
@@ -728,7 +727,7 @@ model no_goal_match_stats {
   away_duel_count                        String?   @db.Char(30)
   home_intercept_count                   String?   @db.Char(30)
   away_intercept_count                   String?   @db.Char(30)
-  record_time                            DateTime? @db.Timestamp(0)
+  record_time                            DateTime? @db.Timestamptz(0)
   weather                                String?   @db.Char(5)
   temparature                            String?   @db.Char(10)
   humid                                  String?   @db.Char(5)
@@ -946,7 +945,7 @@ model stat_encryption {
   home_foul_info                                    String?  @db.Text
   away_foul_info                                    String?  @db.Text
   home_yellow_card_info                             String?  @db.Text
-  away_yellow_card_info                             String?  @db.VarChar(255)
+  away_yellow_card_info                             String?  @db.Text
   home_red_card_info                                String?  @db.Text
   away_red_card_info                                String?  @db.Text
   home_slow_in_info                                 String?  @db.Text
@@ -984,21 +983,24 @@ model stat_size_finalize_master {
   register_time DateTime @db.Timestamptz(0)
   update_id     String   @db.VarChar(100)
   update_time   DateTime @db.Timestamptz(0)
+
+  country_league_visibilities country_league_visibility[]
+  user_visibility_options     user_visibility_option[]
 }
 
 model surface_overview {
   id                           Int      @id @default(autoincrement())
   country                      String   @db.VarChar(128)
   league                       String   @db.VarChar(128)
-  game_year                    String   @db.Char(4)
-  game_month                   Int      @db.SmallInt
+  game_year                    String?  @db.Text
+  game_month                   String?  @db.Text
   team                         String   @db.VarChar(128)
-  games                        Int      @default(0) @db.Integer
-  rank                         Int?     @db.Integer
-  win                          Int      @default(0) @db.Integer
-  lose                         Int      @default(0) @db.Integer
-  draw                         Int      @default(0) @db.Integer
-  winning_points               Int      @default(0) @db.Integer
+  games                        String?  @db.Text
+  rank                         String?  @db.Text
+  win                          String?  @db.Text
+  lose                         String?  @db.Text
+  draw                         String?  @db.Text
+  winning_points               String?  @db.Text
   home_1st_half_score          String?  @db.Text
   home_2nd_half_score          String?  @db.Text
   home_sum_score               String?  @db.Text
@@ -1011,45 +1013,45 @@ model surface_overview {
   away_1st_half_score_ratio    String?  @db.VarChar(5)
   away_2nd_half_score_ratio    String?  @db.VarChar(5)
   away_clean_sheet             String?  @db.Text
-  fail_to_score_game_count     Int      @default(0) @db.Integer
+  fail_to_score_game_count     String?  @db.Text
   consecutive_win_disp         String?  @db.VarChar(64)
   consecutive_lose_disp        String?  @db.VarChar(64)
-  unbeaten_streak_count        Int      @default(0) @db.Integer
+  unbeaten_streak_count        String?  @db.Text
   unbeaten_streak_disp         String?  @db.VarChar(64)
-  consecutive_score_count      Int      @default(0) @db.Integer
+  consecutive_score_count      String?  @db.Text
   consecutive_score_count_disp String?  @db.VarChar(64)
-  first_week_game_win_count    Int      @default(0) @db.Integer
-  first_week_game_lost_count   Int      @default(0) @db.Integer
+  first_week_game_win_count    String?  @db.Text
+  first_week_game_lost_count   String?  @db.Text
   first_week_game_win_disp     String?  @db.VarChar(64)
-  mid_week_game_win_count      Int      @default(0) @db.Integer
-  mid_week_game_lost_count     Int      @default(0) @db.Integer
+  mid_week_game_win_count      String?  @db.Text
+  mid_week_game_lost_count     String?  @db.Text
   mid_week_game_win_disp       String?  @db.VarChar(64)
-  last_week_game_win_count     Int      @default(0) @db.Integer
-  last_week_game_lost_count    Int      @default(0) @db.Integer
+  last_week_game_win_count     String?  @db.Text
+  last_week_game_lost_count    String?  @db.Text
   last_week_game_win_disp      String?  @db.VarChar(64)
-  home_win_count               Int      @default(0) @db.Integer
-  home_lose_count              Int      @default(0) @db.Integer
-  home_first_goal_count        Int      @default(0) @db.Integer
-  home_win_behind_count        Int      @default(0) @db.Integer
-  home_lose_behind_count       Int      @default(0) @db.Integer
-  home_win_behind_0vs1_count   Int      @default(0) @db.Integer
-  home_lose_behind_1vs0_count  Int      @default(0) @db.Integer
-  home_win_behind_0vs2_count   Int      @default(0) @db.Integer
-  home_lose_behind_2vs0_count  Int      @default(0) @db.Integer
-  home_win_behind_other_count  Int      @default(0) @db.Integer
-  home_lose_behind_other_count Int      @default(0) @db.Integer
-  home_adversity_disp          String?  @db.VarChar(64)
-  away_win_count               Int      @default(0) @db.Integer
-  away_lose_count              Int      @default(0) @db.Integer
-  away_first_goal_count        Int      @default(0) @db.Integer
-  away_win_behind_count        Int      @default(0) @db.Integer
-  away_lose_behind_count       Int      @default(0) @db.Integer
-  away_win_behind_1vs0_count   Int      @default(0) @db.Integer
-  away_lose_behind_0vs1_count  Int      @default(0) @db.Integer
-  away_win_behind_2vs0_count   Int      @default(0) @db.Integer
-  away_lose_behind_0vs2_count  Int      @default(0) @db.Integer
-  away_win_behind_other_count  Int      @default(0) @db.Integer
-  away_lose_behind_other_count Int      @default(0) @db.Integer
+  home_win_count               String?  @db.Text
+  home_lose_count              String?  @db.Text
+  home_first_goal_count        String?  @db.Text
+  home_win_behind_count        String?  @db.Text
+  home_lose_behind_count       String?  @db.Text
+  home_win_behind_0vs1_count   String?  @db.Text
+  home_lose_behind_1vs0_count  String?  @db.Text
+  home_win_behind_0vs2_count   String?  @db.Text
+  home_lose_behind_2vs0_count  String?  @db.Text
+  home_win_behind_other_count  String?  @db.Text
+  home_lose_behind_other_count String?  @db.Text
+  home_adversity_disp          String?  @db.Text
+  away_win_count               String?  @db.Text
+  away_lose_count              String?  @db.Text
+  away_first_goal_count        String?  @db.Text
+  away_win_behind_count        String?  @db.Text
+  away_lose_behind_count       String?  @db.Text
+  away_win_behind_1vs0_count   String?  @db.Text
+  away_lose_behind_0vs1_count  String?  @db.Text
+  away_win_behind_2vs0_count   String?  @db.Text
+  away_lose_behind_0vs2_count  String?  @db.Text
+  away_win_behind_other_count  String?  @db.Text
+  away_lose_behind_other_count String?  @db.Text
   away_adversity_disp          String?  @db.VarChar(64)
   promote_disp                 String?  @db.VarChar(64)
   descend_disp                 String?  @db.VarChar(64)
@@ -1199,7 +1201,7 @@ model team_monthly_score_summary {
   country       String?  @db.VarChar(100)
   league        String?  @db.VarChar(100)
   team_name     String?  @db.Char(100)
-  HA            String?  @db.VarChar(1)
+  ha            String?  @db.VarChar(1)
   year          String?  @db.VarChar(4)
   jar_sum_score String?  @db.Char(8)
   feb_sum_score String?  @db.Char(8)
@@ -1560,4 +1562,42 @@ model within_data_45minutes_home_scored {
   register_time DateTime? @db.Timestamptz(0)
   update_id     String?   @db.VarChar(100)
   update_time   DateTime? @db.Timestamptz(0)
+}
+
+model country_league_visibility {
+  id            Int       @id @default(autoincrement())
+  country       String    @db.VarChar(128)
+  league        String?   @db.VarChar(128)
+  visible       Boolean   @default(true)
+  priority      Int       @default(0)
+  reason        String?   @db.VarChar(255)
+  effectiveFrom DateTime? @db.Timestamptz(0)
+  effectiveTo   DateTime? @db.Timestamptz(0)
+
+  optionId Int?
+  option   stat_size_finalize_master? @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  register_id   String?   @db.VarChar(100)
+  register_time DateTime? @db.Timestamptz(0)
+  update_id     String?   @db.VarChar(100)
+  update_time   DateTime? @db.Timestamptz(0)
+
+  @@unique([country, league, optionId], map: "uk_web_visibility_scoped")
+  @@index([country, league], map: "idx_web_visibility_lookup")
+  @@index([visible], map: "idx_web_visibility_flag")
+  @@index([optionId], map: "idx_web_visibility_option")
+}
+
+model user_visibility_option {
+  id        Int      @id @default(autoincrement())
+  userId    String   @db.VarChar(64) // ユーザーDBのIDを文字列で格納（FKは張らない）
+  optionId  Int
+  createdAt DateTime @default(now())
+
+  // stat_size_finalize_master への多対一
+  option stat_size_finalize_master @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, optionId], map: "uk_user_option")
+  @@index([userId], map: "idx_user_option_user")
+  @@index([optionId], map: "idx_user_option_option")
 }

@@ -1,3 +1,5 @@
+// server/prisma-user/schema.prisma
+
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/user"
@@ -8,10 +10,29 @@ datasource db {
   url      = env("USER_DATABASE_URL")
 }
 
+// 既存テーブルに合わせて PascalCase に
 model User {
-  userid       String   @id @default(uuid()) // Postgres では uuid() でOK（アプリ側生成）
+  userid       String   @id @default(uuid())
   email        String   @unique
   passwordHash String
+  name         String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  favorites Favorite[]
+}
+
+model Favorite {
+  id        BigInt   @id @default(autoincrement())
+  userId    String
+  country   String   @db.VarChar(128)
+  league    String   @db.VarChar(128)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [userid], onDelete: Cascade)
+
+  @@unique([userId, country, league], map: "uk_user_country_league")
+  @@index([userId], map: "idx_fav_user")
+  @@index([country, league], map: "idx_fav_country_league")
 }

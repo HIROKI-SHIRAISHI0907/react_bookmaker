@@ -1,13 +1,13 @@
-// tailwind.config.ts
+// frontend/tailwind.config.ts
 import type { Config } from "tailwindcss";
 
 export default {
-  content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
+  content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        // shadcn のトークンを Tailwind カラーにひも付け
-        border: "hsl(var(--border))",
+        // ← ここで色名を定義することで
+        //    bg-background / text-foreground / border-border などが使えるようになる
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
 
@@ -32,6 +32,7 @@ export default {
         destructive: "hsl(var(--destructive))",
         "destructive-foreground": "hsl(var(--destructive-foreground))",
 
+        border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
       },

@@ -1,9 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from "react-router-dom";
 import Login from "./pages/auth/Login";
-import Protected from "./routes/Protected";
-import Register from "./pages/auth/Register";
 import Dashboard from "./pages/top/Dashboard";
 import RequireAuth from "./pages/auth/RequireAuth";
+import LeagueMenu from "./pages/humberger/LeagueMenu";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -23,6 +22,9 @@ function Home() {
 export default function App() {
   return (
     <Routes>
+      <Route path="/" element={<Dashboard />} />
+      <Route path="/:country/:league" element={<LeagueMenu />} />
+
       <Route path="/" element={<Navigate to="/top" replace />} />
       <Route path="/login" element={<Login />} />
 

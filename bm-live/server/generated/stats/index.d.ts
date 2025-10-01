@@ -188,6 +188,16 @@ export type within_data_45minutes_home_all_league = $Result.DefaultSelection<Pri
  * 
  */
 export type within_data_45minutes_home_scored = $Result.DefaultSelection<Prisma.$within_data_45minutes_home_scoredPayload>
+/**
+ * Model country_league_visibility
+ * 
+ */
+export type country_league_visibility = $Result.DefaultSelection<Prisma.$country_league_visibilityPayload>
+/**
+ * Model user_visibility_option
+ * 
+ */
+export type user_visibility_option = $Result.DefaultSelection<Prisma.$user_visibility_optionPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -656,6 +666,26 @@ export class PrismaClient<
     * ```
     */
   get within_data_45minutes_home_scored(): Prisma.within_data_45minutes_home_scoredDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.country_league_visibility`: Exposes CRUD operations for the **country_league_visibility** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Country_league_visibilities
+    * const country_league_visibilities = await prisma.country_league_visibility.findMany()
+    * ```
+    */
+  get country_league_visibility(): Prisma.country_league_visibilityDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.user_visibility_option`: Exposes CRUD operations for the **user_visibility_option** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more User_visibility_options
+    * const user_visibility_options = await prisma.user_visibility_option.findMany()
+    * ```
+    */
+  get user_visibility_option(): Prisma.user_visibility_optionDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -714,8 +744,8 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 6.16.2
-   * Query Engine version: 1c57fdcd7e44b29b9313256c76699e91c3ac3c43
+   * Prisma Client JS version: 6.16.3
+   * Query Engine version: bb420e667c1820a8c05a38023385f6cc7ef8e83a
    */
   export type PrismaVersion = {
     client: string
@@ -1130,7 +1160,9 @@ export namespace Prisma {
     within_data_45minutes_away_all_league: 'within_data_45minutes_away_all_league',
     within_data_45minutes_away_scored: 'within_data_45minutes_away_scored',
     within_data_45minutes_home_all_league: 'within_data_45minutes_home_all_league',
-    within_data_45minutes_home_scored: 'within_data_45minutes_home_scored'
+    within_data_45minutes_home_scored: 'within_data_45minutes_home_scored',
+    country_league_visibility: 'country_league_visibility',
+    user_visibility_option: 'user_visibility_option'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1149,7 +1181,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "average_statistics_csv_tmp_data" | "average_statistics_team_detail_data" | "calc_correlation" | "calc_correlation_ranking" | "condition_result_data" | "country_league_master" | "country_league_season_master" | "country_league_summary" | "data" | "each_team_score_based_feature_stats" | "future_master" | "league_score_time_band_stats" | "league_score_time_band_stats_split_score" | "match_classification_result" | "match_classification_result_count" | "no_goal_match_stats" | "score_based_feature_stats" | "scoring_playstyle_past_data" | "stat_encryption" | "stat_size_finalize_master" | "surface_overview" | "team_match_final_stats" | "team_member_master" | "team_monthly_score_summary" | "team_time_segment_shooting_stat" | "within_data" | "within_data_20minutes_away_all_league" | "within_data_20minutes_away_scored" | "within_data_20minutes_home_all_league" | "within_data_20minutes_home_scored" | "within_data_20minutes_same_scored" | "within_data_45minutes_away_all_league" | "within_data_45minutes_away_scored" | "within_data_45minutes_home_all_league" | "within_data_45minutes_home_scored"
+      modelProps: "average_statistics_csv_tmp_data" | "average_statistics_team_detail_data" | "calc_correlation" | "calc_correlation_ranking" | "condition_result_data" | "country_league_master" | "country_league_season_master" | "country_league_summary" | "data" | "each_team_score_based_feature_stats" | "future_master" | "league_score_time_band_stats" | "league_score_time_band_stats_split_score" | "match_classification_result" | "match_classification_result_count" | "no_goal_match_stats" | "score_based_feature_stats" | "scoring_playstyle_past_data" | "stat_encryption" | "stat_size_finalize_master" | "surface_overview" | "team_match_final_stats" | "team_member_master" | "team_monthly_score_summary" | "team_time_segment_shooting_stat" | "within_data" | "within_data_20minutes_away_all_league" | "within_data_20minutes_away_scored" | "within_data_20minutes_home_all_league" | "within_data_20minutes_home_scored" | "within_data_20minutes_same_scored" | "within_data_45minutes_away_all_league" | "within_data_45minutes_away_scored" | "within_data_45minutes_home_all_league" | "within_data_45minutes_home_scored" | "country_league_visibility" | "user_visibility_option"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3743,6 +3775,154 @@ export namespace Prisma {
           }
         }
       }
+      country_league_visibility: {
+        payload: Prisma.$country_league_visibilityPayload<ExtArgs>
+        fields: Prisma.country_league_visibilityFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.country_league_visibilityFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$country_league_visibilityPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.country_league_visibilityFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$country_league_visibilityPayload>
+          }
+          findFirst: {
+            args: Prisma.country_league_visibilityFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$country_league_visibilityPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.country_league_visibilityFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$country_league_visibilityPayload>
+          }
+          findMany: {
+            args: Prisma.country_league_visibilityFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$country_league_visibilityPayload>[]
+          }
+          create: {
+            args: Prisma.country_league_visibilityCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$country_league_visibilityPayload>
+          }
+          createMany: {
+            args: Prisma.country_league_visibilityCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.country_league_visibilityCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$country_league_visibilityPayload>[]
+          }
+          delete: {
+            args: Prisma.country_league_visibilityDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$country_league_visibilityPayload>
+          }
+          update: {
+            args: Prisma.country_league_visibilityUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$country_league_visibilityPayload>
+          }
+          deleteMany: {
+            args: Prisma.country_league_visibilityDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.country_league_visibilityUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.country_league_visibilityUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$country_league_visibilityPayload>[]
+          }
+          upsert: {
+            args: Prisma.country_league_visibilityUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$country_league_visibilityPayload>
+          }
+          aggregate: {
+            args: Prisma.Country_league_visibilityAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateCountry_league_visibility>
+          }
+          groupBy: {
+            args: Prisma.country_league_visibilityGroupByArgs<ExtArgs>
+            result: $Utils.Optional<Country_league_visibilityGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.country_league_visibilityCountArgs<ExtArgs>
+            result: $Utils.Optional<Country_league_visibilityCountAggregateOutputType> | number
+          }
+        }
+      }
+      user_visibility_option: {
+        payload: Prisma.$user_visibility_optionPayload<ExtArgs>
+        fields: Prisma.user_visibility_optionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.user_visibility_optionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$user_visibility_optionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.user_visibility_optionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$user_visibility_optionPayload>
+          }
+          findFirst: {
+            args: Prisma.user_visibility_optionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$user_visibility_optionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.user_visibility_optionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$user_visibility_optionPayload>
+          }
+          findMany: {
+            args: Prisma.user_visibility_optionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$user_visibility_optionPayload>[]
+          }
+          create: {
+            args: Prisma.user_visibility_optionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$user_visibility_optionPayload>
+          }
+          createMany: {
+            args: Prisma.user_visibility_optionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.user_visibility_optionCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$user_visibility_optionPayload>[]
+          }
+          delete: {
+            args: Prisma.user_visibility_optionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$user_visibility_optionPayload>
+          }
+          update: {
+            args: Prisma.user_visibility_optionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$user_visibility_optionPayload>
+          }
+          deleteMany: {
+            args: Prisma.user_visibility_optionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.user_visibility_optionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.user_visibility_optionUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$user_visibility_optionPayload>[]
+          }
+          upsert: {
+            args: Prisma.user_visibility_optionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$user_visibility_optionPayload>
+          }
+          aggregate: {
+            args: Prisma.User_visibility_optionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateUser_visibility_option>
+          }
+          groupBy: {
+            args: Prisma.user_visibility_optionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<User_visibility_optionGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.user_visibility_optionCountArgs<ExtArgs>
+            result: $Utils.Optional<User_visibility_optionCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -3874,6 +4054,8 @@ export namespace Prisma {
     within_data_45minutes_away_scored?: within_data_45minutes_away_scoredOmit
     within_data_45minutes_home_all_league?: within_data_45minutes_home_all_leagueOmit
     within_data_45minutes_home_scored?: within_data_45minutes_home_scoredOmit
+    country_league_visibility?: country_league_visibilityOmit
+    user_visibility_option?: user_visibility_optionOmit
   }
 
   /* Types for Logging */
@@ -3948,6 +4130,45 @@ export namespace Prisma {
    * Count Types
    */
 
+
+  /**
+   * Count Type Stat_size_finalize_masterCountOutputType
+   */
+
+  export type Stat_size_finalize_masterCountOutputType = {
+    country_league_visibilities: number
+    user_visibility_options: number
+  }
+
+  export type Stat_size_finalize_masterCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    country_league_visibilities?: boolean | Stat_size_finalize_masterCountOutputTypeCountCountry_league_visibilitiesArgs
+    user_visibility_options?: boolean | Stat_size_finalize_masterCountOutputTypeCountUser_visibility_optionsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * Stat_size_finalize_masterCountOutputType without action
+   */
+  export type Stat_size_finalize_masterCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Stat_size_finalize_masterCountOutputType
+     */
+    select?: Stat_size_finalize_masterCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * Stat_size_finalize_masterCountOutputType without action
+   */
+  export type Stat_size_finalize_masterCountOutputTypeCountCountry_league_visibilitiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: country_league_visibilityWhereInput
+  }
+
+  /**
+   * Stat_size_finalize_masterCountOutputType without action
+   */
+  export type Stat_size_finalize_masterCountOutputTypeCountUser_visibility_optionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: user_visibility_optionWhereInput
+  }
 
 
   /**
@@ -8563,7 +8784,7 @@ export namespace Prisma {
     home: string | null
     away: string | null
     score: string | null
-    chkBody: string | null
+    chk_body: string | null
     rank_1th: string | null
     rank_2th: string | null
     rank_3th: string | null
@@ -8652,7 +8873,7 @@ export namespace Prisma {
     home: string | null
     away: string | null
     score: string | null
-    chkBody: string | null
+    chk_body: string | null
     rank_1th: string | null
     rank_2th: string | null
     rank_3th: string | null
@@ -8741,7 +8962,7 @@ export namespace Prisma {
     home: number
     away: number
     score: number
-    chkBody: number
+    chk_body: number
     rank_1th: number
     rank_2th: number
     rank_3th: number
@@ -8840,7 +9061,7 @@ export namespace Prisma {
     home?: true
     away?: true
     score?: true
-    chkBody?: true
+    chk_body?: true
     rank_1th?: true
     rank_2th?: true
     rank_3th?: true
@@ -8929,7 +9150,7 @@ export namespace Prisma {
     home?: true
     away?: true
     score?: true
-    chkBody?: true
+    chk_body?: true
     rank_1th?: true
     rank_2th?: true
     rank_3th?: true
@@ -9018,7 +9239,7 @@ export namespace Prisma {
     home?: true
     away?: true
     score?: true
-    chkBody?: true
+    chk_body?: true
     rank_1th?: true
     rank_2th?: true
     rank_3th?: true
@@ -9194,7 +9415,7 @@ export namespace Prisma {
     home: string | null
     away: string | null
     score: string | null
-    chkBody: string | null
+    chk_body: string | null
     rank_1th: string | null
     rank_2th: string | null
     rank_3th: string | null
@@ -9302,7 +9523,7 @@ export namespace Prisma {
     home?: boolean
     away?: boolean
     score?: boolean
-    chkBody?: boolean
+    chk_body?: boolean
     rank_1th?: boolean
     rank_2th?: boolean
     rank_3th?: boolean
@@ -9391,7 +9612,7 @@ export namespace Prisma {
     home?: boolean
     away?: boolean
     score?: boolean
-    chkBody?: boolean
+    chk_body?: boolean
     rank_1th?: boolean
     rank_2th?: boolean
     rank_3th?: boolean
@@ -9480,7 +9701,7 @@ export namespace Prisma {
     home?: boolean
     away?: boolean
     score?: boolean
-    chkBody?: boolean
+    chk_body?: boolean
     rank_1th?: boolean
     rank_2th?: boolean
     rank_3th?: boolean
@@ -9569,7 +9790,7 @@ export namespace Prisma {
     home?: boolean
     away?: boolean
     score?: boolean
-    chkBody?: boolean
+    chk_body?: boolean
     rank_1th?: boolean
     rank_2th?: boolean
     rank_3th?: boolean
@@ -9651,7 +9872,7 @@ export namespace Prisma {
     update_time?: boolean
   }
 
-  export type calc_correlation_rankingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "country" | "league" | "home" | "away" | "score" | "chkBody" | "rank_1th" | "rank_2th" | "rank_3th" | "rank_4th" | "rank_5th" | "rank_6th" | "rank_7th" | "rank_8th" | "rank_9th" | "rank_10th" | "rank_11th" | "rank_12th" | "rank_13th" | "rank_14th" | "rank_15th" | "rank_16th" | "rank_17th" | "rank_18th" | "rank_19th" | "rank_20th" | "rank_21th" | "rank_22th" | "rank_23th" | "rank_24th" | "rank_25th" | "rank_26th" | "rank_27th" | "rank_28th" | "rank_29th" | "rank_30th" | "rank_31th" | "rank_32th" | "rank_33th" | "rank_34th" | "rank_35th" | "rank_36th" | "rank_37th" | "rank_38th" | "rank_39th" | "rank_40th" | "rank_41th" | "rank_42th" | "rank_43th" | "rank_44th" | "rank_45th" | "rank_46th" | "rank_47th" | "rank_48th" | "rank_49th" | "rank_50th" | "rank_51th" | "rank_52th" | "rank_53th" | "rank_54th" | "rank_55th" | "rank_56th" | "rank_57th" | "rank_58th" | "rank_59th" | "rank_60th" | "rank_61th" | "rank_62th" | "rank_63th" | "rank_64th" | "rank_65th" | "rank_66th" | "rank_67th" | "rank_68th" | "rank_69th" | "rank_70th" | "rank_71th" | "rank_72th" | "rank_73th" | "rank_74th" | "logic_flg" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["calc_correlation_ranking"]>
+  export type calc_correlation_rankingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "country" | "league" | "home" | "away" | "score" | "chk_body" | "rank_1th" | "rank_2th" | "rank_3th" | "rank_4th" | "rank_5th" | "rank_6th" | "rank_7th" | "rank_8th" | "rank_9th" | "rank_10th" | "rank_11th" | "rank_12th" | "rank_13th" | "rank_14th" | "rank_15th" | "rank_16th" | "rank_17th" | "rank_18th" | "rank_19th" | "rank_20th" | "rank_21th" | "rank_22th" | "rank_23th" | "rank_24th" | "rank_25th" | "rank_26th" | "rank_27th" | "rank_28th" | "rank_29th" | "rank_30th" | "rank_31th" | "rank_32th" | "rank_33th" | "rank_34th" | "rank_35th" | "rank_36th" | "rank_37th" | "rank_38th" | "rank_39th" | "rank_40th" | "rank_41th" | "rank_42th" | "rank_43th" | "rank_44th" | "rank_45th" | "rank_46th" | "rank_47th" | "rank_48th" | "rank_49th" | "rank_50th" | "rank_51th" | "rank_52th" | "rank_53th" | "rank_54th" | "rank_55th" | "rank_56th" | "rank_57th" | "rank_58th" | "rank_59th" | "rank_60th" | "rank_61th" | "rank_62th" | "rank_63th" | "rank_64th" | "rank_65th" | "rank_66th" | "rank_67th" | "rank_68th" | "rank_69th" | "rank_70th" | "rank_71th" | "rank_72th" | "rank_73th" | "rank_74th" | "logic_flg" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["calc_correlation_ranking"]>
 
   export type $calc_correlation_rankingPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "calc_correlation_ranking"
@@ -9663,7 +9884,7 @@ export namespace Prisma {
       home: string | null
       away: string | null
       score: string | null
-      chkBody: string | null
+      chk_body: string | null
       rank_1th: string | null
       rank_2th: string | null
       rank_3th: string | null
@@ -10172,7 +10393,7 @@ export namespace Prisma {
     readonly home: FieldRef<"calc_correlation_ranking", 'String'>
     readonly away: FieldRef<"calc_correlation_ranking", 'String'>
     readonly score: FieldRef<"calc_correlation_ranking", 'String'>
-    readonly chkBody: FieldRef<"calc_correlation_ranking", 'String'>
+    readonly chk_body: FieldRef<"calc_correlation_ranking", 'String'>
     readonly rank_1th: FieldRef<"calc_correlation_ranking", 'String'>
     readonly rank_2th: FieldRef<"calc_correlation_ranking", 'String'>
     readonly rank_3th: FieldRef<"calc_correlation_ranking", 'String'>
@@ -12926,7 +13147,6 @@ export namespace Prisma {
     round: string | null
     path: string | null
     disp_valid_flg: string | null
-    upd_stamp: Date | null
     register_id: string | null
     register_time: Date | null
     update_id: string | null
@@ -12942,7 +13162,6 @@ export namespace Prisma {
     round: string | null
     path: string | null
     disp_valid_flg: string | null
-    upd_stamp: Date | null
     register_id: string | null
     register_time: Date | null
     update_id: string | null
@@ -12958,7 +13177,6 @@ export namespace Prisma {
     round: number
     path: number
     disp_valid_flg: number
-    upd_stamp: number
     register_id: number
     register_time: number
     update_id: number
@@ -12984,7 +13202,6 @@ export namespace Prisma {
     round?: true
     path?: true
     disp_valid_flg?: true
-    upd_stamp?: true
     register_id?: true
     register_time?: true
     update_id?: true
@@ -13000,7 +13217,6 @@ export namespace Prisma {
     round?: true
     path?: true
     disp_valid_flg?: true
-    upd_stamp?: true
     register_id?: true
     register_time?: true
     update_id?: true
@@ -13016,7 +13232,6 @@ export namespace Prisma {
     round?: true
     path?: true
     disp_valid_flg?: true
-    upd_stamp?: true
     register_id?: true
     register_time?: true
     update_id?: true
@@ -13119,7 +13334,6 @@ export namespace Prisma {
     round: string | null
     path: string | null
     disp_valid_flg: string
-    upd_stamp: Date
     register_id: string | null
     register_time: Date | null
     update_id: string | null
@@ -13154,7 +13368,6 @@ export namespace Prisma {
     round?: boolean
     path?: boolean
     disp_valid_flg?: boolean
-    upd_stamp?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
@@ -13170,7 +13383,6 @@ export namespace Prisma {
     round?: boolean
     path?: boolean
     disp_valid_flg?: boolean
-    upd_stamp?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
@@ -13186,7 +13398,6 @@ export namespace Prisma {
     round?: boolean
     path?: boolean
     disp_valid_flg?: boolean
-    upd_stamp?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
@@ -13202,14 +13413,13 @@ export namespace Prisma {
     round?: boolean
     path?: boolean
     disp_valid_flg?: boolean
-    upd_stamp?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
     update_time?: boolean
   }
 
-  export type country_league_season_masterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "country" | "league" | "start_season_date" | "end_season_date" | "round" | "path" | "disp_valid_flg" | "upd_stamp" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["country_league_season_master"]>
+  export type country_league_season_masterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "country" | "league" | "start_season_date" | "end_season_date" | "round" | "path" | "disp_valid_flg" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["country_league_season_master"]>
 
   export type $country_league_season_masterPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "country_league_season_master"
@@ -13223,7 +13433,6 @@ export namespace Prisma {
       round: string | null
       path: string | null
       disp_valid_flg: string
-      upd_stamp: Date
       register_id: string | null
       register_time: Date | null
       update_id: string | null
@@ -13659,7 +13868,6 @@ export namespace Prisma {
     readonly round: FieldRef<"country_league_season_master", 'String'>
     readonly path: FieldRef<"country_league_season_master", 'String'>
     readonly disp_valid_flg: FieldRef<"country_league_season_master", 'String'>
-    readonly upd_stamp: FieldRef<"country_league_season_master", 'DateTime'>
     readonly register_id: FieldRef<"country_league_season_master", 'String'>
     readonly register_time: FieldRef<"country_league_season_master", 'DateTime'>
     readonly update_id: FieldRef<"country_league_season_master", 'String'>
@@ -34283,6 +34491,9 @@ export namespace Prisma {
     register_time?: boolean
     update_id?: boolean
     update_time?: boolean
+    country_league_visibilities?: boolean | stat_size_finalize_master$country_league_visibilitiesArgs<ExtArgs>
+    user_visibility_options?: boolean | stat_size_finalize_master$user_visibility_optionsArgs<ExtArgs>
+    _count?: boolean | Stat_size_finalize_masterCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["stat_size_finalize_master"]>
 
   export type stat_size_finalize_masterSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -34319,10 +34530,20 @@ export namespace Prisma {
   }
 
   export type stat_size_finalize_masterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "option_num" | "options" | "flg" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["stat_size_finalize_master"]>
+  export type stat_size_finalize_masterInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    country_league_visibilities?: boolean | stat_size_finalize_master$country_league_visibilitiesArgs<ExtArgs>
+    user_visibility_options?: boolean | stat_size_finalize_master$user_visibility_optionsArgs<ExtArgs>
+    _count?: boolean | Stat_size_finalize_masterCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type stat_size_finalize_masterIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type stat_size_finalize_masterIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
 
   export type $stat_size_finalize_masterPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "stat_size_finalize_master"
-    objects: {}
+    objects: {
+      country_league_visibilities: Prisma.$country_league_visibilityPayload<ExtArgs>[]
+      user_visibility_options: Prisma.$user_visibility_optionPayload<ExtArgs>[]
+    }
     scalars: $Extensions.GetPayloadResult<{
       id: number
       option_num: string
@@ -34726,6 +34947,8 @@ export namespace Prisma {
    */
   export interface Prisma__stat_size_finalize_masterClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    country_league_visibilities<T extends stat_size_finalize_master$country_league_visibilitiesArgs<ExtArgs> = {}>(args?: Subset<T, stat_size_finalize_master$country_league_visibilitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$country_league_visibilityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    user_visibility_options<T extends stat_size_finalize_master$user_visibility_optionsArgs<ExtArgs> = {}>(args?: Subset<T, stat_size_finalize_master$user_visibility_optionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$user_visibility_optionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -34780,6 +35003,10 @@ export namespace Prisma {
      */
     omit?: stat_size_finalize_masterOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: stat_size_finalize_masterInclude<ExtArgs> | null
+    /**
      * Filter, which stat_size_finalize_master to fetch.
      */
     where: stat_size_finalize_masterWhereUniqueInput
@@ -34798,6 +35025,10 @@ export namespace Prisma {
      */
     omit?: stat_size_finalize_masterOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: stat_size_finalize_masterInclude<ExtArgs> | null
+    /**
      * Filter, which stat_size_finalize_master to fetch.
      */
     where: stat_size_finalize_masterWhereUniqueInput
@@ -34815,6 +35046,10 @@ export namespace Prisma {
      * Omit specific fields from the stat_size_finalize_master
      */
     omit?: stat_size_finalize_masterOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: stat_size_finalize_masterInclude<ExtArgs> | null
     /**
      * Filter, which stat_size_finalize_master to fetch.
      */
@@ -34864,6 +35099,10 @@ export namespace Prisma {
      */
     omit?: stat_size_finalize_masterOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: stat_size_finalize_masterInclude<ExtArgs> | null
+    /**
      * Filter, which stat_size_finalize_master to fetch.
      */
     where?: stat_size_finalize_masterWhereInput
@@ -34912,6 +35151,10 @@ export namespace Prisma {
      */
     omit?: stat_size_finalize_masterOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: stat_size_finalize_masterInclude<ExtArgs> | null
+    /**
      * Filter, which stat_size_finalize_masters to fetch.
      */
     where?: stat_size_finalize_masterWhereInput
@@ -34954,6 +35197,10 @@ export namespace Prisma {
      * Omit specific fields from the stat_size_finalize_master
      */
     omit?: stat_size_finalize_masterOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: stat_size_finalize_masterInclude<ExtArgs> | null
     /**
      * The data needed to create a stat_size_finalize_master.
      */
@@ -35002,6 +35249,10 @@ export namespace Prisma {
      * Omit specific fields from the stat_size_finalize_master
      */
     omit?: stat_size_finalize_masterOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: stat_size_finalize_masterInclude<ExtArgs> | null
     /**
      * The data needed to update a stat_size_finalize_master.
      */
@@ -35069,6 +35320,10 @@ export namespace Prisma {
      */
     omit?: stat_size_finalize_masterOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: stat_size_finalize_masterInclude<ExtArgs> | null
+    /**
      * The filter to search for the stat_size_finalize_master to update in case it exists.
      */
     where: stat_size_finalize_masterWhereUniqueInput
@@ -35095,6 +35350,10 @@ export namespace Prisma {
      */
     omit?: stat_size_finalize_masterOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: stat_size_finalize_masterInclude<ExtArgs> | null
+    /**
      * Filter which stat_size_finalize_master to delete.
      */
     where: stat_size_finalize_masterWhereUniqueInput
@@ -35115,6 +35374,54 @@ export namespace Prisma {
   }
 
   /**
+   * stat_size_finalize_master.country_league_visibilities
+   */
+  export type stat_size_finalize_master$country_league_visibilitiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the country_league_visibility
+     */
+    select?: country_league_visibilitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the country_league_visibility
+     */
+    omit?: country_league_visibilityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: country_league_visibilityInclude<ExtArgs> | null
+    where?: country_league_visibilityWhereInput
+    orderBy?: country_league_visibilityOrderByWithRelationInput | country_league_visibilityOrderByWithRelationInput[]
+    cursor?: country_league_visibilityWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: Country_league_visibilityScalarFieldEnum | Country_league_visibilityScalarFieldEnum[]
+  }
+
+  /**
+   * stat_size_finalize_master.user_visibility_options
+   */
+  export type stat_size_finalize_master$user_visibility_optionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the user_visibility_option
+     */
+    select?: user_visibility_optionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the user_visibility_option
+     */
+    omit?: user_visibility_optionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: user_visibility_optionInclude<ExtArgs> | null
+    where?: user_visibility_optionWhereInput
+    orderBy?: user_visibility_optionOrderByWithRelationInput | user_visibility_optionOrderByWithRelationInput[]
+    cursor?: user_visibility_optionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: User_visibility_optionScalarFieldEnum | User_visibility_optionScalarFieldEnum[]
+  }
+
+  /**
    * stat_size_finalize_master without action
    */
   export type stat_size_finalize_masterDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -35126,6 +35433,10 @@ export namespace Prisma {
      * Omit specific fields from the stat_size_finalize_master
      */
     omit?: stat_size_finalize_masterOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: stat_size_finalize_masterInclude<ExtArgs> | null
   }
 
 
@@ -35143,86 +35454,10 @@ export namespace Prisma {
 
   export type Surface_overviewAvgAggregateOutputType = {
     id: number | null
-    game_month: number | null
-    games: number | null
-    rank: number | null
-    win: number | null
-    lose: number | null
-    draw: number | null
-    winning_points: number | null
-    fail_to_score_game_count: number | null
-    unbeaten_streak_count: number | null
-    consecutive_score_count: number | null
-    first_week_game_win_count: number | null
-    first_week_game_lost_count: number | null
-    mid_week_game_win_count: number | null
-    mid_week_game_lost_count: number | null
-    last_week_game_win_count: number | null
-    last_week_game_lost_count: number | null
-    home_win_count: number | null
-    home_lose_count: number | null
-    home_first_goal_count: number | null
-    home_win_behind_count: number | null
-    home_lose_behind_count: number | null
-    home_win_behind_0vs1_count: number | null
-    home_lose_behind_1vs0_count: number | null
-    home_win_behind_0vs2_count: number | null
-    home_lose_behind_2vs0_count: number | null
-    home_win_behind_other_count: number | null
-    home_lose_behind_other_count: number | null
-    away_win_count: number | null
-    away_lose_count: number | null
-    away_first_goal_count: number | null
-    away_win_behind_count: number | null
-    away_lose_behind_count: number | null
-    away_win_behind_1vs0_count: number | null
-    away_lose_behind_0vs1_count: number | null
-    away_win_behind_2vs0_count: number | null
-    away_lose_behind_0vs2_count: number | null
-    away_win_behind_other_count: number | null
-    away_lose_behind_other_count: number | null
   }
 
   export type Surface_overviewSumAggregateOutputType = {
     id: number | null
-    game_month: number | null
-    games: number | null
-    rank: number | null
-    win: number | null
-    lose: number | null
-    draw: number | null
-    winning_points: number | null
-    fail_to_score_game_count: number | null
-    unbeaten_streak_count: number | null
-    consecutive_score_count: number | null
-    first_week_game_win_count: number | null
-    first_week_game_lost_count: number | null
-    mid_week_game_win_count: number | null
-    mid_week_game_lost_count: number | null
-    last_week_game_win_count: number | null
-    last_week_game_lost_count: number | null
-    home_win_count: number | null
-    home_lose_count: number | null
-    home_first_goal_count: number | null
-    home_win_behind_count: number | null
-    home_lose_behind_count: number | null
-    home_win_behind_0vs1_count: number | null
-    home_lose_behind_1vs0_count: number | null
-    home_win_behind_0vs2_count: number | null
-    home_lose_behind_2vs0_count: number | null
-    home_win_behind_other_count: number | null
-    home_lose_behind_other_count: number | null
-    away_win_count: number | null
-    away_lose_count: number | null
-    away_first_goal_count: number | null
-    away_win_behind_count: number | null
-    away_lose_behind_count: number | null
-    away_win_behind_1vs0_count: number | null
-    away_lose_behind_0vs1_count: number | null
-    away_win_behind_2vs0_count: number | null
-    away_lose_behind_0vs2_count: number | null
-    away_win_behind_other_count: number | null
-    away_lose_behind_other_count: number | null
   }
 
   export type Surface_overviewMinAggregateOutputType = {
@@ -35230,14 +35465,14 @@ export namespace Prisma {
     country: string | null
     league: string | null
     game_year: string | null
-    game_month: number | null
+    game_month: string | null
     team: string | null
-    games: number | null
-    rank: number | null
-    win: number | null
-    lose: number | null
-    draw: number | null
-    winning_points: number | null
+    games: string | null
+    rank: string | null
+    win: string | null
+    lose: string | null
+    draw: string | null
+    winning_points: string | null
     home_1st_half_score: string | null
     home_2nd_half_score: string | null
     home_sum_score: string | null
@@ -35250,45 +35485,45 @@ export namespace Prisma {
     away_1st_half_score_ratio: string | null
     away_2nd_half_score_ratio: string | null
     away_clean_sheet: string | null
-    fail_to_score_game_count: number | null
+    fail_to_score_game_count: string | null
     consecutive_win_disp: string | null
     consecutive_lose_disp: string | null
-    unbeaten_streak_count: number | null
+    unbeaten_streak_count: string | null
     unbeaten_streak_disp: string | null
-    consecutive_score_count: number | null
+    consecutive_score_count: string | null
     consecutive_score_count_disp: string | null
-    first_week_game_win_count: number | null
-    first_week_game_lost_count: number | null
+    first_week_game_win_count: string | null
+    first_week_game_lost_count: string | null
     first_week_game_win_disp: string | null
-    mid_week_game_win_count: number | null
-    mid_week_game_lost_count: number | null
+    mid_week_game_win_count: string | null
+    mid_week_game_lost_count: string | null
     mid_week_game_win_disp: string | null
-    last_week_game_win_count: number | null
-    last_week_game_lost_count: number | null
+    last_week_game_win_count: string | null
+    last_week_game_lost_count: string | null
     last_week_game_win_disp: string | null
-    home_win_count: number | null
-    home_lose_count: number | null
-    home_first_goal_count: number | null
-    home_win_behind_count: number | null
-    home_lose_behind_count: number | null
-    home_win_behind_0vs1_count: number | null
-    home_lose_behind_1vs0_count: number | null
-    home_win_behind_0vs2_count: number | null
-    home_lose_behind_2vs0_count: number | null
-    home_win_behind_other_count: number | null
-    home_lose_behind_other_count: number | null
+    home_win_count: string | null
+    home_lose_count: string | null
+    home_first_goal_count: string | null
+    home_win_behind_count: string | null
+    home_lose_behind_count: string | null
+    home_win_behind_0vs1_count: string | null
+    home_lose_behind_1vs0_count: string | null
+    home_win_behind_0vs2_count: string | null
+    home_lose_behind_2vs0_count: string | null
+    home_win_behind_other_count: string | null
+    home_lose_behind_other_count: string | null
     home_adversity_disp: string | null
-    away_win_count: number | null
-    away_lose_count: number | null
-    away_first_goal_count: number | null
-    away_win_behind_count: number | null
-    away_lose_behind_count: number | null
-    away_win_behind_1vs0_count: number | null
-    away_lose_behind_0vs1_count: number | null
-    away_win_behind_2vs0_count: number | null
-    away_lose_behind_0vs2_count: number | null
-    away_win_behind_other_count: number | null
-    away_lose_behind_other_count: number | null
+    away_win_count: string | null
+    away_lose_count: string | null
+    away_first_goal_count: string | null
+    away_win_behind_count: string | null
+    away_lose_behind_count: string | null
+    away_win_behind_1vs0_count: string | null
+    away_lose_behind_0vs1_count: string | null
+    away_win_behind_2vs0_count: string | null
+    away_lose_behind_0vs2_count: string | null
+    away_win_behind_other_count: string | null
+    away_lose_behind_other_count: string | null
     away_adversity_disp: string | null
     promote_disp: string | null
     descend_disp: string | null
@@ -35307,14 +35542,14 @@ export namespace Prisma {
     country: string | null
     league: string | null
     game_year: string | null
-    game_month: number | null
+    game_month: string | null
     team: string | null
-    games: number | null
-    rank: number | null
-    win: number | null
-    lose: number | null
-    draw: number | null
-    winning_points: number | null
+    games: string | null
+    rank: string | null
+    win: string | null
+    lose: string | null
+    draw: string | null
+    winning_points: string | null
     home_1st_half_score: string | null
     home_2nd_half_score: string | null
     home_sum_score: string | null
@@ -35327,45 +35562,45 @@ export namespace Prisma {
     away_1st_half_score_ratio: string | null
     away_2nd_half_score_ratio: string | null
     away_clean_sheet: string | null
-    fail_to_score_game_count: number | null
+    fail_to_score_game_count: string | null
     consecutive_win_disp: string | null
     consecutive_lose_disp: string | null
-    unbeaten_streak_count: number | null
+    unbeaten_streak_count: string | null
     unbeaten_streak_disp: string | null
-    consecutive_score_count: number | null
+    consecutive_score_count: string | null
     consecutive_score_count_disp: string | null
-    first_week_game_win_count: number | null
-    first_week_game_lost_count: number | null
+    first_week_game_win_count: string | null
+    first_week_game_lost_count: string | null
     first_week_game_win_disp: string | null
-    mid_week_game_win_count: number | null
-    mid_week_game_lost_count: number | null
+    mid_week_game_win_count: string | null
+    mid_week_game_lost_count: string | null
     mid_week_game_win_disp: string | null
-    last_week_game_win_count: number | null
-    last_week_game_lost_count: number | null
+    last_week_game_win_count: string | null
+    last_week_game_lost_count: string | null
     last_week_game_win_disp: string | null
-    home_win_count: number | null
-    home_lose_count: number | null
-    home_first_goal_count: number | null
-    home_win_behind_count: number | null
-    home_lose_behind_count: number | null
-    home_win_behind_0vs1_count: number | null
-    home_lose_behind_1vs0_count: number | null
-    home_win_behind_0vs2_count: number | null
-    home_lose_behind_2vs0_count: number | null
-    home_win_behind_other_count: number | null
-    home_lose_behind_other_count: number | null
+    home_win_count: string | null
+    home_lose_count: string | null
+    home_first_goal_count: string | null
+    home_win_behind_count: string | null
+    home_lose_behind_count: string | null
+    home_win_behind_0vs1_count: string | null
+    home_lose_behind_1vs0_count: string | null
+    home_win_behind_0vs2_count: string | null
+    home_lose_behind_2vs0_count: string | null
+    home_win_behind_other_count: string | null
+    home_lose_behind_other_count: string | null
     home_adversity_disp: string | null
-    away_win_count: number | null
-    away_lose_count: number | null
-    away_first_goal_count: number | null
-    away_win_behind_count: number | null
-    away_lose_behind_count: number | null
-    away_win_behind_1vs0_count: number | null
-    away_lose_behind_0vs1_count: number | null
-    away_win_behind_2vs0_count: number | null
-    away_lose_behind_0vs2_count: number | null
-    away_win_behind_other_count: number | null
-    away_lose_behind_other_count: number | null
+    away_win_count: string | null
+    away_lose_count: string | null
+    away_first_goal_count: string | null
+    away_win_behind_count: string | null
+    away_lose_behind_count: string | null
+    away_win_behind_1vs0_count: string | null
+    away_lose_behind_0vs1_count: string | null
+    away_win_behind_2vs0_count: string | null
+    away_lose_behind_0vs2_count: string | null
+    away_win_behind_other_count: string | null
+    away_lose_behind_other_count: string | null
     away_adversity_disp: string | null
     promote_disp: string | null
     descend_disp: string | null
@@ -35460,86 +35695,10 @@ export namespace Prisma {
 
   export type Surface_overviewAvgAggregateInputType = {
     id?: true
-    game_month?: true
-    games?: true
-    rank?: true
-    win?: true
-    lose?: true
-    draw?: true
-    winning_points?: true
-    fail_to_score_game_count?: true
-    unbeaten_streak_count?: true
-    consecutive_score_count?: true
-    first_week_game_win_count?: true
-    first_week_game_lost_count?: true
-    mid_week_game_win_count?: true
-    mid_week_game_lost_count?: true
-    last_week_game_win_count?: true
-    last_week_game_lost_count?: true
-    home_win_count?: true
-    home_lose_count?: true
-    home_first_goal_count?: true
-    home_win_behind_count?: true
-    home_lose_behind_count?: true
-    home_win_behind_0vs1_count?: true
-    home_lose_behind_1vs0_count?: true
-    home_win_behind_0vs2_count?: true
-    home_lose_behind_2vs0_count?: true
-    home_win_behind_other_count?: true
-    home_lose_behind_other_count?: true
-    away_win_count?: true
-    away_lose_count?: true
-    away_first_goal_count?: true
-    away_win_behind_count?: true
-    away_lose_behind_count?: true
-    away_win_behind_1vs0_count?: true
-    away_lose_behind_0vs1_count?: true
-    away_win_behind_2vs0_count?: true
-    away_lose_behind_0vs2_count?: true
-    away_win_behind_other_count?: true
-    away_lose_behind_other_count?: true
   }
 
   export type Surface_overviewSumAggregateInputType = {
     id?: true
-    game_month?: true
-    games?: true
-    rank?: true
-    win?: true
-    lose?: true
-    draw?: true
-    winning_points?: true
-    fail_to_score_game_count?: true
-    unbeaten_streak_count?: true
-    consecutive_score_count?: true
-    first_week_game_win_count?: true
-    first_week_game_lost_count?: true
-    mid_week_game_win_count?: true
-    mid_week_game_lost_count?: true
-    last_week_game_win_count?: true
-    last_week_game_lost_count?: true
-    home_win_count?: true
-    home_lose_count?: true
-    home_first_goal_count?: true
-    home_win_behind_count?: true
-    home_lose_behind_count?: true
-    home_win_behind_0vs1_count?: true
-    home_lose_behind_1vs0_count?: true
-    home_win_behind_0vs2_count?: true
-    home_lose_behind_2vs0_count?: true
-    home_win_behind_other_count?: true
-    home_lose_behind_other_count?: true
-    away_win_count?: true
-    away_lose_count?: true
-    away_first_goal_count?: true
-    away_win_behind_count?: true
-    away_lose_behind_count?: true
-    away_win_behind_1vs0_count?: true
-    away_lose_behind_0vs1_count?: true
-    away_win_behind_2vs0_count?: true
-    away_lose_behind_0vs2_count?: true
-    away_win_behind_other_count?: true
-    away_lose_behind_other_count?: true
   }
 
   export type Surface_overviewMinAggregateInputType = {
@@ -35864,15 +36023,15 @@ export namespace Prisma {
     id: number
     country: string
     league: string
-    game_year: string
-    game_month: number
+    game_year: string | null
+    game_month: string | null
     team: string
-    games: number
-    rank: number | null
-    win: number
-    lose: number
-    draw: number
-    winning_points: number
+    games: string | null
+    rank: string | null
+    win: string | null
+    lose: string | null
+    draw: string | null
+    winning_points: string | null
     home_1st_half_score: string | null
     home_2nd_half_score: string | null
     home_sum_score: string | null
@@ -35885,45 +36044,45 @@ export namespace Prisma {
     away_1st_half_score_ratio: string | null
     away_2nd_half_score_ratio: string | null
     away_clean_sheet: string | null
-    fail_to_score_game_count: number
+    fail_to_score_game_count: string | null
     consecutive_win_disp: string | null
     consecutive_lose_disp: string | null
-    unbeaten_streak_count: number
+    unbeaten_streak_count: string | null
     unbeaten_streak_disp: string | null
-    consecutive_score_count: number
+    consecutive_score_count: string | null
     consecutive_score_count_disp: string | null
-    first_week_game_win_count: number
-    first_week_game_lost_count: number
+    first_week_game_win_count: string | null
+    first_week_game_lost_count: string | null
     first_week_game_win_disp: string | null
-    mid_week_game_win_count: number
-    mid_week_game_lost_count: number
+    mid_week_game_win_count: string | null
+    mid_week_game_lost_count: string | null
     mid_week_game_win_disp: string | null
-    last_week_game_win_count: number
-    last_week_game_lost_count: number
+    last_week_game_win_count: string | null
+    last_week_game_lost_count: string | null
     last_week_game_win_disp: string | null
-    home_win_count: number
-    home_lose_count: number
-    home_first_goal_count: number
-    home_win_behind_count: number
-    home_lose_behind_count: number
-    home_win_behind_0vs1_count: number
-    home_lose_behind_1vs0_count: number
-    home_win_behind_0vs2_count: number
-    home_lose_behind_2vs0_count: number
-    home_win_behind_other_count: number
-    home_lose_behind_other_count: number
+    home_win_count: string | null
+    home_lose_count: string | null
+    home_first_goal_count: string | null
+    home_win_behind_count: string | null
+    home_lose_behind_count: string | null
+    home_win_behind_0vs1_count: string | null
+    home_lose_behind_1vs0_count: string | null
+    home_win_behind_0vs2_count: string | null
+    home_lose_behind_2vs0_count: string | null
+    home_win_behind_other_count: string | null
+    home_lose_behind_other_count: string | null
     home_adversity_disp: string | null
-    away_win_count: number
-    away_lose_count: number
-    away_first_goal_count: number
-    away_win_behind_count: number
-    away_lose_behind_count: number
-    away_win_behind_1vs0_count: number
-    away_lose_behind_0vs1_count: number
-    away_win_behind_2vs0_count: number
-    away_lose_behind_0vs2_count: number
-    away_win_behind_other_count: number
-    away_lose_behind_other_count: number
+    away_win_count: string | null
+    away_lose_count: string | null
+    away_first_goal_count: string | null
+    away_win_behind_count: string | null
+    away_lose_behind_count: string | null
+    away_win_behind_1vs0_count: string | null
+    away_lose_behind_0vs1_count: string | null
+    away_win_behind_2vs0_count: string | null
+    away_lose_behind_0vs2_count: string | null
+    away_win_behind_other_count: string | null
+    away_lose_behind_other_count: string | null
     away_adversity_disp: string | null
     promote_disp: string | null
     descend_disp: string | null
@@ -36273,15 +36432,15 @@ export namespace Prisma {
       id: number
       country: string
       league: string
-      game_year: string
-      game_month: number
+      game_year: string | null
+      game_month: string | null
       team: string
-      games: number
-      rank: number | null
-      win: number
-      lose: number
-      draw: number
-      winning_points: number
+      games: string | null
+      rank: string | null
+      win: string | null
+      lose: string | null
+      draw: string | null
+      winning_points: string | null
       home_1st_half_score: string | null
       home_2nd_half_score: string | null
       home_sum_score: string | null
@@ -36294,45 +36453,45 @@ export namespace Prisma {
       away_1st_half_score_ratio: string | null
       away_2nd_half_score_ratio: string | null
       away_clean_sheet: string | null
-      fail_to_score_game_count: number
+      fail_to_score_game_count: string | null
       consecutive_win_disp: string | null
       consecutive_lose_disp: string | null
-      unbeaten_streak_count: number
+      unbeaten_streak_count: string | null
       unbeaten_streak_disp: string | null
-      consecutive_score_count: number
+      consecutive_score_count: string | null
       consecutive_score_count_disp: string | null
-      first_week_game_win_count: number
-      first_week_game_lost_count: number
+      first_week_game_win_count: string | null
+      first_week_game_lost_count: string | null
       first_week_game_win_disp: string | null
-      mid_week_game_win_count: number
-      mid_week_game_lost_count: number
+      mid_week_game_win_count: string | null
+      mid_week_game_lost_count: string | null
       mid_week_game_win_disp: string | null
-      last_week_game_win_count: number
-      last_week_game_lost_count: number
+      last_week_game_win_count: string | null
+      last_week_game_lost_count: string | null
       last_week_game_win_disp: string | null
-      home_win_count: number
-      home_lose_count: number
-      home_first_goal_count: number
-      home_win_behind_count: number
-      home_lose_behind_count: number
-      home_win_behind_0vs1_count: number
-      home_lose_behind_1vs0_count: number
-      home_win_behind_0vs2_count: number
-      home_lose_behind_2vs0_count: number
-      home_win_behind_other_count: number
-      home_lose_behind_other_count: number
+      home_win_count: string | null
+      home_lose_count: string | null
+      home_first_goal_count: string | null
+      home_win_behind_count: string | null
+      home_lose_behind_count: string | null
+      home_win_behind_0vs1_count: string | null
+      home_lose_behind_1vs0_count: string | null
+      home_win_behind_0vs2_count: string | null
+      home_lose_behind_2vs0_count: string | null
+      home_win_behind_other_count: string | null
+      home_lose_behind_other_count: string | null
       home_adversity_disp: string | null
-      away_win_count: number
-      away_lose_count: number
-      away_first_goal_count: number
-      away_win_behind_count: number
-      away_lose_behind_count: number
-      away_win_behind_1vs0_count: number
-      away_lose_behind_0vs1_count: number
-      away_win_behind_2vs0_count: number
-      away_lose_behind_0vs2_count: number
-      away_win_behind_other_count: number
-      away_lose_behind_other_count: number
+      away_win_count: string | null
+      away_lose_count: string | null
+      away_first_goal_count: string | null
+      away_win_behind_count: string | null
+      away_lose_behind_count: string | null
+      away_win_behind_1vs0_count: string | null
+      away_lose_behind_0vs1_count: string | null
+      away_win_behind_2vs0_count: string | null
+      away_lose_behind_0vs2_count: string | null
+      away_win_behind_other_count: string | null
+      away_lose_behind_other_count: string | null
       away_adversity_disp: string | null
       promote_disp: string | null
       descend_disp: string | null
@@ -36771,14 +36930,14 @@ export namespace Prisma {
     readonly country: FieldRef<"surface_overview", 'String'>
     readonly league: FieldRef<"surface_overview", 'String'>
     readonly game_year: FieldRef<"surface_overview", 'String'>
-    readonly game_month: FieldRef<"surface_overview", 'Int'>
+    readonly game_month: FieldRef<"surface_overview", 'String'>
     readonly team: FieldRef<"surface_overview", 'String'>
-    readonly games: FieldRef<"surface_overview", 'Int'>
-    readonly rank: FieldRef<"surface_overview", 'Int'>
-    readonly win: FieldRef<"surface_overview", 'Int'>
-    readonly lose: FieldRef<"surface_overview", 'Int'>
-    readonly draw: FieldRef<"surface_overview", 'Int'>
-    readonly winning_points: FieldRef<"surface_overview", 'Int'>
+    readonly games: FieldRef<"surface_overview", 'String'>
+    readonly rank: FieldRef<"surface_overview", 'String'>
+    readonly win: FieldRef<"surface_overview", 'String'>
+    readonly lose: FieldRef<"surface_overview", 'String'>
+    readonly draw: FieldRef<"surface_overview", 'String'>
+    readonly winning_points: FieldRef<"surface_overview", 'String'>
     readonly home_1st_half_score: FieldRef<"surface_overview", 'String'>
     readonly home_2nd_half_score: FieldRef<"surface_overview", 'String'>
     readonly home_sum_score: FieldRef<"surface_overview", 'String'>
@@ -36791,45 +36950,45 @@ export namespace Prisma {
     readonly away_1st_half_score_ratio: FieldRef<"surface_overview", 'String'>
     readonly away_2nd_half_score_ratio: FieldRef<"surface_overview", 'String'>
     readonly away_clean_sheet: FieldRef<"surface_overview", 'String'>
-    readonly fail_to_score_game_count: FieldRef<"surface_overview", 'Int'>
+    readonly fail_to_score_game_count: FieldRef<"surface_overview", 'String'>
     readonly consecutive_win_disp: FieldRef<"surface_overview", 'String'>
     readonly consecutive_lose_disp: FieldRef<"surface_overview", 'String'>
-    readonly unbeaten_streak_count: FieldRef<"surface_overview", 'Int'>
+    readonly unbeaten_streak_count: FieldRef<"surface_overview", 'String'>
     readonly unbeaten_streak_disp: FieldRef<"surface_overview", 'String'>
-    readonly consecutive_score_count: FieldRef<"surface_overview", 'Int'>
+    readonly consecutive_score_count: FieldRef<"surface_overview", 'String'>
     readonly consecutive_score_count_disp: FieldRef<"surface_overview", 'String'>
-    readonly first_week_game_win_count: FieldRef<"surface_overview", 'Int'>
-    readonly first_week_game_lost_count: FieldRef<"surface_overview", 'Int'>
+    readonly first_week_game_win_count: FieldRef<"surface_overview", 'String'>
+    readonly first_week_game_lost_count: FieldRef<"surface_overview", 'String'>
     readonly first_week_game_win_disp: FieldRef<"surface_overview", 'String'>
-    readonly mid_week_game_win_count: FieldRef<"surface_overview", 'Int'>
-    readonly mid_week_game_lost_count: FieldRef<"surface_overview", 'Int'>
+    readonly mid_week_game_win_count: FieldRef<"surface_overview", 'String'>
+    readonly mid_week_game_lost_count: FieldRef<"surface_overview", 'String'>
     readonly mid_week_game_win_disp: FieldRef<"surface_overview", 'String'>
-    readonly last_week_game_win_count: FieldRef<"surface_overview", 'Int'>
-    readonly last_week_game_lost_count: FieldRef<"surface_overview", 'Int'>
+    readonly last_week_game_win_count: FieldRef<"surface_overview", 'String'>
+    readonly last_week_game_lost_count: FieldRef<"surface_overview", 'String'>
     readonly last_week_game_win_disp: FieldRef<"surface_overview", 'String'>
-    readonly home_win_count: FieldRef<"surface_overview", 'Int'>
-    readonly home_lose_count: FieldRef<"surface_overview", 'Int'>
-    readonly home_first_goal_count: FieldRef<"surface_overview", 'Int'>
-    readonly home_win_behind_count: FieldRef<"surface_overview", 'Int'>
-    readonly home_lose_behind_count: FieldRef<"surface_overview", 'Int'>
-    readonly home_win_behind_0vs1_count: FieldRef<"surface_overview", 'Int'>
-    readonly home_lose_behind_1vs0_count: FieldRef<"surface_overview", 'Int'>
-    readonly home_win_behind_0vs2_count: FieldRef<"surface_overview", 'Int'>
-    readonly home_lose_behind_2vs0_count: FieldRef<"surface_overview", 'Int'>
-    readonly home_win_behind_other_count: FieldRef<"surface_overview", 'Int'>
-    readonly home_lose_behind_other_count: FieldRef<"surface_overview", 'Int'>
+    readonly home_win_count: FieldRef<"surface_overview", 'String'>
+    readonly home_lose_count: FieldRef<"surface_overview", 'String'>
+    readonly home_first_goal_count: FieldRef<"surface_overview", 'String'>
+    readonly home_win_behind_count: FieldRef<"surface_overview", 'String'>
+    readonly home_lose_behind_count: FieldRef<"surface_overview", 'String'>
+    readonly home_win_behind_0vs1_count: FieldRef<"surface_overview", 'String'>
+    readonly home_lose_behind_1vs0_count: FieldRef<"surface_overview", 'String'>
+    readonly home_win_behind_0vs2_count: FieldRef<"surface_overview", 'String'>
+    readonly home_lose_behind_2vs0_count: FieldRef<"surface_overview", 'String'>
+    readonly home_win_behind_other_count: FieldRef<"surface_overview", 'String'>
+    readonly home_lose_behind_other_count: FieldRef<"surface_overview", 'String'>
     readonly home_adversity_disp: FieldRef<"surface_overview", 'String'>
-    readonly away_win_count: FieldRef<"surface_overview", 'Int'>
-    readonly away_lose_count: FieldRef<"surface_overview", 'Int'>
-    readonly away_first_goal_count: FieldRef<"surface_overview", 'Int'>
-    readonly away_win_behind_count: FieldRef<"surface_overview", 'Int'>
-    readonly away_lose_behind_count: FieldRef<"surface_overview", 'Int'>
-    readonly away_win_behind_1vs0_count: FieldRef<"surface_overview", 'Int'>
-    readonly away_lose_behind_0vs1_count: FieldRef<"surface_overview", 'Int'>
-    readonly away_win_behind_2vs0_count: FieldRef<"surface_overview", 'Int'>
-    readonly away_lose_behind_0vs2_count: FieldRef<"surface_overview", 'Int'>
-    readonly away_win_behind_other_count: FieldRef<"surface_overview", 'Int'>
-    readonly away_lose_behind_other_count: FieldRef<"surface_overview", 'Int'>
+    readonly away_win_count: FieldRef<"surface_overview", 'String'>
+    readonly away_lose_count: FieldRef<"surface_overview", 'String'>
+    readonly away_first_goal_count: FieldRef<"surface_overview", 'String'>
+    readonly away_win_behind_count: FieldRef<"surface_overview", 'String'>
+    readonly away_lose_behind_count: FieldRef<"surface_overview", 'String'>
+    readonly away_win_behind_1vs0_count: FieldRef<"surface_overview", 'String'>
+    readonly away_lose_behind_0vs1_count: FieldRef<"surface_overview", 'String'>
+    readonly away_win_behind_2vs0_count: FieldRef<"surface_overview", 'String'>
+    readonly away_lose_behind_0vs2_count: FieldRef<"surface_overview", 'String'>
+    readonly away_win_behind_other_count: FieldRef<"surface_overview", 'String'>
+    readonly away_lose_behind_other_count: FieldRef<"surface_overview", 'String'>
     readonly away_adversity_disp: FieldRef<"surface_overview", 'String'>
     readonly promote_disp: FieldRef<"surface_overview", 'String'>
     readonly descend_disp: FieldRef<"surface_overview", 'String'>
@@ -40720,7 +40879,7 @@ export namespace Prisma {
     country: string | null
     league: string | null
     team_name: string | null
-    HA: string | null
+    ha: string | null
     year: string | null
     jar_sum_score: string | null
     feb_sum_score: string | null
@@ -40746,7 +40905,7 @@ export namespace Prisma {
     country: string | null
     league: string | null
     team_name: string | null
-    HA: string | null
+    ha: string | null
     year: string | null
     jar_sum_score: string | null
     feb_sum_score: string | null
@@ -40772,7 +40931,7 @@ export namespace Prisma {
     country: number
     league: number
     team_name: number
-    HA: number
+    ha: number
     year: number
     jar_sum_score: number
     feb_sum_score: number
@@ -40808,7 +40967,7 @@ export namespace Prisma {
     country?: true
     league?: true
     team_name?: true
-    HA?: true
+    ha?: true
     year?: true
     jar_sum_score?: true
     feb_sum_score?: true
@@ -40834,7 +40993,7 @@ export namespace Prisma {
     country?: true
     league?: true
     team_name?: true
-    HA?: true
+    ha?: true
     year?: true
     jar_sum_score?: true
     feb_sum_score?: true
@@ -40860,7 +41019,7 @@ export namespace Prisma {
     country?: true
     league?: true
     team_name?: true
-    HA?: true
+    ha?: true
     year?: true
     jar_sum_score?: true
     feb_sum_score?: true
@@ -40973,7 +41132,7 @@ export namespace Prisma {
     country: string | null
     league: string | null
     team_name: string | null
-    HA: string | null
+    ha: string | null
     year: string | null
     jar_sum_score: string | null
     feb_sum_score: string | null
@@ -41018,7 +41177,7 @@ export namespace Prisma {
     country?: boolean
     league?: boolean
     team_name?: boolean
-    HA?: boolean
+    ha?: boolean
     year?: boolean
     jar_sum_score?: boolean
     feb_sum_score?: boolean
@@ -41044,7 +41203,7 @@ export namespace Prisma {
     country?: boolean
     league?: boolean
     team_name?: boolean
-    HA?: boolean
+    ha?: boolean
     year?: boolean
     jar_sum_score?: boolean
     feb_sum_score?: boolean
@@ -41070,7 +41229,7 @@ export namespace Prisma {
     country?: boolean
     league?: boolean
     team_name?: boolean
-    HA?: boolean
+    ha?: boolean
     year?: boolean
     jar_sum_score?: boolean
     feb_sum_score?: boolean
@@ -41096,7 +41255,7 @@ export namespace Prisma {
     country?: boolean
     league?: boolean
     team_name?: boolean
-    HA?: boolean
+    ha?: boolean
     year?: boolean
     jar_sum_score?: boolean
     feb_sum_score?: boolean
@@ -41117,7 +41276,7 @@ export namespace Prisma {
     update_time?: boolean
   }
 
-  export type team_monthly_score_summaryOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"seq" | "country" | "league" | "team_name" | "HA" | "year" | "jar_sum_score" | "feb_sum_score" | "mar_sum_score" | "apr_sum_score" | "may_sum_score" | "jun_sum_score" | "jul_sum_score" | "aug_sum_score" | "sep_sum_score" | "oct_sum_score" | "nov_sum_score" | "dec_sum_score" | "logic_flg" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["team_monthly_score_summary"]>
+  export type team_monthly_score_summaryOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"seq" | "country" | "league" | "team_name" | "ha" | "year" | "jar_sum_score" | "feb_sum_score" | "mar_sum_score" | "apr_sum_score" | "may_sum_score" | "jun_sum_score" | "jul_sum_score" | "aug_sum_score" | "sep_sum_score" | "oct_sum_score" | "nov_sum_score" | "dec_sum_score" | "logic_flg" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["team_monthly_score_summary"]>
 
   export type $team_monthly_score_summaryPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "team_monthly_score_summary"
@@ -41127,7 +41286,7 @@ export namespace Prisma {
       country: string | null
       league: string | null
       team_name: string | null
-      HA: string | null
+      ha: string | null
       year: string | null
       jar_sum_score: string | null
       feb_sum_score: string | null
@@ -41573,7 +41732,7 @@ export namespace Prisma {
     readonly country: FieldRef<"team_monthly_score_summary", 'String'>
     readonly league: FieldRef<"team_monthly_score_summary", 'String'>
     readonly team_name: FieldRef<"team_monthly_score_summary", 'String'>
-    readonly HA: FieldRef<"team_monthly_score_summary", 'String'>
+    readonly ha: FieldRef<"team_monthly_score_summary", 'String'>
     readonly year: FieldRef<"team_monthly_score_summary", 'String'>
     readonly jar_sum_score: FieldRef<"team_monthly_score_summary", 'String'>
     readonly feb_sum_score: FieldRef<"team_monthly_score_summary", 'String'>
@@ -56580,6 +56739,2312 @@ export namespace Prisma {
 
 
   /**
+   * Model country_league_visibility
+   */
+
+  export type AggregateCountry_league_visibility = {
+    _count: Country_league_visibilityCountAggregateOutputType | null
+    _avg: Country_league_visibilityAvgAggregateOutputType | null
+    _sum: Country_league_visibilitySumAggregateOutputType | null
+    _min: Country_league_visibilityMinAggregateOutputType | null
+    _max: Country_league_visibilityMaxAggregateOutputType | null
+  }
+
+  export type Country_league_visibilityAvgAggregateOutputType = {
+    id: number | null
+    priority: number | null
+    optionId: number | null
+  }
+
+  export type Country_league_visibilitySumAggregateOutputType = {
+    id: number | null
+    priority: number | null
+    optionId: number | null
+  }
+
+  export type Country_league_visibilityMinAggregateOutputType = {
+    id: number | null
+    country: string | null
+    league: string | null
+    visible: boolean | null
+    priority: number | null
+    reason: string | null
+    effectiveFrom: Date | null
+    effectiveTo: Date | null
+    optionId: number | null
+    register_id: string | null
+    register_time: Date | null
+    update_id: string | null
+    update_time: Date | null
+  }
+
+  export type Country_league_visibilityMaxAggregateOutputType = {
+    id: number | null
+    country: string | null
+    league: string | null
+    visible: boolean | null
+    priority: number | null
+    reason: string | null
+    effectiveFrom: Date | null
+    effectiveTo: Date | null
+    optionId: number | null
+    register_id: string | null
+    register_time: Date | null
+    update_id: string | null
+    update_time: Date | null
+  }
+
+  export type Country_league_visibilityCountAggregateOutputType = {
+    id: number
+    country: number
+    league: number
+    visible: number
+    priority: number
+    reason: number
+    effectiveFrom: number
+    effectiveTo: number
+    optionId: number
+    register_id: number
+    register_time: number
+    update_id: number
+    update_time: number
+    _all: number
+  }
+
+
+  export type Country_league_visibilityAvgAggregateInputType = {
+    id?: true
+    priority?: true
+    optionId?: true
+  }
+
+  export type Country_league_visibilitySumAggregateInputType = {
+    id?: true
+    priority?: true
+    optionId?: true
+  }
+
+  export type Country_league_visibilityMinAggregateInputType = {
+    id?: true
+    country?: true
+    league?: true
+    visible?: true
+    priority?: true
+    reason?: true
+    effectiveFrom?: true
+    effectiveTo?: true
+    optionId?: true
+    register_id?: true
+    register_time?: true
+    update_id?: true
+    update_time?: true
+  }
+
+  export type Country_league_visibilityMaxAggregateInputType = {
+    id?: true
+    country?: true
+    league?: true
+    visible?: true
+    priority?: true
+    reason?: true
+    effectiveFrom?: true
+    effectiveTo?: true
+    optionId?: true
+    register_id?: true
+    register_time?: true
+    update_id?: true
+    update_time?: true
+  }
+
+  export type Country_league_visibilityCountAggregateInputType = {
+    id?: true
+    country?: true
+    league?: true
+    visible?: true
+    priority?: true
+    reason?: true
+    effectiveFrom?: true
+    effectiveTo?: true
+    optionId?: true
+    register_id?: true
+    register_time?: true
+    update_id?: true
+    update_time?: true
+    _all?: true
+  }
+
+  export type Country_league_visibilityAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which country_league_visibility to aggregate.
+     */
+    where?: country_league_visibilityWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of country_league_visibilities to fetch.
+     */
+    orderBy?: country_league_visibilityOrderByWithRelationInput | country_league_visibilityOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: country_league_visibilityWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` country_league_visibilities from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` country_league_visibilities.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned country_league_visibilities
+    **/
+    _count?: true | Country_league_visibilityCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: Country_league_visibilityAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: Country_league_visibilitySumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: Country_league_visibilityMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: Country_league_visibilityMaxAggregateInputType
+  }
+
+  export type GetCountry_league_visibilityAggregateType<T extends Country_league_visibilityAggregateArgs> = {
+        [P in keyof T & keyof AggregateCountry_league_visibility]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateCountry_league_visibility[P]>
+      : GetScalarType<T[P], AggregateCountry_league_visibility[P]>
+  }
+
+
+
+
+  export type country_league_visibilityGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: country_league_visibilityWhereInput
+    orderBy?: country_league_visibilityOrderByWithAggregationInput | country_league_visibilityOrderByWithAggregationInput[]
+    by: Country_league_visibilityScalarFieldEnum[] | Country_league_visibilityScalarFieldEnum
+    having?: country_league_visibilityScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: Country_league_visibilityCountAggregateInputType | true
+    _avg?: Country_league_visibilityAvgAggregateInputType
+    _sum?: Country_league_visibilitySumAggregateInputType
+    _min?: Country_league_visibilityMinAggregateInputType
+    _max?: Country_league_visibilityMaxAggregateInputType
+  }
+
+  export type Country_league_visibilityGroupByOutputType = {
+    id: number
+    country: string
+    league: string | null
+    visible: boolean
+    priority: number
+    reason: string | null
+    effectiveFrom: Date | null
+    effectiveTo: Date | null
+    optionId: number | null
+    register_id: string | null
+    register_time: Date | null
+    update_id: string | null
+    update_time: Date | null
+    _count: Country_league_visibilityCountAggregateOutputType | null
+    _avg: Country_league_visibilityAvgAggregateOutputType | null
+    _sum: Country_league_visibilitySumAggregateOutputType | null
+    _min: Country_league_visibilityMinAggregateOutputType | null
+    _max: Country_league_visibilityMaxAggregateOutputType | null
+  }
+
+  type GetCountry_league_visibilityGroupByPayload<T extends country_league_visibilityGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<Country_league_visibilityGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof Country_league_visibilityGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], Country_league_visibilityGroupByOutputType[P]>
+            : GetScalarType<T[P], Country_league_visibilityGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type country_league_visibilitySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    country?: boolean
+    league?: boolean
+    visible?: boolean
+    priority?: boolean
+    reason?: boolean
+    effectiveFrom?: boolean
+    effectiveTo?: boolean
+    optionId?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
+    option?: boolean | country_league_visibility$optionArgs<ExtArgs>
+  }, ExtArgs["result"]["country_league_visibility"]>
+
+  export type country_league_visibilitySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    country?: boolean
+    league?: boolean
+    visible?: boolean
+    priority?: boolean
+    reason?: boolean
+    effectiveFrom?: boolean
+    effectiveTo?: boolean
+    optionId?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
+    option?: boolean | country_league_visibility$optionArgs<ExtArgs>
+  }, ExtArgs["result"]["country_league_visibility"]>
+
+  export type country_league_visibilitySelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    country?: boolean
+    league?: boolean
+    visible?: boolean
+    priority?: boolean
+    reason?: boolean
+    effectiveFrom?: boolean
+    effectiveTo?: boolean
+    optionId?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
+    option?: boolean | country_league_visibility$optionArgs<ExtArgs>
+  }, ExtArgs["result"]["country_league_visibility"]>
+
+  export type country_league_visibilitySelectScalar = {
+    id?: boolean
+    country?: boolean
+    league?: boolean
+    visible?: boolean
+    priority?: boolean
+    reason?: boolean
+    effectiveFrom?: boolean
+    effectiveTo?: boolean
+    optionId?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
+  }
+
+  export type country_league_visibilityOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "country" | "league" | "visible" | "priority" | "reason" | "effectiveFrom" | "effectiveTo" | "optionId" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["country_league_visibility"]>
+  export type country_league_visibilityInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    option?: boolean | country_league_visibility$optionArgs<ExtArgs>
+  }
+  export type country_league_visibilityIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    option?: boolean | country_league_visibility$optionArgs<ExtArgs>
+  }
+  export type country_league_visibilityIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    option?: boolean | country_league_visibility$optionArgs<ExtArgs>
+  }
+
+  export type $country_league_visibilityPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "country_league_visibility"
+    objects: {
+      option: Prisma.$stat_size_finalize_masterPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      country: string
+      league: string | null
+      visible: boolean
+      priority: number
+      reason: string | null
+      effectiveFrom: Date | null
+      effectiveTo: Date | null
+      optionId: number | null
+      register_id: string | null
+      register_time: Date | null
+      update_id: string | null
+      update_time: Date | null
+    }, ExtArgs["result"]["country_league_visibility"]>
+    composites: {}
+  }
+
+  type country_league_visibilityGetPayload<S extends boolean | null | undefined | country_league_visibilityDefaultArgs> = $Result.GetResult<Prisma.$country_league_visibilityPayload, S>
+
+  type country_league_visibilityCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<country_league_visibilityFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: Country_league_visibilityCountAggregateInputType | true
+    }
+
+  export interface country_league_visibilityDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['country_league_visibility'], meta: { name: 'country_league_visibility' } }
+    /**
+     * Find zero or one Country_league_visibility that matches the filter.
+     * @param {country_league_visibilityFindUniqueArgs} args - Arguments to find a Country_league_visibility
+     * @example
+     * // Get one Country_league_visibility
+     * const country_league_visibility = await prisma.country_league_visibility.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends country_league_visibilityFindUniqueArgs>(args: SelectSubset<T, country_league_visibilityFindUniqueArgs<ExtArgs>>): Prisma__country_league_visibilityClient<$Result.GetResult<Prisma.$country_league_visibilityPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Country_league_visibility that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {country_league_visibilityFindUniqueOrThrowArgs} args - Arguments to find a Country_league_visibility
+     * @example
+     * // Get one Country_league_visibility
+     * const country_league_visibility = await prisma.country_league_visibility.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends country_league_visibilityFindUniqueOrThrowArgs>(args: SelectSubset<T, country_league_visibilityFindUniqueOrThrowArgs<ExtArgs>>): Prisma__country_league_visibilityClient<$Result.GetResult<Prisma.$country_league_visibilityPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Country_league_visibility that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {country_league_visibilityFindFirstArgs} args - Arguments to find a Country_league_visibility
+     * @example
+     * // Get one Country_league_visibility
+     * const country_league_visibility = await prisma.country_league_visibility.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends country_league_visibilityFindFirstArgs>(args?: SelectSubset<T, country_league_visibilityFindFirstArgs<ExtArgs>>): Prisma__country_league_visibilityClient<$Result.GetResult<Prisma.$country_league_visibilityPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Country_league_visibility that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {country_league_visibilityFindFirstOrThrowArgs} args - Arguments to find a Country_league_visibility
+     * @example
+     * // Get one Country_league_visibility
+     * const country_league_visibility = await prisma.country_league_visibility.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends country_league_visibilityFindFirstOrThrowArgs>(args?: SelectSubset<T, country_league_visibilityFindFirstOrThrowArgs<ExtArgs>>): Prisma__country_league_visibilityClient<$Result.GetResult<Prisma.$country_league_visibilityPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Country_league_visibilities that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {country_league_visibilityFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Country_league_visibilities
+     * const country_league_visibilities = await prisma.country_league_visibility.findMany()
+     * 
+     * // Get first 10 Country_league_visibilities
+     * const country_league_visibilities = await prisma.country_league_visibility.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const country_league_visibilityWithIdOnly = await prisma.country_league_visibility.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends country_league_visibilityFindManyArgs>(args?: SelectSubset<T, country_league_visibilityFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$country_league_visibilityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Country_league_visibility.
+     * @param {country_league_visibilityCreateArgs} args - Arguments to create a Country_league_visibility.
+     * @example
+     * // Create one Country_league_visibility
+     * const Country_league_visibility = await prisma.country_league_visibility.create({
+     *   data: {
+     *     // ... data to create a Country_league_visibility
+     *   }
+     * })
+     * 
+     */
+    create<T extends country_league_visibilityCreateArgs>(args: SelectSubset<T, country_league_visibilityCreateArgs<ExtArgs>>): Prisma__country_league_visibilityClient<$Result.GetResult<Prisma.$country_league_visibilityPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Country_league_visibilities.
+     * @param {country_league_visibilityCreateManyArgs} args - Arguments to create many Country_league_visibilities.
+     * @example
+     * // Create many Country_league_visibilities
+     * const country_league_visibility = await prisma.country_league_visibility.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends country_league_visibilityCreateManyArgs>(args?: SelectSubset<T, country_league_visibilityCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Country_league_visibilities and returns the data saved in the database.
+     * @param {country_league_visibilityCreateManyAndReturnArgs} args - Arguments to create many Country_league_visibilities.
+     * @example
+     * // Create many Country_league_visibilities
+     * const country_league_visibility = await prisma.country_league_visibility.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Country_league_visibilities and only return the `id`
+     * const country_league_visibilityWithIdOnly = await prisma.country_league_visibility.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends country_league_visibilityCreateManyAndReturnArgs>(args?: SelectSubset<T, country_league_visibilityCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$country_league_visibilityPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Country_league_visibility.
+     * @param {country_league_visibilityDeleteArgs} args - Arguments to delete one Country_league_visibility.
+     * @example
+     * // Delete one Country_league_visibility
+     * const Country_league_visibility = await prisma.country_league_visibility.delete({
+     *   where: {
+     *     // ... filter to delete one Country_league_visibility
+     *   }
+     * })
+     * 
+     */
+    delete<T extends country_league_visibilityDeleteArgs>(args: SelectSubset<T, country_league_visibilityDeleteArgs<ExtArgs>>): Prisma__country_league_visibilityClient<$Result.GetResult<Prisma.$country_league_visibilityPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Country_league_visibility.
+     * @param {country_league_visibilityUpdateArgs} args - Arguments to update one Country_league_visibility.
+     * @example
+     * // Update one Country_league_visibility
+     * const country_league_visibility = await prisma.country_league_visibility.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends country_league_visibilityUpdateArgs>(args: SelectSubset<T, country_league_visibilityUpdateArgs<ExtArgs>>): Prisma__country_league_visibilityClient<$Result.GetResult<Prisma.$country_league_visibilityPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Country_league_visibilities.
+     * @param {country_league_visibilityDeleteManyArgs} args - Arguments to filter Country_league_visibilities to delete.
+     * @example
+     * // Delete a few Country_league_visibilities
+     * const { count } = await prisma.country_league_visibility.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends country_league_visibilityDeleteManyArgs>(args?: SelectSubset<T, country_league_visibilityDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Country_league_visibilities.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {country_league_visibilityUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Country_league_visibilities
+     * const country_league_visibility = await prisma.country_league_visibility.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends country_league_visibilityUpdateManyArgs>(args: SelectSubset<T, country_league_visibilityUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Country_league_visibilities and returns the data updated in the database.
+     * @param {country_league_visibilityUpdateManyAndReturnArgs} args - Arguments to update many Country_league_visibilities.
+     * @example
+     * // Update many Country_league_visibilities
+     * const country_league_visibility = await prisma.country_league_visibility.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Country_league_visibilities and only return the `id`
+     * const country_league_visibilityWithIdOnly = await prisma.country_league_visibility.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends country_league_visibilityUpdateManyAndReturnArgs>(args: SelectSubset<T, country_league_visibilityUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$country_league_visibilityPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Country_league_visibility.
+     * @param {country_league_visibilityUpsertArgs} args - Arguments to update or create a Country_league_visibility.
+     * @example
+     * // Update or create a Country_league_visibility
+     * const country_league_visibility = await prisma.country_league_visibility.upsert({
+     *   create: {
+     *     // ... data to create a Country_league_visibility
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Country_league_visibility we want to update
+     *   }
+     * })
+     */
+    upsert<T extends country_league_visibilityUpsertArgs>(args: SelectSubset<T, country_league_visibilityUpsertArgs<ExtArgs>>): Prisma__country_league_visibilityClient<$Result.GetResult<Prisma.$country_league_visibilityPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Country_league_visibilities.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {country_league_visibilityCountArgs} args - Arguments to filter Country_league_visibilities to count.
+     * @example
+     * // Count the number of Country_league_visibilities
+     * const count = await prisma.country_league_visibility.count({
+     *   where: {
+     *     // ... the filter for the Country_league_visibilities we want to count
+     *   }
+     * })
+    **/
+    count<T extends country_league_visibilityCountArgs>(
+      args?: Subset<T, country_league_visibilityCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], Country_league_visibilityCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Country_league_visibility.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {Country_league_visibilityAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends Country_league_visibilityAggregateArgs>(args: Subset<T, Country_league_visibilityAggregateArgs>): Prisma.PrismaPromise<GetCountry_league_visibilityAggregateType<T>>
+
+    /**
+     * Group by Country_league_visibility.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {country_league_visibilityGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends country_league_visibilityGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: country_league_visibilityGroupByArgs['orderBy'] }
+        : { orderBy?: country_league_visibilityGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, country_league_visibilityGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetCountry_league_visibilityGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the country_league_visibility model
+   */
+  readonly fields: country_league_visibilityFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for country_league_visibility.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__country_league_visibilityClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    option<T extends country_league_visibility$optionArgs<ExtArgs> = {}>(args?: Subset<T, country_league_visibility$optionArgs<ExtArgs>>): Prisma__stat_size_finalize_masterClient<$Result.GetResult<Prisma.$stat_size_finalize_masterPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the country_league_visibility model
+   */
+  interface country_league_visibilityFieldRefs {
+    readonly id: FieldRef<"country_league_visibility", 'Int'>
+    readonly country: FieldRef<"country_league_visibility", 'String'>
+    readonly league: FieldRef<"country_league_visibility", 'String'>
+    readonly visible: FieldRef<"country_league_visibility", 'Boolean'>
+    readonly priority: FieldRef<"country_league_visibility", 'Int'>
+    readonly reason: FieldRef<"country_league_visibility", 'String'>
+    readonly effectiveFrom: FieldRef<"country_league_visibility", 'DateTime'>
+    readonly effectiveTo: FieldRef<"country_league_visibility", 'DateTime'>
+    readonly optionId: FieldRef<"country_league_visibility", 'Int'>
+    readonly register_id: FieldRef<"country_league_visibility", 'String'>
+    readonly register_time: FieldRef<"country_league_visibility", 'DateTime'>
+    readonly update_id: FieldRef<"country_league_visibility", 'String'>
+    readonly update_time: FieldRef<"country_league_visibility", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * country_league_visibility findUnique
+   */
+  export type country_league_visibilityFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the country_league_visibility
+     */
+    select?: country_league_visibilitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the country_league_visibility
+     */
+    omit?: country_league_visibilityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: country_league_visibilityInclude<ExtArgs> | null
+    /**
+     * Filter, which country_league_visibility to fetch.
+     */
+    where: country_league_visibilityWhereUniqueInput
+  }
+
+  /**
+   * country_league_visibility findUniqueOrThrow
+   */
+  export type country_league_visibilityFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the country_league_visibility
+     */
+    select?: country_league_visibilitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the country_league_visibility
+     */
+    omit?: country_league_visibilityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: country_league_visibilityInclude<ExtArgs> | null
+    /**
+     * Filter, which country_league_visibility to fetch.
+     */
+    where: country_league_visibilityWhereUniqueInput
+  }
+
+  /**
+   * country_league_visibility findFirst
+   */
+  export type country_league_visibilityFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the country_league_visibility
+     */
+    select?: country_league_visibilitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the country_league_visibility
+     */
+    omit?: country_league_visibilityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: country_league_visibilityInclude<ExtArgs> | null
+    /**
+     * Filter, which country_league_visibility to fetch.
+     */
+    where?: country_league_visibilityWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of country_league_visibilities to fetch.
+     */
+    orderBy?: country_league_visibilityOrderByWithRelationInput | country_league_visibilityOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for country_league_visibilities.
+     */
+    cursor?: country_league_visibilityWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` country_league_visibilities from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` country_league_visibilities.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of country_league_visibilities.
+     */
+    distinct?: Country_league_visibilityScalarFieldEnum | Country_league_visibilityScalarFieldEnum[]
+  }
+
+  /**
+   * country_league_visibility findFirstOrThrow
+   */
+  export type country_league_visibilityFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the country_league_visibility
+     */
+    select?: country_league_visibilitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the country_league_visibility
+     */
+    omit?: country_league_visibilityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: country_league_visibilityInclude<ExtArgs> | null
+    /**
+     * Filter, which country_league_visibility to fetch.
+     */
+    where?: country_league_visibilityWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of country_league_visibilities to fetch.
+     */
+    orderBy?: country_league_visibilityOrderByWithRelationInput | country_league_visibilityOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for country_league_visibilities.
+     */
+    cursor?: country_league_visibilityWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` country_league_visibilities from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` country_league_visibilities.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of country_league_visibilities.
+     */
+    distinct?: Country_league_visibilityScalarFieldEnum | Country_league_visibilityScalarFieldEnum[]
+  }
+
+  /**
+   * country_league_visibility findMany
+   */
+  export type country_league_visibilityFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the country_league_visibility
+     */
+    select?: country_league_visibilitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the country_league_visibility
+     */
+    omit?: country_league_visibilityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: country_league_visibilityInclude<ExtArgs> | null
+    /**
+     * Filter, which country_league_visibilities to fetch.
+     */
+    where?: country_league_visibilityWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of country_league_visibilities to fetch.
+     */
+    orderBy?: country_league_visibilityOrderByWithRelationInput | country_league_visibilityOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing country_league_visibilities.
+     */
+    cursor?: country_league_visibilityWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` country_league_visibilities from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` country_league_visibilities.
+     */
+    skip?: number
+    distinct?: Country_league_visibilityScalarFieldEnum | Country_league_visibilityScalarFieldEnum[]
+  }
+
+  /**
+   * country_league_visibility create
+   */
+  export type country_league_visibilityCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the country_league_visibility
+     */
+    select?: country_league_visibilitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the country_league_visibility
+     */
+    omit?: country_league_visibilityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: country_league_visibilityInclude<ExtArgs> | null
+    /**
+     * The data needed to create a country_league_visibility.
+     */
+    data: XOR<country_league_visibilityCreateInput, country_league_visibilityUncheckedCreateInput>
+  }
+
+  /**
+   * country_league_visibility createMany
+   */
+  export type country_league_visibilityCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many country_league_visibilities.
+     */
+    data: country_league_visibilityCreateManyInput | country_league_visibilityCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * country_league_visibility createManyAndReturn
+   */
+  export type country_league_visibilityCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the country_league_visibility
+     */
+    select?: country_league_visibilitySelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the country_league_visibility
+     */
+    omit?: country_league_visibilityOmit<ExtArgs> | null
+    /**
+     * The data used to create many country_league_visibilities.
+     */
+    data: country_league_visibilityCreateManyInput | country_league_visibilityCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: country_league_visibilityIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * country_league_visibility update
+   */
+  export type country_league_visibilityUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the country_league_visibility
+     */
+    select?: country_league_visibilitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the country_league_visibility
+     */
+    omit?: country_league_visibilityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: country_league_visibilityInclude<ExtArgs> | null
+    /**
+     * The data needed to update a country_league_visibility.
+     */
+    data: XOR<country_league_visibilityUpdateInput, country_league_visibilityUncheckedUpdateInput>
+    /**
+     * Choose, which country_league_visibility to update.
+     */
+    where: country_league_visibilityWhereUniqueInput
+  }
+
+  /**
+   * country_league_visibility updateMany
+   */
+  export type country_league_visibilityUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update country_league_visibilities.
+     */
+    data: XOR<country_league_visibilityUpdateManyMutationInput, country_league_visibilityUncheckedUpdateManyInput>
+    /**
+     * Filter which country_league_visibilities to update
+     */
+    where?: country_league_visibilityWhereInput
+    /**
+     * Limit how many country_league_visibilities to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * country_league_visibility updateManyAndReturn
+   */
+  export type country_league_visibilityUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the country_league_visibility
+     */
+    select?: country_league_visibilitySelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the country_league_visibility
+     */
+    omit?: country_league_visibilityOmit<ExtArgs> | null
+    /**
+     * The data used to update country_league_visibilities.
+     */
+    data: XOR<country_league_visibilityUpdateManyMutationInput, country_league_visibilityUncheckedUpdateManyInput>
+    /**
+     * Filter which country_league_visibilities to update
+     */
+    where?: country_league_visibilityWhereInput
+    /**
+     * Limit how many country_league_visibilities to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: country_league_visibilityIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * country_league_visibility upsert
+   */
+  export type country_league_visibilityUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the country_league_visibility
+     */
+    select?: country_league_visibilitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the country_league_visibility
+     */
+    omit?: country_league_visibilityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: country_league_visibilityInclude<ExtArgs> | null
+    /**
+     * The filter to search for the country_league_visibility to update in case it exists.
+     */
+    where: country_league_visibilityWhereUniqueInput
+    /**
+     * In case the country_league_visibility found by the `where` argument doesn't exist, create a new country_league_visibility with this data.
+     */
+    create: XOR<country_league_visibilityCreateInput, country_league_visibilityUncheckedCreateInput>
+    /**
+     * In case the country_league_visibility was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<country_league_visibilityUpdateInput, country_league_visibilityUncheckedUpdateInput>
+  }
+
+  /**
+   * country_league_visibility delete
+   */
+  export type country_league_visibilityDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the country_league_visibility
+     */
+    select?: country_league_visibilitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the country_league_visibility
+     */
+    omit?: country_league_visibilityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: country_league_visibilityInclude<ExtArgs> | null
+    /**
+     * Filter which country_league_visibility to delete.
+     */
+    where: country_league_visibilityWhereUniqueInput
+  }
+
+  /**
+   * country_league_visibility deleteMany
+   */
+  export type country_league_visibilityDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which country_league_visibilities to delete
+     */
+    where?: country_league_visibilityWhereInput
+    /**
+     * Limit how many country_league_visibilities to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * country_league_visibility.option
+   */
+  export type country_league_visibility$optionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the stat_size_finalize_master
+     */
+    select?: stat_size_finalize_masterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the stat_size_finalize_master
+     */
+    omit?: stat_size_finalize_masterOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: stat_size_finalize_masterInclude<ExtArgs> | null
+    where?: stat_size_finalize_masterWhereInput
+  }
+
+  /**
+   * country_league_visibility without action
+   */
+  export type country_league_visibilityDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the country_league_visibility
+     */
+    select?: country_league_visibilitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the country_league_visibility
+     */
+    omit?: country_league_visibilityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: country_league_visibilityInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model user_visibility_option
+   */
+
+  export type AggregateUser_visibility_option = {
+    _count: User_visibility_optionCountAggregateOutputType | null
+    _avg: User_visibility_optionAvgAggregateOutputType | null
+    _sum: User_visibility_optionSumAggregateOutputType | null
+    _min: User_visibility_optionMinAggregateOutputType | null
+    _max: User_visibility_optionMaxAggregateOutputType | null
+  }
+
+  export type User_visibility_optionAvgAggregateOutputType = {
+    id: number | null
+    optionId: number | null
+  }
+
+  export type User_visibility_optionSumAggregateOutputType = {
+    id: number | null
+    optionId: number | null
+  }
+
+  export type User_visibility_optionMinAggregateOutputType = {
+    id: number | null
+    userId: string | null
+    optionId: number | null
+    createdAt: Date | null
+  }
+
+  export type User_visibility_optionMaxAggregateOutputType = {
+    id: number | null
+    userId: string | null
+    optionId: number | null
+    createdAt: Date | null
+  }
+
+  export type User_visibility_optionCountAggregateOutputType = {
+    id: number
+    userId: number
+    optionId: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type User_visibility_optionAvgAggregateInputType = {
+    id?: true
+    optionId?: true
+  }
+
+  export type User_visibility_optionSumAggregateInputType = {
+    id?: true
+    optionId?: true
+  }
+
+  export type User_visibility_optionMinAggregateInputType = {
+    id?: true
+    userId?: true
+    optionId?: true
+    createdAt?: true
+  }
+
+  export type User_visibility_optionMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    optionId?: true
+    createdAt?: true
+  }
+
+  export type User_visibility_optionCountAggregateInputType = {
+    id?: true
+    userId?: true
+    optionId?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type User_visibility_optionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which user_visibility_option to aggregate.
+     */
+    where?: user_visibility_optionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of user_visibility_options to fetch.
+     */
+    orderBy?: user_visibility_optionOrderByWithRelationInput | user_visibility_optionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: user_visibility_optionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` user_visibility_options from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` user_visibility_options.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned user_visibility_options
+    **/
+    _count?: true | User_visibility_optionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: User_visibility_optionAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: User_visibility_optionSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: User_visibility_optionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: User_visibility_optionMaxAggregateInputType
+  }
+
+  export type GetUser_visibility_optionAggregateType<T extends User_visibility_optionAggregateArgs> = {
+        [P in keyof T & keyof AggregateUser_visibility_option]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateUser_visibility_option[P]>
+      : GetScalarType<T[P], AggregateUser_visibility_option[P]>
+  }
+
+
+
+
+  export type user_visibility_optionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: user_visibility_optionWhereInput
+    orderBy?: user_visibility_optionOrderByWithAggregationInput | user_visibility_optionOrderByWithAggregationInput[]
+    by: User_visibility_optionScalarFieldEnum[] | User_visibility_optionScalarFieldEnum
+    having?: user_visibility_optionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: User_visibility_optionCountAggregateInputType | true
+    _avg?: User_visibility_optionAvgAggregateInputType
+    _sum?: User_visibility_optionSumAggregateInputType
+    _min?: User_visibility_optionMinAggregateInputType
+    _max?: User_visibility_optionMaxAggregateInputType
+  }
+
+  export type User_visibility_optionGroupByOutputType = {
+    id: number
+    userId: string
+    optionId: number
+    createdAt: Date
+    _count: User_visibility_optionCountAggregateOutputType | null
+    _avg: User_visibility_optionAvgAggregateOutputType | null
+    _sum: User_visibility_optionSumAggregateOutputType | null
+    _min: User_visibility_optionMinAggregateOutputType | null
+    _max: User_visibility_optionMaxAggregateOutputType | null
+  }
+
+  type GetUser_visibility_optionGroupByPayload<T extends user_visibility_optionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<User_visibility_optionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof User_visibility_optionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], User_visibility_optionGroupByOutputType[P]>
+            : GetScalarType<T[P], User_visibility_optionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type user_visibility_optionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    optionId?: boolean
+    createdAt?: boolean
+    option?: boolean | stat_size_finalize_masterDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["user_visibility_option"]>
+
+  export type user_visibility_optionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    optionId?: boolean
+    createdAt?: boolean
+    option?: boolean | stat_size_finalize_masterDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["user_visibility_option"]>
+
+  export type user_visibility_optionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    optionId?: boolean
+    createdAt?: boolean
+    option?: boolean | stat_size_finalize_masterDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["user_visibility_option"]>
+
+  export type user_visibility_optionSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    optionId?: boolean
+    createdAt?: boolean
+  }
+
+  export type user_visibility_optionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "optionId" | "createdAt", ExtArgs["result"]["user_visibility_option"]>
+  export type user_visibility_optionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    option?: boolean | stat_size_finalize_masterDefaultArgs<ExtArgs>
+  }
+  export type user_visibility_optionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    option?: boolean | stat_size_finalize_masterDefaultArgs<ExtArgs>
+  }
+  export type user_visibility_optionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    option?: boolean | stat_size_finalize_masterDefaultArgs<ExtArgs>
+  }
+
+  export type $user_visibility_optionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "user_visibility_option"
+    objects: {
+      option: Prisma.$stat_size_finalize_masterPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      userId: string
+      optionId: number
+      createdAt: Date
+    }, ExtArgs["result"]["user_visibility_option"]>
+    composites: {}
+  }
+
+  type user_visibility_optionGetPayload<S extends boolean | null | undefined | user_visibility_optionDefaultArgs> = $Result.GetResult<Prisma.$user_visibility_optionPayload, S>
+
+  type user_visibility_optionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<user_visibility_optionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: User_visibility_optionCountAggregateInputType | true
+    }
+
+  export interface user_visibility_optionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['user_visibility_option'], meta: { name: 'user_visibility_option' } }
+    /**
+     * Find zero or one User_visibility_option that matches the filter.
+     * @param {user_visibility_optionFindUniqueArgs} args - Arguments to find a User_visibility_option
+     * @example
+     * // Get one User_visibility_option
+     * const user_visibility_option = await prisma.user_visibility_option.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends user_visibility_optionFindUniqueArgs>(args: SelectSubset<T, user_visibility_optionFindUniqueArgs<ExtArgs>>): Prisma__user_visibility_optionClient<$Result.GetResult<Prisma.$user_visibility_optionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one User_visibility_option that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {user_visibility_optionFindUniqueOrThrowArgs} args - Arguments to find a User_visibility_option
+     * @example
+     * // Get one User_visibility_option
+     * const user_visibility_option = await prisma.user_visibility_option.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends user_visibility_optionFindUniqueOrThrowArgs>(args: SelectSubset<T, user_visibility_optionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__user_visibility_optionClient<$Result.GetResult<Prisma.$user_visibility_optionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first User_visibility_option that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {user_visibility_optionFindFirstArgs} args - Arguments to find a User_visibility_option
+     * @example
+     * // Get one User_visibility_option
+     * const user_visibility_option = await prisma.user_visibility_option.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends user_visibility_optionFindFirstArgs>(args?: SelectSubset<T, user_visibility_optionFindFirstArgs<ExtArgs>>): Prisma__user_visibility_optionClient<$Result.GetResult<Prisma.$user_visibility_optionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first User_visibility_option that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {user_visibility_optionFindFirstOrThrowArgs} args - Arguments to find a User_visibility_option
+     * @example
+     * // Get one User_visibility_option
+     * const user_visibility_option = await prisma.user_visibility_option.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends user_visibility_optionFindFirstOrThrowArgs>(args?: SelectSubset<T, user_visibility_optionFindFirstOrThrowArgs<ExtArgs>>): Prisma__user_visibility_optionClient<$Result.GetResult<Prisma.$user_visibility_optionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more User_visibility_options that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {user_visibility_optionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all User_visibility_options
+     * const user_visibility_options = await prisma.user_visibility_option.findMany()
+     * 
+     * // Get first 10 User_visibility_options
+     * const user_visibility_options = await prisma.user_visibility_option.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const user_visibility_optionWithIdOnly = await prisma.user_visibility_option.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends user_visibility_optionFindManyArgs>(args?: SelectSubset<T, user_visibility_optionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$user_visibility_optionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a User_visibility_option.
+     * @param {user_visibility_optionCreateArgs} args - Arguments to create a User_visibility_option.
+     * @example
+     * // Create one User_visibility_option
+     * const User_visibility_option = await prisma.user_visibility_option.create({
+     *   data: {
+     *     // ... data to create a User_visibility_option
+     *   }
+     * })
+     * 
+     */
+    create<T extends user_visibility_optionCreateArgs>(args: SelectSubset<T, user_visibility_optionCreateArgs<ExtArgs>>): Prisma__user_visibility_optionClient<$Result.GetResult<Prisma.$user_visibility_optionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many User_visibility_options.
+     * @param {user_visibility_optionCreateManyArgs} args - Arguments to create many User_visibility_options.
+     * @example
+     * // Create many User_visibility_options
+     * const user_visibility_option = await prisma.user_visibility_option.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends user_visibility_optionCreateManyArgs>(args?: SelectSubset<T, user_visibility_optionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many User_visibility_options and returns the data saved in the database.
+     * @param {user_visibility_optionCreateManyAndReturnArgs} args - Arguments to create many User_visibility_options.
+     * @example
+     * // Create many User_visibility_options
+     * const user_visibility_option = await prisma.user_visibility_option.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many User_visibility_options and only return the `id`
+     * const user_visibility_optionWithIdOnly = await prisma.user_visibility_option.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends user_visibility_optionCreateManyAndReturnArgs>(args?: SelectSubset<T, user_visibility_optionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$user_visibility_optionPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a User_visibility_option.
+     * @param {user_visibility_optionDeleteArgs} args - Arguments to delete one User_visibility_option.
+     * @example
+     * // Delete one User_visibility_option
+     * const User_visibility_option = await prisma.user_visibility_option.delete({
+     *   where: {
+     *     // ... filter to delete one User_visibility_option
+     *   }
+     * })
+     * 
+     */
+    delete<T extends user_visibility_optionDeleteArgs>(args: SelectSubset<T, user_visibility_optionDeleteArgs<ExtArgs>>): Prisma__user_visibility_optionClient<$Result.GetResult<Prisma.$user_visibility_optionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one User_visibility_option.
+     * @param {user_visibility_optionUpdateArgs} args - Arguments to update one User_visibility_option.
+     * @example
+     * // Update one User_visibility_option
+     * const user_visibility_option = await prisma.user_visibility_option.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends user_visibility_optionUpdateArgs>(args: SelectSubset<T, user_visibility_optionUpdateArgs<ExtArgs>>): Prisma__user_visibility_optionClient<$Result.GetResult<Prisma.$user_visibility_optionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more User_visibility_options.
+     * @param {user_visibility_optionDeleteManyArgs} args - Arguments to filter User_visibility_options to delete.
+     * @example
+     * // Delete a few User_visibility_options
+     * const { count } = await prisma.user_visibility_option.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends user_visibility_optionDeleteManyArgs>(args?: SelectSubset<T, user_visibility_optionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more User_visibility_options.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {user_visibility_optionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many User_visibility_options
+     * const user_visibility_option = await prisma.user_visibility_option.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends user_visibility_optionUpdateManyArgs>(args: SelectSubset<T, user_visibility_optionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more User_visibility_options and returns the data updated in the database.
+     * @param {user_visibility_optionUpdateManyAndReturnArgs} args - Arguments to update many User_visibility_options.
+     * @example
+     * // Update many User_visibility_options
+     * const user_visibility_option = await prisma.user_visibility_option.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more User_visibility_options and only return the `id`
+     * const user_visibility_optionWithIdOnly = await prisma.user_visibility_option.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends user_visibility_optionUpdateManyAndReturnArgs>(args: SelectSubset<T, user_visibility_optionUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$user_visibility_optionPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one User_visibility_option.
+     * @param {user_visibility_optionUpsertArgs} args - Arguments to update or create a User_visibility_option.
+     * @example
+     * // Update or create a User_visibility_option
+     * const user_visibility_option = await prisma.user_visibility_option.upsert({
+     *   create: {
+     *     // ... data to create a User_visibility_option
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the User_visibility_option we want to update
+     *   }
+     * })
+     */
+    upsert<T extends user_visibility_optionUpsertArgs>(args: SelectSubset<T, user_visibility_optionUpsertArgs<ExtArgs>>): Prisma__user_visibility_optionClient<$Result.GetResult<Prisma.$user_visibility_optionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of User_visibility_options.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {user_visibility_optionCountArgs} args - Arguments to filter User_visibility_options to count.
+     * @example
+     * // Count the number of User_visibility_options
+     * const count = await prisma.user_visibility_option.count({
+     *   where: {
+     *     // ... the filter for the User_visibility_options we want to count
+     *   }
+     * })
+    **/
+    count<T extends user_visibility_optionCountArgs>(
+      args?: Subset<T, user_visibility_optionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], User_visibility_optionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a User_visibility_option.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {User_visibility_optionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends User_visibility_optionAggregateArgs>(args: Subset<T, User_visibility_optionAggregateArgs>): Prisma.PrismaPromise<GetUser_visibility_optionAggregateType<T>>
+
+    /**
+     * Group by User_visibility_option.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {user_visibility_optionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends user_visibility_optionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: user_visibility_optionGroupByArgs['orderBy'] }
+        : { orderBy?: user_visibility_optionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, user_visibility_optionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetUser_visibility_optionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the user_visibility_option model
+   */
+  readonly fields: user_visibility_optionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for user_visibility_option.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__user_visibility_optionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    option<T extends stat_size_finalize_masterDefaultArgs<ExtArgs> = {}>(args?: Subset<T, stat_size_finalize_masterDefaultArgs<ExtArgs>>): Prisma__stat_size_finalize_masterClient<$Result.GetResult<Prisma.$stat_size_finalize_masterPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the user_visibility_option model
+   */
+  interface user_visibility_optionFieldRefs {
+    readonly id: FieldRef<"user_visibility_option", 'Int'>
+    readonly userId: FieldRef<"user_visibility_option", 'String'>
+    readonly optionId: FieldRef<"user_visibility_option", 'Int'>
+    readonly createdAt: FieldRef<"user_visibility_option", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * user_visibility_option findUnique
+   */
+  export type user_visibility_optionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the user_visibility_option
+     */
+    select?: user_visibility_optionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the user_visibility_option
+     */
+    omit?: user_visibility_optionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: user_visibility_optionInclude<ExtArgs> | null
+    /**
+     * Filter, which user_visibility_option to fetch.
+     */
+    where: user_visibility_optionWhereUniqueInput
+  }
+
+  /**
+   * user_visibility_option findUniqueOrThrow
+   */
+  export type user_visibility_optionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the user_visibility_option
+     */
+    select?: user_visibility_optionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the user_visibility_option
+     */
+    omit?: user_visibility_optionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: user_visibility_optionInclude<ExtArgs> | null
+    /**
+     * Filter, which user_visibility_option to fetch.
+     */
+    where: user_visibility_optionWhereUniqueInput
+  }
+
+  /**
+   * user_visibility_option findFirst
+   */
+  export type user_visibility_optionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the user_visibility_option
+     */
+    select?: user_visibility_optionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the user_visibility_option
+     */
+    omit?: user_visibility_optionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: user_visibility_optionInclude<ExtArgs> | null
+    /**
+     * Filter, which user_visibility_option to fetch.
+     */
+    where?: user_visibility_optionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of user_visibility_options to fetch.
+     */
+    orderBy?: user_visibility_optionOrderByWithRelationInput | user_visibility_optionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for user_visibility_options.
+     */
+    cursor?: user_visibility_optionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` user_visibility_options from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` user_visibility_options.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of user_visibility_options.
+     */
+    distinct?: User_visibility_optionScalarFieldEnum | User_visibility_optionScalarFieldEnum[]
+  }
+
+  /**
+   * user_visibility_option findFirstOrThrow
+   */
+  export type user_visibility_optionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the user_visibility_option
+     */
+    select?: user_visibility_optionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the user_visibility_option
+     */
+    omit?: user_visibility_optionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: user_visibility_optionInclude<ExtArgs> | null
+    /**
+     * Filter, which user_visibility_option to fetch.
+     */
+    where?: user_visibility_optionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of user_visibility_options to fetch.
+     */
+    orderBy?: user_visibility_optionOrderByWithRelationInput | user_visibility_optionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for user_visibility_options.
+     */
+    cursor?: user_visibility_optionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` user_visibility_options from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` user_visibility_options.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of user_visibility_options.
+     */
+    distinct?: User_visibility_optionScalarFieldEnum | User_visibility_optionScalarFieldEnum[]
+  }
+
+  /**
+   * user_visibility_option findMany
+   */
+  export type user_visibility_optionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the user_visibility_option
+     */
+    select?: user_visibility_optionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the user_visibility_option
+     */
+    omit?: user_visibility_optionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: user_visibility_optionInclude<ExtArgs> | null
+    /**
+     * Filter, which user_visibility_options to fetch.
+     */
+    where?: user_visibility_optionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of user_visibility_options to fetch.
+     */
+    orderBy?: user_visibility_optionOrderByWithRelationInput | user_visibility_optionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing user_visibility_options.
+     */
+    cursor?: user_visibility_optionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` user_visibility_options from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` user_visibility_options.
+     */
+    skip?: number
+    distinct?: User_visibility_optionScalarFieldEnum | User_visibility_optionScalarFieldEnum[]
+  }
+
+  /**
+   * user_visibility_option create
+   */
+  export type user_visibility_optionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the user_visibility_option
+     */
+    select?: user_visibility_optionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the user_visibility_option
+     */
+    omit?: user_visibility_optionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: user_visibility_optionInclude<ExtArgs> | null
+    /**
+     * The data needed to create a user_visibility_option.
+     */
+    data: XOR<user_visibility_optionCreateInput, user_visibility_optionUncheckedCreateInput>
+  }
+
+  /**
+   * user_visibility_option createMany
+   */
+  export type user_visibility_optionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many user_visibility_options.
+     */
+    data: user_visibility_optionCreateManyInput | user_visibility_optionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * user_visibility_option createManyAndReturn
+   */
+  export type user_visibility_optionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the user_visibility_option
+     */
+    select?: user_visibility_optionSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the user_visibility_option
+     */
+    omit?: user_visibility_optionOmit<ExtArgs> | null
+    /**
+     * The data used to create many user_visibility_options.
+     */
+    data: user_visibility_optionCreateManyInput | user_visibility_optionCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: user_visibility_optionIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * user_visibility_option update
+   */
+  export type user_visibility_optionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the user_visibility_option
+     */
+    select?: user_visibility_optionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the user_visibility_option
+     */
+    omit?: user_visibility_optionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: user_visibility_optionInclude<ExtArgs> | null
+    /**
+     * The data needed to update a user_visibility_option.
+     */
+    data: XOR<user_visibility_optionUpdateInput, user_visibility_optionUncheckedUpdateInput>
+    /**
+     * Choose, which user_visibility_option to update.
+     */
+    where: user_visibility_optionWhereUniqueInput
+  }
+
+  /**
+   * user_visibility_option updateMany
+   */
+  export type user_visibility_optionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update user_visibility_options.
+     */
+    data: XOR<user_visibility_optionUpdateManyMutationInput, user_visibility_optionUncheckedUpdateManyInput>
+    /**
+     * Filter which user_visibility_options to update
+     */
+    where?: user_visibility_optionWhereInput
+    /**
+     * Limit how many user_visibility_options to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * user_visibility_option updateManyAndReturn
+   */
+  export type user_visibility_optionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the user_visibility_option
+     */
+    select?: user_visibility_optionSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the user_visibility_option
+     */
+    omit?: user_visibility_optionOmit<ExtArgs> | null
+    /**
+     * The data used to update user_visibility_options.
+     */
+    data: XOR<user_visibility_optionUpdateManyMutationInput, user_visibility_optionUncheckedUpdateManyInput>
+    /**
+     * Filter which user_visibility_options to update
+     */
+    where?: user_visibility_optionWhereInput
+    /**
+     * Limit how many user_visibility_options to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: user_visibility_optionIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * user_visibility_option upsert
+   */
+  export type user_visibility_optionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the user_visibility_option
+     */
+    select?: user_visibility_optionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the user_visibility_option
+     */
+    omit?: user_visibility_optionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: user_visibility_optionInclude<ExtArgs> | null
+    /**
+     * The filter to search for the user_visibility_option to update in case it exists.
+     */
+    where: user_visibility_optionWhereUniqueInput
+    /**
+     * In case the user_visibility_option found by the `where` argument doesn't exist, create a new user_visibility_option with this data.
+     */
+    create: XOR<user_visibility_optionCreateInput, user_visibility_optionUncheckedCreateInput>
+    /**
+     * In case the user_visibility_option was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<user_visibility_optionUpdateInput, user_visibility_optionUncheckedUpdateInput>
+  }
+
+  /**
+   * user_visibility_option delete
+   */
+  export type user_visibility_optionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the user_visibility_option
+     */
+    select?: user_visibility_optionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the user_visibility_option
+     */
+    omit?: user_visibility_optionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: user_visibility_optionInclude<ExtArgs> | null
+    /**
+     * Filter which user_visibility_option to delete.
+     */
+    where: user_visibility_optionWhereUniqueInput
+  }
+
+  /**
+   * user_visibility_option deleteMany
+   */
+  export type user_visibility_optionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which user_visibility_options to delete
+     */
+    where?: user_visibility_optionWhereInput
+    /**
+     * Limit how many user_visibility_options to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * user_visibility_option without action
+   */
+  export type user_visibility_optionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the user_visibility_option
+     */
+    select?: user_visibility_optionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the user_visibility_option
+     */
+    omit?: user_visibility_optionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: user_visibility_optionInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -56748,7 +59213,7 @@ export namespace Prisma {
     home: 'home',
     away: 'away',
     score: 'score',
-    chkBody: 'chkBody',
+    chk_body: 'chk_body',
     rank_1th: 'rank_1th',
     rank_2th: 'rank_2th',
     rank_3th: 'rank_3th',
@@ -56881,7 +59346,6 @@ export namespace Prisma {
     round: 'round',
     path: 'path',
     disp_valid_flg: 'disp_valid_flg',
-    upd_stamp: 'upd_stamp',
     register_id: 'register_id',
     register_time: 'register_time',
     update_id: 'update_id',
@@ -57845,7 +60309,7 @@ export namespace Prisma {
     country: 'country',
     league: 'league',
     team_name: 'team_name',
-    HA: 'HA',
+    ha: 'ha',
     year: 'year',
     jar_sum_score: 'jar_sum_score',
     feb_sum_score: 'feb_sum_score',
@@ -58244,6 +60708,35 @@ export namespace Prisma {
   export type Within_data_45minutes_home_scoredScalarFieldEnum = (typeof Within_data_45minutes_home_scoredScalarFieldEnum)[keyof typeof Within_data_45minutes_home_scoredScalarFieldEnum]
 
 
+  export const Country_league_visibilityScalarFieldEnum: {
+    id: 'id',
+    country: 'country',
+    league: 'league',
+    visible: 'visible',
+    priority: 'priority',
+    reason: 'reason',
+    effectiveFrom: 'effectiveFrom',
+    effectiveTo: 'effectiveTo',
+    optionId: 'optionId',
+    register_id: 'register_id',
+    register_time: 'register_time',
+    update_id: 'update_id',
+    update_time: 'update_time'
+  };
+
+  export type Country_league_visibilityScalarFieldEnum = (typeof Country_league_visibilityScalarFieldEnum)[keyof typeof Country_league_visibilityScalarFieldEnum]
+
+
+  export const User_visibility_optionScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    optionId: 'optionId',
+    createdAt: 'createdAt'
+  };
+
+  export type User_visibility_optionScalarFieldEnum = (typeof User_visibility_optionScalarFieldEnum)[keyof typeof User_visibility_optionScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -58340,6 +60833,13 @@ export namespace Prisma {
    * Reference to a field of type 'BigInt[]'
    */
   export type ListBigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -59107,7 +61607,7 @@ export namespace Prisma {
     home?: StringNullableFilter<"calc_correlation_ranking"> | string | null
     away?: StringNullableFilter<"calc_correlation_ranking"> | string | null
     score?: StringNullableFilter<"calc_correlation_ranking"> | string | null
-    chkBody?: StringNullableFilter<"calc_correlation_ranking"> | string | null
+    chk_body?: StringNullableFilter<"calc_correlation_ranking"> | string | null
     rank_1th?: StringNullableFilter<"calc_correlation_ranking"> | string | null
     rank_2th?: StringNullableFilter<"calc_correlation_ranking"> | string | null
     rank_3th?: StringNullableFilter<"calc_correlation_ranking"> | string | null
@@ -59196,7 +61696,7 @@ export namespace Prisma {
     home?: SortOrderInput | SortOrder
     away?: SortOrderInput | SortOrder
     score?: SortOrderInput | SortOrder
-    chkBody?: SortOrderInput | SortOrder
+    chk_body?: SortOrderInput | SortOrder
     rank_1th?: SortOrderInput | SortOrder
     rank_2th?: SortOrderInput | SortOrder
     rank_3th?: SortOrderInput | SortOrder
@@ -59288,7 +61788,7 @@ export namespace Prisma {
     home?: StringNullableFilter<"calc_correlation_ranking"> | string | null
     away?: StringNullableFilter<"calc_correlation_ranking"> | string | null
     score?: StringNullableFilter<"calc_correlation_ranking"> | string | null
-    chkBody?: StringNullableFilter<"calc_correlation_ranking"> | string | null
+    chk_body?: StringNullableFilter<"calc_correlation_ranking"> | string | null
     rank_1th?: StringNullableFilter<"calc_correlation_ranking"> | string | null
     rank_2th?: StringNullableFilter<"calc_correlation_ranking"> | string | null
     rank_3th?: StringNullableFilter<"calc_correlation_ranking"> | string | null
@@ -59377,7 +61877,7 @@ export namespace Prisma {
     home?: SortOrderInput | SortOrder
     away?: SortOrderInput | SortOrder
     score?: SortOrderInput | SortOrder
-    chkBody?: SortOrderInput | SortOrder
+    chk_body?: SortOrderInput | SortOrder
     rank_1th?: SortOrderInput | SortOrder
     rank_2th?: SortOrderInput | SortOrder
     rank_3th?: SortOrderInput | SortOrder
@@ -59474,7 +61974,7 @@ export namespace Prisma {
     home?: StringNullableWithAggregatesFilter<"calc_correlation_ranking"> | string | null
     away?: StringNullableWithAggregatesFilter<"calc_correlation_ranking"> | string | null
     score?: StringNullableWithAggregatesFilter<"calc_correlation_ranking"> | string | null
-    chkBody?: StringNullableWithAggregatesFilter<"calc_correlation_ranking"> | string | null
+    chk_body?: StringNullableWithAggregatesFilter<"calc_correlation_ranking"> | string | null
     rank_1th?: StringNullableWithAggregatesFilter<"calc_correlation_ranking"> | string | null
     rank_2th?: StringNullableWithAggregatesFilter<"calc_correlation_ranking"> | string | null
     rank_3th?: StringNullableWithAggregatesFilter<"calc_correlation_ranking"> | string | null
@@ -59761,7 +62261,6 @@ export namespace Prisma {
     round?: StringNullableFilter<"country_league_season_master"> | string | null
     path?: StringNullableFilter<"country_league_season_master"> | string | null
     disp_valid_flg?: StringFilter<"country_league_season_master"> | string
-    upd_stamp?: DateTimeFilter<"country_league_season_master"> | Date | string
     register_id?: StringNullableFilter<"country_league_season_master"> | string | null
     register_time?: DateTimeNullableFilter<"country_league_season_master"> | Date | string | null
     update_id?: StringNullableFilter<"country_league_season_master"> | string | null
@@ -59777,7 +62276,6 @@ export namespace Prisma {
     round?: SortOrderInput | SortOrder
     path?: SortOrderInput | SortOrder
     disp_valid_flg?: SortOrder
-    upd_stamp?: SortOrder
     register_id?: SortOrderInput | SortOrder
     register_time?: SortOrderInput | SortOrder
     update_id?: SortOrderInput | SortOrder
@@ -59796,7 +62294,6 @@ export namespace Prisma {
     round?: StringNullableFilter<"country_league_season_master"> | string | null
     path?: StringNullableFilter<"country_league_season_master"> | string | null
     disp_valid_flg?: StringFilter<"country_league_season_master"> | string
-    upd_stamp?: DateTimeFilter<"country_league_season_master"> | Date | string
     register_id?: StringNullableFilter<"country_league_season_master"> | string | null
     register_time?: DateTimeNullableFilter<"country_league_season_master"> | Date | string | null
     update_id?: StringNullableFilter<"country_league_season_master"> | string | null
@@ -59812,7 +62309,6 @@ export namespace Prisma {
     round?: SortOrderInput | SortOrder
     path?: SortOrderInput | SortOrder
     disp_valid_flg?: SortOrder
-    upd_stamp?: SortOrder
     register_id?: SortOrderInput | SortOrder
     register_time?: SortOrderInput | SortOrder
     update_id?: SortOrderInput | SortOrder
@@ -59836,7 +62332,6 @@ export namespace Prisma {
     round?: StringNullableWithAggregatesFilter<"country_league_season_master"> | string | null
     path?: StringNullableWithAggregatesFilter<"country_league_season_master"> | string | null
     disp_valid_flg?: StringWithAggregatesFilter<"country_league_season_master"> | string
-    upd_stamp?: DateTimeWithAggregatesFilter<"country_league_season_master"> | Date | string
     register_id?: StringNullableWithAggregatesFilter<"country_league_season_master"> | string | null
     register_time?: DateTimeNullableWithAggregatesFilter<"country_league_season_master"> | Date | string | null
     update_id?: StringNullableWithAggregatesFilter<"country_league_season_master"> | string | null
@@ -63458,6 +65953,8 @@ export namespace Prisma {
     register_time?: DateTimeFilter<"stat_size_finalize_master"> | Date | string
     update_id?: StringFilter<"stat_size_finalize_master"> | string
     update_time?: DateTimeFilter<"stat_size_finalize_master"> | Date | string
+    country_league_visibilities?: Country_league_visibilityListRelationFilter
+    user_visibility_options?: User_visibility_optionListRelationFilter
   }
 
   export type stat_size_finalize_masterOrderByWithRelationInput = {
@@ -63469,6 +65966,8 @@ export namespace Prisma {
     register_time?: SortOrder
     update_id?: SortOrder
     update_time?: SortOrder
+    country_league_visibilities?: country_league_visibilityOrderByRelationAggregateInput
+    user_visibility_options?: user_visibility_optionOrderByRelationAggregateInput
   }
 
   export type stat_size_finalize_masterWhereUniqueInput = Prisma.AtLeast<{
@@ -63483,6 +65982,8 @@ export namespace Prisma {
     register_time?: DateTimeFilter<"stat_size_finalize_master"> | Date | string
     update_id?: StringFilter<"stat_size_finalize_master"> | string
     update_time?: DateTimeFilter<"stat_size_finalize_master"> | Date | string
+    country_league_visibilities?: Country_league_visibilityListRelationFilter
+    user_visibility_options?: User_visibility_optionListRelationFilter
   }, "id">
 
   export type stat_size_finalize_masterOrderByWithAggregationInput = {
@@ -63522,15 +66023,15 @@ export namespace Prisma {
     id?: IntFilter<"surface_overview"> | number
     country?: StringFilter<"surface_overview"> | string
     league?: StringFilter<"surface_overview"> | string
-    game_year?: StringFilter<"surface_overview"> | string
-    game_month?: IntFilter<"surface_overview"> | number
+    game_year?: StringNullableFilter<"surface_overview"> | string | null
+    game_month?: StringNullableFilter<"surface_overview"> | string | null
     team?: StringFilter<"surface_overview"> | string
-    games?: IntFilter<"surface_overview"> | number
-    rank?: IntNullableFilter<"surface_overview"> | number | null
-    win?: IntFilter<"surface_overview"> | number
-    lose?: IntFilter<"surface_overview"> | number
-    draw?: IntFilter<"surface_overview"> | number
-    winning_points?: IntFilter<"surface_overview"> | number
+    games?: StringNullableFilter<"surface_overview"> | string | null
+    rank?: StringNullableFilter<"surface_overview"> | string | null
+    win?: StringNullableFilter<"surface_overview"> | string | null
+    lose?: StringNullableFilter<"surface_overview"> | string | null
+    draw?: StringNullableFilter<"surface_overview"> | string | null
+    winning_points?: StringNullableFilter<"surface_overview"> | string | null
     home_1st_half_score?: StringNullableFilter<"surface_overview"> | string | null
     home_2nd_half_score?: StringNullableFilter<"surface_overview"> | string | null
     home_sum_score?: StringNullableFilter<"surface_overview"> | string | null
@@ -63543,45 +66044,45 @@ export namespace Prisma {
     away_1st_half_score_ratio?: StringNullableFilter<"surface_overview"> | string | null
     away_2nd_half_score_ratio?: StringNullableFilter<"surface_overview"> | string | null
     away_clean_sheet?: StringNullableFilter<"surface_overview"> | string | null
-    fail_to_score_game_count?: IntFilter<"surface_overview"> | number
+    fail_to_score_game_count?: StringNullableFilter<"surface_overview"> | string | null
     consecutive_win_disp?: StringNullableFilter<"surface_overview"> | string | null
     consecutive_lose_disp?: StringNullableFilter<"surface_overview"> | string | null
-    unbeaten_streak_count?: IntFilter<"surface_overview"> | number
+    unbeaten_streak_count?: StringNullableFilter<"surface_overview"> | string | null
     unbeaten_streak_disp?: StringNullableFilter<"surface_overview"> | string | null
-    consecutive_score_count?: IntFilter<"surface_overview"> | number
+    consecutive_score_count?: StringNullableFilter<"surface_overview"> | string | null
     consecutive_score_count_disp?: StringNullableFilter<"surface_overview"> | string | null
-    first_week_game_win_count?: IntFilter<"surface_overview"> | number
-    first_week_game_lost_count?: IntFilter<"surface_overview"> | number
+    first_week_game_win_count?: StringNullableFilter<"surface_overview"> | string | null
+    first_week_game_lost_count?: StringNullableFilter<"surface_overview"> | string | null
     first_week_game_win_disp?: StringNullableFilter<"surface_overview"> | string | null
-    mid_week_game_win_count?: IntFilter<"surface_overview"> | number
-    mid_week_game_lost_count?: IntFilter<"surface_overview"> | number
+    mid_week_game_win_count?: StringNullableFilter<"surface_overview"> | string | null
+    mid_week_game_lost_count?: StringNullableFilter<"surface_overview"> | string | null
     mid_week_game_win_disp?: StringNullableFilter<"surface_overview"> | string | null
-    last_week_game_win_count?: IntFilter<"surface_overview"> | number
-    last_week_game_lost_count?: IntFilter<"surface_overview"> | number
+    last_week_game_win_count?: StringNullableFilter<"surface_overview"> | string | null
+    last_week_game_lost_count?: StringNullableFilter<"surface_overview"> | string | null
     last_week_game_win_disp?: StringNullableFilter<"surface_overview"> | string | null
-    home_win_count?: IntFilter<"surface_overview"> | number
-    home_lose_count?: IntFilter<"surface_overview"> | number
-    home_first_goal_count?: IntFilter<"surface_overview"> | number
-    home_win_behind_count?: IntFilter<"surface_overview"> | number
-    home_lose_behind_count?: IntFilter<"surface_overview"> | number
-    home_win_behind_0vs1_count?: IntFilter<"surface_overview"> | number
-    home_lose_behind_1vs0_count?: IntFilter<"surface_overview"> | number
-    home_win_behind_0vs2_count?: IntFilter<"surface_overview"> | number
-    home_lose_behind_2vs0_count?: IntFilter<"surface_overview"> | number
-    home_win_behind_other_count?: IntFilter<"surface_overview"> | number
-    home_lose_behind_other_count?: IntFilter<"surface_overview"> | number
+    home_win_count?: StringNullableFilter<"surface_overview"> | string | null
+    home_lose_count?: StringNullableFilter<"surface_overview"> | string | null
+    home_first_goal_count?: StringNullableFilter<"surface_overview"> | string | null
+    home_win_behind_count?: StringNullableFilter<"surface_overview"> | string | null
+    home_lose_behind_count?: StringNullableFilter<"surface_overview"> | string | null
+    home_win_behind_0vs1_count?: StringNullableFilter<"surface_overview"> | string | null
+    home_lose_behind_1vs0_count?: StringNullableFilter<"surface_overview"> | string | null
+    home_win_behind_0vs2_count?: StringNullableFilter<"surface_overview"> | string | null
+    home_lose_behind_2vs0_count?: StringNullableFilter<"surface_overview"> | string | null
+    home_win_behind_other_count?: StringNullableFilter<"surface_overview"> | string | null
+    home_lose_behind_other_count?: StringNullableFilter<"surface_overview"> | string | null
     home_adversity_disp?: StringNullableFilter<"surface_overview"> | string | null
-    away_win_count?: IntFilter<"surface_overview"> | number
-    away_lose_count?: IntFilter<"surface_overview"> | number
-    away_first_goal_count?: IntFilter<"surface_overview"> | number
-    away_win_behind_count?: IntFilter<"surface_overview"> | number
-    away_lose_behind_count?: IntFilter<"surface_overview"> | number
-    away_win_behind_1vs0_count?: IntFilter<"surface_overview"> | number
-    away_lose_behind_0vs1_count?: IntFilter<"surface_overview"> | number
-    away_win_behind_2vs0_count?: IntFilter<"surface_overview"> | number
-    away_lose_behind_0vs2_count?: IntFilter<"surface_overview"> | number
-    away_win_behind_other_count?: IntFilter<"surface_overview"> | number
-    away_lose_behind_other_count?: IntFilter<"surface_overview"> | number
+    away_win_count?: StringNullableFilter<"surface_overview"> | string | null
+    away_lose_count?: StringNullableFilter<"surface_overview"> | string | null
+    away_first_goal_count?: StringNullableFilter<"surface_overview"> | string | null
+    away_win_behind_count?: StringNullableFilter<"surface_overview"> | string | null
+    away_lose_behind_count?: StringNullableFilter<"surface_overview"> | string | null
+    away_win_behind_1vs0_count?: StringNullableFilter<"surface_overview"> | string | null
+    away_lose_behind_0vs1_count?: StringNullableFilter<"surface_overview"> | string | null
+    away_win_behind_2vs0_count?: StringNullableFilter<"surface_overview"> | string | null
+    away_lose_behind_0vs2_count?: StringNullableFilter<"surface_overview"> | string | null
+    away_win_behind_other_count?: StringNullableFilter<"surface_overview"> | string | null
+    away_lose_behind_other_count?: StringNullableFilter<"surface_overview"> | string | null
     away_adversity_disp?: StringNullableFilter<"surface_overview"> | string | null
     promote_disp?: StringNullableFilter<"surface_overview"> | string | null
     descend_disp?: StringNullableFilter<"surface_overview"> | string | null
@@ -63599,15 +66100,15 @@ export namespace Prisma {
     id?: SortOrder
     country?: SortOrder
     league?: SortOrder
-    game_year?: SortOrder
-    game_month?: SortOrder
+    game_year?: SortOrderInput | SortOrder
+    game_month?: SortOrderInput | SortOrder
     team?: SortOrder
-    games?: SortOrder
+    games?: SortOrderInput | SortOrder
     rank?: SortOrderInput | SortOrder
-    win?: SortOrder
-    lose?: SortOrder
-    draw?: SortOrder
-    winning_points?: SortOrder
+    win?: SortOrderInput | SortOrder
+    lose?: SortOrderInput | SortOrder
+    draw?: SortOrderInput | SortOrder
+    winning_points?: SortOrderInput | SortOrder
     home_1st_half_score?: SortOrderInput | SortOrder
     home_2nd_half_score?: SortOrderInput | SortOrder
     home_sum_score?: SortOrderInput | SortOrder
@@ -63620,45 +66121,45 @@ export namespace Prisma {
     away_1st_half_score_ratio?: SortOrderInput | SortOrder
     away_2nd_half_score_ratio?: SortOrderInput | SortOrder
     away_clean_sheet?: SortOrderInput | SortOrder
-    fail_to_score_game_count?: SortOrder
+    fail_to_score_game_count?: SortOrderInput | SortOrder
     consecutive_win_disp?: SortOrderInput | SortOrder
     consecutive_lose_disp?: SortOrderInput | SortOrder
-    unbeaten_streak_count?: SortOrder
+    unbeaten_streak_count?: SortOrderInput | SortOrder
     unbeaten_streak_disp?: SortOrderInput | SortOrder
-    consecutive_score_count?: SortOrder
+    consecutive_score_count?: SortOrderInput | SortOrder
     consecutive_score_count_disp?: SortOrderInput | SortOrder
-    first_week_game_win_count?: SortOrder
-    first_week_game_lost_count?: SortOrder
+    first_week_game_win_count?: SortOrderInput | SortOrder
+    first_week_game_lost_count?: SortOrderInput | SortOrder
     first_week_game_win_disp?: SortOrderInput | SortOrder
-    mid_week_game_win_count?: SortOrder
-    mid_week_game_lost_count?: SortOrder
+    mid_week_game_win_count?: SortOrderInput | SortOrder
+    mid_week_game_lost_count?: SortOrderInput | SortOrder
     mid_week_game_win_disp?: SortOrderInput | SortOrder
-    last_week_game_win_count?: SortOrder
-    last_week_game_lost_count?: SortOrder
+    last_week_game_win_count?: SortOrderInput | SortOrder
+    last_week_game_lost_count?: SortOrderInput | SortOrder
     last_week_game_win_disp?: SortOrderInput | SortOrder
-    home_win_count?: SortOrder
-    home_lose_count?: SortOrder
-    home_first_goal_count?: SortOrder
-    home_win_behind_count?: SortOrder
-    home_lose_behind_count?: SortOrder
-    home_win_behind_0vs1_count?: SortOrder
-    home_lose_behind_1vs0_count?: SortOrder
-    home_win_behind_0vs2_count?: SortOrder
-    home_lose_behind_2vs0_count?: SortOrder
-    home_win_behind_other_count?: SortOrder
-    home_lose_behind_other_count?: SortOrder
+    home_win_count?: SortOrderInput | SortOrder
+    home_lose_count?: SortOrderInput | SortOrder
+    home_first_goal_count?: SortOrderInput | SortOrder
+    home_win_behind_count?: SortOrderInput | SortOrder
+    home_lose_behind_count?: SortOrderInput | SortOrder
+    home_win_behind_0vs1_count?: SortOrderInput | SortOrder
+    home_lose_behind_1vs0_count?: SortOrderInput | SortOrder
+    home_win_behind_0vs2_count?: SortOrderInput | SortOrder
+    home_lose_behind_2vs0_count?: SortOrderInput | SortOrder
+    home_win_behind_other_count?: SortOrderInput | SortOrder
+    home_lose_behind_other_count?: SortOrderInput | SortOrder
     home_adversity_disp?: SortOrderInput | SortOrder
-    away_win_count?: SortOrder
-    away_lose_count?: SortOrder
-    away_first_goal_count?: SortOrder
-    away_win_behind_count?: SortOrder
-    away_lose_behind_count?: SortOrder
-    away_win_behind_1vs0_count?: SortOrder
-    away_lose_behind_0vs1_count?: SortOrder
-    away_win_behind_2vs0_count?: SortOrder
-    away_lose_behind_0vs2_count?: SortOrder
-    away_win_behind_other_count?: SortOrder
-    away_lose_behind_other_count?: SortOrder
+    away_win_count?: SortOrderInput | SortOrder
+    away_lose_count?: SortOrderInput | SortOrder
+    away_first_goal_count?: SortOrderInput | SortOrder
+    away_win_behind_count?: SortOrderInput | SortOrder
+    away_lose_behind_count?: SortOrderInput | SortOrder
+    away_win_behind_1vs0_count?: SortOrderInput | SortOrder
+    away_lose_behind_0vs1_count?: SortOrderInput | SortOrder
+    away_win_behind_2vs0_count?: SortOrderInput | SortOrder
+    away_lose_behind_0vs2_count?: SortOrderInput | SortOrder
+    away_win_behind_other_count?: SortOrderInput | SortOrder
+    away_lose_behind_other_count?: SortOrderInput | SortOrder
     away_adversity_disp?: SortOrderInput | SortOrder
     promote_disp?: SortOrderInput | SortOrder
     descend_disp?: SortOrderInput | SortOrder
@@ -63680,15 +66181,15 @@ export namespace Prisma {
     NOT?: surface_overviewWhereInput | surface_overviewWhereInput[]
     country?: StringFilter<"surface_overview"> | string
     league?: StringFilter<"surface_overview"> | string
-    game_year?: StringFilter<"surface_overview"> | string
-    game_month?: IntFilter<"surface_overview"> | number
+    game_year?: StringNullableFilter<"surface_overview"> | string | null
+    game_month?: StringNullableFilter<"surface_overview"> | string | null
     team?: StringFilter<"surface_overview"> | string
-    games?: IntFilter<"surface_overview"> | number
-    rank?: IntNullableFilter<"surface_overview"> | number | null
-    win?: IntFilter<"surface_overview"> | number
-    lose?: IntFilter<"surface_overview"> | number
-    draw?: IntFilter<"surface_overview"> | number
-    winning_points?: IntFilter<"surface_overview"> | number
+    games?: StringNullableFilter<"surface_overview"> | string | null
+    rank?: StringNullableFilter<"surface_overview"> | string | null
+    win?: StringNullableFilter<"surface_overview"> | string | null
+    lose?: StringNullableFilter<"surface_overview"> | string | null
+    draw?: StringNullableFilter<"surface_overview"> | string | null
+    winning_points?: StringNullableFilter<"surface_overview"> | string | null
     home_1st_half_score?: StringNullableFilter<"surface_overview"> | string | null
     home_2nd_half_score?: StringNullableFilter<"surface_overview"> | string | null
     home_sum_score?: StringNullableFilter<"surface_overview"> | string | null
@@ -63701,45 +66202,45 @@ export namespace Prisma {
     away_1st_half_score_ratio?: StringNullableFilter<"surface_overview"> | string | null
     away_2nd_half_score_ratio?: StringNullableFilter<"surface_overview"> | string | null
     away_clean_sheet?: StringNullableFilter<"surface_overview"> | string | null
-    fail_to_score_game_count?: IntFilter<"surface_overview"> | number
+    fail_to_score_game_count?: StringNullableFilter<"surface_overview"> | string | null
     consecutive_win_disp?: StringNullableFilter<"surface_overview"> | string | null
     consecutive_lose_disp?: StringNullableFilter<"surface_overview"> | string | null
-    unbeaten_streak_count?: IntFilter<"surface_overview"> | number
+    unbeaten_streak_count?: StringNullableFilter<"surface_overview"> | string | null
     unbeaten_streak_disp?: StringNullableFilter<"surface_overview"> | string | null
-    consecutive_score_count?: IntFilter<"surface_overview"> | number
+    consecutive_score_count?: StringNullableFilter<"surface_overview"> | string | null
     consecutive_score_count_disp?: StringNullableFilter<"surface_overview"> | string | null
-    first_week_game_win_count?: IntFilter<"surface_overview"> | number
-    first_week_game_lost_count?: IntFilter<"surface_overview"> | number
+    first_week_game_win_count?: StringNullableFilter<"surface_overview"> | string | null
+    first_week_game_lost_count?: StringNullableFilter<"surface_overview"> | string | null
     first_week_game_win_disp?: StringNullableFilter<"surface_overview"> | string | null
-    mid_week_game_win_count?: IntFilter<"surface_overview"> | number
-    mid_week_game_lost_count?: IntFilter<"surface_overview"> | number
+    mid_week_game_win_count?: StringNullableFilter<"surface_overview"> | string | null
+    mid_week_game_lost_count?: StringNullableFilter<"surface_overview"> | string | null
     mid_week_game_win_disp?: StringNullableFilter<"surface_overview"> | string | null
-    last_week_game_win_count?: IntFilter<"surface_overview"> | number
-    last_week_game_lost_count?: IntFilter<"surface_overview"> | number
+    last_week_game_win_count?: StringNullableFilter<"surface_overview"> | string | null
+    last_week_game_lost_count?: StringNullableFilter<"surface_overview"> | string | null
     last_week_game_win_disp?: StringNullableFilter<"surface_overview"> | string | null
-    home_win_count?: IntFilter<"surface_overview"> | number
-    home_lose_count?: IntFilter<"surface_overview"> | number
-    home_first_goal_count?: IntFilter<"surface_overview"> | number
-    home_win_behind_count?: IntFilter<"surface_overview"> | number
-    home_lose_behind_count?: IntFilter<"surface_overview"> | number
-    home_win_behind_0vs1_count?: IntFilter<"surface_overview"> | number
-    home_lose_behind_1vs0_count?: IntFilter<"surface_overview"> | number
-    home_win_behind_0vs2_count?: IntFilter<"surface_overview"> | number
-    home_lose_behind_2vs0_count?: IntFilter<"surface_overview"> | number
-    home_win_behind_other_count?: IntFilter<"surface_overview"> | number
-    home_lose_behind_other_count?: IntFilter<"surface_overview"> | number
+    home_win_count?: StringNullableFilter<"surface_overview"> | string | null
+    home_lose_count?: StringNullableFilter<"surface_overview"> | string | null
+    home_first_goal_count?: StringNullableFilter<"surface_overview"> | string | null
+    home_win_behind_count?: StringNullableFilter<"surface_overview"> | string | null
+    home_lose_behind_count?: StringNullableFilter<"surface_overview"> | string | null
+    home_win_behind_0vs1_count?: StringNullableFilter<"surface_overview"> | string | null
+    home_lose_behind_1vs0_count?: StringNullableFilter<"surface_overview"> | string | null
+    home_win_behind_0vs2_count?: StringNullableFilter<"surface_overview"> | string | null
+    home_lose_behind_2vs0_count?: StringNullableFilter<"surface_overview"> | string | null
+    home_win_behind_other_count?: StringNullableFilter<"surface_overview"> | string | null
+    home_lose_behind_other_count?: StringNullableFilter<"surface_overview"> | string | null
     home_adversity_disp?: StringNullableFilter<"surface_overview"> | string | null
-    away_win_count?: IntFilter<"surface_overview"> | number
-    away_lose_count?: IntFilter<"surface_overview"> | number
-    away_first_goal_count?: IntFilter<"surface_overview"> | number
-    away_win_behind_count?: IntFilter<"surface_overview"> | number
-    away_lose_behind_count?: IntFilter<"surface_overview"> | number
-    away_win_behind_1vs0_count?: IntFilter<"surface_overview"> | number
-    away_lose_behind_0vs1_count?: IntFilter<"surface_overview"> | number
-    away_win_behind_2vs0_count?: IntFilter<"surface_overview"> | number
-    away_lose_behind_0vs2_count?: IntFilter<"surface_overview"> | number
-    away_win_behind_other_count?: IntFilter<"surface_overview"> | number
-    away_lose_behind_other_count?: IntFilter<"surface_overview"> | number
+    away_win_count?: StringNullableFilter<"surface_overview"> | string | null
+    away_lose_count?: StringNullableFilter<"surface_overview"> | string | null
+    away_first_goal_count?: StringNullableFilter<"surface_overview"> | string | null
+    away_win_behind_count?: StringNullableFilter<"surface_overview"> | string | null
+    away_lose_behind_count?: StringNullableFilter<"surface_overview"> | string | null
+    away_win_behind_1vs0_count?: StringNullableFilter<"surface_overview"> | string | null
+    away_lose_behind_0vs1_count?: StringNullableFilter<"surface_overview"> | string | null
+    away_win_behind_2vs0_count?: StringNullableFilter<"surface_overview"> | string | null
+    away_lose_behind_0vs2_count?: StringNullableFilter<"surface_overview"> | string | null
+    away_win_behind_other_count?: StringNullableFilter<"surface_overview"> | string | null
+    away_lose_behind_other_count?: StringNullableFilter<"surface_overview"> | string | null
     away_adversity_disp?: StringNullableFilter<"surface_overview"> | string | null
     promote_disp?: StringNullableFilter<"surface_overview"> | string | null
     descend_disp?: StringNullableFilter<"surface_overview"> | string | null
@@ -63757,15 +66258,15 @@ export namespace Prisma {
     id?: SortOrder
     country?: SortOrder
     league?: SortOrder
-    game_year?: SortOrder
-    game_month?: SortOrder
+    game_year?: SortOrderInput | SortOrder
+    game_month?: SortOrderInput | SortOrder
     team?: SortOrder
-    games?: SortOrder
+    games?: SortOrderInput | SortOrder
     rank?: SortOrderInput | SortOrder
-    win?: SortOrder
-    lose?: SortOrder
-    draw?: SortOrder
-    winning_points?: SortOrder
+    win?: SortOrderInput | SortOrder
+    lose?: SortOrderInput | SortOrder
+    draw?: SortOrderInput | SortOrder
+    winning_points?: SortOrderInput | SortOrder
     home_1st_half_score?: SortOrderInput | SortOrder
     home_2nd_half_score?: SortOrderInput | SortOrder
     home_sum_score?: SortOrderInput | SortOrder
@@ -63778,45 +66279,45 @@ export namespace Prisma {
     away_1st_half_score_ratio?: SortOrderInput | SortOrder
     away_2nd_half_score_ratio?: SortOrderInput | SortOrder
     away_clean_sheet?: SortOrderInput | SortOrder
-    fail_to_score_game_count?: SortOrder
+    fail_to_score_game_count?: SortOrderInput | SortOrder
     consecutive_win_disp?: SortOrderInput | SortOrder
     consecutive_lose_disp?: SortOrderInput | SortOrder
-    unbeaten_streak_count?: SortOrder
+    unbeaten_streak_count?: SortOrderInput | SortOrder
     unbeaten_streak_disp?: SortOrderInput | SortOrder
-    consecutive_score_count?: SortOrder
+    consecutive_score_count?: SortOrderInput | SortOrder
     consecutive_score_count_disp?: SortOrderInput | SortOrder
-    first_week_game_win_count?: SortOrder
-    first_week_game_lost_count?: SortOrder
+    first_week_game_win_count?: SortOrderInput | SortOrder
+    first_week_game_lost_count?: SortOrderInput | SortOrder
     first_week_game_win_disp?: SortOrderInput | SortOrder
-    mid_week_game_win_count?: SortOrder
-    mid_week_game_lost_count?: SortOrder
+    mid_week_game_win_count?: SortOrderInput | SortOrder
+    mid_week_game_lost_count?: SortOrderInput | SortOrder
     mid_week_game_win_disp?: SortOrderInput | SortOrder
-    last_week_game_win_count?: SortOrder
-    last_week_game_lost_count?: SortOrder
+    last_week_game_win_count?: SortOrderInput | SortOrder
+    last_week_game_lost_count?: SortOrderInput | SortOrder
     last_week_game_win_disp?: SortOrderInput | SortOrder
-    home_win_count?: SortOrder
-    home_lose_count?: SortOrder
-    home_first_goal_count?: SortOrder
-    home_win_behind_count?: SortOrder
-    home_lose_behind_count?: SortOrder
-    home_win_behind_0vs1_count?: SortOrder
-    home_lose_behind_1vs0_count?: SortOrder
-    home_win_behind_0vs2_count?: SortOrder
-    home_lose_behind_2vs0_count?: SortOrder
-    home_win_behind_other_count?: SortOrder
-    home_lose_behind_other_count?: SortOrder
+    home_win_count?: SortOrderInput | SortOrder
+    home_lose_count?: SortOrderInput | SortOrder
+    home_first_goal_count?: SortOrderInput | SortOrder
+    home_win_behind_count?: SortOrderInput | SortOrder
+    home_lose_behind_count?: SortOrderInput | SortOrder
+    home_win_behind_0vs1_count?: SortOrderInput | SortOrder
+    home_lose_behind_1vs0_count?: SortOrderInput | SortOrder
+    home_win_behind_0vs2_count?: SortOrderInput | SortOrder
+    home_lose_behind_2vs0_count?: SortOrderInput | SortOrder
+    home_win_behind_other_count?: SortOrderInput | SortOrder
+    home_lose_behind_other_count?: SortOrderInput | SortOrder
     home_adversity_disp?: SortOrderInput | SortOrder
-    away_win_count?: SortOrder
-    away_lose_count?: SortOrder
-    away_first_goal_count?: SortOrder
-    away_win_behind_count?: SortOrder
-    away_lose_behind_count?: SortOrder
-    away_win_behind_1vs0_count?: SortOrder
-    away_lose_behind_0vs1_count?: SortOrder
-    away_win_behind_2vs0_count?: SortOrder
-    away_lose_behind_0vs2_count?: SortOrder
-    away_win_behind_other_count?: SortOrder
-    away_lose_behind_other_count?: SortOrder
+    away_win_count?: SortOrderInput | SortOrder
+    away_lose_count?: SortOrderInput | SortOrder
+    away_first_goal_count?: SortOrderInput | SortOrder
+    away_win_behind_count?: SortOrderInput | SortOrder
+    away_lose_behind_count?: SortOrderInput | SortOrder
+    away_win_behind_1vs0_count?: SortOrderInput | SortOrder
+    away_lose_behind_0vs1_count?: SortOrderInput | SortOrder
+    away_win_behind_2vs0_count?: SortOrderInput | SortOrder
+    away_lose_behind_0vs2_count?: SortOrderInput | SortOrder
+    away_win_behind_other_count?: SortOrderInput | SortOrder
+    away_lose_behind_other_count?: SortOrderInput | SortOrder
     away_adversity_disp?: SortOrderInput | SortOrder
     promote_disp?: SortOrderInput | SortOrder
     descend_disp?: SortOrderInput | SortOrder
@@ -63842,15 +66343,15 @@ export namespace Prisma {
     id?: IntWithAggregatesFilter<"surface_overview"> | number
     country?: StringWithAggregatesFilter<"surface_overview"> | string
     league?: StringWithAggregatesFilter<"surface_overview"> | string
-    game_year?: StringWithAggregatesFilter<"surface_overview"> | string
-    game_month?: IntWithAggregatesFilter<"surface_overview"> | number
+    game_year?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    game_month?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
     team?: StringWithAggregatesFilter<"surface_overview"> | string
-    games?: IntWithAggregatesFilter<"surface_overview"> | number
-    rank?: IntNullableWithAggregatesFilter<"surface_overview"> | number | null
-    win?: IntWithAggregatesFilter<"surface_overview"> | number
-    lose?: IntWithAggregatesFilter<"surface_overview"> | number
-    draw?: IntWithAggregatesFilter<"surface_overview"> | number
-    winning_points?: IntWithAggregatesFilter<"surface_overview"> | number
+    games?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    rank?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    win?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    lose?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    draw?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    winning_points?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
     home_1st_half_score?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
     home_2nd_half_score?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
     home_sum_score?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
@@ -63863,45 +66364,45 @@ export namespace Prisma {
     away_1st_half_score_ratio?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
     away_2nd_half_score_ratio?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
     away_clean_sheet?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
-    fail_to_score_game_count?: IntWithAggregatesFilter<"surface_overview"> | number
+    fail_to_score_game_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
     consecutive_win_disp?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
     consecutive_lose_disp?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
-    unbeaten_streak_count?: IntWithAggregatesFilter<"surface_overview"> | number
+    unbeaten_streak_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
     unbeaten_streak_disp?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
-    consecutive_score_count?: IntWithAggregatesFilter<"surface_overview"> | number
+    consecutive_score_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
     consecutive_score_count_disp?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
-    first_week_game_win_count?: IntWithAggregatesFilter<"surface_overview"> | number
-    first_week_game_lost_count?: IntWithAggregatesFilter<"surface_overview"> | number
+    first_week_game_win_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    first_week_game_lost_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
     first_week_game_win_disp?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
-    mid_week_game_win_count?: IntWithAggregatesFilter<"surface_overview"> | number
-    mid_week_game_lost_count?: IntWithAggregatesFilter<"surface_overview"> | number
+    mid_week_game_win_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    mid_week_game_lost_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
     mid_week_game_win_disp?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
-    last_week_game_win_count?: IntWithAggregatesFilter<"surface_overview"> | number
-    last_week_game_lost_count?: IntWithAggregatesFilter<"surface_overview"> | number
+    last_week_game_win_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    last_week_game_lost_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
     last_week_game_win_disp?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
-    home_win_count?: IntWithAggregatesFilter<"surface_overview"> | number
-    home_lose_count?: IntWithAggregatesFilter<"surface_overview"> | number
-    home_first_goal_count?: IntWithAggregatesFilter<"surface_overview"> | number
-    home_win_behind_count?: IntWithAggregatesFilter<"surface_overview"> | number
-    home_lose_behind_count?: IntWithAggregatesFilter<"surface_overview"> | number
-    home_win_behind_0vs1_count?: IntWithAggregatesFilter<"surface_overview"> | number
-    home_lose_behind_1vs0_count?: IntWithAggregatesFilter<"surface_overview"> | number
-    home_win_behind_0vs2_count?: IntWithAggregatesFilter<"surface_overview"> | number
-    home_lose_behind_2vs0_count?: IntWithAggregatesFilter<"surface_overview"> | number
-    home_win_behind_other_count?: IntWithAggregatesFilter<"surface_overview"> | number
-    home_lose_behind_other_count?: IntWithAggregatesFilter<"surface_overview"> | number
+    home_win_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    home_lose_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    home_first_goal_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    home_win_behind_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    home_lose_behind_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    home_win_behind_0vs1_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    home_lose_behind_1vs0_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    home_win_behind_0vs2_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    home_lose_behind_2vs0_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    home_win_behind_other_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    home_lose_behind_other_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
     home_adversity_disp?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
-    away_win_count?: IntWithAggregatesFilter<"surface_overview"> | number
-    away_lose_count?: IntWithAggregatesFilter<"surface_overview"> | number
-    away_first_goal_count?: IntWithAggregatesFilter<"surface_overview"> | number
-    away_win_behind_count?: IntWithAggregatesFilter<"surface_overview"> | number
-    away_lose_behind_count?: IntWithAggregatesFilter<"surface_overview"> | number
-    away_win_behind_1vs0_count?: IntWithAggregatesFilter<"surface_overview"> | number
-    away_lose_behind_0vs1_count?: IntWithAggregatesFilter<"surface_overview"> | number
-    away_win_behind_2vs0_count?: IntWithAggregatesFilter<"surface_overview"> | number
-    away_lose_behind_0vs2_count?: IntWithAggregatesFilter<"surface_overview"> | number
-    away_win_behind_other_count?: IntWithAggregatesFilter<"surface_overview"> | number
-    away_lose_behind_other_count?: IntWithAggregatesFilter<"surface_overview"> | number
+    away_win_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    away_lose_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    away_first_goal_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    away_win_behind_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    away_lose_behind_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    away_win_behind_1vs0_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    away_lose_behind_0vs1_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    away_win_behind_2vs0_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    away_lose_behind_0vs2_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    away_win_behind_other_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    away_lose_behind_other_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
     away_adversity_disp?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
     promote_disp?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
     descend_disp?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
@@ -64582,7 +67083,7 @@ export namespace Prisma {
     country?: StringNullableFilter<"team_monthly_score_summary"> | string | null
     league?: StringNullableFilter<"team_monthly_score_summary"> | string | null
     team_name?: StringNullableFilter<"team_monthly_score_summary"> | string | null
-    HA?: StringNullableFilter<"team_monthly_score_summary"> | string | null
+    ha?: StringNullableFilter<"team_monthly_score_summary"> | string | null
     year?: StringNullableFilter<"team_monthly_score_summary"> | string | null
     jar_sum_score?: StringNullableFilter<"team_monthly_score_summary"> | string | null
     feb_sum_score?: StringNullableFilter<"team_monthly_score_summary"> | string | null
@@ -64608,7 +67109,7 @@ export namespace Prisma {
     country?: SortOrderInput | SortOrder
     league?: SortOrderInput | SortOrder
     team_name?: SortOrderInput | SortOrder
-    HA?: SortOrderInput | SortOrder
+    ha?: SortOrderInput | SortOrder
     year?: SortOrderInput | SortOrder
     jar_sum_score?: SortOrderInput | SortOrder
     feb_sum_score?: SortOrderInput | SortOrder
@@ -64637,7 +67138,7 @@ export namespace Prisma {
     country?: StringNullableFilter<"team_monthly_score_summary"> | string | null
     league?: StringNullableFilter<"team_monthly_score_summary"> | string | null
     team_name?: StringNullableFilter<"team_monthly_score_summary"> | string | null
-    HA?: StringNullableFilter<"team_monthly_score_summary"> | string | null
+    ha?: StringNullableFilter<"team_monthly_score_summary"> | string | null
     year?: StringNullableFilter<"team_monthly_score_summary"> | string | null
     jar_sum_score?: StringNullableFilter<"team_monthly_score_summary"> | string | null
     feb_sum_score?: StringNullableFilter<"team_monthly_score_summary"> | string | null
@@ -64663,7 +67164,7 @@ export namespace Prisma {
     country?: SortOrderInput | SortOrder
     league?: SortOrderInput | SortOrder
     team_name?: SortOrderInput | SortOrder
-    HA?: SortOrderInput | SortOrder
+    ha?: SortOrderInput | SortOrder
     year?: SortOrderInput | SortOrder
     jar_sum_score?: SortOrderInput | SortOrder
     feb_sum_score?: SortOrderInput | SortOrder
@@ -64697,7 +67198,7 @@ export namespace Prisma {
     country?: StringNullableWithAggregatesFilter<"team_monthly_score_summary"> | string | null
     league?: StringNullableWithAggregatesFilter<"team_monthly_score_summary"> | string | null
     team_name?: StringNullableWithAggregatesFilter<"team_monthly_score_summary"> | string | null
-    HA?: StringNullableWithAggregatesFilter<"team_monthly_score_summary"> | string | null
+    ha?: StringNullableWithAggregatesFilter<"team_monthly_score_summary"> | string | null
     year?: StringNullableWithAggregatesFilter<"team_monthly_score_summary"> | string | null
     jar_sum_score?: StringNullableWithAggregatesFilter<"team_monthly_score_summary"> | string | null
     feb_sum_score?: StringNullableWithAggregatesFilter<"team_monthly_score_summary"> | string | null
@@ -66582,6 +69083,157 @@ export namespace Prisma {
     update_time?: DateTimeNullableWithAggregatesFilter<"within_data_45minutes_home_scored"> | Date | string | null
   }
 
+  export type country_league_visibilityWhereInput = {
+    AND?: country_league_visibilityWhereInput | country_league_visibilityWhereInput[]
+    OR?: country_league_visibilityWhereInput[]
+    NOT?: country_league_visibilityWhereInput | country_league_visibilityWhereInput[]
+    id?: IntFilter<"country_league_visibility"> | number
+    country?: StringFilter<"country_league_visibility"> | string
+    league?: StringNullableFilter<"country_league_visibility"> | string | null
+    visible?: BoolFilter<"country_league_visibility"> | boolean
+    priority?: IntFilter<"country_league_visibility"> | number
+    reason?: StringNullableFilter<"country_league_visibility"> | string | null
+    effectiveFrom?: DateTimeNullableFilter<"country_league_visibility"> | Date | string | null
+    effectiveTo?: DateTimeNullableFilter<"country_league_visibility"> | Date | string | null
+    optionId?: IntNullableFilter<"country_league_visibility"> | number | null
+    register_id?: StringNullableFilter<"country_league_visibility"> | string | null
+    register_time?: DateTimeNullableFilter<"country_league_visibility"> | Date | string | null
+    update_id?: StringNullableFilter<"country_league_visibility"> | string | null
+    update_time?: DateTimeNullableFilter<"country_league_visibility"> | Date | string | null
+    option?: XOR<Stat_size_finalize_masterNullableScalarRelationFilter, stat_size_finalize_masterWhereInput> | null
+  }
+
+  export type country_league_visibilityOrderByWithRelationInput = {
+    id?: SortOrder
+    country?: SortOrder
+    league?: SortOrderInput | SortOrder
+    visible?: SortOrder
+    priority?: SortOrder
+    reason?: SortOrderInput | SortOrder
+    effectiveFrom?: SortOrderInput | SortOrder
+    effectiveTo?: SortOrderInput | SortOrder
+    optionId?: SortOrderInput | SortOrder
+    register_id?: SortOrderInput | SortOrder
+    register_time?: SortOrderInput | SortOrder
+    update_id?: SortOrderInput | SortOrder
+    update_time?: SortOrderInput | SortOrder
+    option?: stat_size_finalize_masterOrderByWithRelationInput
+  }
+
+  export type country_league_visibilityWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    country_league_optionId?: country_league_visibilityCountryLeagueOptionIdCompoundUniqueInput
+    AND?: country_league_visibilityWhereInput | country_league_visibilityWhereInput[]
+    OR?: country_league_visibilityWhereInput[]
+    NOT?: country_league_visibilityWhereInput | country_league_visibilityWhereInput[]
+    country?: StringFilter<"country_league_visibility"> | string
+    league?: StringNullableFilter<"country_league_visibility"> | string | null
+    visible?: BoolFilter<"country_league_visibility"> | boolean
+    priority?: IntFilter<"country_league_visibility"> | number
+    reason?: StringNullableFilter<"country_league_visibility"> | string | null
+    effectiveFrom?: DateTimeNullableFilter<"country_league_visibility"> | Date | string | null
+    effectiveTo?: DateTimeNullableFilter<"country_league_visibility"> | Date | string | null
+    optionId?: IntNullableFilter<"country_league_visibility"> | number | null
+    register_id?: StringNullableFilter<"country_league_visibility"> | string | null
+    register_time?: DateTimeNullableFilter<"country_league_visibility"> | Date | string | null
+    update_id?: StringNullableFilter<"country_league_visibility"> | string | null
+    update_time?: DateTimeNullableFilter<"country_league_visibility"> | Date | string | null
+    option?: XOR<Stat_size_finalize_masterNullableScalarRelationFilter, stat_size_finalize_masterWhereInput> | null
+  }, "id" | "country_league_optionId">
+
+  export type country_league_visibilityOrderByWithAggregationInput = {
+    id?: SortOrder
+    country?: SortOrder
+    league?: SortOrderInput | SortOrder
+    visible?: SortOrder
+    priority?: SortOrder
+    reason?: SortOrderInput | SortOrder
+    effectiveFrom?: SortOrderInput | SortOrder
+    effectiveTo?: SortOrderInput | SortOrder
+    optionId?: SortOrderInput | SortOrder
+    register_id?: SortOrderInput | SortOrder
+    register_time?: SortOrderInput | SortOrder
+    update_id?: SortOrderInput | SortOrder
+    update_time?: SortOrderInput | SortOrder
+    _count?: country_league_visibilityCountOrderByAggregateInput
+    _avg?: country_league_visibilityAvgOrderByAggregateInput
+    _max?: country_league_visibilityMaxOrderByAggregateInput
+    _min?: country_league_visibilityMinOrderByAggregateInput
+    _sum?: country_league_visibilitySumOrderByAggregateInput
+  }
+
+  export type country_league_visibilityScalarWhereWithAggregatesInput = {
+    AND?: country_league_visibilityScalarWhereWithAggregatesInput | country_league_visibilityScalarWhereWithAggregatesInput[]
+    OR?: country_league_visibilityScalarWhereWithAggregatesInput[]
+    NOT?: country_league_visibilityScalarWhereWithAggregatesInput | country_league_visibilityScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"country_league_visibility"> | number
+    country?: StringWithAggregatesFilter<"country_league_visibility"> | string
+    league?: StringNullableWithAggregatesFilter<"country_league_visibility"> | string | null
+    visible?: BoolWithAggregatesFilter<"country_league_visibility"> | boolean
+    priority?: IntWithAggregatesFilter<"country_league_visibility"> | number
+    reason?: StringNullableWithAggregatesFilter<"country_league_visibility"> | string | null
+    effectiveFrom?: DateTimeNullableWithAggregatesFilter<"country_league_visibility"> | Date | string | null
+    effectiveTo?: DateTimeNullableWithAggregatesFilter<"country_league_visibility"> | Date | string | null
+    optionId?: IntNullableWithAggregatesFilter<"country_league_visibility"> | number | null
+    register_id?: StringNullableWithAggregatesFilter<"country_league_visibility"> | string | null
+    register_time?: DateTimeNullableWithAggregatesFilter<"country_league_visibility"> | Date | string | null
+    update_id?: StringNullableWithAggregatesFilter<"country_league_visibility"> | string | null
+    update_time?: DateTimeNullableWithAggregatesFilter<"country_league_visibility"> | Date | string | null
+  }
+
+  export type user_visibility_optionWhereInput = {
+    AND?: user_visibility_optionWhereInput | user_visibility_optionWhereInput[]
+    OR?: user_visibility_optionWhereInput[]
+    NOT?: user_visibility_optionWhereInput | user_visibility_optionWhereInput[]
+    id?: IntFilter<"user_visibility_option"> | number
+    userId?: StringFilter<"user_visibility_option"> | string
+    optionId?: IntFilter<"user_visibility_option"> | number
+    createdAt?: DateTimeFilter<"user_visibility_option"> | Date | string
+    option?: XOR<Stat_size_finalize_masterScalarRelationFilter, stat_size_finalize_masterWhereInput>
+  }
+
+  export type user_visibility_optionOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    optionId?: SortOrder
+    createdAt?: SortOrder
+    option?: stat_size_finalize_masterOrderByWithRelationInput
+  }
+
+  export type user_visibility_optionWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    userId_optionId?: user_visibility_optionUserIdOptionIdCompoundUniqueInput
+    AND?: user_visibility_optionWhereInput | user_visibility_optionWhereInput[]
+    OR?: user_visibility_optionWhereInput[]
+    NOT?: user_visibility_optionWhereInput | user_visibility_optionWhereInput[]
+    userId?: StringFilter<"user_visibility_option"> | string
+    optionId?: IntFilter<"user_visibility_option"> | number
+    createdAt?: DateTimeFilter<"user_visibility_option"> | Date | string
+    option?: XOR<Stat_size_finalize_masterScalarRelationFilter, stat_size_finalize_masterWhereInput>
+  }, "id" | "userId_optionId">
+
+  export type user_visibility_optionOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    optionId?: SortOrder
+    createdAt?: SortOrder
+    _count?: user_visibility_optionCountOrderByAggregateInput
+    _avg?: user_visibility_optionAvgOrderByAggregateInput
+    _max?: user_visibility_optionMaxOrderByAggregateInput
+    _min?: user_visibility_optionMinOrderByAggregateInput
+    _sum?: user_visibility_optionSumOrderByAggregateInput
+  }
+
+  export type user_visibility_optionScalarWhereWithAggregatesInput = {
+    AND?: user_visibility_optionScalarWhereWithAggregatesInput | user_visibility_optionScalarWhereWithAggregatesInput[]
+    OR?: user_visibility_optionScalarWhereWithAggregatesInput[]
+    NOT?: user_visibility_optionScalarWhereWithAggregatesInput | user_visibility_optionScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"user_visibility_option"> | number
+    userId?: StringWithAggregatesFilter<"user_visibility_option"> | string
+    optionId?: IntWithAggregatesFilter<"user_visibility_option"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"user_visibility_option"> | Date | string
+  }
+
   export type average_statistics_csv_tmp_dataCreateInput = {
     id: number
     score?: string | null
@@ -67558,7 +70210,7 @@ export namespace Prisma {
     home?: string | null
     away?: string | null
     score?: string | null
-    chkBody?: string | null
+    chk_body?: string | null
     rank_1th?: string | null
     rank_2th?: string | null
     rank_3th?: string | null
@@ -67647,7 +70299,7 @@ export namespace Prisma {
     home?: string | null
     away?: string | null
     score?: string | null
-    chkBody?: string | null
+    chk_body?: string | null
     rank_1th?: string | null
     rank_2th?: string | null
     rank_3th?: string | null
@@ -67735,7 +70387,7 @@ export namespace Prisma {
     home?: NullableStringFieldUpdateOperationsInput | string | null
     away?: NullableStringFieldUpdateOperationsInput | string | null
     score?: NullableStringFieldUpdateOperationsInput | string | null
-    chkBody?: NullableStringFieldUpdateOperationsInput | string | null
+    chk_body?: NullableStringFieldUpdateOperationsInput | string | null
     rank_1th?: NullableStringFieldUpdateOperationsInput | string | null
     rank_2th?: NullableStringFieldUpdateOperationsInput | string | null
     rank_3th?: NullableStringFieldUpdateOperationsInput | string | null
@@ -67824,7 +70476,7 @@ export namespace Prisma {
     home?: NullableStringFieldUpdateOperationsInput | string | null
     away?: NullableStringFieldUpdateOperationsInput | string | null
     score?: NullableStringFieldUpdateOperationsInput | string | null
-    chkBody?: NullableStringFieldUpdateOperationsInput | string | null
+    chk_body?: NullableStringFieldUpdateOperationsInput | string | null
     rank_1th?: NullableStringFieldUpdateOperationsInput | string | null
     rank_2th?: NullableStringFieldUpdateOperationsInput | string | null
     rank_3th?: NullableStringFieldUpdateOperationsInput | string | null
@@ -67913,7 +70565,7 @@ export namespace Prisma {
     home?: string | null
     away?: string | null
     score?: string | null
-    chkBody?: string | null
+    chk_body?: string | null
     rank_1th?: string | null
     rank_2th?: string | null
     rank_3th?: string | null
@@ -68001,7 +70653,7 @@ export namespace Prisma {
     home?: NullableStringFieldUpdateOperationsInput | string | null
     away?: NullableStringFieldUpdateOperationsInput | string | null
     score?: NullableStringFieldUpdateOperationsInput | string | null
-    chkBody?: NullableStringFieldUpdateOperationsInput | string | null
+    chk_body?: NullableStringFieldUpdateOperationsInput | string | null
     rank_1th?: NullableStringFieldUpdateOperationsInput | string | null
     rank_2th?: NullableStringFieldUpdateOperationsInput | string | null
     rank_3th?: NullableStringFieldUpdateOperationsInput | string | null
@@ -68090,7 +70742,7 @@ export namespace Prisma {
     home?: NullableStringFieldUpdateOperationsInput | string | null
     away?: NullableStringFieldUpdateOperationsInput | string | null
     score?: NullableStringFieldUpdateOperationsInput | string | null
-    chkBody?: NullableStringFieldUpdateOperationsInput | string | null
+    chk_body?: NullableStringFieldUpdateOperationsInput | string | null
     rank_1th?: NullableStringFieldUpdateOperationsInput | string | null
     rank_2th?: NullableStringFieldUpdateOperationsInput | string | null
     rank_3th?: NullableStringFieldUpdateOperationsInput | string | null
@@ -68405,7 +71057,6 @@ export namespace Prisma {
     round?: string | null
     path?: string | null
     disp_valid_flg?: string
-    upd_stamp?: Date | string
     register_id?: string | null
     register_time?: Date | string | null
     update_id?: string | null
@@ -68421,7 +71072,6 @@ export namespace Prisma {
     round?: string | null
     path?: string | null
     disp_valid_flg?: string
-    upd_stamp?: Date | string
     register_id?: string | null
     register_time?: Date | string | null
     update_id?: string | null
@@ -68436,7 +71086,6 @@ export namespace Prisma {
     round?: NullableStringFieldUpdateOperationsInput | string | null
     path?: NullableStringFieldUpdateOperationsInput | string | null
     disp_valid_flg?: StringFieldUpdateOperationsInput | string
-    upd_stamp?: DateTimeFieldUpdateOperationsInput | Date | string
     register_id?: NullableStringFieldUpdateOperationsInput | string | null
     register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     update_id?: NullableStringFieldUpdateOperationsInput | string | null
@@ -68452,7 +71101,6 @@ export namespace Prisma {
     round?: NullableStringFieldUpdateOperationsInput | string | null
     path?: NullableStringFieldUpdateOperationsInput | string | null
     disp_valid_flg?: StringFieldUpdateOperationsInput | string
-    upd_stamp?: DateTimeFieldUpdateOperationsInput | Date | string
     register_id?: NullableStringFieldUpdateOperationsInput | string | null
     register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     update_id?: NullableStringFieldUpdateOperationsInput | string | null
@@ -68468,7 +71116,6 @@ export namespace Prisma {
     round?: string | null
     path?: string | null
     disp_valid_flg?: string
-    upd_stamp?: Date | string
     register_id?: string | null
     register_time?: Date | string | null
     update_id?: string | null
@@ -68483,7 +71130,6 @@ export namespace Prisma {
     round?: NullableStringFieldUpdateOperationsInput | string | null
     path?: NullableStringFieldUpdateOperationsInput | string | null
     disp_valid_flg?: StringFieldUpdateOperationsInput | string
-    upd_stamp?: DateTimeFieldUpdateOperationsInput | Date | string
     register_id?: NullableStringFieldUpdateOperationsInput | string | null
     register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     update_id?: NullableStringFieldUpdateOperationsInput | string | null
@@ -68499,7 +71145,6 @@ export namespace Prisma {
     round?: NullableStringFieldUpdateOperationsInput | string | null
     path?: NullableStringFieldUpdateOperationsInput | string | null
     disp_valid_flg?: StringFieldUpdateOperationsInput | string
-    upd_stamp?: DateTimeFieldUpdateOperationsInput | Date | string
     register_id?: NullableStringFieldUpdateOperationsInput | string | null
     register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     update_id?: NullableStringFieldUpdateOperationsInput | string | null
@@ -73296,6 +75941,8 @@ export namespace Prisma {
     register_time: Date | string
     update_id: string
     update_time: Date | string
+    country_league_visibilities?: country_league_visibilityCreateNestedManyWithoutOptionInput
+    user_visibility_options?: user_visibility_optionCreateNestedManyWithoutOptionInput
   }
 
   export type stat_size_finalize_masterUncheckedCreateInput = {
@@ -73307,6 +75954,8 @@ export namespace Prisma {
     register_time: Date | string
     update_id: string
     update_time: Date | string
+    country_league_visibilities?: country_league_visibilityUncheckedCreateNestedManyWithoutOptionInput
+    user_visibility_options?: user_visibility_optionUncheckedCreateNestedManyWithoutOptionInput
   }
 
   export type stat_size_finalize_masterUpdateInput = {
@@ -73317,6 +75966,8 @@ export namespace Prisma {
     register_time?: DateTimeFieldUpdateOperationsInput | Date | string
     update_id?: StringFieldUpdateOperationsInput | string
     update_time?: DateTimeFieldUpdateOperationsInput | Date | string
+    country_league_visibilities?: country_league_visibilityUpdateManyWithoutOptionNestedInput
+    user_visibility_options?: user_visibility_optionUpdateManyWithoutOptionNestedInput
   }
 
   export type stat_size_finalize_masterUncheckedUpdateInput = {
@@ -73328,6 +75979,8 @@ export namespace Prisma {
     register_time?: DateTimeFieldUpdateOperationsInput | Date | string
     update_id?: StringFieldUpdateOperationsInput | string
     update_time?: DateTimeFieldUpdateOperationsInput | Date | string
+    country_league_visibilities?: country_league_visibilityUncheckedUpdateManyWithoutOptionNestedInput
+    user_visibility_options?: user_visibility_optionUncheckedUpdateManyWithoutOptionNestedInput
   }
 
   export type stat_size_finalize_masterCreateManyInput = {
@@ -73365,15 +76018,15 @@ export namespace Prisma {
   export type surface_overviewCreateInput = {
     country: string
     league: string
-    game_year: string
-    game_month: number
+    game_year?: string | null
+    game_month?: string | null
     team: string
-    games?: number
-    rank?: number | null
-    win?: number
-    lose?: number
-    draw?: number
-    winning_points?: number
+    games?: string | null
+    rank?: string | null
+    win?: string | null
+    lose?: string | null
+    draw?: string | null
+    winning_points?: string | null
     home_1st_half_score?: string | null
     home_2nd_half_score?: string | null
     home_sum_score?: string | null
@@ -73386,45 +76039,45 @@ export namespace Prisma {
     away_1st_half_score_ratio?: string | null
     away_2nd_half_score_ratio?: string | null
     away_clean_sheet?: string | null
-    fail_to_score_game_count?: number
+    fail_to_score_game_count?: string | null
     consecutive_win_disp?: string | null
     consecutive_lose_disp?: string | null
-    unbeaten_streak_count?: number
+    unbeaten_streak_count?: string | null
     unbeaten_streak_disp?: string | null
-    consecutive_score_count?: number
+    consecutive_score_count?: string | null
     consecutive_score_count_disp?: string | null
-    first_week_game_win_count?: number
-    first_week_game_lost_count?: number
+    first_week_game_win_count?: string | null
+    first_week_game_lost_count?: string | null
     first_week_game_win_disp?: string | null
-    mid_week_game_win_count?: number
-    mid_week_game_lost_count?: number
+    mid_week_game_win_count?: string | null
+    mid_week_game_lost_count?: string | null
     mid_week_game_win_disp?: string | null
-    last_week_game_win_count?: number
-    last_week_game_lost_count?: number
+    last_week_game_win_count?: string | null
+    last_week_game_lost_count?: string | null
     last_week_game_win_disp?: string | null
-    home_win_count?: number
-    home_lose_count?: number
-    home_first_goal_count?: number
-    home_win_behind_count?: number
-    home_lose_behind_count?: number
-    home_win_behind_0vs1_count?: number
-    home_lose_behind_1vs0_count?: number
-    home_win_behind_0vs2_count?: number
-    home_lose_behind_2vs0_count?: number
-    home_win_behind_other_count?: number
-    home_lose_behind_other_count?: number
+    home_win_count?: string | null
+    home_lose_count?: string | null
+    home_first_goal_count?: string | null
+    home_win_behind_count?: string | null
+    home_lose_behind_count?: string | null
+    home_win_behind_0vs1_count?: string | null
+    home_lose_behind_1vs0_count?: string | null
+    home_win_behind_0vs2_count?: string | null
+    home_lose_behind_2vs0_count?: string | null
+    home_win_behind_other_count?: string | null
+    home_lose_behind_other_count?: string | null
     home_adversity_disp?: string | null
-    away_win_count?: number
-    away_lose_count?: number
-    away_first_goal_count?: number
-    away_win_behind_count?: number
-    away_lose_behind_count?: number
-    away_win_behind_1vs0_count?: number
-    away_lose_behind_0vs1_count?: number
-    away_win_behind_2vs0_count?: number
-    away_lose_behind_0vs2_count?: number
-    away_win_behind_other_count?: number
-    away_lose_behind_other_count?: number
+    away_win_count?: string | null
+    away_lose_count?: string | null
+    away_first_goal_count?: string | null
+    away_win_behind_count?: string | null
+    away_lose_behind_count?: string | null
+    away_win_behind_1vs0_count?: string | null
+    away_lose_behind_0vs1_count?: string | null
+    away_win_behind_2vs0_count?: string | null
+    away_lose_behind_0vs2_count?: string | null
+    away_win_behind_other_count?: string | null
+    away_lose_behind_other_count?: string | null
     away_adversity_disp?: string | null
     promote_disp?: string | null
     descend_disp?: string | null
@@ -73442,15 +76095,15 @@ export namespace Prisma {
     id?: number
     country: string
     league: string
-    game_year: string
-    game_month: number
+    game_year?: string | null
+    game_month?: string | null
     team: string
-    games?: number
-    rank?: number | null
-    win?: number
-    lose?: number
-    draw?: number
-    winning_points?: number
+    games?: string | null
+    rank?: string | null
+    win?: string | null
+    lose?: string | null
+    draw?: string | null
+    winning_points?: string | null
     home_1st_half_score?: string | null
     home_2nd_half_score?: string | null
     home_sum_score?: string | null
@@ -73463,45 +76116,45 @@ export namespace Prisma {
     away_1st_half_score_ratio?: string | null
     away_2nd_half_score_ratio?: string | null
     away_clean_sheet?: string | null
-    fail_to_score_game_count?: number
+    fail_to_score_game_count?: string | null
     consecutive_win_disp?: string | null
     consecutive_lose_disp?: string | null
-    unbeaten_streak_count?: number
+    unbeaten_streak_count?: string | null
     unbeaten_streak_disp?: string | null
-    consecutive_score_count?: number
+    consecutive_score_count?: string | null
     consecutive_score_count_disp?: string | null
-    first_week_game_win_count?: number
-    first_week_game_lost_count?: number
+    first_week_game_win_count?: string | null
+    first_week_game_lost_count?: string | null
     first_week_game_win_disp?: string | null
-    mid_week_game_win_count?: number
-    mid_week_game_lost_count?: number
+    mid_week_game_win_count?: string | null
+    mid_week_game_lost_count?: string | null
     mid_week_game_win_disp?: string | null
-    last_week_game_win_count?: number
-    last_week_game_lost_count?: number
+    last_week_game_win_count?: string | null
+    last_week_game_lost_count?: string | null
     last_week_game_win_disp?: string | null
-    home_win_count?: number
-    home_lose_count?: number
-    home_first_goal_count?: number
-    home_win_behind_count?: number
-    home_lose_behind_count?: number
-    home_win_behind_0vs1_count?: number
-    home_lose_behind_1vs0_count?: number
-    home_win_behind_0vs2_count?: number
-    home_lose_behind_2vs0_count?: number
-    home_win_behind_other_count?: number
-    home_lose_behind_other_count?: number
+    home_win_count?: string | null
+    home_lose_count?: string | null
+    home_first_goal_count?: string | null
+    home_win_behind_count?: string | null
+    home_lose_behind_count?: string | null
+    home_win_behind_0vs1_count?: string | null
+    home_lose_behind_1vs0_count?: string | null
+    home_win_behind_0vs2_count?: string | null
+    home_lose_behind_2vs0_count?: string | null
+    home_win_behind_other_count?: string | null
+    home_lose_behind_other_count?: string | null
     home_adversity_disp?: string | null
-    away_win_count?: number
-    away_lose_count?: number
-    away_first_goal_count?: number
-    away_win_behind_count?: number
-    away_lose_behind_count?: number
-    away_win_behind_1vs0_count?: number
-    away_lose_behind_0vs1_count?: number
-    away_win_behind_2vs0_count?: number
-    away_lose_behind_0vs2_count?: number
-    away_win_behind_other_count?: number
-    away_lose_behind_other_count?: number
+    away_win_count?: string | null
+    away_lose_count?: string | null
+    away_first_goal_count?: string | null
+    away_win_behind_count?: string | null
+    away_lose_behind_count?: string | null
+    away_win_behind_1vs0_count?: string | null
+    away_lose_behind_0vs1_count?: string | null
+    away_win_behind_2vs0_count?: string | null
+    away_lose_behind_0vs2_count?: string | null
+    away_win_behind_other_count?: string | null
+    away_lose_behind_other_count?: string | null
     away_adversity_disp?: string | null
     promote_disp?: string | null
     descend_disp?: string | null
@@ -73518,15 +76171,15 @@ export namespace Prisma {
   export type surface_overviewUpdateInput = {
     country?: StringFieldUpdateOperationsInput | string
     league?: StringFieldUpdateOperationsInput | string
-    game_year?: StringFieldUpdateOperationsInput | string
-    game_month?: IntFieldUpdateOperationsInput | number
+    game_year?: NullableStringFieldUpdateOperationsInput | string | null
+    game_month?: NullableStringFieldUpdateOperationsInput | string | null
     team?: StringFieldUpdateOperationsInput | string
-    games?: IntFieldUpdateOperationsInput | number
-    rank?: NullableIntFieldUpdateOperationsInput | number | null
-    win?: IntFieldUpdateOperationsInput | number
-    lose?: IntFieldUpdateOperationsInput | number
-    draw?: IntFieldUpdateOperationsInput | number
-    winning_points?: IntFieldUpdateOperationsInput | number
+    games?: NullableStringFieldUpdateOperationsInput | string | null
+    rank?: NullableStringFieldUpdateOperationsInput | string | null
+    win?: NullableStringFieldUpdateOperationsInput | string | null
+    lose?: NullableStringFieldUpdateOperationsInput | string | null
+    draw?: NullableStringFieldUpdateOperationsInput | string | null
+    winning_points?: NullableStringFieldUpdateOperationsInput | string | null
     home_1st_half_score?: NullableStringFieldUpdateOperationsInput | string | null
     home_2nd_half_score?: NullableStringFieldUpdateOperationsInput | string | null
     home_sum_score?: NullableStringFieldUpdateOperationsInput | string | null
@@ -73539,45 +76192,45 @@ export namespace Prisma {
     away_1st_half_score_ratio?: NullableStringFieldUpdateOperationsInput | string | null
     away_2nd_half_score_ratio?: NullableStringFieldUpdateOperationsInput | string | null
     away_clean_sheet?: NullableStringFieldUpdateOperationsInput | string | null
-    fail_to_score_game_count?: IntFieldUpdateOperationsInput | number
+    fail_to_score_game_count?: NullableStringFieldUpdateOperationsInput | string | null
     consecutive_win_disp?: NullableStringFieldUpdateOperationsInput | string | null
     consecutive_lose_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    unbeaten_streak_count?: IntFieldUpdateOperationsInput | number
+    unbeaten_streak_count?: NullableStringFieldUpdateOperationsInput | string | null
     unbeaten_streak_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    consecutive_score_count?: IntFieldUpdateOperationsInput | number
+    consecutive_score_count?: NullableStringFieldUpdateOperationsInput | string | null
     consecutive_score_count_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    first_week_game_win_count?: IntFieldUpdateOperationsInput | number
-    first_week_game_lost_count?: IntFieldUpdateOperationsInput | number
+    first_week_game_win_count?: NullableStringFieldUpdateOperationsInput | string | null
+    first_week_game_lost_count?: NullableStringFieldUpdateOperationsInput | string | null
     first_week_game_win_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    mid_week_game_win_count?: IntFieldUpdateOperationsInput | number
-    mid_week_game_lost_count?: IntFieldUpdateOperationsInput | number
+    mid_week_game_win_count?: NullableStringFieldUpdateOperationsInput | string | null
+    mid_week_game_lost_count?: NullableStringFieldUpdateOperationsInput | string | null
     mid_week_game_win_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    last_week_game_win_count?: IntFieldUpdateOperationsInput | number
-    last_week_game_lost_count?: IntFieldUpdateOperationsInput | number
+    last_week_game_win_count?: NullableStringFieldUpdateOperationsInput | string | null
+    last_week_game_lost_count?: NullableStringFieldUpdateOperationsInput | string | null
     last_week_game_win_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    home_win_count?: IntFieldUpdateOperationsInput | number
-    home_lose_count?: IntFieldUpdateOperationsInput | number
-    home_first_goal_count?: IntFieldUpdateOperationsInput | number
-    home_win_behind_count?: IntFieldUpdateOperationsInput | number
-    home_lose_behind_count?: IntFieldUpdateOperationsInput | number
-    home_win_behind_0vs1_count?: IntFieldUpdateOperationsInput | number
-    home_lose_behind_1vs0_count?: IntFieldUpdateOperationsInput | number
-    home_win_behind_0vs2_count?: IntFieldUpdateOperationsInput | number
-    home_lose_behind_2vs0_count?: IntFieldUpdateOperationsInput | number
-    home_win_behind_other_count?: IntFieldUpdateOperationsInput | number
-    home_lose_behind_other_count?: IntFieldUpdateOperationsInput | number
+    home_win_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_lose_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_first_goal_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_win_behind_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_lose_behind_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_win_behind_0vs1_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_lose_behind_1vs0_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_win_behind_0vs2_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_lose_behind_2vs0_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_win_behind_other_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_lose_behind_other_count?: NullableStringFieldUpdateOperationsInput | string | null
     home_adversity_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    away_win_count?: IntFieldUpdateOperationsInput | number
-    away_lose_count?: IntFieldUpdateOperationsInput | number
-    away_first_goal_count?: IntFieldUpdateOperationsInput | number
-    away_win_behind_count?: IntFieldUpdateOperationsInput | number
-    away_lose_behind_count?: IntFieldUpdateOperationsInput | number
-    away_win_behind_1vs0_count?: IntFieldUpdateOperationsInput | number
-    away_lose_behind_0vs1_count?: IntFieldUpdateOperationsInput | number
-    away_win_behind_2vs0_count?: IntFieldUpdateOperationsInput | number
-    away_lose_behind_0vs2_count?: IntFieldUpdateOperationsInput | number
-    away_win_behind_other_count?: IntFieldUpdateOperationsInput | number
-    away_lose_behind_other_count?: IntFieldUpdateOperationsInput | number
+    away_win_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_lose_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_first_goal_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_win_behind_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_lose_behind_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_win_behind_1vs0_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_lose_behind_0vs1_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_win_behind_2vs0_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_lose_behind_0vs2_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_win_behind_other_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_lose_behind_other_count?: NullableStringFieldUpdateOperationsInput | string | null
     away_adversity_disp?: NullableStringFieldUpdateOperationsInput | string | null
     promote_disp?: NullableStringFieldUpdateOperationsInput | string | null
     descend_disp?: NullableStringFieldUpdateOperationsInput | string | null
@@ -73595,15 +76248,15 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     country?: StringFieldUpdateOperationsInput | string
     league?: StringFieldUpdateOperationsInput | string
-    game_year?: StringFieldUpdateOperationsInput | string
-    game_month?: IntFieldUpdateOperationsInput | number
+    game_year?: NullableStringFieldUpdateOperationsInput | string | null
+    game_month?: NullableStringFieldUpdateOperationsInput | string | null
     team?: StringFieldUpdateOperationsInput | string
-    games?: IntFieldUpdateOperationsInput | number
-    rank?: NullableIntFieldUpdateOperationsInput | number | null
-    win?: IntFieldUpdateOperationsInput | number
-    lose?: IntFieldUpdateOperationsInput | number
-    draw?: IntFieldUpdateOperationsInput | number
-    winning_points?: IntFieldUpdateOperationsInput | number
+    games?: NullableStringFieldUpdateOperationsInput | string | null
+    rank?: NullableStringFieldUpdateOperationsInput | string | null
+    win?: NullableStringFieldUpdateOperationsInput | string | null
+    lose?: NullableStringFieldUpdateOperationsInput | string | null
+    draw?: NullableStringFieldUpdateOperationsInput | string | null
+    winning_points?: NullableStringFieldUpdateOperationsInput | string | null
     home_1st_half_score?: NullableStringFieldUpdateOperationsInput | string | null
     home_2nd_half_score?: NullableStringFieldUpdateOperationsInput | string | null
     home_sum_score?: NullableStringFieldUpdateOperationsInput | string | null
@@ -73616,45 +76269,45 @@ export namespace Prisma {
     away_1st_half_score_ratio?: NullableStringFieldUpdateOperationsInput | string | null
     away_2nd_half_score_ratio?: NullableStringFieldUpdateOperationsInput | string | null
     away_clean_sheet?: NullableStringFieldUpdateOperationsInput | string | null
-    fail_to_score_game_count?: IntFieldUpdateOperationsInput | number
+    fail_to_score_game_count?: NullableStringFieldUpdateOperationsInput | string | null
     consecutive_win_disp?: NullableStringFieldUpdateOperationsInput | string | null
     consecutive_lose_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    unbeaten_streak_count?: IntFieldUpdateOperationsInput | number
+    unbeaten_streak_count?: NullableStringFieldUpdateOperationsInput | string | null
     unbeaten_streak_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    consecutive_score_count?: IntFieldUpdateOperationsInput | number
+    consecutive_score_count?: NullableStringFieldUpdateOperationsInput | string | null
     consecutive_score_count_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    first_week_game_win_count?: IntFieldUpdateOperationsInput | number
-    first_week_game_lost_count?: IntFieldUpdateOperationsInput | number
+    first_week_game_win_count?: NullableStringFieldUpdateOperationsInput | string | null
+    first_week_game_lost_count?: NullableStringFieldUpdateOperationsInput | string | null
     first_week_game_win_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    mid_week_game_win_count?: IntFieldUpdateOperationsInput | number
-    mid_week_game_lost_count?: IntFieldUpdateOperationsInput | number
+    mid_week_game_win_count?: NullableStringFieldUpdateOperationsInput | string | null
+    mid_week_game_lost_count?: NullableStringFieldUpdateOperationsInput | string | null
     mid_week_game_win_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    last_week_game_win_count?: IntFieldUpdateOperationsInput | number
-    last_week_game_lost_count?: IntFieldUpdateOperationsInput | number
+    last_week_game_win_count?: NullableStringFieldUpdateOperationsInput | string | null
+    last_week_game_lost_count?: NullableStringFieldUpdateOperationsInput | string | null
     last_week_game_win_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    home_win_count?: IntFieldUpdateOperationsInput | number
-    home_lose_count?: IntFieldUpdateOperationsInput | number
-    home_first_goal_count?: IntFieldUpdateOperationsInput | number
-    home_win_behind_count?: IntFieldUpdateOperationsInput | number
-    home_lose_behind_count?: IntFieldUpdateOperationsInput | number
-    home_win_behind_0vs1_count?: IntFieldUpdateOperationsInput | number
-    home_lose_behind_1vs0_count?: IntFieldUpdateOperationsInput | number
-    home_win_behind_0vs2_count?: IntFieldUpdateOperationsInput | number
-    home_lose_behind_2vs0_count?: IntFieldUpdateOperationsInput | number
-    home_win_behind_other_count?: IntFieldUpdateOperationsInput | number
-    home_lose_behind_other_count?: IntFieldUpdateOperationsInput | number
+    home_win_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_lose_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_first_goal_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_win_behind_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_lose_behind_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_win_behind_0vs1_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_lose_behind_1vs0_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_win_behind_0vs2_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_lose_behind_2vs0_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_win_behind_other_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_lose_behind_other_count?: NullableStringFieldUpdateOperationsInput | string | null
     home_adversity_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    away_win_count?: IntFieldUpdateOperationsInput | number
-    away_lose_count?: IntFieldUpdateOperationsInput | number
-    away_first_goal_count?: IntFieldUpdateOperationsInput | number
-    away_win_behind_count?: IntFieldUpdateOperationsInput | number
-    away_lose_behind_count?: IntFieldUpdateOperationsInput | number
-    away_win_behind_1vs0_count?: IntFieldUpdateOperationsInput | number
-    away_lose_behind_0vs1_count?: IntFieldUpdateOperationsInput | number
-    away_win_behind_2vs0_count?: IntFieldUpdateOperationsInput | number
-    away_lose_behind_0vs2_count?: IntFieldUpdateOperationsInput | number
-    away_win_behind_other_count?: IntFieldUpdateOperationsInput | number
-    away_lose_behind_other_count?: IntFieldUpdateOperationsInput | number
+    away_win_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_lose_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_first_goal_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_win_behind_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_lose_behind_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_win_behind_1vs0_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_lose_behind_0vs1_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_win_behind_2vs0_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_lose_behind_0vs2_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_win_behind_other_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_lose_behind_other_count?: NullableStringFieldUpdateOperationsInput | string | null
     away_adversity_disp?: NullableStringFieldUpdateOperationsInput | string | null
     promote_disp?: NullableStringFieldUpdateOperationsInput | string | null
     descend_disp?: NullableStringFieldUpdateOperationsInput | string | null
@@ -73672,15 +76325,15 @@ export namespace Prisma {
     id?: number
     country: string
     league: string
-    game_year: string
-    game_month: number
+    game_year?: string | null
+    game_month?: string | null
     team: string
-    games?: number
-    rank?: number | null
-    win?: number
-    lose?: number
-    draw?: number
-    winning_points?: number
+    games?: string | null
+    rank?: string | null
+    win?: string | null
+    lose?: string | null
+    draw?: string | null
+    winning_points?: string | null
     home_1st_half_score?: string | null
     home_2nd_half_score?: string | null
     home_sum_score?: string | null
@@ -73693,45 +76346,45 @@ export namespace Prisma {
     away_1st_half_score_ratio?: string | null
     away_2nd_half_score_ratio?: string | null
     away_clean_sheet?: string | null
-    fail_to_score_game_count?: number
+    fail_to_score_game_count?: string | null
     consecutive_win_disp?: string | null
     consecutive_lose_disp?: string | null
-    unbeaten_streak_count?: number
+    unbeaten_streak_count?: string | null
     unbeaten_streak_disp?: string | null
-    consecutive_score_count?: number
+    consecutive_score_count?: string | null
     consecutive_score_count_disp?: string | null
-    first_week_game_win_count?: number
-    first_week_game_lost_count?: number
+    first_week_game_win_count?: string | null
+    first_week_game_lost_count?: string | null
     first_week_game_win_disp?: string | null
-    mid_week_game_win_count?: number
-    mid_week_game_lost_count?: number
+    mid_week_game_win_count?: string | null
+    mid_week_game_lost_count?: string | null
     mid_week_game_win_disp?: string | null
-    last_week_game_win_count?: number
-    last_week_game_lost_count?: number
+    last_week_game_win_count?: string | null
+    last_week_game_lost_count?: string | null
     last_week_game_win_disp?: string | null
-    home_win_count?: number
-    home_lose_count?: number
-    home_first_goal_count?: number
-    home_win_behind_count?: number
-    home_lose_behind_count?: number
-    home_win_behind_0vs1_count?: number
-    home_lose_behind_1vs0_count?: number
-    home_win_behind_0vs2_count?: number
-    home_lose_behind_2vs0_count?: number
-    home_win_behind_other_count?: number
-    home_lose_behind_other_count?: number
+    home_win_count?: string | null
+    home_lose_count?: string | null
+    home_first_goal_count?: string | null
+    home_win_behind_count?: string | null
+    home_lose_behind_count?: string | null
+    home_win_behind_0vs1_count?: string | null
+    home_lose_behind_1vs0_count?: string | null
+    home_win_behind_0vs2_count?: string | null
+    home_lose_behind_2vs0_count?: string | null
+    home_win_behind_other_count?: string | null
+    home_lose_behind_other_count?: string | null
     home_adversity_disp?: string | null
-    away_win_count?: number
-    away_lose_count?: number
-    away_first_goal_count?: number
-    away_win_behind_count?: number
-    away_lose_behind_count?: number
-    away_win_behind_1vs0_count?: number
-    away_lose_behind_0vs1_count?: number
-    away_win_behind_2vs0_count?: number
-    away_lose_behind_0vs2_count?: number
-    away_win_behind_other_count?: number
-    away_lose_behind_other_count?: number
+    away_win_count?: string | null
+    away_lose_count?: string | null
+    away_first_goal_count?: string | null
+    away_win_behind_count?: string | null
+    away_lose_behind_count?: string | null
+    away_win_behind_1vs0_count?: string | null
+    away_lose_behind_0vs1_count?: string | null
+    away_win_behind_2vs0_count?: string | null
+    away_lose_behind_0vs2_count?: string | null
+    away_win_behind_other_count?: string | null
+    away_lose_behind_other_count?: string | null
     away_adversity_disp?: string | null
     promote_disp?: string | null
     descend_disp?: string | null
@@ -73748,15 +76401,15 @@ export namespace Prisma {
   export type surface_overviewUpdateManyMutationInput = {
     country?: StringFieldUpdateOperationsInput | string
     league?: StringFieldUpdateOperationsInput | string
-    game_year?: StringFieldUpdateOperationsInput | string
-    game_month?: IntFieldUpdateOperationsInput | number
+    game_year?: NullableStringFieldUpdateOperationsInput | string | null
+    game_month?: NullableStringFieldUpdateOperationsInput | string | null
     team?: StringFieldUpdateOperationsInput | string
-    games?: IntFieldUpdateOperationsInput | number
-    rank?: NullableIntFieldUpdateOperationsInput | number | null
-    win?: IntFieldUpdateOperationsInput | number
-    lose?: IntFieldUpdateOperationsInput | number
-    draw?: IntFieldUpdateOperationsInput | number
-    winning_points?: IntFieldUpdateOperationsInput | number
+    games?: NullableStringFieldUpdateOperationsInput | string | null
+    rank?: NullableStringFieldUpdateOperationsInput | string | null
+    win?: NullableStringFieldUpdateOperationsInput | string | null
+    lose?: NullableStringFieldUpdateOperationsInput | string | null
+    draw?: NullableStringFieldUpdateOperationsInput | string | null
+    winning_points?: NullableStringFieldUpdateOperationsInput | string | null
     home_1st_half_score?: NullableStringFieldUpdateOperationsInput | string | null
     home_2nd_half_score?: NullableStringFieldUpdateOperationsInput | string | null
     home_sum_score?: NullableStringFieldUpdateOperationsInput | string | null
@@ -73769,45 +76422,45 @@ export namespace Prisma {
     away_1st_half_score_ratio?: NullableStringFieldUpdateOperationsInput | string | null
     away_2nd_half_score_ratio?: NullableStringFieldUpdateOperationsInput | string | null
     away_clean_sheet?: NullableStringFieldUpdateOperationsInput | string | null
-    fail_to_score_game_count?: IntFieldUpdateOperationsInput | number
+    fail_to_score_game_count?: NullableStringFieldUpdateOperationsInput | string | null
     consecutive_win_disp?: NullableStringFieldUpdateOperationsInput | string | null
     consecutive_lose_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    unbeaten_streak_count?: IntFieldUpdateOperationsInput | number
+    unbeaten_streak_count?: NullableStringFieldUpdateOperationsInput | string | null
     unbeaten_streak_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    consecutive_score_count?: IntFieldUpdateOperationsInput | number
+    consecutive_score_count?: NullableStringFieldUpdateOperationsInput | string | null
     consecutive_score_count_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    first_week_game_win_count?: IntFieldUpdateOperationsInput | number
-    first_week_game_lost_count?: IntFieldUpdateOperationsInput | number
+    first_week_game_win_count?: NullableStringFieldUpdateOperationsInput | string | null
+    first_week_game_lost_count?: NullableStringFieldUpdateOperationsInput | string | null
     first_week_game_win_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    mid_week_game_win_count?: IntFieldUpdateOperationsInput | number
-    mid_week_game_lost_count?: IntFieldUpdateOperationsInput | number
+    mid_week_game_win_count?: NullableStringFieldUpdateOperationsInput | string | null
+    mid_week_game_lost_count?: NullableStringFieldUpdateOperationsInput | string | null
     mid_week_game_win_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    last_week_game_win_count?: IntFieldUpdateOperationsInput | number
-    last_week_game_lost_count?: IntFieldUpdateOperationsInput | number
+    last_week_game_win_count?: NullableStringFieldUpdateOperationsInput | string | null
+    last_week_game_lost_count?: NullableStringFieldUpdateOperationsInput | string | null
     last_week_game_win_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    home_win_count?: IntFieldUpdateOperationsInput | number
-    home_lose_count?: IntFieldUpdateOperationsInput | number
-    home_first_goal_count?: IntFieldUpdateOperationsInput | number
-    home_win_behind_count?: IntFieldUpdateOperationsInput | number
-    home_lose_behind_count?: IntFieldUpdateOperationsInput | number
-    home_win_behind_0vs1_count?: IntFieldUpdateOperationsInput | number
-    home_lose_behind_1vs0_count?: IntFieldUpdateOperationsInput | number
-    home_win_behind_0vs2_count?: IntFieldUpdateOperationsInput | number
-    home_lose_behind_2vs0_count?: IntFieldUpdateOperationsInput | number
-    home_win_behind_other_count?: IntFieldUpdateOperationsInput | number
-    home_lose_behind_other_count?: IntFieldUpdateOperationsInput | number
+    home_win_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_lose_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_first_goal_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_win_behind_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_lose_behind_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_win_behind_0vs1_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_lose_behind_1vs0_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_win_behind_0vs2_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_lose_behind_2vs0_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_win_behind_other_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_lose_behind_other_count?: NullableStringFieldUpdateOperationsInput | string | null
     home_adversity_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    away_win_count?: IntFieldUpdateOperationsInput | number
-    away_lose_count?: IntFieldUpdateOperationsInput | number
-    away_first_goal_count?: IntFieldUpdateOperationsInput | number
-    away_win_behind_count?: IntFieldUpdateOperationsInput | number
-    away_lose_behind_count?: IntFieldUpdateOperationsInput | number
-    away_win_behind_1vs0_count?: IntFieldUpdateOperationsInput | number
-    away_lose_behind_0vs1_count?: IntFieldUpdateOperationsInput | number
-    away_win_behind_2vs0_count?: IntFieldUpdateOperationsInput | number
-    away_lose_behind_0vs2_count?: IntFieldUpdateOperationsInput | number
-    away_win_behind_other_count?: IntFieldUpdateOperationsInput | number
-    away_lose_behind_other_count?: IntFieldUpdateOperationsInput | number
+    away_win_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_lose_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_first_goal_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_win_behind_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_lose_behind_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_win_behind_1vs0_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_lose_behind_0vs1_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_win_behind_2vs0_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_lose_behind_0vs2_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_win_behind_other_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_lose_behind_other_count?: NullableStringFieldUpdateOperationsInput | string | null
     away_adversity_disp?: NullableStringFieldUpdateOperationsInput | string | null
     promote_disp?: NullableStringFieldUpdateOperationsInput | string | null
     descend_disp?: NullableStringFieldUpdateOperationsInput | string | null
@@ -73825,15 +76478,15 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     country?: StringFieldUpdateOperationsInput | string
     league?: StringFieldUpdateOperationsInput | string
-    game_year?: StringFieldUpdateOperationsInput | string
-    game_month?: IntFieldUpdateOperationsInput | number
+    game_year?: NullableStringFieldUpdateOperationsInput | string | null
+    game_month?: NullableStringFieldUpdateOperationsInput | string | null
     team?: StringFieldUpdateOperationsInput | string
-    games?: IntFieldUpdateOperationsInput | number
-    rank?: NullableIntFieldUpdateOperationsInput | number | null
-    win?: IntFieldUpdateOperationsInput | number
-    lose?: IntFieldUpdateOperationsInput | number
-    draw?: IntFieldUpdateOperationsInput | number
-    winning_points?: IntFieldUpdateOperationsInput | number
+    games?: NullableStringFieldUpdateOperationsInput | string | null
+    rank?: NullableStringFieldUpdateOperationsInput | string | null
+    win?: NullableStringFieldUpdateOperationsInput | string | null
+    lose?: NullableStringFieldUpdateOperationsInput | string | null
+    draw?: NullableStringFieldUpdateOperationsInput | string | null
+    winning_points?: NullableStringFieldUpdateOperationsInput | string | null
     home_1st_half_score?: NullableStringFieldUpdateOperationsInput | string | null
     home_2nd_half_score?: NullableStringFieldUpdateOperationsInput | string | null
     home_sum_score?: NullableStringFieldUpdateOperationsInput | string | null
@@ -73846,45 +76499,45 @@ export namespace Prisma {
     away_1st_half_score_ratio?: NullableStringFieldUpdateOperationsInput | string | null
     away_2nd_half_score_ratio?: NullableStringFieldUpdateOperationsInput | string | null
     away_clean_sheet?: NullableStringFieldUpdateOperationsInput | string | null
-    fail_to_score_game_count?: IntFieldUpdateOperationsInput | number
+    fail_to_score_game_count?: NullableStringFieldUpdateOperationsInput | string | null
     consecutive_win_disp?: NullableStringFieldUpdateOperationsInput | string | null
     consecutive_lose_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    unbeaten_streak_count?: IntFieldUpdateOperationsInput | number
+    unbeaten_streak_count?: NullableStringFieldUpdateOperationsInput | string | null
     unbeaten_streak_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    consecutive_score_count?: IntFieldUpdateOperationsInput | number
+    consecutive_score_count?: NullableStringFieldUpdateOperationsInput | string | null
     consecutive_score_count_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    first_week_game_win_count?: IntFieldUpdateOperationsInput | number
-    first_week_game_lost_count?: IntFieldUpdateOperationsInput | number
+    first_week_game_win_count?: NullableStringFieldUpdateOperationsInput | string | null
+    first_week_game_lost_count?: NullableStringFieldUpdateOperationsInput | string | null
     first_week_game_win_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    mid_week_game_win_count?: IntFieldUpdateOperationsInput | number
-    mid_week_game_lost_count?: IntFieldUpdateOperationsInput | number
+    mid_week_game_win_count?: NullableStringFieldUpdateOperationsInput | string | null
+    mid_week_game_lost_count?: NullableStringFieldUpdateOperationsInput | string | null
     mid_week_game_win_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    last_week_game_win_count?: IntFieldUpdateOperationsInput | number
-    last_week_game_lost_count?: IntFieldUpdateOperationsInput | number
+    last_week_game_win_count?: NullableStringFieldUpdateOperationsInput | string | null
+    last_week_game_lost_count?: NullableStringFieldUpdateOperationsInput | string | null
     last_week_game_win_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    home_win_count?: IntFieldUpdateOperationsInput | number
-    home_lose_count?: IntFieldUpdateOperationsInput | number
-    home_first_goal_count?: IntFieldUpdateOperationsInput | number
-    home_win_behind_count?: IntFieldUpdateOperationsInput | number
-    home_lose_behind_count?: IntFieldUpdateOperationsInput | number
-    home_win_behind_0vs1_count?: IntFieldUpdateOperationsInput | number
-    home_lose_behind_1vs0_count?: IntFieldUpdateOperationsInput | number
-    home_win_behind_0vs2_count?: IntFieldUpdateOperationsInput | number
-    home_lose_behind_2vs0_count?: IntFieldUpdateOperationsInput | number
-    home_win_behind_other_count?: IntFieldUpdateOperationsInput | number
-    home_lose_behind_other_count?: IntFieldUpdateOperationsInput | number
+    home_win_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_lose_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_first_goal_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_win_behind_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_lose_behind_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_win_behind_0vs1_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_lose_behind_1vs0_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_win_behind_0vs2_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_lose_behind_2vs0_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_win_behind_other_count?: NullableStringFieldUpdateOperationsInput | string | null
+    home_lose_behind_other_count?: NullableStringFieldUpdateOperationsInput | string | null
     home_adversity_disp?: NullableStringFieldUpdateOperationsInput | string | null
-    away_win_count?: IntFieldUpdateOperationsInput | number
-    away_lose_count?: IntFieldUpdateOperationsInput | number
-    away_first_goal_count?: IntFieldUpdateOperationsInput | number
-    away_win_behind_count?: IntFieldUpdateOperationsInput | number
-    away_lose_behind_count?: IntFieldUpdateOperationsInput | number
-    away_win_behind_1vs0_count?: IntFieldUpdateOperationsInput | number
-    away_lose_behind_0vs1_count?: IntFieldUpdateOperationsInput | number
-    away_win_behind_2vs0_count?: IntFieldUpdateOperationsInput | number
-    away_lose_behind_0vs2_count?: IntFieldUpdateOperationsInput | number
-    away_win_behind_other_count?: IntFieldUpdateOperationsInput | number
-    away_lose_behind_other_count?: IntFieldUpdateOperationsInput | number
+    away_win_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_lose_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_first_goal_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_win_behind_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_lose_behind_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_win_behind_1vs0_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_lose_behind_0vs1_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_win_behind_2vs0_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_lose_behind_0vs2_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_win_behind_other_count?: NullableStringFieldUpdateOperationsInput | string | null
+    away_lose_behind_other_count?: NullableStringFieldUpdateOperationsInput | string | null
     away_adversity_disp?: NullableStringFieldUpdateOperationsInput | string | null
     promote_disp?: NullableStringFieldUpdateOperationsInput | string | null
     descend_disp?: NullableStringFieldUpdateOperationsInput | string | null
@@ -74781,7 +77434,7 @@ export namespace Prisma {
     country?: string | null
     league?: string | null
     team_name?: string | null
-    HA?: string | null
+    ha?: string | null
     year?: string | null
     jar_sum_score?: string | null
     feb_sum_score?: string | null
@@ -74807,7 +77460,7 @@ export namespace Prisma {
     country?: string | null
     league?: string | null
     team_name?: string | null
-    HA?: string | null
+    ha?: string | null
     year?: string | null
     jar_sum_score?: string | null
     feb_sum_score?: string | null
@@ -74832,7 +77485,7 @@ export namespace Prisma {
     country?: NullableStringFieldUpdateOperationsInput | string | null
     league?: NullableStringFieldUpdateOperationsInput | string | null
     team_name?: NullableStringFieldUpdateOperationsInput | string | null
-    HA?: NullableStringFieldUpdateOperationsInput | string | null
+    ha?: NullableStringFieldUpdateOperationsInput | string | null
     year?: NullableStringFieldUpdateOperationsInput | string | null
     jar_sum_score?: NullableStringFieldUpdateOperationsInput | string | null
     feb_sum_score?: NullableStringFieldUpdateOperationsInput | string | null
@@ -74858,7 +77511,7 @@ export namespace Prisma {
     country?: NullableStringFieldUpdateOperationsInput | string | null
     league?: NullableStringFieldUpdateOperationsInput | string | null
     team_name?: NullableStringFieldUpdateOperationsInput | string | null
-    HA?: NullableStringFieldUpdateOperationsInput | string | null
+    ha?: NullableStringFieldUpdateOperationsInput | string | null
     year?: NullableStringFieldUpdateOperationsInput | string | null
     jar_sum_score?: NullableStringFieldUpdateOperationsInput | string | null
     feb_sum_score?: NullableStringFieldUpdateOperationsInput | string | null
@@ -74884,7 +77537,7 @@ export namespace Prisma {
     country?: string | null
     league?: string | null
     team_name?: string | null
-    HA?: string | null
+    ha?: string | null
     year?: string | null
     jar_sum_score?: string | null
     feb_sum_score?: string | null
@@ -74909,7 +77562,7 @@ export namespace Prisma {
     country?: NullableStringFieldUpdateOperationsInput | string | null
     league?: NullableStringFieldUpdateOperationsInput | string | null
     team_name?: NullableStringFieldUpdateOperationsInput | string | null
-    HA?: NullableStringFieldUpdateOperationsInput | string | null
+    ha?: NullableStringFieldUpdateOperationsInput | string | null
     year?: NullableStringFieldUpdateOperationsInput | string | null
     jar_sum_score?: NullableStringFieldUpdateOperationsInput | string | null
     feb_sum_score?: NullableStringFieldUpdateOperationsInput | string | null
@@ -74935,7 +77588,7 @@ export namespace Prisma {
     country?: NullableStringFieldUpdateOperationsInput | string | null
     league?: NullableStringFieldUpdateOperationsInput | string | null
     team_name?: NullableStringFieldUpdateOperationsInput | string | null
-    HA?: NullableStringFieldUpdateOperationsInput | string | null
+    ha?: NullableStringFieldUpdateOperationsInput | string | null
     year?: NullableStringFieldUpdateOperationsInput | string | null
     jar_sum_score?: NullableStringFieldUpdateOperationsInput | string | null
     feb_sum_score?: NullableStringFieldUpdateOperationsInput | string | null
@@ -77317,6 +79970,159 @@ export namespace Prisma {
     update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type country_league_visibilityCreateInput = {
+    country: string
+    league?: string | null
+    visible?: boolean
+    priority?: number
+    reason?: string | null
+    effectiveFrom?: Date | string | null
+    effectiveTo?: Date | string | null
+    register_id?: string | null
+    register_time?: Date | string | null
+    update_id?: string | null
+    update_time?: Date | string | null
+    option?: stat_size_finalize_masterCreateNestedOneWithoutCountry_league_visibilitiesInput
+  }
+
+  export type country_league_visibilityUncheckedCreateInput = {
+    id?: number
+    country: string
+    league?: string | null
+    visible?: boolean
+    priority?: number
+    reason?: string | null
+    effectiveFrom?: Date | string | null
+    effectiveTo?: Date | string | null
+    optionId?: number | null
+    register_id?: string | null
+    register_time?: Date | string | null
+    update_id?: string | null
+    update_time?: Date | string | null
+  }
+
+  export type country_league_visibilityUpdateInput = {
+    country?: StringFieldUpdateOperationsInput | string
+    league?: NullableStringFieldUpdateOperationsInput | string | null
+    visible?: BoolFieldUpdateOperationsInput | boolean
+    priority?: IntFieldUpdateOperationsInput | number
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    effectiveFrom?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    effectiveTo?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    register_id?: NullableStringFieldUpdateOperationsInput | string | null
+    register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    update_id?: NullableStringFieldUpdateOperationsInput | string | null
+    update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    option?: stat_size_finalize_masterUpdateOneWithoutCountry_league_visibilitiesNestedInput
+  }
+
+  export type country_league_visibilityUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    country?: StringFieldUpdateOperationsInput | string
+    league?: NullableStringFieldUpdateOperationsInput | string | null
+    visible?: BoolFieldUpdateOperationsInput | boolean
+    priority?: IntFieldUpdateOperationsInput | number
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    effectiveFrom?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    effectiveTo?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    optionId?: NullableIntFieldUpdateOperationsInput | number | null
+    register_id?: NullableStringFieldUpdateOperationsInput | string | null
+    register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    update_id?: NullableStringFieldUpdateOperationsInput | string | null
+    update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type country_league_visibilityCreateManyInput = {
+    id?: number
+    country: string
+    league?: string | null
+    visible?: boolean
+    priority?: number
+    reason?: string | null
+    effectiveFrom?: Date | string | null
+    effectiveTo?: Date | string | null
+    optionId?: number | null
+    register_id?: string | null
+    register_time?: Date | string | null
+    update_id?: string | null
+    update_time?: Date | string | null
+  }
+
+  export type country_league_visibilityUpdateManyMutationInput = {
+    country?: StringFieldUpdateOperationsInput | string
+    league?: NullableStringFieldUpdateOperationsInput | string | null
+    visible?: BoolFieldUpdateOperationsInput | boolean
+    priority?: IntFieldUpdateOperationsInput | number
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    effectiveFrom?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    effectiveTo?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    register_id?: NullableStringFieldUpdateOperationsInput | string | null
+    register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    update_id?: NullableStringFieldUpdateOperationsInput | string | null
+    update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type country_league_visibilityUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    country?: StringFieldUpdateOperationsInput | string
+    league?: NullableStringFieldUpdateOperationsInput | string | null
+    visible?: BoolFieldUpdateOperationsInput | boolean
+    priority?: IntFieldUpdateOperationsInput | number
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    effectiveFrom?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    effectiveTo?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    optionId?: NullableIntFieldUpdateOperationsInput | number | null
+    register_id?: NullableStringFieldUpdateOperationsInput | string | null
+    register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    update_id?: NullableStringFieldUpdateOperationsInput | string | null
+    update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type user_visibility_optionCreateInput = {
+    userId: string
+    createdAt?: Date | string
+    option: stat_size_finalize_masterCreateNestedOneWithoutUser_visibility_optionsInput
+  }
+
+  export type user_visibility_optionUncheckedCreateInput = {
+    id?: number
+    userId: string
+    optionId: number
+    createdAt?: Date | string
+  }
+
+  export type user_visibility_optionUpdateInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    option?: stat_size_finalize_masterUpdateOneRequiredWithoutUser_visibility_optionsNestedInput
+  }
+
+  export type user_visibility_optionUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    userId?: StringFieldUpdateOperationsInput | string
+    optionId?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type user_visibility_optionCreateManyInput = {
+    id?: number
+    userId: string
+    optionId: number
+    createdAt?: Date | string
+  }
+
+  export type user_visibility_optionUpdateManyMutationInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type user_visibility_optionUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    userId?: StringFieldUpdateOperationsInput | string
+    optionId?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type IntFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -77855,7 +80661,7 @@ export namespace Prisma {
     home?: SortOrder
     away?: SortOrder
     score?: SortOrder
-    chkBody?: SortOrder
+    chk_body?: SortOrder
     rank_1th?: SortOrder
     rank_2th?: SortOrder
     rank_3th?: SortOrder
@@ -77948,7 +80754,7 @@ export namespace Prisma {
     home?: SortOrder
     away?: SortOrder
     score?: SortOrder
-    chkBody?: SortOrder
+    chk_body?: SortOrder
     rank_1th?: SortOrder
     rank_2th?: SortOrder
     rank_3th?: SortOrder
@@ -78037,7 +80843,7 @@ export namespace Prisma {
     home?: SortOrder
     away?: SortOrder
     score?: SortOrder
-    chkBody?: SortOrder
+    chk_body?: SortOrder
     rank_1th?: SortOrder
     rank_2th?: SortOrder
     rank_3th?: SortOrder
@@ -78322,7 +81128,6 @@ export namespace Prisma {
     round?: SortOrder
     path?: SortOrder
     disp_valid_flg?: SortOrder
-    upd_stamp?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -78342,7 +81147,6 @@ export namespace Prisma {
     round?: SortOrder
     path?: SortOrder
     disp_valid_flg?: SortOrder
-    upd_stamp?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -78358,7 +81162,6 @@ export namespace Prisma {
     round?: SortOrder
     path?: SortOrder
     disp_valid_flg?: SortOrder
-    upd_stamp?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -80553,6 +83356,26 @@ export namespace Prisma {
     id?: SortOrder
   }
 
+  export type Country_league_visibilityListRelationFilter = {
+    every?: country_league_visibilityWhereInput
+    some?: country_league_visibilityWhereInput
+    none?: country_league_visibilityWhereInput
+  }
+
+  export type User_visibility_optionListRelationFilter = {
+    every?: user_visibility_optionWhereInput
+    some?: user_visibility_optionWhereInput
+    none?: user_visibility_optionWhereInput
+  }
+
+  export type country_league_visibilityOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type user_visibility_optionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type stat_size_finalize_masterCountOrderByAggregateInput = {
     id?: SortOrder
     option_num?: SortOrder
@@ -80594,23 +83417,12 @@ export namespace Prisma {
     id?: SortOrder
   }
 
-  export type IntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
-  }
-
   export type surface_overviewCountryLeagueTeamGame_yearGame_monthCompoundUniqueInput = {
     country: string
     league: string
     team: string
     game_year: string
-    game_month: number
+    game_month: string
   }
 
   export type surface_overviewCountOrderByAggregateInput = {
@@ -80692,44 +83504,6 @@ export namespace Prisma {
 
   export type surface_overviewAvgOrderByAggregateInput = {
     id?: SortOrder
-    game_month?: SortOrder
-    games?: SortOrder
-    rank?: SortOrder
-    win?: SortOrder
-    lose?: SortOrder
-    draw?: SortOrder
-    winning_points?: SortOrder
-    fail_to_score_game_count?: SortOrder
-    unbeaten_streak_count?: SortOrder
-    consecutive_score_count?: SortOrder
-    first_week_game_win_count?: SortOrder
-    first_week_game_lost_count?: SortOrder
-    mid_week_game_win_count?: SortOrder
-    mid_week_game_lost_count?: SortOrder
-    last_week_game_win_count?: SortOrder
-    last_week_game_lost_count?: SortOrder
-    home_win_count?: SortOrder
-    home_lose_count?: SortOrder
-    home_first_goal_count?: SortOrder
-    home_win_behind_count?: SortOrder
-    home_lose_behind_count?: SortOrder
-    home_win_behind_0vs1_count?: SortOrder
-    home_lose_behind_1vs0_count?: SortOrder
-    home_win_behind_0vs2_count?: SortOrder
-    home_lose_behind_2vs0_count?: SortOrder
-    home_win_behind_other_count?: SortOrder
-    home_lose_behind_other_count?: SortOrder
-    away_win_count?: SortOrder
-    away_lose_count?: SortOrder
-    away_first_goal_count?: SortOrder
-    away_win_behind_count?: SortOrder
-    away_lose_behind_count?: SortOrder
-    away_win_behind_1vs0_count?: SortOrder
-    away_lose_behind_0vs1_count?: SortOrder
-    away_win_behind_2vs0_count?: SortOrder
-    away_lose_behind_0vs2_count?: SortOrder
-    away_win_behind_other_count?: SortOrder
-    away_lose_behind_other_count?: SortOrder
   }
 
   export type surface_overviewMaxOrderByAggregateInput = {
@@ -80888,60 +83662,6 @@ export namespace Prisma {
 
   export type surface_overviewSumOrderByAggregateInput = {
     id?: SortOrder
-    game_month?: SortOrder
-    games?: SortOrder
-    rank?: SortOrder
-    win?: SortOrder
-    lose?: SortOrder
-    draw?: SortOrder
-    winning_points?: SortOrder
-    fail_to_score_game_count?: SortOrder
-    unbeaten_streak_count?: SortOrder
-    consecutive_score_count?: SortOrder
-    first_week_game_win_count?: SortOrder
-    first_week_game_lost_count?: SortOrder
-    mid_week_game_win_count?: SortOrder
-    mid_week_game_lost_count?: SortOrder
-    last_week_game_win_count?: SortOrder
-    last_week_game_lost_count?: SortOrder
-    home_win_count?: SortOrder
-    home_lose_count?: SortOrder
-    home_first_goal_count?: SortOrder
-    home_win_behind_count?: SortOrder
-    home_lose_behind_count?: SortOrder
-    home_win_behind_0vs1_count?: SortOrder
-    home_lose_behind_1vs0_count?: SortOrder
-    home_win_behind_0vs2_count?: SortOrder
-    home_lose_behind_2vs0_count?: SortOrder
-    home_win_behind_other_count?: SortOrder
-    home_lose_behind_other_count?: SortOrder
-    away_win_count?: SortOrder
-    away_lose_count?: SortOrder
-    away_first_goal_count?: SortOrder
-    away_win_behind_count?: SortOrder
-    away_lose_behind_count?: SortOrder
-    away_win_behind_1vs0_count?: SortOrder
-    away_lose_behind_0vs1_count?: SortOrder
-    away_win_behind_2vs0_count?: SortOrder
-    away_lose_behind_0vs2_count?: SortOrder
-    away_win_behind_other_count?: SortOrder
-    away_lose_behind_other_count?: SortOrder
-  }
-
-  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type team_match_final_statsCountOrderByAggregateInput = {
@@ -81351,7 +84071,7 @@ export namespace Prisma {
     country?: SortOrder
     league?: SortOrder
     team_name?: SortOrder
-    HA?: SortOrder
+    ha?: SortOrder
     year?: SortOrder
     jar_sum_score?: SortOrder
     feb_sum_score?: SortOrder
@@ -81381,7 +84101,7 @@ export namespace Prisma {
     country?: SortOrder
     league?: SortOrder
     team_name?: SortOrder
-    HA?: SortOrder
+    ha?: SortOrder
     year?: SortOrder
     jar_sum_score?: SortOrder
     feb_sum_score?: SortOrder
@@ -81407,7 +84127,7 @@ export namespace Prisma {
     country?: SortOrder
     league?: SortOrder
     team_name?: SortOrder
-    HA?: SortOrder
+    ha?: SortOrder
     year?: SortOrder
     jar_sum_score?: SortOrder
     feb_sum_score?: SortOrder
@@ -82546,6 +85266,158 @@ export namespace Prisma {
     id?: SortOrder
   }
 
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type Stat_size_finalize_masterNullableScalarRelationFilter = {
+    is?: stat_size_finalize_masterWhereInput | null
+    isNot?: stat_size_finalize_masterWhereInput | null
+  }
+
+  export type country_league_visibilityCountryLeagueOptionIdCompoundUniqueInput = {
+    country: string
+    league: string
+    optionId: number
+  }
+
+  export type country_league_visibilityCountOrderByAggregateInput = {
+    id?: SortOrder
+    country?: SortOrder
+    league?: SortOrder
+    visible?: SortOrder
+    priority?: SortOrder
+    reason?: SortOrder
+    effectiveFrom?: SortOrder
+    effectiveTo?: SortOrder
+    optionId?: SortOrder
+    register_id?: SortOrder
+    register_time?: SortOrder
+    update_id?: SortOrder
+    update_time?: SortOrder
+  }
+
+  export type country_league_visibilityAvgOrderByAggregateInput = {
+    id?: SortOrder
+    priority?: SortOrder
+    optionId?: SortOrder
+  }
+
+  export type country_league_visibilityMaxOrderByAggregateInput = {
+    id?: SortOrder
+    country?: SortOrder
+    league?: SortOrder
+    visible?: SortOrder
+    priority?: SortOrder
+    reason?: SortOrder
+    effectiveFrom?: SortOrder
+    effectiveTo?: SortOrder
+    optionId?: SortOrder
+    register_id?: SortOrder
+    register_time?: SortOrder
+    update_id?: SortOrder
+    update_time?: SortOrder
+  }
+
+  export type country_league_visibilityMinOrderByAggregateInput = {
+    id?: SortOrder
+    country?: SortOrder
+    league?: SortOrder
+    visible?: SortOrder
+    priority?: SortOrder
+    reason?: SortOrder
+    effectiveFrom?: SortOrder
+    effectiveTo?: SortOrder
+    optionId?: SortOrder
+    register_id?: SortOrder
+    register_time?: SortOrder
+    update_id?: SortOrder
+    update_time?: SortOrder
+  }
+
+  export type country_league_visibilitySumOrderByAggregateInput = {
+    id?: SortOrder
+    priority?: SortOrder
+    optionId?: SortOrder
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type Stat_size_finalize_masterScalarRelationFilter = {
+    is?: stat_size_finalize_masterWhereInput
+    isNot?: stat_size_finalize_masterWhereInput
+  }
+
+  export type user_visibility_optionUserIdOptionIdCompoundUniqueInput = {
+    userId: string
+    optionId: number
+  }
+
+  export type user_visibility_optionCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    optionId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type user_visibility_optionAvgOrderByAggregateInput = {
+    id?: SortOrder
+    optionId?: SortOrder
+  }
+
+  export type user_visibility_optionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    optionId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type user_visibility_optionMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    optionId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type user_visibility_optionSumOrderByAggregateInput = {
+    id?: SortOrder
+    optionId?: SortOrder
+  }
+
   export type IntFieldUpdateOperationsInput = {
     set?: number
     increment?: number
@@ -82582,12 +85454,130 @@ export namespace Prisma {
     divide?: bigint | number
   }
 
+  export type country_league_visibilityCreateNestedManyWithoutOptionInput = {
+    create?: XOR<country_league_visibilityCreateWithoutOptionInput, country_league_visibilityUncheckedCreateWithoutOptionInput> | country_league_visibilityCreateWithoutOptionInput[] | country_league_visibilityUncheckedCreateWithoutOptionInput[]
+    connectOrCreate?: country_league_visibilityCreateOrConnectWithoutOptionInput | country_league_visibilityCreateOrConnectWithoutOptionInput[]
+    createMany?: country_league_visibilityCreateManyOptionInputEnvelope
+    connect?: country_league_visibilityWhereUniqueInput | country_league_visibilityWhereUniqueInput[]
+  }
+
+  export type user_visibility_optionCreateNestedManyWithoutOptionInput = {
+    create?: XOR<user_visibility_optionCreateWithoutOptionInput, user_visibility_optionUncheckedCreateWithoutOptionInput> | user_visibility_optionCreateWithoutOptionInput[] | user_visibility_optionUncheckedCreateWithoutOptionInput[]
+    connectOrCreate?: user_visibility_optionCreateOrConnectWithoutOptionInput | user_visibility_optionCreateOrConnectWithoutOptionInput[]
+    createMany?: user_visibility_optionCreateManyOptionInputEnvelope
+    connect?: user_visibility_optionWhereUniqueInput | user_visibility_optionWhereUniqueInput[]
+  }
+
+  export type country_league_visibilityUncheckedCreateNestedManyWithoutOptionInput = {
+    create?: XOR<country_league_visibilityCreateWithoutOptionInput, country_league_visibilityUncheckedCreateWithoutOptionInput> | country_league_visibilityCreateWithoutOptionInput[] | country_league_visibilityUncheckedCreateWithoutOptionInput[]
+    connectOrCreate?: country_league_visibilityCreateOrConnectWithoutOptionInput | country_league_visibilityCreateOrConnectWithoutOptionInput[]
+    createMany?: country_league_visibilityCreateManyOptionInputEnvelope
+    connect?: country_league_visibilityWhereUniqueInput | country_league_visibilityWhereUniqueInput[]
+  }
+
+  export type user_visibility_optionUncheckedCreateNestedManyWithoutOptionInput = {
+    create?: XOR<user_visibility_optionCreateWithoutOptionInput, user_visibility_optionUncheckedCreateWithoutOptionInput> | user_visibility_optionCreateWithoutOptionInput[] | user_visibility_optionUncheckedCreateWithoutOptionInput[]
+    connectOrCreate?: user_visibility_optionCreateOrConnectWithoutOptionInput | user_visibility_optionCreateOrConnectWithoutOptionInput[]
+    createMany?: user_visibility_optionCreateManyOptionInputEnvelope
+    connect?: user_visibility_optionWhereUniqueInput | user_visibility_optionWhereUniqueInput[]
+  }
+
+  export type country_league_visibilityUpdateManyWithoutOptionNestedInput = {
+    create?: XOR<country_league_visibilityCreateWithoutOptionInput, country_league_visibilityUncheckedCreateWithoutOptionInput> | country_league_visibilityCreateWithoutOptionInput[] | country_league_visibilityUncheckedCreateWithoutOptionInput[]
+    connectOrCreate?: country_league_visibilityCreateOrConnectWithoutOptionInput | country_league_visibilityCreateOrConnectWithoutOptionInput[]
+    upsert?: country_league_visibilityUpsertWithWhereUniqueWithoutOptionInput | country_league_visibilityUpsertWithWhereUniqueWithoutOptionInput[]
+    createMany?: country_league_visibilityCreateManyOptionInputEnvelope
+    set?: country_league_visibilityWhereUniqueInput | country_league_visibilityWhereUniqueInput[]
+    disconnect?: country_league_visibilityWhereUniqueInput | country_league_visibilityWhereUniqueInput[]
+    delete?: country_league_visibilityWhereUniqueInput | country_league_visibilityWhereUniqueInput[]
+    connect?: country_league_visibilityWhereUniqueInput | country_league_visibilityWhereUniqueInput[]
+    update?: country_league_visibilityUpdateWithWhereUniqueWithoutOptionInput | country_league_visibilityUpdateWithWhereUniqueWithoutOptionInput[]
+    updateMany?: country_league_visibilityUpdateManyWithWhereWithoutOptionInput | country_league_visibilityUpdateManyWithWhereWithoutOptionInput[]
+    deleteMany?: country_league_visibilityScalarWhereInput | country_league_visibilityScalarWhereInput[]
+  }
+
+  export type user_visibility_optionUpdateManyWithoutOptionNestedInput = {
+    create?: XOR<user_visibility_optionCreateWithoutOptionInput, user_visibility_optionUncheckedCreateWithoutOptionInput> | user_visibility_optionCreateWithoutOptionInput[] | user_visibility_optionUncheckedCreateWithoutOptionInput[]
+    connectOrCreate?: user_visibility_optionCreateOrConnectWithoutOptionInput | user_visibility_optionCreateOrConnectWithoutOptionInput[]
+    upsert?: user_visibility_optionUpsertWithWhereUniqueWithoutOptionInput | user_visibility_optionUpsertWithWhereUniqueWithoutOptionInput[]
+    createMany?: user_visibility_optionCreateManyOptionInputEnvelope
+    set?: user_visibility_optionWhereUniqueInput | user_visibility_optionWhereUniqueInput[]
+    disconnect?: user_visibility_optionWhereUniqueInput | user_visibility_optionWhereUniqueInput[]
+    delete?: user_visibility_optionWhereUniqueInput | user_visibility_optionWhereUniqueInput[]
+    connect?: user_visibility_optionWhereUniqueInput | user_visibility_optionWhereUniqueInput[]
+    update?: user_visibility_optionUpdateWithWhereUniqueWithoutOptionInput | user_visibility_optionUpdateWithWhereUniqueWithoutOptionInput[]
+    updateMany?: user_visibility_optionUpdateManyWithWhereWithoutOptionInput | user_visibility_optionUpdateManyWithWhereWithoutOptionInput[]
+    deleteMany?: user_visibility_optionScalarWhereInput | user_visibility_optionScalarWhereInput[]
+  }
+
+  export type country_league_visibilityUncheckedUpdateManyWithoutOptionNestedInput = {
+    create?: XOR<country_league_visibilityCreateWithoutOptionInput, country_league_visibilityUncheckedCreateWithoutOptionInput> | country_league_visibilityCreateWithoutOptionInput[] | country_league_visibilityUncheckedCreateWithoutOptionInput[]
+    connectOrCreate?: country_league_visibilityCreateOrConnectWithoutOptionInput | country_league_visibilityCreateOrConnectWithoutOptionInput[]
+    upsert?: country_league_visibilityUpsertWithWhereUniqueWithoutOptionInput | country_league_visibilityUpsertWithWhereUniqueWithoutOptionInput[]
+    createMany?: country_league_visibilityCreateManyOptionInputEnvelope
+    set?: country_league_visibilityWhereUniqueInput | country_league_visibilityWhereUniqueInput[]
+    disconnect?: country_league_visibilityWhereUniqueInput | country_league_visibilityWhereUniqueInput[]
+    delete?: country_league_visibilityWhereUniqueInput | country_league_visibilityWhereUniqueInput[]
+    connect?: country_league_visibilityWhereUniqueInput | country_league_visibilityWhereUniqueInput[]
+    update?: country_league_visibilityUpdateWithWhereUniqueWithoutOptionInput | country_league_visibilityUpdateWithWhereUniqueWithoutOptionInput[]
+    updateMany?: country_league_visibilityUpdateManyWithWhereWithoutOptionInput | country_league_visibilityUpdateManyWithWhereWithoutOptionInput[]
+    deleteMany?: country_league_visibilityScalarWhereInput | country_league_visibilityScalarWhereInput[]
+  }
+
+  export type user_visibility_optionUncheckedUpdateManyWithoutOptionNestedInput = {
+    create?: XOR<user_visibility_optionCreateWithoutOptionInput, user_visibility_optionUncheckedCreateWithoutOptionInput> | user_visibility_optionCreateWithoutOptionInput[] | user_visibility_optionUncheckedCreateWithoutOptionInput[]
+    connectOrCreate?: user_visibility_optionCreateOrConnectWithoutOptionInput | user_visibility_optionCreateOrConnectWithoutOptionInput[]
+    upsert?: user_visibility_optionUpsertWithWhereUniqueWithoutOptionInput | user_visibility_optionUpsertWithWhereUniqueWithoutOptionInput[]
+    createMany?: user_visibility_optionCreateManyOptionInputEnvelope
+    set?: user_visibility_optionWhereUniqueInput | user_visibility_optionWhereUniqueInput[]
+    disconnect?: user_visibility_optionWhereUniqueInput | user_visibility_optionWhereUniqueInput[]
+    delete?: user_visibility_optionWhereUniqueInput | user_visibility_optionWhereUniqueInput[]
+    connect?: user_visibility_optionWhereUniqueInput | user_visibility_optionWhereUniqueInput[]
+    update?: user_visibility_optionUpdateWithWhereUniqueWithoutOptionInput | user_visibility_optionUpdateWithWhereUniqueWithoutOptionInput[]
+    updateMany?: user_visibility_optionUpdateManyWithWhereWithoutOptionInput | user_visibility_optionUpdateManyWithWhereWithoutOptionInput[]
+    deleteMany?: user_visibility_optionScalarWhereInput | user_visibility_optionScalarWhereInput[]
+  }
+
+  export type stat_size_finalize_masterCreateNestedOneWithoutCountry_league_visibilitiesInput = {
+    create?: XOR<stat_size_finalize_masterCreateWithoutCountry_league_visibilitiesInput, stat_size_finalize_masterUncheckedCreateWithoutCountry_league_visibilitiesInput>
+    connectOrCreate?: stat_size_finalize_masterCreateOrConnectWithoutCountry_league_visibilitiesInput
+    connect?: stat_size_finalize_masterWhereUniqueInput
+  }
+
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
+  export type stat_size_finalize_masterUpdateOneWithoutCountry_league_visibilitiesNestedInput = {
+    create?: XOR<stat_size_finalize_masterCreateWithoutCountry_league_visibilitiesInput, stat_size_finalize_masterUncheckedCreateWithoutCountry_league_visibilitiesInput>
+    connectOrCreate?: stat_size_finalize_masterCreateOrConnectWithoutCountry_league_visibilitiesInput
+    upsert?: stat_size_finalize_masterUpsertWithoutCountry_league_visibilitiesInput
+    disconnect?: stat_size_finalize_masterWhereInput | boolean
+    delete?: stat_size_finalize_masterWhereInput | boolean
+    connect?: stat_size_finalize_masterWhereUniqueInput
+    update?: XOR<XOR<stat_size_finalize_masterUpdateToOneWithWhereWithoutCountry_league_visibilitiesInput, stat_size_finalize_masterUpdateWithoutCountry_league_visibilitiesInput>, stat_size_finalize_masterUncheckedUpdateWithoutCountry_league_visibilitiesInput>
+  }
+
   export type NullableIntFieldUpdateOperationsInput = {
     set?: number | null
     increment?: number
     decrement?: number
     multiply?: number
     divide?: number
+  }
+
+  export type stat_size_finalize_masterCreateNestedOneWithoutUser_visibility_optionsInput = {
+    create?: XOR<stat_size_finalize_masterCreateWithoutUser_visibility_optionsInput, stat_size_finalize_masterUncheckedCreateWithoutUser_visibility_optionsInput>
+    connectOrCreate?: stat_size_finalize_masterCreateOrConnectWithoutUser_visibility_optionsInput
+    connect?: stat_size_finalize_masterWhereUniqueInput
+  }
+
+  export type stat_size_finalize_masterUpdateOneRequiredWithoutUser_visibility_optionsNestedInput = {
+    create?: XOR<stat_size_finalize_masterCreateWithoutUser_visibility_optionsInput, stat_size_finalize_masterUncheckedCreateWithoutUser_visibility_optionsInput>
+    connectOrCreate?: stat_size_finalize_masterCreateOrConnectWithoutUser_visibility_optionsInput
+    upsert?: stat_size_finalize_masterUpsertWithoutUser_visibility_optionsInput
+    connect?: stat_size_finalize_masterWhereUniqueInput
+    update?: XOR<XOR<stat_size_finalize_masterUpdateToOneWithWhereWithoutUser_visibility_optionsInput, stat_size_finalize_masterUpdateWithoutUser_visibility_optionsInput>, stat_size_finalize_masterUncheckedUpdateWithoutUser_visibility_optionsInput>
   }
 
   export type NestedIntFilter<$PrismaModel = never> = {
@@ -82795,6 +85785,19 @@ export namespace Prisma {
     _max?: NestedBigIntFilter<$PrismaModel>
   }
 
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
   export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
@@ -82820,6 +85823,333 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type country_league_visibilityCreateWithoutOptionInput = {
+    country: string
+    league?: string | null
+    visible?: boolean
+    priority?: number
+    reason?: string | null
+    effectiveFrom?: Date | string | null
+    effectiveTo?: Date | string | null
+    register_id?: string | null
+    register_time?: Date | string | null
+    update_id?: string | null
+    update_time?: Date | string | null
+  }
+
+  export type country_league_visibilityUncheckedCreateWithoutOptionInput = {
+    id?: number
+    country: string
+    league?: string | null
+    visible?: boolean
+    priority?: number
+    reason?: string | null
+    effectiveFrom?: Date | string | null
+    effectiveTo?: Date | string | null
+    register_id?: string | null
+    register_time?: Date | string | null
+    update_id?: string | null
+    update_time?: Date | string | null
+  }
+
+  export type country_league_visibilityCreateOrConnectWithoutOptionInput = {
+    where: country_league_visibilityWhereUniqueInput
+    create: XOR<country_league_visibilityCreateWithoutOptionInput, country_league_visibilityUncheckedCreateWithoutOptionInput>
+  }
+
+  export type country_league_visibilityCreateManyOptionInputEnvelope = {
+    data: country_league_visibilityCreateManyOptionInput | country_league_visibilityCreateManyOptionInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type user_visibility_optionCreateWithoutOptionInput = {
+    userId: string
+    createdAt?: Date | string
+  }
+
+  export type user_visibility_optionUncheckedCreateWithoutOptionInput = {
+    id?: number
+    userId: string
+    createdAt?: Date | string
+  }
+
+  export type user_visibility_optionCreateOrConnectWithoutOptionInput = {
+    where: user_visibility_optionWhereUniqueInput
+    create: XOR<user_visibility_optionCreateWithoutOptionInput, user_visibility_optionUncheckedCreateWithoutOptionInput>
+  }
+
+  export type user_visibility_optionCreateManyOptionInputEnvelope = {
+    data: user_visibility_optionCreateManyOptionInput | user_visibility_optionCreateManyOptionInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type country_league_visibilityUpsertWithWhereUniqueWithoutOptionInput = {
+    where: country_league_visibilityWhereUniqueInput
+    update: XOR<country_league_visibilityUpdateWithoutOptionInput, country_league_visibilityUncheckedUpdateWithoutOptionInput>
+    create: XOR<country_league_visibilityCreateWithoutOptionInput, country_league_visibilityUncheckedCreateWithoutOptionInput>
+  }
+
+  export type country_league_visibilityUpdateWithWhereUniqueWithoutOptionInput = {
+    where: country_league_visibilityWhereUniqueInput
+    data: XOR<country_league_visibilityUpdateWithoutOptionInput, country_league_visibilityUncheckedUpdateWithoutOptionInput>
+  }
+
+  export type country_league_visibilityUpdateManyWithWhereWithoutOptionInput = {
+    where: country_league_visibilityScalarWhereInput
+    data: XOR<country_league_visibilityUpdateManyMutationInput, country_league_visibilityUncheckedUpdateManyWithoutOptionInput>
+  }
+
+  export type country_league_visibilityScalarWhereInput = {
+    AND?: country_league_visibilityScalarWhereInput | country_league_visibilityScalarWhereInput[]
+    OR?: country_league_visibilityScalarWhereInput[]
+    NOT?: country_league_visibilityScalarWhereInput | country_league_visibilityScalarWhereInput[]
+    id?: IntFilter<"country_league_visibility"> | number
+    country?: StringFilter<"country_league_visibility"> | string
+    league?: StringNullableFilter<"country_league_visibility"> | string | null
+    visible?: BoolFilter<"country_league_visibility"> | boolean
+    priority?: IntFilter<"country_league_visibility"> | number
+    reason?: StringNullableFilter<"country_league_visibility"> | string | null
+    effectiveFrom?: DateTimeNullableFilter<"country_league_visibility"> | Date | string | null
+    effectiveTo?: DateTimeNullableFilter<"country_league_visibility"> | Date | string | null
+    optionId?: IntNullableFilter<"country_league_visibility"> | number | null
+    register_id?: StringNullableFilter<"country_league_visibility"> | string | null
+    register_time?: DateTimeNullableFilter<"country_league_visibility"> | Date | string | null
+    update_id?: StringNullableFilter<"country_league_visibility"> | string | null
+    update_time?: DateTimeNullableFilter<"country_league_visibility"> | Date | string | null
+  }
+
+  export type user_visibility_optionUpsertWithWhereUniqueWithoutOptionInput = {
+    where: user_visibility_optionWhereUniqueInput
+    update: XOR<user_visibility_optionUpdateWithoutOptionInput, user_visibility_optionUncheckedUpdateWithoutOptionInput>
+    create: XOR<user_visibility_optionCreateWithoutOptionInput, user_visibility_optionUncheckedCreateWithoutOptionInput>
+  }
+
+  export type user_visibility_optionUpdateWithWhereUniqueWithoutOptionInput = {
+    where: user_visibility_optionWhereUniqueInput
+    data: XOR<user_visibility_optionUpdateWithoutOptionInput, user_visibility_optionUncheckedUpdateWithoutOptionInput>
+  }
+
+  export type user_visibility_optionUpdateManyWithWhereWithoutOptionInput = {
+    where: user_visibility_optionScalarWhereInput
+    data: XOR<user_visibility_optionUpdateManyMutationInput, user_visibility_optionUncheckedUpdateManyWithoutOptionInput>
+  }
+
+  export type user_visibility_optionScalarWhereInput = {
+    AND?: user_visibility_optionScalarWhereInput | user_visibility_optionScalarWhereInput[]
+    OR?: user_visibility_optionScalarWhereInput[]
+    NOT?: user_visibility_optionScalarWhereInput | user_visibility_optionScalarWhereInput[]
+    id?: IntFilter<"user_visibility_option"> | number
+    userId?: StringFilter<"user_visibility_option"> | string
+    optionId?: IntFilter<"user_visibility_option"> | number
+    createdAt?: DateTimeFilter<"user_visibility_option"> | Date | string
+  }
+
+  export type stat_size_finalize_masterCreateWithoutCountry_league_visibilitiesInput = {
+    option_num?: string
+    options: string
+    flg?: string
+    register_id: string
+    register_time: Date | string
+    update_id: string
+    update_time: Date | string
+    user_visibility_options?: user_visibility_optionCreateNestedManyWithoutOptionInput
+  }
+
+  export type stat_size_finalize_masterUncheckedCreateWithoutCountry_league_visibilitiesInput = {
+    id?: number
+    option_num?: string
+    options: string
+    flg?: string
+    register_id: string
+    register_time: Date | string
+    update_id: string
+    update_time: Date | string
+    user_visibility_options?: user_visibility_optionUncheckedCreateNestedManyWithoutOptionInput
+  }
+
+  export type stat_size_finalize_masterCreateOrConnectWithoutCountry_league_visibilitiesInput = {
+    where: stat_size_finalize_masterWhereUniqueInput
+    create: XOR<stat_size_finalize_masterCreateWithoutCountry_league_visibilitiesInput, stat_size_finalize_masterUncheckedCreateWithoutCountry_league_visibilitiesInput>
+  }
+
+  export type stat_size_finalize_masterUpsertWithoutCountry_league_visibilitiesInput = {
+    update: XOR<stat_size_finalize_masterUpdateWithoutCountry_league_visibilitiesInput, stat_size_finalize_masterUncheckedUpdateWithoutCountry_league_visibilitiesInput>
+    create: XOR<stat_size_finalize_masterCreateWithoutCountry_league_visibilitiesInput, stat_size_finalize_masterUncheckedCreateWithoutCountry_league_visibilitiesInput>
+    where?: stat_size_finalize_masterWhereInput
+  }
+
+  export type stat_size_finalize_masterUpdateToOneWithWhereWithoutCountry_league_visibilitiesInput = {
+    where?: stat_size_finalize_masterWhereInput
+    data: XOR<stat_size_finalize_masterUpdateWithoutCountry_league_visibilitiesInput, stat_size_finalize_masterUncheckedUpdateWithoutCountry_league_visibilitiesInput>
+  }
+
+  export type stat_size_finalize_masterUpdateWithoutCountry_league_visibilitiesInput = {
+    option_num?: StringFieldUpdateOperationsInput | string
+    options?: StringFieldUpdateOperationsInput | string
+    flg?: StringFieldUpdateOperationsInput | string
+    register_id?: StringFieldUpdateOperationsInput | string
+    register_time?: DateTimeFieldUpdateOperationsInput | Date | string
+    update_id?: StringFieldUpdateOperationsInput | string
+    update_time?: DateTimeFieldUpdateOperationsInput | Date | string
+    user_visibility_options?: user_visibility_optionUpdateManyWithoutOptionNestedInput
+  }
+
+  export type stat_size_finalize_masterUncheckedUpdateWithoutCountry_league_visibilitiesInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    option_num?: StringFieldUpdateOperationsInput | string
+    options?: StringFieldUpdateOperationsInput | string
+    flg?: StringFieldUpdateOperationsInput | string
+    register_id?: StringFieldUpdateOperationsInput | string
+    register_time?: DateTimeFieldUpdateOperationsInput | Date | string
+    update_id?: StringFieldUpdateOperationsInput | string
+    update_time?: DateTimeFieldUpdateOperationsInput | Date | string
+    user_visibility_options?: user_visibility_optionUncheckedUpdateManyWithoutOptionNestedInput
+  }
+
+  export type stat_size_finalize_masterCreateWithoutUser_visibility_optionsInput = {
+    option_num?: string
+    options: string
+    flg?: string
+    register_id: string
+    register_time: Date | string
+    update_id: string
+    update_time: Date | string
+    country_league_visibilities?: country_league_visibilityCreateNestedManyWithoutOptionInput
+  }
+
+  export type stat_size_finalize_masterUncheckedCreateWithoutUser_visibility_optionsInput = {
+    id?: number
+    option_num?: string
+    options: string
+    flg?: string
+    register_id: string
+    register_time: Date | string
+    update_id: string
+    update_time: Date | string
+    country_league_visibilities?: country_league_visibilityUncheckedCreateNestedManyWithoutOptionInput
+  }
+
+  export type stat_size_finalize_masterCreateOrConnectWithoutUser_visibility_optionsInput = {
+    where: stat_size_finalize_masterWhereUniqueInput
+    create: XOR<stat_size_finalize_masterCreateWithoutUser_visibility_optionsInput, stat_size_finalize_masterUncheckedCreateWithoutUser_visibility_optionsInput>
+  }
+
+  export type stat_size_finalize_masterUpsertWithoutUser_visibility_optionsInput = {
+    update: XOR<stat_size_finalize_masterUpdateWithoutUser_visibility_optionsInput, stat_size_finalize_masterUncheckedUpdateWithoutUser_visibility_optionsInput>
+    create: XOR<stat_size_finalize_masterCreateWithoutUser_visibility_optionsInput, stat_size_finalize_masterUncheckedCreateWithoutUser_visibility_optionsInput>
+    where?: stat_size_finalize_masterWhereInput
+  }
+
+  export type stat_size_finalize_masterUpdateToOneWithWhereWithoutUser_visibility_optionsInput = {
+    where?: stat_size_finalize_masterWhereInput
+    data: XOR<stat_size_finalize_masterUpdateWithoutUser_visibility_optionsInput, stat_size_finalize_masterUncheckedUpdateWithoutUser_visibility_optionsInput>
+  }
+
+  export type stat_size_finalize_masterUpdateWithoutUser_visibility_optionsInput = {
+    option_num?: StringFieldUpdateOperationsInput | string
+    options?: StringFieldUpdateOperationsInput | string
+    flg?: StringFieldUpdateOperationsInput | string
+    register_id?: StringFieldUpdateOperationsInput | string
+    register_time?: DateTimeFieldUpdateOperationsInput | Date | string
+    update_id?: StringFieldUpdateOperationsInput | string
+    update_time?: DateTimeFieldUpdateOperationsInput | Date | string
+    country_league_visibilities?: country_league_visibilityUpdateManyWithoutOptionNestedInput
+  }
+
+  export type stat_size_finalize_masterUncheckedUpdateWithoutUser_visibility_optionsInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    option_num?: StringFieldUpdateOperationsInput | string
+    options?: StringFieldUpdateOperationsInput | string
+    flg?: StringFieldUpdateOperationsInput | string
+    register_id?: StringFieldUpdateOperationsInput | string
+    register_time?: DateTimeFieldUpdateOperationsInput | Date | string
+    update_id?: StringFieldUpdateOperationsInput | string
+    update_time?: DateTimeFieldUpdateOperationsInput | Date | string
+    country_league_visibilities?: country_league_visibilityUncheckedUpdateManyWithoutOptionNestedInput
+  }
+
+  export type country_league_visibilityCreateManyOptionInput = {
+    id?: number
+    country: string
+    league?: string | null
+    visible?: boolean
+    priority?: number
+    reason?: string | null
+    effectiveFrom?: Date | string | null
+    effectiveTo?: Date | string | null
+    register_id?: string | null
+    register_time?: Date | string | null
+    update_id?: string | null
+    update_time?: Date | string | null
+  }
+
+  export type user_visibility_optionCreateManyOptionInput = {
+    id?: number
+    userId: string
+    createdAt?: Date | string
+  }
+
+  export type country_league_visibilityUpdateWithoutOptionInput = {
+    country?: StringFieldUpdateOperationsInput | string
+    league?: NullableStringFieldUpdateOperationsInput | string | null
+    visible?: BoolFieldUpdateOperationsInput | boolean
+    priority?: IntFieldUpdateOperationsInput | number
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    effectiveFrom?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    effectiveTo?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    register_id?: NullableStringFieldUpdateOperationsInput | string | null
+    register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    update_id?: NullableStringFieldUpdateOperationsInput | string | null
+    update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type country_league_visibilityUncheckedUpdateWithoutOptionInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    country?: StringFieldUpdateOperationsInput | string
+    league?: NullableStringFieldUpdateOperationsInput | string | null
+    visible?: BoolFieldUpdateOperationsInput | boolean
+    priority?: IntFieldUpdateOperationsInput | number
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    effectiveFrom?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    effectiveTo?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    register_id?: NullableStringFieldUpdateOperationsInput | string | null
+    register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    update_id?: NullableStringFieldUpdateOperationsInput | string | null
+    update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type country_league_visibilityUncheckedUpdateManyWithoutOptionInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    country?: StringFieldUpdateOperationsInput | string
+    league?: NullableStringFieldUpdateOperationsInput | string | null
+    visible?: BoolFieldUpdateOperationsInput | boolean
+    priority?: IntFieldUpdateOperationsInput | number
+    reason?: NullableStringFieldUpdateOperationsInput | string | null
+    effectiveFrom?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    effectiveTo?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    register_id?: NullableStringFieldUpdateOperationsInput | string | null
+    register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    update_id?: NullableStringFieldUpdateOperationsInput | string | null
+    update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type user_visibility_optionUpdateWithoutOptionInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type user_visibility_optionUncheckedUpdateWithoutOptionInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type user_visibility_optionUncheckedUpdateManyWithoutOptionInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 

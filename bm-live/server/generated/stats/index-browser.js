@@ -20,12 +20,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.16.2
- * Query Engine version: 1c57fdcd7e44b29b9313256c76699e91c3ac3c43
+ * Prisma Client JS version: 6.16.3
+ * Query Engine version: bb420e667c1820a8c05a38023385f6cc7ef8e83a
  */
 Prisma.prismaVersion = {
-  client: "6.16.2",
-  engine: "1c57fdcd7e44b29b9313256c76699e91c3ac3c43"
+  client: "6.16.3",
+  engine: "bb420e667c1820a8c05a38023385f6cc7ef8e83a"
 }
 
 Prisma.PrismaClientKnownRequestError = () => {
@@ -266,7 +266,7 @@ exports.Prisma.Calc_correlation_rankingScalarFieldEnum = {
   home: 'home',
   away: 'away',
   score: 'score',
-  chkBody: 'chkBody',
+  chk_body: 'chk_body',
   rank_1th: 'rank_1th',
   rank_2th: 'rank_2th',
   rank_3th: 'rank_3th',
@@ -390,7 +390,6 @@ exports.Prisma.Country_league_season_masterScalarFieldEnum = {
   round: 'round',
   path: 'path',
   disp_valid_flg: 'disp_valid_flg',
-  upd_stamp: 'upd_stamp',
   register_id: 'register_id',
   register_time: 'register_time',
   update_id: 'update_id',
@@ -1303,7 +1302,7 @@ exports.Prisma.Team_monthly_score_summaryScalarFieldEnum = {
   country: 'country',
   league: 'league',
   team_name: 'team_name',
-  HA: 'HA',
+  ha: 'ha',
   year: 'year',
   jar_sum_score: 'jar_sum_score',
   feb_sum_score: 'feb_sum_score',
@@ -1666,6 +1665,29 @@ exports.Prisma.Within_data_45minutes_home_scoredScalarFieldEnum = {
   update_time: 'update_time'
 };
 
+exports.Prisma.Country_league_visibilityScalarFieldEnum = {
+  id: 'id',
+  country: 'country',
+  league: 'league',
+  visible: 'visible',
+  priority: 'priority',
+  reason: 'reason',
+  effectiveFrom: 'effectiveFrom',
+  effectiveTo: 'effectiveTo',
+  optionId: 'optionId',
+  register_id: 'register_id',
+  register_time: 'register_time',
+  update_id: 'update_id',
+  update_time: 'update_time'
+};
+
+exports.Prisma.User_visibility_optionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  optionId: 'optionId',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1717,7 +1739,9 @@ exports.Prisma.ModelName = {
   within_data_45minutes_away_all_league: 'within_data_45minutes_away_all_league',
   within_data_45minutes_away_scored: 'within_data_45minutes_away_scored',
   within_data_45minutes_home_all_league: 'within_data_45minutes_home_all_league',
-  within_data_45minutes_home_scored: 'within_data_45minutes_home_scored'
+  within_data_45minutes_home_scored: 'within_data_45minutes_home_scored',
+  country_league_visibility: 'country_league_visibility',
+  user_visibility_option: 'user_visibility_option'
 };
 
 /**

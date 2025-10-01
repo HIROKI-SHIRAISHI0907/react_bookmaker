@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE "public"."average_statistics_csv_tmp_data" (
+CREATE TABLE "average_statistics_csv_tmp_data" (
     "id" INTEGER NOT NULL,
     "score" VARCHAR(10),
     "country" VARCHAR(255),
@@ -15,7 +15,7 @@ CREATE TABLE "public"."average_statistics_csv_tmp_data" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."average_statistics_team_detail_data" (
+CREATE TABLE "average_statistics_team_detail_data" (
     "id" INTEGER NOT NULL,
     "situation" VARCHAR(255),
     "team" VARCHAR(100),
@@ -58,7 +58,7 @@ CREATE TABLE "public"."average_statistics_team_detail_data" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."calc_correlation" (
+CREATE TABLE "calc_correlation" (
     "id" SERIAL NOT NULL,
     "file" VARCHAR(255),
     "country" VARCHAR(40),
@@ -147,14 +147,14 @@ CREATE TABLE "public"."calc_correlation" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."calc_correlation_ranking" (
+CREATE TABLE "calc_correlation_ranking" (
     "id" SERIAL NOT NULL,
     "country" VARCHAR(255),
     "league" VARCHAR(255),
     "home" VARCHAR(255),
     "away" VARCHAR(255),
     "score" VARCHAR(255),
-    "chkBody" TEXT,
+    "chk_body" TEXT,
     "rank_1th" TEXT,
     "rank_2th" TEXT,
     "rank_3th" TEXT,
@@ -239,7 +239,7 @@ CREATE TABLE "public"."calc_correlation_ranking" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."condition_result_data" (
+CREATE TABLE "condition_result_data" (
     "data_seq" SERIAL NOT NULL,
     "mail_target_count" CHAR(30),
     "mail_anonymous_target_count" CHAR(30),
@@ -263,7 +263,7 @@ CREATE TABLE "public"."condition_result_data" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."country_league_master" (
+CREATE TABLE "country_league_master" (
     "id" SERIAL NOT NULL,
     "country" VARCHAR(50) NOT NULL,
     "league" VARCHAR(50) NOT NULL,
@@ -278,16 +278,15 @@ CREATE TABLE "public"."country_league_master" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."country_league_season_master" (
+CREATE TABLE "country_league_season_master" (
     "id" SERIAL NOT NULL,
     "country" VARCHAR(100) NOT NULL,
     "league" VARCHAR(200) NOT NULL,
-    "start_season_date" TIMESTAMP(0),
-    "end_season_date" TIMESTAMP(0),
+    "start_season_date" TIMESTAMPTZ(0),
+    "end_season_date" TIMESTAMPTZ(0),
     "round" VARCHAR(2),
     "path" VARCHAR(500),
     "disp_valid_flg" VARCHAR(1) NOT NULL DEFAULT '0',
-    "upd_stamp" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "register_id" VARCHAR(100),
     "register_time" TIMESTAMPTZ(0),
     "update_id" VARCHAR(100),
@@ -297,7 +296,7 @@ CREATE TABLE "public"."country_league_season_master" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."country_league_summary" (
+CREATE TABLE "country_league_summary" (
     "id" SERIAL NOT NULL,
     "country" VARCHAR(50) NOT NULL,
     "league" VARCHAR(50) NOT NULL,
@@ -313,7 +312,7 @@ CREATE TABLE "public"."country_league_summary" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."data" (
+CREATE TABLE "data" (
     "seq" SERIAL NOT NULL,
     "condition_result_data_seq_id" VARCHAR(3),
     "data_category" CHAR(100),
@@ -382,7 +381,7 @@ CREATE TABLE "public"."data" (
     "away_duel_count" CHAR(30),
     "home_intercept_count" CHAR(30),
     "away_intercept_count" CHAR(30),
-    "record_time" TIMESTAMP(0),
+    "record_time" TIMESTAMPTZ(0),
     "weather" CHAR(5),
     "temparature" CHAR(10),
     "humid" CHAR(5),
@@ -423,7 +422,7 @@ CREATE TABLE "public"."data" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."each_team_score_based_feature_stats" (
+CREATE TABLE "each_team_score_based_feature_stats" (
     "id" SERIAL NOT NULL,
     "situation" VARCHAR(255),
     "score" VARCHAR(10),
@@ -498,7 +497,7 @@ CREATE TABLE "public"."each_team_score_based_feature_stats" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."future_master" (
+CREATE TABLE "future_master" (
     "seq" BIGSERIAL NOT NULL,
     "game_team_category" VARCHAR(50) NOT NULL,
     "future_time" TIMESTAMPTZ(0) NOT NULL,
@@ -528,7 +527,7 @@ CREATE TABLE "public"."future_master" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."league_score_time_band_stats" (
+CREATE TABLE "league_score_time_band_stats" (
     "id" SERIAL NOT NULL,
     "country" VARCHAR(50),
     "league" VARCHAR(50),
@@ -547,7 +546,7 @@ CREATE TABLE "public"."league_score_time_band_stats" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."league_score_time_band_stats_split_score" (
+CREATE TABLE "league_score_time_band_stats_split_score" (
     "id" SERIAL NOT NULL,
     "country" VARCHAR(50),
     "league" VARCHAR(50),
@@ -568,7 +567,7 @@ CREATE TABLE "public"."league_score_time_band_stats_split_score" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."match_classification_result" (
+CREATE TABLE "match_classification_result" (
     "id" SERIAL NOT NULL,
     "classify_mode" VARCHAR(2),
     "data_category" CHAR(100),
@@ -633,7 +632,7 @@ CREATE TABLE "public"."match_classification_result" (
     "away_clear_count" CHAR(30),
     "home_intercept_count" CHAR(30),
     "away_intercept_count" CHAR(30),
-    "record_time" TIMESTAMP(0),
+    "record_time" TIMESTAMPTZ(0),
     "weather" CHAR(5),
     "temparature" CHAR(10),
     "humid" CHAR(5),
@@ -675,7 +674,7 @@ CREATE TABLE "public"."match_classification_result" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."match_classification_result_count" (
+CREATE TABLE "match_classification_result_count" (
     "id" SERIAL NOT NULL,
     "country" VARCHAR(50),
     "league" VARCHAR(50),
@@ -692,7 +691,7 @@ CREATE TABLE "public"."match_classification_result_count" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."no_goal_match_stats" (
+CREATE TABLE "no_goal_match_stats" (
     "id" SERIAL NOT NULL,
     "seq" CHAR(100),
     "data_category" CHAR(100),
@@ -761,7 +760,7 @@ CREATE TABLE "public"."no_goal_match_stats" (
     "away_duel_count" CHAR(30),
     "home_intercept_count" CHAR(30),
     "away_intercept_count" CHAR(30),
-    "record_time" TIMESTAMP(0),
+    "record_time" TIMESTAMPTZ(0),
     "weather" CHAR(5),
     "temparature" CHAR(10),
     "humid" CHAR(5),
@@ -803,7 +802,7 @@ CREATE TABLE "public"."no_goal_match_stats" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."score_based_feature_stats" (
+CREATE TABLE "score_based_feature_stats" (
     "id" SERIAL NOT NULL,
     "situation" VARCHAR(255),
     "score" VARCHAR(10),
@@ -877,7 +876,7 @@ CREATE TABLE "public"."score_based_feature_stats" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."scoring_playstyle_past_data" (
+CREATE TABLE "scoring_playstyle_past_data" (
     "id" INTEGER NOT NULL,
     "data_category" VARCHAR(255),
     "home_team_name" VARCHAR(255),
@@ -945,7 +944,7 @@ CREATE TABLE "public"."scoring_playstyle_past_data" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."stat_encryption" (
+CREATE TABLE "stat_encryption" (
     "id" BIGSERIAL NOT NULL,
     "country" VARCHAR(64),
     "league" VARCHAR(64),
@@ -988,7 +987,7 @@ CREATE TABLE "public"."stat_encryption" (
     "home_foul_info" TEXT,
     "away_foul_info" TEXT,
     "home_yellow_card_info" TEXT,
-    "away_yellow_card_info" VARCHAR(255),
+    "away_yellow_card_info" TEXT,
     "home_red_card_info" TEXT,
     "away_red_card_info" TEXT,
     "home_slow_in_info" TEXT,
@@ -1020,7 +1019,7 @@ CREATE TABLE "public"."stat_encryption" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."stat_size_finalize_master" (
+CREATE TABLE "stat_size_finalize_master" (
     "id" SERIAL NOT NULL,
     "option_num" VARCHAR(1) NOT NULL DEFAULT '0',
     "options" VARCHAR(255) NOT NULL,
@@ -1034,19 +1033,19 @@ CREATE TABLE "public"."stat_size_finalize_master" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."surface_overview" (
+CREATE TABLE "surface_overview" (
     "id" SERIAL NOT NULL,
     "country" VARCHAR(128) NOT NULL,
     "league" VARCHAR(128) NOT NULL,
-    "game_year" CHAR(4) NOT NULL,
-    "game_month" SMALLINT NOT NULL,
+    "game_year" TEXT,
+    "game_month" TEXT,
     "team" VARCHAR(128) NOT NULL,
-    "games" INTEGER NOT NULL DEFAULT 0,
-    "rank" INTEGER,
-    "win" INTEGER NOT NULL DEFAULT 0,
-    "lose" INTEGER NOT NULL DEFAULT 0,
-    "draw" INTEGER NOT NULL DEFAULT 0,
-    "winning_points" INTEGER NOT NULL DEFAULT 0,
+    "games" TEXT,
+    "rank" TEXT,
+    "win" TEXT,
+    "lose" TEXT,
+    "draw" TEXT,
+    "winning_points" TEXT,
     "home_1st_half_score" TEXT,
     "home_2nd_half_score" TEXT,
     "home_sum_score" TEXT,
@@ -1059,45 +1058,45 @@ CREATE TABLE "public"."surface_overview" (
     "away_1st_half_score_ratio" VARCHAR(5),
     "away_2nd_half_score_ratio" VARCHAR(5),
     "away_clean_sheet" TEXT,
-    "fail_to_score_game_count" INTEGER NOT NULL DEFAULT 0,
+    "fail_to_score_game_count" TEXT,
     "consecutive_win_disp" VARCHAR(64),
     "consecutive_lose_disp" VARCHAR(64),
-    "unbeaten_streak_count" INTEGER NOT NULL DEFAULT 0,
+    "unbeaten_streak_count" TEXT,
     "unbeaten_streak_disp" VARCHAR(64),
-    "consecutive_score_count" INTEGER NOT NULL DEFAULT 0,
+    "consecutive_score_count" TEXT,
     "consecutive_score_count_disp" VARCHAR(64),
-    "first_week_game_win_count" INTEGER NOT NULL DEFAULT 0,
-    "first_week_game_lost_count" INTEGER NOT NULL DEFAULT 0,
+    "first_week_game_win_count" TEXT,
+    "first_week_game_lost_count" TEXT,
     "first_week_game_win_disp" VARCHAR(64),
-    "mid_week_game_win_count" INTEGER NOT NULL DEFAULT 0,
-    "mid_week_game_lost_count" INTEGER NOT NULL DEFAULT 0,
+    "mid_week_game_win_count" TEXT,
+    "mid_week_game_lost_count" TEXT,
     "mid_week_game_win_disp" VARCHAR(64),
-    "last_week_game_win_count" INTEGER NOT NULL DEFAULT 0,
-    "last_week_game_lost_count" INTEGER NOT NULL DEFAULT 0,
+    "last_week_game_win_count" TEXT,
+    "last_week_game_lost_count" TEXT,
     "last_week_game_win_disp" VARCHAR(64),
-    "home_win_count" INTEGER NOT NULL DEFAULT 0,
-    "home_lose_count" INTEGER NOT NULL DEFAULT 0,
-    "home_first_goal_count" INTEGER NOT NULL DEFAULT 0,
-    "home_win_behind_count" INTEGER NOT NULL DEFAULT 0,
-    "home_lose_behind_count" INTEGER NOT NULL DEFAULT 0,
-    "home_win_behind_0vs1_count" INTEGER NOT NULL DEFAULT 0,
-    "home_lose_behind_1vs0_count" INTEGER NOT NULL DEFAULT 0,
-    "home_win_behind_0vs2_count" INTEGER NOT NULL DEFAULT 0,
-    "home_lose_behind_2vs0_count" INTEGER NOT NULL DEFAULT 0,
-    "home_win_behind_other_count" INTEGER NOT NULL DEFAULT 0,
-    "home_lose_behind_other_count" INTEGER NOT NULL DEFAULT 0,
-    "home_adversity_disp" VARCHAR(64),
-    "away_win_count" INTEGER NOT NULL DEFAULT 0,
-    "away_lose_count" INTEGER NOT NULL DEFAULT 0,
-    "away_first_goal_count" INTEGER NOT NULL DEFAULT 0,
-    "away_win_behind_count" INTEGER NOT NULL DEFAULT 0,
-    "away_lose_behind_count" INTEGER NOT NULL DEFAULT 0,
-    "away_win_behind_1vs0_count" INTEGER NOT NULL DEFAULT 0,
-    "away_lose_behind_0vs1_count" INTEGER NOT NULL DEFAULT 0,
-    "away_win_behind_2vs0_count" INTEGER NOT NULL DEFAULT 0,
-    "away_lose_behind_0vs2_count" INTEGER NOT NULL DEFAULT 0,
-    "away_win_behind_other_count" INTEGER NOT NULL DEFAULT 0,
-    "away_lose_behind_other_count" INTEGER NOT NULL DEFAULT 0,
+    "home_win_count" TEXT,
+    "home_lose_count" TEXT,
+    "home_first_goal_count" TEXT,
+    "home_win_behind_count" TEXT,
+    "home_lose_behind_count" TEXT,
+    "home_win_behind_0vs1_count" TEXT,
+    "home_lose_behind_1vs0_count" TEXT,
+    "home_win_behind_0vs2_count" TEXT,
+    "home_lose_behind_2vs0_count" TEXT,
+    "home_win_behind_other_count" TEXT,
+    "home_lose_behind_other_count" TEXT,
+    "home_adversity_disp" TEXT,
+    "away_win_count" TEXT,
+    "away_lose_count" TEXT,
+    "away_first_goal_count" TEXT,
+    "away_win_behind_count" TEXT,
+    "away_lose_behind_count" TEXT,
+    "away_win_behind_1vs0_count" TEXT,
+    "away_lose_behind_0vs1_count" TEXT,
+    "away_win_behind_2vs0_count" TEXT,
+    "away_lose_behind_0vs2_count" TEXT,
+    "away_win_behind_other_count" TEXT,
+    "away_lose_behind_other_count" TEXT,
     "away_adversity_disp" VARCHAR(64),
     "promote_disp" VARCHAR(64),
     "descend_disp" VARCHAR(64),
@@ -1114,7 +1113,7 @@ CREATE TABLE "public"."surface_overview" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."team_match_final_stats" (
+CREATE TABLE "team_match_final_stats" (
     "seq" SERIAL NOT NULL,
     "team_name" VARCHAR(255),
     "versus_team_name" VARCHAR(255),
@@ -1213,7 +1212,7 @@ CREATE TABLE "public"."team_match_final_stats" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."team_member_master" (
+CREATE TABLE "team_member_master" (
     "id" SERIAL NOT NULL,
     "country" TEXT,
     "league" TEXT,
@@ -1246,12 +1245,12 @@ CREATE TABLE "public"."team_member_master" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."team_monthly_score_summary" (
+CREATE TABLE "team_monthly_score_summary" (
     "seq" SERIAL NOT NULL,
     "country" VARCHAR(100),
     "league" VARCHAR(100),
     "team_name" CHAR(100),
-    "HA" VARCHAR(1),
+    "ha" VARCHAR(1),
     "year" VARCHAR(4),
     "jar_sum_score" CHAR(8),
     "feb_sum_score" CHAR(8),
@@ -1275,7 +1274,7 @@ CREATE TABLE "public"."team_monthly_score_summary" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."team_time_segment_shooting_stat" (
+CREATE TABLE "team_time_segment_shooting_stat" (
     "id" SERIAL NOT NULL,
     "data_category" CHAR(100),
     "team_name" CHAR(100),
@@ -1378,7 +1377,7 @@ CREATE TABLE "public"."team_time_segment_shooting_stat" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."within_data" (
+CREATE TABLE "within_data" (
     "id" SERIAL NOT NULL,
     "seq" VARCHAR(10),
     "time_range_feature_id" VARCHAR(3),
@@ -1487,7 +1486,7 @@ CREATE TABLE "public"."within_data" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."within_data_20minutes_away_all_league" (
+CREATE TABLE "within_data_20minutes_away_all_league" (
     "id" SERIAL NOT NULL,
     "time_range" VARCHAR(50),
     "feature" VARCHAR(50),
@@ -1504,7 +1503,7 @@ CREATE TABLE "public"."within_data_20minutes_away_all_league" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."within_data_20minutes_away_scored" (
+CREATE TABLE "within_data_20minutes_away_scored" (
     "id" SERIAL NOT NULL,
     "country" VARCHAR(50),
     "category" VARCHAR(50),
@@ -1523,7 +1522,7 @@ CREATE TABLE "public"."within_data_20minutes_away_scored" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."within_data_20minutes_home_all_league" (
+CREATE TABLE "within_data_20minutes_home_all_league" (
     "id" SERIAL NOT NULL,
     "time_range" VARCHAR(50),
     "feature" VARCHAR(50),
@@ -1540,7 +1539,7 @@ CREATE TABLE "public"."within_data_20minutes_home_all_league" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."within_data_20minutes_home_scored" (
+CREATE TABLE "within_data_20minutes_home_scored" (
     "id" SERIAL NOT NULL,
     "country" VARCHAR(50),
     "category" VARCHAR(50),
@@ -1559,7 +1558,7 @@ CREATE TABLE "public"."within_data_20minutes_home_scored" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."within_data_20minutes_same_scored" (
+CREATE TABLE "within_data_20minutes_same_scored" (
     "id" SERIAL NOT NULL,
     "country" VARCHAR(50),
     "category" VARCHAR(50),
@@ -1578,7 +1577,7 @@ CREATE TABLE "public"."within_data_20minutes_same_scored" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."within_data_45minutes_away_all_league" (
+CREATE TABLE "within_data_45minutes_away_all_league" (
     "id" SERIAL NOT NULL,
     "time_range" VARCHAR(50),
     "feature" VARCHAR(50),
@@ -1595,7 +1594,7 @@ CREATE TABLE "public"."within_data_45minutes_away_all_league" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."within_data_45minutes_away_scored" (
+CREATE TABLE "within_data_45minutes_away_scored" (
     "id" SERIAL NOT NULL,
     "country" VARCHAR(50),
     "category" VARCHAR(50),
@@ -1614,7 +1613,7 @@ CREATE TABLE "public"."within_data_45minutes_away_scored" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."within_data_45minutes_home_all_league" (
+CREATE TABLE "within_data_45minutes_home_all_league" (
     "id" SERIAL NOT NULL,
     "time_range" VARCHAR(50),
     "feature" VARCHAR(50),
@@ -1631,7 +1630,7 @@ CREATE TABLE "public"."within_data_45minutes_home_all_league" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."within_data_45minutes_home_scored" (
+CREATE TABLE "within_data_45minutes_home_scored" (
     "id" SERIAL NOT NULL,
     "country" VARCHAR(50),
     "category" VARCHAR(50),
@@ -1649,17 +1648,73 @@ CREATE TABLE "public"."within_data_45minutes_home_scored" (
     CONSTRAINT "within_data_45minutes_home_scored_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
-CREATE UNIQUE INDEX "country_UNIQUE" ON "public"."country_league_summary"("country");
+-- CreateTable
+CREATE TABLE "country_league_visibility" (
+    "id" SERIAL NOT NULL,
+    "country" VARCHAR(128) NOT NULL,
+    "league" VARCHAR(128),
+    "visible" BOOLEAN NOT NULL DEFAULT true,
+    "priority" INTEGER NOT NULL DEFAULT 0,
+    "reason" VARCHAR(255),
+    "effectiveFrom" TIMESTAMPTZ(0),
+    "effectiveTo" TIMESTAMPTZ(0),
+    "optionId" INTEGER,
+    "register_id" VARCHAR(100),
+    "register_time" TIMESTAMPTZ(0),
+    "update_id" VARCHAR(100),
+    "update_time" TIMESTAMPTZ(0),
+
+    CONSTRAINT "country_league_visibility_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "user_visibility_option" (
+    "id" SERIAL NOT NULL,
+    "userId" VARCHAR(64) NOT NULL,
+    "optionId" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "user_visibility_option_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateIndex
-CREATE UNIQUE INDEX "league_UNIQUE" ON "public"."country_league_summary"("league");
+CREATE UNIQUE INDEX "country_UNIQUE" ON "country_league_summary"("country");
 
 -- CreateIndex
-CREATE INDEX "idx_data_keys_times_seq" ON "public"."data"("data_category", "home_team_name", "away_team_name", "times", "seq");
+CREATE UNIQUE INDEX "league_UNIQUE" ON "country_league_summary"("league");
 
 -- CreateIndex
-CREATE INDEX "idx_lookup" ON "public"."surface_overview"("country", "league", "game_year", "game_month", "team");
+CREATE INDEX "idx_data_keys_times_seq" ON "data"("data_category", "home_team_name", "away_team_name", "times", "seq");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "uk_team_month" ON "public"."surface_overview"("country", "league", "team", "game_year", "game_month");
+CREATE INDEX "idx_lookup" ON "surface_overview"("country", "league", "game_year", "game_month", "team");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "uk_team_month" ON "surface_overview"("country", "league", "team", "game_year", "game_month");
+
+-- CreateIndex
+CREATE INDEX "idx_web_visibility_lookup" ON "country_league_visibility"("country", "league");
+
+-- CreateIndex
+CREATE INDEX "idx_web_visibility_flag" ON "country_league_visibility"("visible");
+
+-- CreateIndex
+CREATE INDEX "idx_web_visibility_option" ON "country_league_visibility"("optionId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "uk_web_visibility_scoped" ON "country_league_visibility"("country", "league", "optionId");
+
+-- CreateIndex
+CREATE INDEX "idx_user_option_user" ON "user_visibility_option"("userId");
+
+-- CreateIndex
+CREATE INDEX "idx_user_option_option" ON "user_visibility_option"("optionId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "uk_user_option" ON "user_visibility_option"("userId", "optionId");
+
+-- AddForeignKey
+ALTER TABLE "country_league_visibility" ADD CONSTRAINT "country_league_visibility_optionId_fkey" FOREIGN KEY ("optionId") REFERENCES "stat_size_finalize_master"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "user_visibility_option" ADD CONSTRAINT "user_visibility_option_optionId_fkey" FOREIGN KEY ("optionId") REFERENCES "stat_size_finalize_master"("id") ON DELETE CASCADE ON UPDATE CASCADE;

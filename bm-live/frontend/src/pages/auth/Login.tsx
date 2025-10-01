@@ -1,5 +1,6 @@
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { api } from "../../api/client"; // ← 置いた場所に合わせて相対パス調整
 
 export default function Login() {
   const nav = useNavigate();
@@ -8,15 +9,14 @@ export default function Login() {
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ email, password }),
-    });
-    if (res.ok) {
-      nav("/top", { replace: true }); // ← ここ！
-    } else {
+    try {
+      await api("/api/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
+      nav("/top", { replace: true });
+    } catch (err) {
+      console.error(err);
       alert("ログイン失敗");
     }
   }
