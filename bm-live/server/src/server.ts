@@ -10,6 +10,7 @@ import jwt from "jsonwebtoken";
 import { prismaUser } from "./db"; // <- User用 PrismaClient
 import leaguesRouter from "./routes/league"; // <- 複数形ファイル名
 import matches from "./routes/matches";
+import correlationRouter from "./routes/correlation";
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
 
@@ -24,6 +25,7 @@ app.use(cookieParser());
 app.use(express.json());
 
 // ルーター
+app.use("/api/leagues", correlationRouter);
 app.use("/api/leagues", leaguesRouter);
 app.use("/api/matches", matches);
 

@@ -6,6 +6,8 @@ import Register from "./pages/auth/Register";
 import Dashboard from "./pages/top/Dashboard";
 import RequireAuth from "./pages/auth/RequireAuth";
 import LeagueMenu from "./pages/humberger/LeagueMenu";
+import LeagueTeams from "./pages/teams/Team";
+import TeamDetail from "./pages/teams/TeamDetail";
 
 export default function App() {
   return (
@@ -18,11 +20,13 @@ export default function App() {
       <Route path="/register" element={<Register />} />
 
       {/* パラメタ付きページ */}
-      <Route path="/:country/:league" element={<LeagueMenu />} />
+      <Route path="/:country/:league" element={<LeagueTeams />} />
+
+      <Route path="/:country/:league/:team" element={<TeamDetail />} />
 
       {/* 認証保護ページ */}
       {/* <Route element={<RequireAuth />}>*/}
-        <Route path="/top" element={<Dashboard />} />
+      <Route path="/top" element={<Dashboard />} />
       {/* </Route>*/}
 
       {/* フォールバック */}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "../../lib/queryClient";
 import MatchHeader from "../../components/MatchHeader";
@@ -6,6 +6,7 @@ import StatsGrid from "../../components/StatsGrid";
 import ThemeToggle from "../../components/ThemeToggle";
 import { Button } from "../../components/ui/button";
 import { Skeleton } from "../../components/ui/skeleton";
+import AppHeader from "../../components/layout/AppHeader";
 import { RefreshCw } from "lucide-react";
 
 // --- デザイン確認用: 型定義 & モック --------------------
@@ -65,32 +66,29 @@ const MOCK_MATCH: MatchDetails = {
 export default function Dashboard() {
   const [selectedMatchId, setSelectedMatchId] = useState("match1");
 
-  // Fetch match details with real-time stats
   const {
     data: matchDetails,
     isLoading,
     error,
   } = useQuery<MatchDetails>({
     queryKey: ["match-details", selectedMatchId],
-    // デザイン確認用：APIは叩かずにモック返却
     queryFn: async () => {
-      await new Promise((r) => setTimeout(r, 400)); // Skeleton確認用のちょい待ち
+      await new Promise((r) => setTimeout(r, 400));
       return MOCK_MATCH;
     },
-    refetchInterval: false, // API接続に戻したら必要に応じて復活
     staleTime: 30_000,
   });
 
   // Refresh mutation for manual updates
   const refreshMutation = useMutation({
     mutationFn: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["match-details", selectedMatchId] });
+      await queryClient.invalidateQueries({
+        queryKey: ["match-details", selectedMatchId],
+      });
     },
   });
 
-  const handleRefresh = () => {
-    refreshMutation.mutate();
-  };
+  const handleRefresh = () => refreshMutation.mutate();
 
   if (error) {
     return (
@@ -112,26 +110,16 @@ export default function Dashboard() {
   }
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold" data-testid="text-app-title">
-                統計データ
-              </h1>
-              <p className="text-muted-foreground text-sm">Live Match Dashboard</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshMutation.isPending} data-testid="button-refresh" className="hover-elevate">
-                <RefreshCw className={`w-4 h-4 mr-2 ${refreshMutation.isPending ? "animate-spin" : ""}`} />
-                Refresh
-              </Button>
-              <ThemeToggle />
-            </div>
-          </div>
-        </div>
-      </header>
+      <AppHeader
+        title="統計データ"
+        subtitle="Live Match Dashboard"
+        rightSlot={
+          <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshMutation.isPending} data-testid="button-refresh" className="hover-elevate">
+            <RefreshCw className={`w-4 h-4 mr-2 ${refreshMutation.isPending ? "animate-spin" : ""}`} />
+            Refresh
+          </Button>
+        }
+      />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">

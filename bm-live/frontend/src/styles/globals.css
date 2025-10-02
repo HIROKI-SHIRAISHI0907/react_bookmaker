@@ -42,6 +42,82 @@
   --radius-sm: calc(var(--radius) - 4px);
 }
 
+/* ==== Animations ==== */
+/* slide-in (左から & フェード) */
+@keyframes in {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes fade-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.animate-in-left {
+  animation: fade-in-left 0.24s ease-out both;
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes slide-out-left {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+}
+
+/* ユーティリティ（任意名） */
+.animate-fade-in {
+  animation: fade-in 0.18s ease-out both;
+}
+.animate-fade-out {
+  animation: fade-out 0.15s ease-in both;
+}
+.animate-in-left {
+  animation: slide-in-left 0.24s ease-out both;
+}
+.animate-out-left {
+  animation: slide-out-left 0.2s ease-in both;
+}
+
 /* shadcn の CSS 変数（ライト／ダーク） */
 @layer base {
   :root {
