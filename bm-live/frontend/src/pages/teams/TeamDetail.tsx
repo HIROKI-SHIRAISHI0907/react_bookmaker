@@ -1,40 +1,49 @@
-// frontend/src/pages/league/TeamDetail.tsx
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState, useMemo } from "react";
 import { fetchTeamDetail, type TeamDetail as TeamDetailType } from "../../api/leagues";
-import { fetchTeamCorrelations, type CorrelationsByScore } from "../../api/correlations";
+import { fetchTeamCorrelations, type CorrelationsBySideScore } from "../../api/correlations";
 import { Skeleton } from "../../components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
-import CorrelationTabs from "../../components/correlation/CorrelationTab";
+import CorrelationPanel from "../../components/correlation/CorrelationPanel";
 
 export default function TeamDetail() {
-  const {
-    country = "",
-    league = "",
-    team = "",
-  } = useParams<{
-    country: string;
-    league: string;
-    team: string;
+  const params = useParams<{
+    country?: string;
+    league?: string;
+    team?: string;
+    teams?: string;
   }>();
 
-  const countryLabel = decodeURIComponent(country);
-  const leagueLabel = decodeURIComponent(league);
+  // ルーターから来る値（エンコード済みのことが多い）
+  const countryParam = params.country ?? "";
+  const leagueParam = params.league ?? "";
+  const teamSlug = params.team ?? params.teams ?? "";
 
-  // ---- Queries ----
+  // 表示用 & API 入力用に decode
+  const safeDecode = (s: string) => {
+    try {
+      return decodeURIComponent(s);
+    } catch {
+      return s;
+    }
+  };
+  const countryLabel = safeDecode(countryParam); // 表示用の素のラベル（日本語など）
+  const leagueLabel = safeDecode(leagueParam);
+
+  // ---- Queries（decode 済みを渡す！）----
   const detailQ = useQuery<TeamDetailType>({
-    queryKey: ["team-detail", country, league, team],
-    queryFn: () => fetchTeamDetail(country, league, team),
-    enabled: !!country && !!league && !!team,
-    staleTime: 60_000,
+    queryKey: ["team-detail", countryLabel, leagueLabel, teamSlug],
+    queryFn: () => fetchTeamDetail(countryLabel, leagueLabel, teamSlug),
+    enabled: !!countryLabel && !!leagueLabel && !!teamSlug,
+    staleTime: 10_000,
   });
 
-  const corrQ = useQuery<CorrelationsByScore>({
-    queryKey: ["team-correlations", country, league, team],
-    queryFn: () => fetchTeamCorrelations(country, league, team),
-    enabled: !!country && !!league && !!team,
-    staleTime: 60_000,
+  const corrQ = useQuery<CorrelationsBySideScore>({
+    queryKey: ["team-correlations", countryLabel, leagueLabel, teamSlug],
+    queryFn: () => fetchTeamCorrelations(countryLabel, leagueLabel, teamSlug),
+    enabled: !!countryLabel && !!leagueLabel && !!teamSlug,
+    staleTime: 10_000,
   });
 
   // ---- Correlation Loading Skeleton (delayed) ----
@@ -49,25 +58,27 @@ export default function TeamDetail() {
 
   const isCorrEmpty = useMemo(() => {
     const d = corrQ.data;
-    if (!d) return false; // 未確定時はここで判定しない
-    const c1 = d["1st"]?.length ?? 0;
-    const c2 = d["2nd"]?.length ?? 0;
-    const ca = d["ALL"]?.length ?? 0;
-    return c1 === 0 && c2 === 0 && ca === 0;
+    if (!d) return false;
+    const sum =
+      (d.HOME?.["1st"]?.length ?? 0) + (d.HOME?.["2nd"]?.length ?? 0) + (d.HOME?.ALL?.length ?? 0) + (d.AWAY?.["1st"]?.length ?? 0) + (d.AWAY?.["2nd"]?.length ?? 0) + (d.AWAY?.ALL?.length ?? 0);
+    return sum === 0;
   }, [corrQ.data]);
+
+  // 戻りリンクは decode 済みラベルを encode し直して作る（raw を二重エンコードしない）
+  const toBack = `/${encodeURIComponent(countryLabel)}/${encodeURIComponent(leagueLabel)}`;
 
   return (
     <div className="p-4 space-y-6">
       {/* パンくず（常時表示） */}
       <div className="mb-2 flex items-center gap-3">
-        <Link to={`/${country}/${league}`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:underline">
+        <Link to={toBack} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:underline">
           <ArrowLeft className="w-4 h-4" />
           {countryLabel} / {leagueLabel} に戻る
         </Link>
       </div>
 
       {/* チーム見出し */}
-      {!team ? (
+      {!teamSlug ? (
         <div className="text-sm text-muted-foreground">チームが指定されていません。</div>
       ) : detailQ.isLoading ? (
         <div className="space-y-2">
@@ -85,25 +96,23 @@ export default function TeamDetail() {
         </div>
       ) : null}
 
-      {/* 相関タブ */}
+      {/* 相関パネル */}
       <section>
         <h2 className="mb-2 text-xl font-bold">相関係数（上位5件）</h2>
 
         {showCorrSkeleton ? (
-          // ローディング時（300ms超過で出す）
           <div className="space-y-2">
             <Skeleton className="h-8 w-40" />
             <Skeleton className="h-16 w-full" />
           </div>
         ) : corrQ.isError ? (
-          // 取得失敗
-          <div className="text-muted-foreground">表示ができませんでした。</div>
-        ) : corrQ.isLoading ? null : !corrQ.data || isCorrEmpty ? ( // 300ms未満で確定した場合は何も出さず、すぐ次の状態へ
-          // データ無し
+          <>
+            <div className="text-muted-foreground">表示ができませんでした。</div>
+          </>
+        ) : corrQ.isLoading ? null : !corrQ.data || isCorrEmpty ? (
           <div className="text-muted-foreground">表示するデータがありません。</div>
         ) : (
-          // データあり
-          <CorrelationTabs data={corrQ.data} />
+          <CorrelationPanel data={corrQ.data} />
         )}
       </section>
     </div>

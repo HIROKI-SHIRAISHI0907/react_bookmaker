@@ -1,94 +1,39 @@
+// server/src/routes/correlation.ts
 import { Router } from "express";
 import { prismaStats } from "../db";
+export const correlationRouter = Router();
 
-const router = Router();
+const fromPath = (s: string) => decodeURIComponent(s);
 
-const fromPath = (s: string) => decodeURIComponent(s).replace(/-/g, " ");
+type RawRow = Record<string, any> & {
+  score: "1st" | "2nd" | "ALL";
+  home: string | null;
+  away: string | null;
+  // rank_1th ~ rank_74th が文字列 "metric,value" / null で入る
+};
 
-function parseMetric(raw?: string | null) {
-  if (!raw) return null;
-  const [m, v] = String(raw).split(",");
-  if (!m) return null;
-  const num = Number(v);
-  if (!Number.isFinite(num)) return null;
-  return { metric: m, value: num };
-}
-
-function pickTopNWithPreference(row: any, preferred: "home" | "away", N = 5) {
-  const preferredList: Array<{ metric: string; value: number }> = [];
-  const others: Array<{ metric: string; value: number }> = [];
-  for (let i = 1; i <= 74; i++) {
-    const parsed = parseMetric(row[`rank_${i}th`]);
-    if (!parsed) continue;
-    if (parsed.metric.toLowerCase().startsWith(preferred)) preferredList.push(parsed);
-    else others.push(parsed);
-    if (preferredList.length >= N) break;
-  }
-  const out = preferredList.slice(0, N);
-  let j = 0;
-  while (out.length < N && j < others.length) out.push(others[j++]);
-  return out;
-}
-
-/** 段階的に slug -> 日本語チーム名を解決 */
-async function resolveTeamName(country: string, league: string, slug: string) {
-  // 1) 国・リーグ・link 前方一致（最も厳密）
-  let rows = await prismaStats.$queryRaw<{ team: string }[]>`
-    SELECT team
-    FROM country_league_master
-    WHERE country = ${country}
-      AND league  = ${league}
-      AND link LIKE ${`/team/${slug}/%`}
-    LIMIT 1
-  `;
-  if (rows.length > 0) return { team: rows[0].team, by: "country+league+link" };
-
-  // 2) 国一致 + link 前方一致（リーグ表記ゆれ対策）
-  rows = await prismaStats.$queryRaw<{ team: string }[]>`
-    SELECT team
-    FROM country_league_master
-    WHERE country = ${country}
-      AND link LIKE ${`/team/${slug}/%`}
-    LIMIT 1
-  `;
-  if (rows.length > 0) return { team: rows[0].team, by: "country+link" };
-
-  // 3) link 前方一致だけ（最小限）
-  rows = await prismaStats.$queryRaw<{ team: string }[]>`
-    SELECT team
-    FROM country_league_master
-    WHERE link LIKE ${`/team/${slug}/%`}
-    LIMIT 1
-  `;
-  if (rows.length > 0) return { team: rows[0].team, by: "link-only" };
-
-  return null;
-}
-
-router.get("/:country/:league/:team/correlations", async (req, res) => {
+correlationRouter.get("/:country/:league/:team/correlations", async (req, res) => {
   try {
     const countryParam = fromPath(req.params.country);
     const leagueParam = fromPath(req.params.league);
-    const teamSlug = req.params.team;
+    const teamSlug = req.params.team; // 英語スラッグ
 
-    // ログ（必要に応じて）
-    // console.log("[corr] req", { countryParam, leagueParam, teamSlug });
-
-    // slug -> 日本語チーム名
-    const resolved = await resolveTeamName(countryParam, leagueParam, teamSlug);
-    if (!resolved) {
-      return res.status(404).json({
-        message: "team not found",
-        hints: {
-          tried: ["country+league+link LIKE", "country+link LIKE", "link LIKE only"],
-          received: { country: countryParam, league: leagueParam, slug: teamSlug },
-        },
-      });
+    // ① スラッグ→日本語チーム名
+    const teamRows = await prismaStats.$queryRaw<{ team: string }[]>`
+      SELECT clm.team
+      FROM country_league_master clm
+      WHERE clm.country = ${countryParam}
+        AND clm.league  = ${leagueParam}
+        AND clm.link LIKE ${`/team/${teamSlug}/%`}
+      LIMIT 1
+    `;
+    if (teamRows.length === 0) {
+      return res.status(404).json({ message: "team not found" });
     }
-    const teamName = resolved.team;
+    const teamName = teamRows[0].team;
 
-    // 相関テーブル
-    const rows = await prismaStats.$queryRaw<any[]>`
+    // ② 該当チームが home/away のどちらかで出現する行（1st/2nd/ALL）
+    const rows = await prismaStats.$queryRaw<RawRow[]>`
       SELECT
         r.*,
         CASE
@@ -103,68 +48,49 @@ router.get("/:country/:league/:team/correlations", async (req, res) => {
         AND r.score IN ('1st','2nd','ALL')
     `;
 
-    if (rows.length === 0) {
-      // country/league の表記ずれ対策：league を無視して再トライ（任意）
-      const rows2 = await prismaStats.$queryRaw<any[]>`
-        SELECT
-          r.*,
-          CASE
-            WHEN r.home = ${teamName} THEN 'home'
-            WHEN r.away = ${teamName} THEN 'away'
-            ELSE NULL
-          END AS side
-        FROM calc_correlation_ranking r
-        WHERE r.country = ${countryParam}
-          AND (r.home = ${teamName} OR r.away = ${teamName})
-          AND r.score IN ('1st','2nd','ALL')
-      `;
-      if (rows2.length === 0) {
-        return res.status(404).json({
-          message: "correlations not found",
-          hints: {
-            country: countryParam,
-            league: leagueParam,
-            team: teamName,
-            note: "league 表記ゆれの可能性。上の rows2 クエリも 0 件ならデータ未登録です。",
-          },
-        });
+    // ③ rank_Xth を side ごとにフィルタ
+    const pickTopN = (row: RawRow | undefined, wantPrefix: "home" | "away", n = 5) => {
+      if (!row) return [] as Array<{ metric: string; value: number }>;
+      const out: Array<{ metric: string; value: number }> = [];
+      // ranking は rank_1th → rank_74th の昇順で意味があるので順に走査
+      for (let i = 1; i <= 74; i++) {
+        const key = `rank_${i}th`;
+        const raw = row[key];
+        if (!raw) continue;
+        const [metric, valueStr] = String(raw).split(",");
+        if (!metric || !metric.startsWith(wantPrefix)) continue;
+        const v = Number(valueStr);
+        if (!Number.isFinite(v)) continue;
+        out.push({ metric, value: v });
+        if (out.length >= n) break;
       }
-      // rows2 を採用（リーグゆるめ）
-      const byScore2: Record<"1st" | "2nd" | "ALL", any[]> = { "1st": [], "2nd": [], ALL: [] };
-      (["1st", "2nd", "ALL"] as const).forEach((s) => {
-        const row = rows2.find((r) => r.score === s);
-        if (!row) return;
-        const preferred: "home" | "away" = row.side === "away" ? "away" : "home";
-        byScore2[s] = pickTopNWithPreference(row, preferred, 5);
-      });
-      return res.json({
-        team: { name: teamName, slug: teamSlug },
-        country: countryParam,
-        league: leagueParam,
-        correlations: byScore2,
-        relaxed: true, // ← フラグ（デバッグ用）
-      });
-    }
+      return out;
+    };
 
-    // 通常（厳密 league で命中）
-    const byScore: Record<"1st" | "2nd" | "ALL", any[]> = { "1st": [], "2nd": [], ALL: [] };
-    (["1st", "2nd", "ALL"] as const).forEach((s) => {
-      const row = rows.find((r) => r.score === s);
-      if (!row) return;
-      const preferred: "home" | "away" = row.side === "away" ? "away" : "home";
-      byScore[s] = pickTopNWithPreference(row, preferred, 5);
-    });
+    // ④ score×side でマッピング
+    const findBy = (score: "1st" | "2nd" | "ALL", side: "home" | "away") => rows.find((r) => r.score === score && (r as any).side === side);
+
+    const correlations = {
+      HOME: {
+        "1st": pickTopN(findBy("1st", "home"), "home"),
+        "2nd": pickTopN(findBy("2nd", "home"), "home"),
+        ALL: pickTopN(findBy("ALL", "home"), "home"),
+      },
+      AWAY: {
+        "1st": pickTopN(findBy("1st", "away"), "away"),
+        "2nd": pickTopN(findBy("2nd", "away"), "away"),
+        ALL: pickTopN(findBy("ALL", "away"), "away"),
+      },
+    };
 
     return res.json({
-      team: { name: teamName, slug: teamSlug },
+      team: teamName,
       country: countryParam,
       league: leagueParam,
-      correlations: byScore,
+      correlations,
     });
   } catch (e) {
-    console.error("GET /api/leagues/:country/:league/:team/correlations failed:", e);
-    return res.status(500).json({ message: "server error" });
+    console.error(e);
+    return res.status(500).json({ message: "internal error" });
   }
 });
-
-export default router;

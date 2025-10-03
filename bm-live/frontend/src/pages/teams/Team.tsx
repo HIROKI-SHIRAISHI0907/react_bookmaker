@@ -5,19 +5,26 @@ import { fetchTeamsInLeague, type TeamsInLeague } from "../../api/leagues";
 import { Skeleton } from "../../components/ui/skeleton";
 
 export default function LeagueTeams() {
-  // URL の country / league は encodeURIComponent 済みが来るので decode して表示にも使う
+  // URLの country / league は既に encodeURIComponent 済みなので、表示・API の両方で raw を用意
   const { country = "", league = "" } = useParams();
 
-  const { data, isLoading, error } = useQuery<TeamsInLeague>({
-    queryKey: ["teams-in-league", country, league],
-    queryFn: () => fetchTeamsInLeague(country, league),
+  const countryRaw = decodeURIComponent(country);
+  const leagueRaw = decodeURIComponent(league);
+
+  const { data, isLoading, isError } = useQuery<TeamsInLeague>({
+    // キャッシュキーも raw に統一
+    queryKey: ["teams-in-league", countryRaw, leagueRaw],
+    // API 側で encode する想定なので、ここでは raw を渡す
+    queryFn: () => fetchTeamsInLeague(countryRaw, leagueRaw),
     staleTime: 60_000,
   });
 
-  if (error) {
+  if (isError) {
     return (
       <div className="p-4">
-        <h1 className="text-xl font-bold mb-2">チーム一覧</h1>
+        <h1 className="text-2xl font-bold mb-2">
+          {countryRaw} / {leagueRaw}
+        </h1>
         <p className="text-destructive">データの取得に失敗しました</p>
       </div>
     );
@@ -28,7 +35,7 @@ export default function LeagueTeams() {
       {/* 見出し */}
       <div className="mb-4">
         <h1 className="text-2xl font-bold">
-          {decodeURIComponent(country)} / {decodeURIComponent(league)}
+          {countryRaw} / {leagueRaw}
         </h1>
         <p className="text-muted-foreground text-sm">Team List</p>
       </div>
@@ -46,23 +53,25 @@ export default function LeagueTeams() {
       )}
 
       {/* データ */}
-      {data && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {data.teams.map((t) => {
-            // チーム詳細ページへのアプリ内リンク（/country/league/<english> などにしたい場合）
-            const teamRoute = `/${country}/${league}/${t.english}`;
-
-            return (
-              <Link key={t.link} to={teamRoute} className="group border rounded p-3 hover:bg-accent transition-colors">
-                <div className="font-medium">{t.name}</div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  /team/{t.english}/{t.hash}
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      )}
+      {data &&
+        (data.teams.length === 0 ? (
+          <div className="text-muted-foreground">表示するチームがありません。</div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {data.teams.map((t) => {
+              // params の country / league はすでにエンコード済みなので、それを使って OK
+              const teamRoute = `/${country}/${league}/${t.english}`;
+              return (
+                <Link key={t.link} to={teamRoute} className="group border rounded p-3 hover:bg-accent transition-colors">
+                  <div className="font-medium">{t.name}</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    /team/{t.english}/{t.hash}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        ))}
     </div>
   );
 }

@@ -12,12 +12,12 @@ export async function fetchLeaguesGrouped(): Promise<LeagueGrouped[]> {
 
 // チーム単位
 export type TeamItem = {
-  name: string;         // 表示名
-  english: string;      // 英語スラッグ
+  name: string; // 表示名
+  english: string; // 英語スラッグ
   hash: string;
-  link: string;         // /team/<english>/<hash>
-  path: string;         // /<country>/<league> (UI用)
-  apiPath: string;      // /api/leagues/<country>/<league>/<english>
+  link: string; // /team/<english>/<hash>
+  path: string; // /<country>/<league> (UI用)
+  apiPath: string; // /api/leagues/<country>/<league>/<english>
 };
 
 export type TeamsInLeague = {
@@ -29,7 +29,11 @@ export type TeamsInLeague = {
 export async function fetchTeamsInLeague(country: string, league: string): Promise<TeamsInLeague> {
   const url = `/api/leagues/${encodeURIComponent(country)}/${encodeURIComponent(league)}`;
   const res = await fetch(url, { credentials: "include" });
-  if (!res.ok) throw new Error("Failed to fetch teams");
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    console.error("fetchTeamsInLeague failed:", res.status, text);
+    throw new Error(`Failed to fetch teams: ${res.status}`);
+  }
   return res.json();
 }
 
