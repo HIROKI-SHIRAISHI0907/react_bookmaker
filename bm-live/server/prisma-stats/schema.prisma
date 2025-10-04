@@ -287,8 +287,8 @@ model country_league_season_master {
 
 model country_league_summary {
   id            Int      @id @default(autoincrement())
-  country       String   @unique(map: "country_UNIQUE") @db.VarChar(50)
-  league        String   @unique(map: "league_UNIQUE") @db.VarChar(50)
+  country       String   @db.VarChar(50)
+  league        String   @db.VarChar(50)
   data_count    String   @db.VarChar(100)
   csv_count     String   @db.VarChar(100)
   logic_flg     String?  @default("0") @db.VarChar(1)
@@ -296,6 +296,8 @@ model country_league_summary {
   register_time DateTime @db.Timestamptz(0)
   update_id     String   @db.VarChar(100)
   update_time   DateTime @db.Timestamptz(0)
+
+  @@unique([country, league], map: "country_league_UNIQUE")
 }
 
 model data {
@@ -511,7 +513,7 @@ model league_score_time_band_stats {
   country         String?   @db.VarChar(50)
   league          String?   @db.VarChar(50)
   sum_score_value String?   @db.VarChar(50)
-  time_range_area String?   @db.VarChar(200)
+  time_range_area String?   @db.Text
   target          String?   @db.VarChar(50)
   search          String?   @db.VarChar(50)
   ratio           String?   @db.VarChar(50)
@@ -528,8 +530,8 @@ model league_score_time_band_stats_split_score {
   league               String?   @db.VarChar(50)
   home_score_value     String?   @db.VarChar(50)
   away_score_value     String?   @db.VarChar(50)
-  home_time_range_area String?   @db.VarChar(200)
-  away_time_range_area String?   @db.VarChar(200)
+  home_time_range_area String?   @db.Text
+  away_time_range_area String?   @db.Text
   target               String?   @db.VarChar(50)
   search               String?   @db.VarChar(50)
   ratio                String?   @db.VarChar(50)
@@ -543,100 +545,100 @@ model league_score_time_band_stats_split_score {
 model match_classification_result {
   id                                     Int       @id @default(autoincrement())
   classify_mode                          String?   @db.VarChar(2)
-  data_category                          String?   @db.Char(100)
-  times                                  String?   @db.Char(50)
-  home_rank                              String?   @db.Char(30)
-  home_team_name                         String?   @db.Char(100)
-  home_score                             String?   @default("0") @db.Char(20)
-  away_rank                              String?   @db.Char(30)
-  away_team_name                         String?   @db.Char(100)
-  away_score                             String?   @default("0") @db.Char(20)
-  home_exp                               String?   @db.Char(50)
-  away_exp                               String?   @db.Char(50)
-  home_in_goal_exp                       String?   @db.Char(50)
-  away_in_goal_exp                       String?   @db.Char(50)
-  home_donation                          String?   @db.Char(50)
-  away_donation                          String?   @db.Char(50)
-  home_shoot_all                         String?   @db.Char(3)
-  away_shoot_all                         String?   @db.Char(30)
-  home_shoot_in                          String?   @db.Char(30)
-  away_shoot_in                          String?   @db.Char(30)
-  home_shoot_out                         String?   @db.Char(30)
-  away_shoot_out                         String?   @db.Char(30)
-  home_block_shoot                       String?   @db.Char(30)
-  away_block_shoot                       String?   @db.Char(30)
-  home_big_chance                        String?   @db.Char(30)
-  away_big_chance                        String?   @db.Char(30)
-  home_corner                            String?   @db.Char(30)
-  away_corner                            String?   @db.Char(30)
-  home_box_shoot_in                      String?   @db.Char(30)
-  away_box_shoot_in                      String?   @db.Char(30)
-  home_box_shoot_out                     String?   @db.Char(30)
-  away_box_shoot_out                     String?   @db.Char(30)
-  home_goal_post                         String?   @db.Char(30)
-  away_goal_post                         String?   @db.Char(30)
-  home_goal_head                         String?   @db.Char(30)
-  away_goal_head                         String?   @db.Char(30)
-  home_keeper_save                       String?   @db.Char(30)
-  away_keeper_save                       String?   @db.Char(30)
-  home_free_kick                         String?   @db.Char(30)
-  away_free_kick                         String?   @db.Char(30)
-  home_offside                           String?   @db.Char(30)
-  away_offside                           String?   @db.Char(30)
-  home_foul                              String?   @db.Char(30)
-  away_foul                              String?   @db.Char(30)
-  home_yellow_card                       String?   @db.Char(30)
-  away_yellow_card                       String?   @db.Char(30)
-  home_red_card                          String?   @db.Char(30)
-  away_red_card                          String?   @db.Char(30)
-  home_slow_in                           String?   @db.Char(30)
-  away_slow_in                           String?   @db.Char(30)
-  home_box_touch                         String?   @db.Char(30)
-  away_box_touch                         String?   @db.Char(30)
-  home_pass_count                        String?   @db.Char(30)
-  away_pass_count                        String?   @db.Char(30)
-  home_final_third_pass_count            String?   @db.Char(30)
-  away_final_third_pass_count            String?   @db.Char(30)
-  home_cross_count                       String?   @db.Char(30)
-  away_cross_count                       String?   @db.Char(30)
-  home_tackle_count                      String?   @db.Char(30)
-  away_tackle_count                      String?   @db.Char(30)
-  home_clear_count                       String?   @db.Char(30)
-  away_clear_count                       String?   @db.Char(30)
-  home_intercept_count                   String?   @db.Char(30)
-  away_intercept_count                   String?   @db.Char(30)
+  data_category                          String?   @db.Text
+  times                                  String?   @db.Text
+  home_rank                              String?   @db.Text
+  home_team_name                         String?   @db.Text
+  home_score                             String?   @default("0") @db.Text
+  away_rank                              String?   @db.Text
+  away_team_name                         String?   @db.Text
+  away_score                             String?   @default("0") @db.Text
+  home_exp                               String?   @db.Text
+  away_exp                               String?   @db.Text
+  home_in_goal_exp                       String?   @db.Text
+  away_in_goal_exp                       String?   @db.Text
+  home_donation                          String?   @db.Text
+  away_donation                          String?   @db.Text
+  home_shoot_all                         String?   @db.Text
+  away_shoot_all                         String?   @db.Text
+  home_shoot_in                          String?   @db.Text
+  away_shoot_in                          String?   @db.Text
+  home_shoot_out                         String?   @db.Text
+  away_shoot_out                         String?   @db.Text
+  home_block_shoot                       String?   @db.Text
+  away_block_shoot                       String?   @db.Text
+  home_big_chance                        String?   @db.Text
+  away_big_chance                        String?   @db.Text
+  home_corner                            String?   @db.Text
+  away_corner                            String?   @db.Text
+  home_box_shoot_in                      String?   @db.Text
+  away_box_shoot_in                      String?   @db.Text
+  home_box_shoot_out                     String?   @db.Text
+  away_box_shoot_out                     String?   @db.Text
+  home_goal_post                         String?   @db.Text
+  away_goal_post                         String?   @db.Text
+  home_goal_head                         String?   @db.Text
+  away_goal_head                         String?   @db.Text
+  home_keeper_save                       String?   @db.Text
+  away_keeper_save                       String?   @db.Text
+  home_free_kick                         String?   @db.Text
+  away_free_kick                         String?   @db.Text
+  home_offside                           String?   @db.Text
+  away_offside                           String?   @db.Text
+  home_foul                              String?   @db.Text
+  away_foul                              String?   @db.Text
+  home_yellow_card                       String?   @db.Text
+  away_yellow_card                       String?   @db.Text
+  home_red_card                          String?   @db.Text
+  away_red_card                          String?   @db.Text
+  home_slow_in                           String?   @db.Text
+  away_slow_in                           String?   @db.Text
+  home_box_touch                         String?   @db.Text
+  away_box_touch                         String?   @db.Text
+  home_pass_count                        String?   @db.Text
+  away_pass_count                        String?   @db.Text
+  home_final_third_pass_count            String?   @db.Text
+  away_final_third_pass_count            String?   @db.Text
+  home_cross_count                       String?   @db.Text
+  away_cross_count                       String?   @db.Text
+  home_tackle_count                      String?   @db.Text
+  away_tackle_count                      String?   @db.Text
+  home_clear_count                       String?   @db.Text
+  away_clear_count                       String?   @db.Text
+  home_intercept_count                   String?   @db.Text
+  away_intercept_count                   String?   @db.Text
   record_time                            DateTime? @db.Timestamptz(0)
-  weather                                String?   @db.Char(5)
-  temparature                            String?   @db.Char(10)
-  humid                                  String?   @db.Char(5)
-  judge_member                           String?   @db.Char(50)
-  home_manager                           String?   @db.Char(50)
-  away_manager                           String?   @db.Char(50)
-  home_formation                         String?   @db.Char(20)
-  away_formation                         String?   @db.Char(20)
-  studium                                String?   @db.VarChar(300)
-  capacity                               String?   @db.Char(20)
-  audience                               String?   @db.Char(20)
-  home_max_getting_scorer                String?   @db.Char(50)
-  away_max_getting_scorer                String?   @db.Char(50)
-  home_max_getting_scorer_game_situation String?   @db.Char(20)
-  away_max_getting_scorer_game_situation String?   @db.Char(20)
-  home_team_home_score                   String?   @db.Char(20)
-  home_team_home_lost                    String?   @db.Char(20)
-  away_team_home_score                   String?   @db.Char(20)
-  away_team_home_lost                    String?   @db.Char(20)
-  home_team_away_score                   String?   @db.Char(20)
-  home_team_away_lost                    String?   @db.Char(20)
-  away_team_away_score                   String?   @db.Char(20)
-  away_team_away_lost                    String?   @db.Char(20)
+  weather                                String?   @db.Text
+  temparature                            String?   @db.Text
+  humid                                  String?   @db.Text
+  judge_member                           String?   @db.Text
+  home_manager                           String?   @db.Text
+  away_manager                           String?   @db.Text
+  home_formation                         String?   @db.Text
+  away_formation                         String?   @db.Text
+  studium                                String?   @db.Text
+  capacity                               String?   @db.Text
+  audience                               String?   @db.Text
+  home_max_getting_scorer                String?   @db.Text
+  away_max_getting_scorer                String?   @db.Text
+  home_max_getting_scorer_game_situation String?   @db.Text
+  away_max_getting_scorer_game_situation String?   @db.Text
+  home_team_home_score                   String?   @db.Text
+  home_team_home_lost                    String?   @db.Text
+  away_team_home_score                   String?   @db.Text
+  away_team_home_lost                    String?   @db.Text
+  home_team_away_score                   String?   @db.Text
+  home_team_away_lost                    String?   @db.Text
+  away_team_away_score                   String?   @db.Text
+  away_team_away_lost                    String?   @db.Text
   notice_flg                             String?   @db.Char(8)
   goal_time                              String?   @db.Char(8)
-  goal_team_member                       String?   @db.Char(50)
-  judge                                  String?   @db.Char(50)
-  home_team_style                        String?   @db.Char(50)
-  away_team_style                        String?   @db.Char(50)
-  probablity                             String?   @db.Char(50)
-  prediction_score_time                  String?   @db.Char(50)
+  goal_team_member                       String?   @db.Text
+  judge                                  String?   @db.Text
+  home_team_style                        String?   @db.Text
+  away_team_style                        String?   @db.Text
+  probablity                             String?   @db.Text
+  prediction_score_time                  String?   @db.Text
   logic_flg                              String?   @default("0") @db.VarChar(1)
   register_id                            String?   @db.VarChar(100)
   register_time                          DateTime? @db.Timestamptz(0)
@@ -664,101 +666,101 @@ model no_goal_match_stats {
   data_category                          String?   @db.Char(100)
   times                                  String?   @db.Char(50)
   home_rank                              String?   @db.Char(30)
-  home_team_name                         String?   @db.Char(100)
+  home_team_name                         String?   @db.Text
   home_score                             String?   @default("0") @db.Char(20)
   away_rank                              String?   @db.Char(30)
-  away_team_name                         String?   @db.Char(100)
+  away_team_name                         String?   @db.Text
   away_score                             String?   @default("0") @db.Char(20)
-  home_exp                               String?   @db.Char(50)
-  away_exp                               String?   @db.Char(50)
-  home_in_goal_exp                       String?   @db.Char(50)
-  away_in_goal_exp                       String?   @db.Char(50)
-  home_donation                          String?   @db.Char(50)
-  away_donation                          String?   @db.Char(50)
-  home_shoot_all                         String?   @db.Char(3)
-  away_shoot_all                         String?   @db.Char(30)
-  home_shoot_in                          String?   @db.Char(30)
-  away_shoot_in                          String?   @db.Char(30)
-  home_shoot_out                         String?   @db.Char(30)
-  away_shoot_out                         String?   @db.Char(30)
-  home_block_shoot                       String?   @db.Char(30)
-  away_block_shoot                       String?   @db.Char(30)
-  home_big_chance                        String?   @db.Char(30)
-  away_big_chance                        String?   @db.Char(30)
-  home_corner                            String?   @db.Char(30)
-  away_corner                            String?   @db.Char(30)
-  home_box_shoot_in                      String?   @db.Char(30)
-  away_box_shoot_in                      String?   @db.Char(30)
-  home_box_shoot_out                     String?   @db.Char(30)
-  away_box_shoot_out                     String?   @db.Char(30)
-  home_goal_post                         String?   @db.Char(30)
-  away_goal_post                         String?   @db.Char(30)
-  home_goal_head                         String?   @db.Char(30)
-  away_goal_head                         String?   @db.Char(30)
-  home_keeper_save                       String?   @db.Char(30)
-  away_keeper_save                       String?   @db.Char(30)
-  home_free_kick                         String?   @db.Char(30)
-  away_free_kick                         String?   @db.Char(30)
-  home_offside                           String?   @db.Char(30)
-  away_offside                           String?   @db.Char(30)
-  home_foul                              String?   @db.Char(30)
-  away_foul                              String?   @db.Char(30)
-  home_yellow_card                       String?   @db.Char(30)
-  away_yellow_card                       String?   @db.Char(30)
-  home_red_card                          String?   @db.Char(30)
-  away_red_card                          String?   @db.Char(30)
-  home_slow_in                           String?   @db.Char(30)
-  away_slow_in                           String?   @db.Char(30)
-  home_box_touch                         String?   @db.Char(30)
-  away_box_touch                         String?   @db.Char(30)
-  home_pass_count                        String?   @db.Char(30)
-  away_pass_count                        String?   @db.Char(30)
-  home_long_pass_count                   String?   @db.Char(30)
-  away_long_pass_count                   String?   @db.Char(30)
-  home_final_third_pass_count            String?   @db.Char(30)
-  away_final_third_pass_count            String?   @db.Char(30)
-  home_cross_count                       String?   @db.Char(30)
-  away_cross_count                       String?   @db.Char(30)
-  home_tackle_count                      String?   @db.Char(30)
-  away_tackle_count                      String?   @db.Char(30)
-  home_clear_count                       String?   @db.Char(30)
-  away_clear_count                       String?   @db.Char(30)
-  home_duel_count                        String?   @db.Char(30)
-  away_duel_count                        String?   @db.Char(30)
-  home_intercept_count                   String?   @db.Char(30)
-  away_intercept_count                   String?   @db.Char(30)
+  home_exp                               String?   @db.Text
+  away_exp                               String?   @db.Text
+  home_in_goal_exp                       String?   @db.Text
+  away_in_goal_exp                       String?   @db.Text
+  home_donation                          String?   @db.Text
+  away_donation                          String?   @db.Text
+  home_shoot_all                         String?   @db.Text
+  away_shoot_all                         String?   @db.Text
+  home_shoot_in                          String?   @db.Text
+  away_shoot_in                          String?   @db.Text
+  home_shoot_out                         String?   @db.Text
+  away_shoot_out                         String?   @db.Text
+  home_block_shoot                       String?   @db.Text
+  away_block_shoot                       String?   @db.Text
+  home_big_chance                        String?   @db.Text
+  away_big_chance                        String?   @db.Text
+  home_corner                            String?   @db.Text
+  away_corner                            String?   @db.Text
+  home_box_shoot_in                      String?   @db.Text
+  away_box_shoot_in                      String?   @db.Text
+  home_box_shoot_out                     String?   @db.Text
+  away_box_shoot_out                     String?   @db.Text
+  home_goal_post                         String?   @db.Text
+  away_goal_post                         String?   @db.Text
+  home_goal_head                         String?   @db.Text
+  away_goal_head                         String?   @db.Text
+  home_keeper_save                       String?   @db.Text
+  away_keeper_save                       String?   @db.Text
+  home_free_kick                         String?   @db.Text
+  away_free_kick                         String?   @db.Text
+  home_offside                           String?   @db.Text
+  away_offside                           String?   @db.Text
+  home_foul                              String?   @db.Text
+  away_foul                              String?   @db.Text
+  home_yellow_card                       String?   @db.Text
+  away_yellow_card                       String?   @db.Text
+  home_red_card                          String?   @db.Text
+  away_red_card                          String?   @db.Text
+  home_slow_in                           String?   @db.Text
+  away_slow_in                           String?   @db.Text
+  home_box_touch                         String?   @db.Text
+  away_box_touch                         String?   @db.Text
+  home_pass_count                        String?   @db.Text
+  away_pass_count                        String?   @db.Text
+  home_long_pass_count                   String?   @db.Text
+  away_long_pass_count                   String?   @db.Text
+  home_final_third_pass_count            String?   @db.Text
+  away_final_third_pass_count            String?   @db.Text
+  home_cross_count                       String?   @db.Text
+  away_cross_count                       String?   @db.Text
+  home_tackle_count                      String?   @db.Text
+  away_tackle_count                      String?   @db.Text
+  home_clear_count                       String?   @db.Text
+  away_clear_count                       String?   @db.Text
+  home_duel_count                        String?   @db.Text
+  away_duel_count                        String?   @db.Text
+  home_intercept_count                   String?   @db.Text
+  away_intercept_count                   String?   @db.Text
   record_time                            DateTime? @db.Timestamptz(0)
-  weather                                String?   @db.Char(5)
-  temparature                            String?   @db.Char(10)
-  humid                                  String?   @db.Char(5)
-  judge_member                           String?   @db.Char(50)
-  home_manager                           String?   @db.Char(50)
-  away_manager                           String?   @db.Char(50)
-  home_formation                         String?   @db.Char(20)
-  away_formation                         String?   @db.Char(20)
-  studium                                String?   @db.Char(50)
-  capacity                               String?   @db.Char(20)
-  audience                               String?   @db.Char(20)
-  home_max_getting_scorer                String?   @db.Char(50)
-  away_max_getting_scorer                String?   @db.Char(50)
-  home_max_getting_scorer_game_situation String?   @db.Char(20)
-  away_max_getting_scorer_game_situation String?   @db.Char(20)
-  home_team_home_score                   String?   @db.Char(20)
-  home_team_home_lost                    String?   @db.Char(20)
-  away_team_home_score                   String?   @db.Char(20)
-  away_team_home_lost                    String?   @db.Char(20)
-  home_team_away_score                   String?   @db.Char(20)
-  home_team_away_lost                    String?   @db.Char(20)
-  away_team_away_score                   String?   @db.Char(20)
-  away_team_away_lost                    String?   @db.Char(20)
-  notice_flg                             String?   @db.Char(8)
-  goal_time                              String?   @db.Char(8)
-  goal_team_member                       String?   @db.Char(50)
-  judge                                  String?   @db.Char(50)
-  home_team_style                        String?   @db.Char(50)
-  away_team_style                        String?   @db.Char(50)
-  probablity                             String?   @db.Char(50)
-  prediction_score_time                  String?   @db.Char(50)
+  weather                                String?   @db.Text
+  temparature                            String?   @db.Text
+  humid                                  String?   @db.Text
+  judge_member                           String?   @db.Text
+  home_manager                           String?   @db.Text
+  away_manager                           String?   @db.Text
+  home_formation                         String?   @db.Text
+  away_formation                         String?   @db.Text
+  studium                                String?   @db.Text
+  capacity                               String?   @db.Text
+  audience                               String?   @db.Text
+  home_max_getting_scorer                String?   @db.Text
+  away_max_getting_scorer                String?   @db.Text
+  home_max_getting_scorer_game_situation String?   @db.Text
+  away_max_getting_scorer_game_situation String?   @db.Text
+  home_team_home_score                   String?   @db.Text
+  home_team_home_lost                    String?   @db.Text
+  away_team_home_score                   String?   @db.Text
+  away_team_home_lost                    String?   @db.Text
+  home_team_away_score                   String?   @db.Text
+  home_team_away_lost                    String?   @db.Text
+  away_team_away_score                   String?   @db.Text
+  away_team_away_lost                    String?   @db.Text
+  notice_flg                             String?   @db.Text
+  goal_time                              String?   @db.Text
+  goal_team_member                       String?   @db.Text
+  judge                                  String?   @db.Text
+  home_team_style                        String?   @db.Text
+  away_team_style                        String?   @db.Text
+  probablity                             String?   @db.Text
+  prediction_score_time                  String?   @db.Text
   logic_flg                              String?   @default("0") @db.VarChar(1)
   register_id                            String?   @db.VarChar(100)
   register_time                          DateTime? @db.Timestamptz(0)

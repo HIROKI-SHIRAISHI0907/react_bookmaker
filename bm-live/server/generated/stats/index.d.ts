@@ -62369,11 +62369,12 @@ export namespace Prisma {
 
   export type country_league_summaryWhereUniqueInput = Prisma.AtLeast<{
     id?: number
-    country?: string
-    league?: string
+    country_league?: country_league_summaryCountryLeagueCompoundUniqueInput
     AND?: country_league_summaryWhereInput | country_league_summaryWhereInput[]
     OR?: country_league_summaryWhereInput[]
     NOT?: country_league_summaryWhereInput | country_league_summaryWhereInput[]
+    country?: StringFilter<"country_league_summary"> | string
+    league?: StringFilter<"country_league_summary"> | string
     data_count?: StringFilter<"country_league_summary"> | string
     csv_count?: StringFilter<"country_league_summary"> | string
     logic_flg?: StringNullableFilter<"country_league_summary"> | string | null
@@ -62381,7 +62382,7 @@ export namespace Prisma {
     register_time?: DateTimeFilter<"country_league_summary"> | Date | string
     update_id?: StringFilter<"country_league_summary"> | string
     update_time?: DateTimeFilter<"country_league_summary"> | Date | string
-  }, "id" | "country" | "league">
+  }, "id" | "country_league">
 
   export type country_league_summaryOrderByWithAggregationInput = {
     id?: SortOrder
@@ -81170,6 +81171,11 @@ export namespace Prisma {
 
   export type country_league_season_masterSumOrderByAggregateInput = {
     id?: SortOrder
+  }
+
+  export type country_league_summaryCountryLeagueCompoundUniqueInput = {
+    country: string
+    league: string
   }
 
   export type country_league_summaryCountOrderByAggregateInput = {
