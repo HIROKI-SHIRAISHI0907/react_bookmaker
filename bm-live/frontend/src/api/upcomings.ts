@@ -1,27 +1,22 @@
-// frontend/src/api/future.ts
-export type FutureMatchItem = {
-  seq: string; // BigInt はサーバで文字列化
-  category: string;
-  round_no: number | null;
-  round_label: string | null;
+// frontend/src/api/upcomings.ts
+export type FutureMatch = {
+  seq: number;
+  game_team_category: string;
   future_time: string; // ISO
   home_team: string;
   away_team: string;
   link: string | null;
+  round_no: number | null;
+  status: "LIVE" | "SCHEDULED";
 };
 
-export type FutureMatchesResponse = {
-  team: string;
-  items: FutureMatchItem[];
-  meta: { country: string; league: string; teamJa: string };
-};
-
-export async function fetchFutureMatches(country: string, league: string, teamEnglish: string): Promise<FutureMatchesResponse> {
-  const url = `/api/future/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(teamEnglish)}`;
-  const res = await fetch(url, { credentials: "include" });
+export async function fetchFutureMatches(team?: string): Promise<FutureMatch[]> {
+  const qs = team ? `?team=${encodeURIComponent(team)}` : "";
+  const res = await fetch(`/api/future${qs}`, { credentials: "include" });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     throw new Error(`future fetch failed: ${res.status} ${text}`);
   }
-  return res.json();
+  const json = await res.json();
+  return (json.matches ?? []) as FutureMatch[];
 }

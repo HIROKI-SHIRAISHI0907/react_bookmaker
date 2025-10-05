@@ -1,8 +1,8 @@
 // frontend/src/components/team/FutureMatchesList.tsx
-import { FutureMatchItem } from "../../api/upcomings";
+import { FutureMatch } from "../../api/upcomings";
 
 type Props = {
-  items: FutureMatchItem[];
+  items: FutureMatch[];
 };
 
 export default function FutureMatchesList({ items }: Props) {
