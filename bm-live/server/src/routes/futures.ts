@@ -1,71 +1,140 @@
-// backend/src/routes/future.ts
+// src/routes/future.ts
 import { Router } from "express";
 import { prismaStats } from "../db";
 
 export const futureRouter = Router();
 
-type Row = {
+type FutureRow = {
   seq: bigint | number;
-  game_team_category: string; // "国: リーグ - サブリーグ - ラウンド 12" など
-  future_time: Date | string; // timestamptz
+  game_team_category: string | null;
+  future_time: string; // timestamptz -> ISO 文字列
   home_team_name: string;
   away_team_name: string;
   game_link: string | null;
-  start_flg: string | number; // 0: 開催中, 1: 予定
+  round_no: number | null;
+  status: "LIVE" | "SCHEDULED";
 };
 
-futureRouter.get("/", async (req, res) => {
-  const team = req.query.team ? String(req.query.team) : undefined;
+function toJSON(r: FutureRow) {
+  // BigInt を安全に number へ
+  const seqNum = typeof r.seq === "bigint" ? Number(r.seq) : (r.seq as number);
+  return {
+    seq: seqNum,
+    game_team_category: r.game_team_category ?? "",
+    future_time: r.future_time,
+    home_team: r.home_team_name,
+    away_team: r.away_team_name,
+    link: r.game_link,
+    round_no: r.round_no,
+    status: r.status,
+  };
+}
 
+// ラウンド番号抽出（PostgreSQL 正規表現）
+// "ラウンド 33" / "Round 12" 等に対応
+const ROUND_SQL = `
+  CASE
+    WHEN regexp_match(f.game_team_category, '(ラウンド|Round)\\s*([0-9]+)') IS NULL THEN NULL
+    ELSE CAST( (regexp_match(f.game_team_category, '(ラウンド|Round)\\s*([0-9]+)'))[2] AS INT )
+  END AS round_no
+`;
+
+// start_flg: 0=LIVE, 1=SCHEDULED のみ対象
+const BASE_SELECT = `
+  SELECT
+    f.seq,
+    f.game_team_category,
+    to_char(f.future_time AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS future_time,
+    f.home_team_name,
+    f.away_team_name,
+    f.game_link,
+    ${ROUND_SQL},
+    CASE WHEN f.start_flg = '0' THEN 'LIVE' ELSE 'SCHEDULED' END AS status
+  FROM future_master f
+  WHERE f.start_flg IN ('0','1')
+`;
+
+// --- 1) クエリ版: /api/future?team=<teamSlug or name> ---
+futureRouter.get("/", async (req, res) => {
   try {
-    // start_flg=0(開催中),1(予定) を両方取得。team があれば home/away どちらか一致で絞り込み
-    const rows = await prismaStats.$queryRawUnsafe<Row[]>(
+    const team = req.query.team ? String(req.query.team) : undefined;
+
+    let teamJa: string | undefined;
+    if (team) {
+      // team がスラッグなら日本語名を拾う（country/league 不明でも可能な範囲で）
+      const m = await prismaStats.$queryRaw<{ team: string }[]>`
+        SELECT team
+        FROM country_league_master
+        WHERE link LIKE ${`/team/${team}/%`}
+        LIMIT 1
+      `;
+      teamJa = m[0]?.team ?? undefined;
+    }
+
+    const rows = await prismaStats.$queryRawUnsafe<FutureRow[]>(
       `
-      SELECT
-        seq,
-        game_team_category,
-        future_time,
-        home_team_name,
-        away_team_name,
-        game_link,
-        start_flg
-      FROM future_master
-      WHERE start_flg IN ('0','1')
-        ${team ? "AND (home_team_name = $1 OR away_team_name = $1)" : ""}
+      ${BASE_SELECT}
+      ${teamJa ? `AND (f.home_team_name = $1 OR f.away_team_name = $1)` : ""}
+      ORDER BY
+        -- ラウンド番号 → 時間（昇順）
+        ${teamJa ? "" : ""} 
+        ${teamJa ? `AND (f.home_team_name = $1 OR f.away_team_name = $1)` : ""}
+        ORDER BY
+        round_no NULLS LAST,
+        f.future_time ASC
       `,
-      ...(team ? [team] : [])
+      ...(teamJa ? [teamJa] : [])
     );
 
-    // 文字列から round_no を抽出（「ラウンド 12」→ 12）。無ければ null
-    const pickRoundNo = (s: string): number | null => {
-      const m = s.match(/ラウンド\s*(\d+)/);
-      return m ? Number(m[1]) : null;
-    };
-
-    // game_team_category の先頭「国: リーグ - ...」はそのまま表示に使う場合もあるので保持
-    const payload = rows.map((r) => {
-      const seq = typeof r.seq === "bigint" ? Number(r.seq) : (r.seq as number);
-      const ft = typeof r.future_time === "string" ? r.future_time : (r.future_time as Date).toISOString();
-      const round_no = pickRoundNo(r.game_team_category);
-      const status = (String(r.start_flg) === "0" ? "LIVE" : "SCHEDULED") as "LIVE" | "SCHEDULED";
-      return {
-        seq,
-        game_team_category: r.game_team_category,
-        future_time: ft,
-        home_team: r.home_team_name,
-        away_team: r.away_team_name,
-        link: r.game_link ?? null,
-        round_no,
-        status,
-      };
-    });
-
-    // サーバーでは並べ替えはせず、クライアント要件に従いフロントでソート
-    return res.json({ matches: payload });
+    return res.json({ matches: rows.map(toJSON) });
   } catch (e: any) {
-    console.error("/api/future failed:", e);
+    console.error("[GET /api/future] failed:", e);
+    return res.status(500).json({ message: "server error", detail: e?.message ?? String(e) });
+  }
+});
+
+// --- 2) パス版: /api/future/:country/:league/:team ---
+futureRouter.get("/:country/:league/:team", async (req, res) => {
+  const country = safeDecode(req.params.country);
+  const league = safeDecode(req.params.league);
+  const teamSlug = req.params.team;
+
+  try {
+    // スラッグ→日本語名
+    const m = await prismaStats.$queryRaw<{ team: string }[]>`
+      SELECT team
+      FROM country_league_master
+      WHERE country = ${country}
+        AND league  = ${league}
+        AND link LIKE ${`/team/${teamSlug}/%`}
+      LIMIT 1
+    `;
+    const teamJa = m[0]?.team ?? teamSlug;
+
+    const rows = await prismaStats.$queryRawUnsafe<FutureRow[]>(
+      `
+      ${BASE_SELECT}
+      AND (f.home_team_name = $1 OR f.away_team_name = $1)
+      ORDER BY
+        round_no NULLS LAST,
+        f.future_time ASC
+      `,
+      teamJa
+    );
+
+    return res.json({ matches: rows.map(toJSON) });
+  } catch (e: any) {
+    console.error("[GET /api/future/:country/:league/:team] failed:", e);
     return res.status(500).json({ message: "server error", detail: e?.message ?? String(e) });
   }
 });
 
 export default futureRouter;
+
+function safeDecode(s: string) {
+  try {
+    return decodeURIComponent(s);
+  } catch {
+    return s;
+  }
+}

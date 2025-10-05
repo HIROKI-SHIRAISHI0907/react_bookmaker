@@ -65,10 +65,10 @@ export default function TeamDetail() {
   });
 
   // 試合（開催中/予定）
-  const futureQ = useQuery<FutureMatch[]>({
-    queryKey: ["future-matches", teamSlug],
-    queryFn: () => fetchFutureMatches(teamSlug),
-    enabled: !!teamSlug,
+  const futureQ = useQuery({
+    queryKey: ["future-matches", countryLabel, leagueLabel, teamSlug],
+    queryFn: () => fetchFutureMatches(teamSlug, { country: countryLabel, league: leagueLabel }),
+    enabled: !!countryLabel && !!leagueLabel && !!teamSlug,
     staleTime: 30_000,
   });
 
