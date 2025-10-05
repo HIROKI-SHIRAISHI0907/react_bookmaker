@@ -1,8 +1,9 @@
-// frontend/src/pages/team/Teams.tsx
+// src/pages/teams/Team.tsx
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchTeamsInLeague, type TeamsInLeague } from "../../api/leagues";
 import { Skeleton } from "../../components/ui/skeleton";
+import AppHeader from "../../components/layout/AppHeader"; // ← 追加
 
 export default function LeagueTeams() {
   // URLの country / league は既に encodeURIComponent 済みなので、表示・API の両方で raw を用意
@@ -21,57 +22,65 @@ export default function LeagueTeams() {
 
   if (isError) {
     return (
-      <div className="p-4">
-        <h1 className="text-2xl font-bold mb-2">
-          {countryRaw} / {leagueRaw}
-        </h1>
-        <p className="text-destructive">データの取得に失敗しました</p>
+      <div className="min-h-screen bg-background">
+        <AppHeader title="チーム一覧" subtitle={`${countryRaw} / ${leagueRaw}`} />
+        <main className="container mx-auto px-4 py-6">
+          <h1 className="text-2xl font-bold mb-2">
+            {countryRaw} / {leagueRaw}
+          </h1>
+          <p className="text-destructive">データの取得に失敗しました</p>
+        </main>
       </div>
     );
   }
 
   return (
-    <div className="p-4">
-      {/* 見出し */}
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold">
-          {countryRaw} / {leagueRaw}
-        </h1>
-        <p className="text-muted-foreground text-sm">Team List</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      {/* ← ハンバーガー付きヘッダー */}
+      <AppHeader title="チーム一覧" subtitle={`${countryRaw} / ${leagueRaw}`} />
 
-      {/* ローディング */}
-      {isLoading && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {Array.from({ length: 9 }).map((_, i) => (
-            <div key={i} className="border rounded p-3">
-              <Skeleton className="h-5 w-48 mb-2" />
-              <Skeleton className="h-4 w-28" />
+      <main className="container mx-auto px-4 py-6">
+        {/* 見出し（ページ内見出しは残しつつヘッダーと整合） */}
+        <div className="mb-4">
+          <h1 className="text-2xl font-bold">
+            {countryRaw} / {leagueRaw}
+          </h1>
+          <p className="text-muted-foreground text-sm">Team List</p>
+        </div>
+
+        {/* ローディング */}
+        {isLoading && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {Array.from({ length: 9 }).map((_, i) => (
+              <div key={i} className="border rounded p-3">
+                <Skeleton className="h-5 w-48 mb-2" />
+                <Skeleton className="h-4 w-28" />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* データ */}
+        {data &&
+          (data.teams.length === 0 ? (
+            <div className="text-muted-foreground">表示するチームがありません。</div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {data.teams.map((t) => {
+                // params の country / league はすでにエンコード済みなので、それを使って OK
+                const teamRoute = `/${country}/${league}/${t.english}`;
+                return (
+                  <Link key={t.link} to={teamRoute} className="group border rounded p-3 hover:bg-accent transition-colors">
+                    <div className="font-medium">{t.name}</div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      /team/{t.english}/{t.hash}
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           ))}
-        </div>
-      )}
-
-      {/* データ */}
-      {data &&
-        (data.teams.length === 0 ? (
-          <div className="text-muted-foreground">表示するチームがありません。</div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {data.teams.map((t) => {
-              // params の country / league はすでにエンコード済みなので、それを使って OK
-              const teamRoute = `/${country}/${league}/${t.english}`;
-              return (
-                <Link key={t.link} to={teamRoute} className="group border rounded p-3 hover:bg-accent transition-colors">
-                  <div className="font-medium">{t.name}</div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    /team/{t.english}/{t.hash}
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        ))}
+      </main>
     </div>
   );
 }

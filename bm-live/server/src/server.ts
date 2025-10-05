@@ -3,6 +3,8 @@ import express from "express";
 import http from "http";
 import leaguesRouter from "./routes/leagues";
 import { correlationRouter } from "./routes/correlation";
+import eachStatsRouter from "./routes/eachscoredstats";
+import futureRouter from "./routes/futures";
 
 const app = express();
 
@@ -18,6 +20,8 @@ console.log("[mount-check] leaguesRouter:", !!leaguesRouter);
 console.log("[mount-check] correlationRouter:", !!correlationRouter);
 app.use("/api/leagues", leaguesRouter);
 app.use("/api/leagues", correlationRouter);
+app.use("/api/stats", eachStatsRouter);
+app.use("/api/future", futureRouter);
 
 // healthcheck（任意）
 app.get("/health", (_req, res) => res.json({ ok: true }));

@@ -1,15 +1,19 @@
 // server/src/routes/correlation.ts
 import { Router } from "express";
 import { prismaStats } from "../db";
-export const correlationRouter = Router();
+import { Prisma } from "../../generated/stats"; // ★ 追加: Prisma.sql / Prisma.empty 用
 
-const fromPath = (s: string) => decodeURIComponent(s);
+const fromPath = (s: string) => decodeURIComponent(s).replace(/-/g, " ");
+
+export const correlationRouter = Router();
 
 type RawRow = Record<string, any> & {
   score: "1st" | "2nd" | "ALL";
   home: string | null;
   away: string | null;
-  // rank_1th ~ rank_74th が文字列 "metric,value" / null で入る
+  side: "home" | "away" | null;
+  opponent: string | null;
+  // rank_1th ~ rank_74th が "metric,value" / null
 };
 
 correlationRouter.get("/:country/:league/:team/correlations", async (req, res) => {
@@ -17,6 +21,7 @@ correlationRouter.get("/:country/:league/:team/correlations", async (req, res) =
     const countryParam = fromPath(req.params.country);
     const leagueParam = fromPath(req.params.league);
     const teamSlug = req.params.team; // 英語スラッグ
+    const opponent = req.query.opponent as string | undefined; // 追加: 任意の対戦相手
 
     // ① スラッグ→日本語チーム名
     const teamRows = await prismaStats.$queryRaw<{ team: string }[]>`
@@ -27,12 +32,13 @@ correlationRouter.get("/:country/:league/:team/correlations", async (req, res) =
         AND clm.link LIKE ${`/team/${teamSlug}/%`}
       LIMIT 1
     `;
-    if (teamRows.length === 0) {
-      return res.status(404).json({ message: "team not found" });
-    }
+    if (teamRows.length === 0) return res.status(404).json({ message: "team not found" });
     const teamName = teamRows[0].team;
 
-    // ② 該当チームが home/away のどちらかで出現する行（1st/2nd/ALL）
+    // ② opponent の可変条件を Prisma.sql で合成（空は Prisma.empty）
+    const opponentCond = opponent && opponent.trim().length > 0 ? Prisma.sql` AND (CASE WHEN r.home = ${teamName} THEN r.away ELSE r.home END) = ${opponent}` : Prisma.empty;
+
+    // ③ データ取得（side と opponent を計算して返す）
     const rows = await prismaStats.$queryRaw<RawRow[]>`
       SELECT
         r.*,
@@ -40,26 +46,30 @@ correlationRouter.get("/:country/:league/:team/correlations", async (req, res) =
           WHEN r.home = ${teamName} THEN 'home'
           WHEN r.away = ${teamName} THEN 'away'
           ELSE NULL
-        END AS side
+        END AS side,
+        CASE
+          WHEN r.home = ${teamName} THEN r.away
+          ELSE r.home
+        END AS opponent
       FROM calc_correlation_ranking r
       WHERE r.country = ${countryParam}
         AND r.league  = ${leagueParam}
         AND (r.home = ${teamName} OR r.away = ${teamName})
         AND r.score IN ('1st','2nd','ALL')
+        ${opponentCond}   -- ★ ここが安全に展開される
     `;
 
-    // ③ rank_Xth を side ごとにフィルタ
+    // ④ rank_Xth を side ごと・prefix ごとに抽出
     const pickTopN = (row: RawRow | undefined, wantPrefix: "home" | "away", n = 5) => {
       if (!row) return [] as Array<{ metric: string; value: number }>;
       const out: Array<{ metric: string; value: number }> = [];
-      // ranking は rank_1th → rank_74th の昇順で意味があるので順に走査
       for (let i = 1; i <= 74; i++) {
-        const key = `rank_${i}th`;
-        const raw = row[key];
+        const k = `rank_${i}th`;
+        const raw = (row as any)[k];
         if (!raw) continue;
-        const [metric, valueStr] = String(raw).split(",");
+        const [metric, vstr] = String(raw).split(",");
         if (!metric || !metric.startsWith(wantPrefix)) continue;
-        const v = Number(valueStr);
+        const v = Number(vstr);
         if (!Number.isFinite(v)) continue;
         out.push({ metric, value: v });
         if (out.length >= n) break;
@@ -67,8 +77,7 @@ correlationRouter.get("/:country/:league/:team/correlations", async (req, res) =
       return out;
     };
 
-    // ④ score×side でマッピング
-    const findBy = (score: "1st" | "2nd" | "ALL", side: "home" | "away") => rows.find((r) => r.score === score && (r as any).side === side);
+    const findBy = (score: "1st" | "2nd" | "ALL", side: "home" | "away") => rows.find((r) => r.score === score && r.side === side);
 
     const correlations = {
       HOME: {
@@ -83,14 +92,18 @@ correlationRouter.get("/:country/:league/:team/correlations", async (req, res) =
       },
     };
 
+    // ⑤ プルダウン候補（相手一覧）を抽出（distinct, null 除外, ソート）
+    const opponents = Array.from(new Set(rows.map((r) => r.opponent).filter((v): v is string => !!v))).sort((a, b) => a.localeCompare(b, "ja"));
+
     return res.json({
       team: teamName,
       country: countryParam,
       league: leagueParam,
+      opponents,
       correlations,
     });
   } catch (e) {
-    console.error(e);
+    console.error("correlations failed:", e);
     return res.status(500).json({ message: "internal error" });
   }
 });

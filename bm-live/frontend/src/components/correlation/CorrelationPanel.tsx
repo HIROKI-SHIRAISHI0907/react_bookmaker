@@ -11,6 +11,13 @@ export type CorrelationsBySideScore = {
 
 type Props = {
   data: CorrelationsBySideScore;
+
+  /** 追加: 対戦相手の候補（空/undefined ならプルダウン非表示） */
+  opponents?: string[];
+  /** 追加: 現在選択中（空文字は「全相手」扱い） */
+  opponent?: string;
+  /** 追加: 選択変更ハンドラ */
+  onOpponentChange?: (next: string) => void;
 };
 
 /** ===== Small UI Parts ===== */
@@ -74,20 +81,17 @@ function hasAny(items?: CorrelationItem[] | null) {
 }
 
 function prettyMetric(metric: string) {
-  // 必要なら見栄えを調整（例: homePrefix を外す）
-  // "homeTackleCountInfoOnSuccessRatio" -> "TackleCountInfoOnSuccessRatio"
   if (metric.startsWith("home")) return metric.replace(/^home/, "");
   if (metric.startsWith("away")) return metric.replace(/^away/, "");
   return metric;
 }
 
 function formatValue(v: number) {
-  // 0.000 〜 1.000 を想定、小数点以下5桁に（必要に応じて変更）
   return v.toFixed(5);
 }
 
 /** ===== Main Panel ===== */
-const CorrelationPanel: React.FC<Props> = ({ data }) => {
+const CorrelationPanel: React.FC<Props> = ({ data, opponents, opponent = "", onOpponentChange }) => {
   // 初期値: HOME / 1st
   const [side, setSide] = useState<"HOME" | "AWAY">("HOME");
   const [score, setScore] = useState<TabKey>("1st");
@@ -130,17 +134,31 @@ const CorrelationPanel: React.FC<Props> = ({ data }) => {
 
   const items: CorrelationItem[] = useMemo(() => {
     const arr = data?.[side]?.[score] ?? [];
-    // rank_1th 〜 rank_5th そのまま来ている想定。必要があればここで再ソート。
     return arr;
   }, [data, side, score]);
 
   const noAnyData = !hasSide.HOME && !hasSide.AWAY;
   const noItemsInSelection = !hasAny(items);
+  const hasOpponentSelect = !!(opponents && opponents.length > 0);
 
   return (
     <div className="rounded-2xl border bg-white/70 dark:bg-zinc-900/40 backdrop-blur-sm p-4 shadow-sm">
       {/* Controls */}
       <div className="flex flex-wrap items-center gap-3 mb-4">
+        {hasOpponentSelect && (
+          <label className="flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground">対戦相手</span>
+            <select className="rounded-md border px-2 py-1 bg-background" value={opponent} onChange={(e) => onOpponentChange?.(e.target.value)}>
+              <option value="">（全相手）</option>
+              {opponents!.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+
         <Segmented
           value={side}
           onChange={(v) => setSide(v)}
