@@ -5,6 +5,8 @@ import leaguesRouter from "./routes/leagues";
 import { correlationRouter } from "./routes/correlation";
 import eachStatsRouter from "./routes/eachscoredstats";
 import futureRouter from "./routes/futures";
+import gameRouter from "./routes/game";
+import historyRouter from "./routes/histories";
 
 const app = express();
 
@@ -22,6 +24,8 @@ app.use("/api/leagues", leaguesRouter);
 app.use("/api/leagues", correlationRouter);
 app.use("/api/stats", eachStatsRouter);
 app.use("/api/future", futureRouter);
+app.use("/api/games", gameRouter);
+app.use("/api/history", historyRouter);
 
 // healthcheck（任意）
 app.get("/health", (_req, res) => res.json({ ok: true }));

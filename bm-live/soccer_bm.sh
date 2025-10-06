@@ -11,6 +11,10 @@ DUMPDIR="/Users/shiraishitoshio/dumps/soccer_bm_dumps"
 FILE_PREFIX="soccer_bm_"
 FILE_SUFFIX=".csv"
 
+# ZIP対象（このテーブルのCSVのみzip化）
+ZIP_ONLY_TABLE="data"
+ZIP_EXT=".zip"
+
 # 取り込み前に TRUNCATE したい場合は true
 TRUNCATE_BEFORE_IMPORT=false
 RESTART_IDENTITY=true
@@ -73,14 +77,39 @@ export_table() {
     psql -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 \
       -c "\copy (SELECT * FROM ${SCHEMA}.\"${t}\") TO STDOUT WITH (FORMAT CSV, HEADER true)" \
     > "$outfile"
+
+  # ===== dataテーブルのみzip化 =====
+  if [[ "$t" == "$ZIP_ONLY_TABLE" ]]; then
+    local zipfile="${outfile}${ZIP_EXT}"
+    echo "🗜️  Zipping ${outfile} -> ${zipfile}"
+    # zipコマンドで同名.zipを作成し、元CSVは削除
+    (cd "$DUMPDIR" && zip -q -j "$(basename "$zipfile")" "$(basename "$outfile")")
+    rm -f "$outfile"
+  fi
 }
 
 import_table() {
   local t="$1"
   local infile="${DUMPDIR}/${FILE_PREFIX}${t}${FILE_SUFFIX}"
+  local extracted_tmp=false
+
+  # ===== dataテーブルはzipがあれば展開 =====
+  if [[ "$t" == "$ZIP_ONLY_TABLE" ]]; then
+    local zipfile="${infile}${ZIP_EXT}"
+    if [[ ! -f "$infile" && -f "$zipfile" ]]; then
+      echo "🗜️  Unzipping ${zipfile} -> ${DUMPDIR}/"
+      unzip -oq -d "$DUMPDIR" "$zipfile"
+      extracted_tmp=true
+    fi
+  fi
 
   if [[ ! -f "$infile" ]]; then
-    echo "⚠️  Skip ${t}: ファイルなし -> ${infile}"
+    # CSVもZIPも無い（またはZIP展開失敗）場合はスキップ
+    if [[ "$t" == "$ZIP_ONLY_TABLE" ]]; then
+      echo "⚠️  Skip ${t}: CSV/ZIPが見つかりません -> ${infile} / ${infile}${ZIP_EXT}"
+    else
+      echo "⚠️  Skip ${t}: ファイルなし -> ${infile}"
+    fi
     return 0
   fi
 
@@ -97,6 +126,12 @@ import_table() {
     psql -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 \
       -c "\copy ${SCHEMA}.\"${t}\" FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',', ENCODING 'UTF8', NULL 'NULL')" \
     < "$infile"
+
+  # ZIPから展開した一時CSVは後片付け
+  if [[ "$extracted_tmp" == true ]]; then
+    echo "🧹 Removing extracted temp file ${infile}"
+    rm -f "$infile"
+  fi
 }
 
 export_all() {
@@ -124,6 +159,8 @@ Notes:
   - docker compose のサービス名は "${SERVICE_NAME}" を想定。違う場合は変えてください。
   - 出力/入力ディレクトリ: ${DUMPDIR}
   - ファイル名: ${FILE_PREFIX}<テーブル名>${FILE_SUFFIX}
+  - テーブル "${ZIP_ONLY_TABLE}" のみ、CSVは "${FILE_SUFFIX}${ZIP_EXT}" へzip化（例: soccer_bm_data.csv.zip）。
+  - import時は "${ZIP_ONLY_TABLE}" のZIPがあれば展開してから取り込み、取り込み後は展開CSVを削除します。
 EOF
 }
 

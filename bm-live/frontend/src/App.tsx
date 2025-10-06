@@ -8,13 +8,11 @@ import RequireAuth from "./pages/auth/RequireAuth";
 import LeagueMenu from "./pages/humberger/LeagueMenu";
 import LeagueTeams from "./pages/teams/Team";
 import TeamDetail from "./pages/teams/TeamDetail";
+import History from "./pages/teams/History";
 
 export default function App() {
   return (
     <Routes>
-      {/* ルートアクセスは /top に飛ばす */}
-      <Route path="/" element={<Navigate to="/top" replace />} />
-
       {/* 公開ページ */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
@@ -24,10 +22,15 @@ export default function App() {
 
       <Route path="/:country/:league/:team" element={<TeamDetail />} />
 
+      <Route path="/:country/:league/:team/history" element={<History />} />
+
       {/* 認証保護ページ */}
       {/* <Route element={<RequireAuth />}>*/}
       <Route path="/top" element={<Dashboard />} />
       {/* </Route>*/}
+
+      {/* ルートアクセスは /top に飛ばす */}
+      <Route path="/" element={<Navigate to="/top" replace />} />
 
       {/* フォールバック */}
       <Route path="*" element={<Navigate to="/top" replace />} />
