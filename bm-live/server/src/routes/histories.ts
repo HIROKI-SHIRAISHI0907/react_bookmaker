@@ -1,4 +1,3 @@
-// src/routes/histories.ts
 import { Router } from "express";
 import { prismaStats } from "../db";
 
@@ -6,17 +5,9 @@ export const historiesRouter = Router();
 
 /**
  * GET /api/history/:country/:league/:team
- *
- * 目的: 過去の対戦履歴（当該チームの試合で "終了" が確定した最終スナップショット）を返す
- *
- * 仕様:
- * - チームの英語スラッグ → 日本語名に解決（country_league_master）
- * - public.data をデータ元とし、"times" に「終了」を含むレコードを対象
- * - 同一試合の中間スナップショットが複数あるため、
- *   「JST日付 × home_team_name × away_team_name」ごとに seq の最大行を最終行として採用
- * - data_category からラウンド番号を抽出（表示用）
- * - 結果判定（WIN/LOSE/DRAW）は引数チーム視点で判定
- * - 国/リーグは data_category の先頭一致で絞り込み
+ * - times に「終了」を含む最終スナップショット（同日×home×awayごとの最大 seq）
+ * - チーム名は末尾「・詳細/：詳細/: 詳細」を除去してから正規化して判定
+ * - 時刻は JST のエポック(ms) を返却（played_at_ms）
  */
 historiesRouter.get("/:country/:league/:team", async (req, res) => {
   const country = safeDecode(req.params.country);
@@ -36,10 +27,11 @@ historiesRouter.get("/:country/:league/:team", async (req, res) => {
     const teamJa = nameRows[0]?.team ?? teamSlug;
 
     type Row = {
-      seq: string; // bigint を文字列で受ける
+      seq: string;
       data_category: string;
-      jst_date: string; // YYYY-MM-DD
-      record_time_jst: string; // 最終スナップのJSTタイムスタンプ
+      jst_date: string;
+      record_time_jst: string; // 旧互換
+      played_at_ms: number; // 追加: JST基準のエポック(ms)
       home_team_name: string;
       away_team_name: string;
       home_score: number | null;
@@ -48,10 +40,6 @@ historiesRouter.get("/:country/:league/:team", async (req, res) => {
       link: string | null;
     };
 
-    // 注意:
-    // - data_category 先頭が "<国>: <リーグ>" で始まるものを対象
-    // - 「終了」を含む行のみ
-    // - 同一試合の最終行を ROW_NUMBER で抽出（JST日付単位でグルーピング）
     const rows = await prismaStats.$queryRawUnsafe<Row[]>(
       `
       WITH finished AS (
@@ -65,8 +53,7 @@ historiesRouter.get("/:country/:league/:team", async (req, res) => {
           NULLIF(TRIM(d.away_score), '')::int      AS away_score,
           (d.record_time AT TIME ZONE 'Asia/Tokyo')::timestamp AS record_time_jst_ts,
           to_char((d.record_time AT TIME ZONE 'Asia/Tokyo')::date, 'YYYY-MM-DD') AS jst_date,
-          -- data 末尾に格納されていることが多い試合URLを拾えないケースもあるため nullable
-          NULLIF(TRIM(d.judge), '')                AS link_maybe -- 列名が不確かなため保険（存在しなければ常に NULL）
+          NULLIF(TRIM(d.judge), '')                AS link_maybe
         FROM public.data d
         WHERE d.home_team_name IS NOT NULL
           AND d.away_team_name IS NOT NULL
@@ -80,7 +67,6 @@ historiesRouter.get("/:country/:league/:team", async (req, res) => {
           data_category,
           home_team_name,
           away_team_name,
-          times,
           home_score,
           away_score,
           record_time_jst_ts,
@@ -97,10 +83,12 @@ historiesRouter.get("/:country/:league/:team", async (req, res) => {
         r.data_category                            AS data_category,
         r.jst_date                                 AS jst_date,
         to_char(r.record_time_jst_ts, 'YYYY-MM-DD"T"HH24:MI:SS') AS record_time_jst,
+        /* ← フロントはこれを使って Date を作る（Invalid Date 回避） */
+        (EXTRACT(EPOCH FROM r.record_time_jst_ts) * 1000)::bigint AS played_at_ms,
         r.home_team_name                           AS home_team_name,
         r.away_team_name                           AS away_team_name,
-        r.home_score                                AS home_score,
-        r.away_score                                AS away_score,
+        r.home_score                               AS home_score,
+        r.away_score                               AS away_score,
         CASE
           WHEN regexp_match(r.data_category, '(ラウンド|Round)\\s*([0-9]+)') IS NULL THEN NULL
           ELSE CAST( (regexp_match(r.data_category, '(ラウンド|Round)\\s*([0-9]+)'))[2] AS INT )
@@ -114,33 +102,51 @@ historiesRouter.get("/:country/:league/:team", async (req, res) => {
       teamJa
     );
 
-    // フロント用に整形 & 結果判定
+    // --- 勝敗判定のための正規化 ---
+    const stripTailDetail = (s: string) => s.replace(/[・:：]?\s*詳細\s*$/u, ""); // 末尾だけ除去（クラブ名中の「・」は保持）
+
+    const norm = (s: string | null | undefined) =>
+      stripTailDetail(s ?? "")
+        .replace(/[\u3000\u00A0]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .toLowerCase();
+
+    const teamKey = norm(teamJa);
+
     const matches = rows.map((r) => {
       const seq = Number.parseInt(r.seq, 10);
-      const home = r.home_team_name;
-      const away = r.away_team_name;
+      const home = r.home_team_name ?? "";
+      const away = r.away_team_name ?? "";
       const hs = r.home_score ?? 0;
       const as = r.away_score ?? 0;
 
-      let result: "WIN" | "LOSE" | "DRAW" = "DRAW";
-      if (home === teamJa) {
+      const isHome = norm(home) === teamKey;
+      const isAway = norm(away) === teamKey;
+
+      let result: "WIN" | "LOSE" | "DRAW";
+      if (isHome) {
         result = hs > as ? "WIN" : hs < as ? "LOSE" : "DRAW";
-      } else if (away === teamJa) {
+      } else if (isAway) {
         result = as > hs ? "WIN" : as < hs ? "LOSE" : "DRAW";
+      } else {
+        // どちらにも一致しない場合は引き分けなら DRAW、勝敗は neutral=LOSE としないで DRAW に寄せたければここを変更
+        result = hs === as ? "DRAW" : "LOSE";
       }
 
       return {
         seq,
         competition: r.data_category,
         round_no: r.round_no,
-        date_jst: r.jst_date, // "YYYY-MM-DD"
-        record_time_jst: r.record_time_jst, // "YYYY-MM-DDTHH:mm:ss"
-        home_team: home,
-        away_team: away,
+        date_jst: r.jst_date,
+        record_time_jst: r.record_time_jst,
+        played_at_ms: Number(r.played_at_ms),
+        home_team: r.home_team_name,
+        away_team: r.away_team_name,
         home_score: r.home_score,
         away_score: r.away_score,
         link: r.link ?? null,
-        result, // WIN / LOSE / DRAW（呼び出しチーム視点）
+        result,
       };
     });
 
@@ -157,7 +163,6 @@ historiesRouter.get("/:country/:league/:team", async (req, res) => {
 
 export default historiesRouter;
 
-// helpers
 function safeDecode(s: string) {
   try {
     return decodeURIComponent(s);
