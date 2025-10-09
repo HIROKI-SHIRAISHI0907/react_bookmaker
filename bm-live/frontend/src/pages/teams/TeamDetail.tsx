@@ -8,6 +8,7 @@ import { fetchTeamCorrelations, type TeamCorrelationsPayload } from "../../api/c
 import { fetchTeamFeatureStats, type TeamStatsResponse } from "../../api/eachstats";
 import { fetchFutureMatches, type FutureMatch } from "../../api/upcomings";
 import { fetchTeamGames, type GameMatch } from "../../api/games";
+import { fetchTeamPlayers, type Player } from "../../api/players";
 
 import AppHeader from "../../components/layout/AppHeader";
 import CorrelationPanel from "../../components/correlation/CorrelationPanel";
@@ -73,6 +74,47 @@ export default function TeamDetail() {
     enabled: !!countryLabel && !!leagueLabel && !!teamSlug,
     staleTime: 30_000,
   });
+
+  // 選手
+  const playersQ = useQuery<Player[]>({
+    queryKey: ["team-players", countryLabel, leagueLabel, teamSlug],
+    queryFn: () => fetchTeamPlayers(teamSlug, { country: countryLabel, league: leagueLabel }),
+    enabled: !!countryLabel && !!leagueLabel && !!teamSlug,
+    staleTime: 60_000,
+  });
+
+  const posOrder = (p?: string | null) => {
+    switch (p) {
+      case "ゴールキーパー":
+        return 1;
+      case "ディフェンダー":
+        return 2;
+      case "ミッドフィルダー":
+        return 3;
+      case "フォワード":
+        return 4;
+      default:
+        return 9;
+    }
+  };
+
+  const groupedPlayers = useMemo(() => {
+    const list = (playersQ.data ?? []).slice().sort((a, b) => {
+      const po = posOrder(a.position) - posOrder(b.position);
+      if (po !== 0) return po;
+      const ja = a.jersey ?? 9999;
+      const jb = b.jersey ?? 9999;
+      if (ja !== jb) return ja - jb;
+      return a.name.localeCompare(b.name, "ja");
+    });
+
+    const groups: Record<string, Player[]> = {};
+    for (const p of list) {
+      const key = p.position || "その他";
+      (groups[key] ||= []).push(p);
+    }
+    return groups;
+  }, [playersQ.data]);
 
   // 相手候補
   const opponentOptions = useMemo<string[]>(() => (corrQ.data?.opponents ?? []) as string[], [corrQ.data]);
@@ -316,7 +358,59 @@ export default function TeamDetail() {
 
           {/* ---- 選手タブ（プレースホルダ） ---- */}
           <TabsContent value="players">
-            <div className="rounded-xl border bg-card p-6 shadow-sm text-sm text-muted-foreground">選手データは準備中です。</div>
+            <section className="space-y-6">
+              {playersQ.isLoading ? (
+                <div className="space-y-2">
+                  <Skeleton className="h-6 w-40" />
+                  <Skeleton className="h-24 w-full" />
+                  <Skeleton className="h-24 w-full" />
+                </div>
+              ) : playersQ.isError ? (
+                <div className="rounded-xl border bg-card p-6 shadow-sm text-sm text-destructive">選手データの取得に失敗しました。</div>
+              ) : !playersQ.data || playersQ.data.length === 0 ? (
+                <div className="rounded-xl border bg-card p-6 shadow-sm text-sm text-muted-foreground">選手データがありません。</div>
+              ) : (
+                Object.entries(groupedPlayers).map(([pos, members]) => (
+                  <div key={pos} className="rounded-xl border bg-card p-4 shadow-sm">
+                    <h3 className="mb-3 text-base font-semibold">{pos}</h3>
+                    <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {members.map((m) => (
+                        <li key={m.id} className="flex items-center gap-3 rounded-lg border p-3">
+                          {/* 顔写真 */}
+                          <div className="w-14 h-14 rounded-md overflow-hidden bg-muted shrink-0">
+                            {m.face ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={m.face} alt={m.name} className="w-full h-full object-cover" />
+                            ) : null}
+                          </div>
+
+                          {/* 本文 */}
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              {m.jersey != null && <span className="inline-flex items-center justify-center rounded-md border text-xs px-1.5 py-0.5">#{m.jersey}</span>}
+                              <span className="font-medium truncate">{m.name}</span>
+                            </div>
+                            <div className="mt-1 text-xs text-muted-foreground space-x-2">
+                              {m.age != null && <span>{m.age}歳</span>}
+                              {m.height && <span>{m.height}</span>}
+                              {m.weight && <span>{m.weight}</span>}
+                              {m.market_value && <span>市場価値: {m.market_value}</span>}
+                            </div>
+
+                            {/* 補足行 */}
+                            <div className="mt-1 text-[11px] text-muted-foreground space-x-2">
+                              {m.loan_belong && <span>レンタル元: {m.loan_belong}</span>}
+                              {m.injury && <span>負傷: {m.injury}</span>}
+                              {m.contract_until && <span>契約: {m.contract_until} まで</span>}
+                            </div>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))
+              )}
+            </section>
           </TabsContent>
         </Tabs>
       </main>

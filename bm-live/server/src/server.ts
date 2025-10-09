@@ -7,6 +7,7 @@ import eachStatsRouter from "./routes/eachscoredstats";
 import futureRouter from "./routes/futures";
 import gameRouter from "./routes/game";
 import historyRouter from "./routes/histories";
+import { playersRouter } from "./routes/players";
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use("/api/stats", eachStatsRouter);
 app.use("/api/future", futureRouter);
 app.use("/api/games", gameRouter);
 app.use("/api/history", historyRouter);
+app.use("/api/players", playersRouter);
 
 // healthcheck（任意）
 app.get("/health", (_req, res) => res.json({ ok: true }));
