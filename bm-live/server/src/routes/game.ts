@@ -43,28 +43,25 @@ gameRouter.get("/:country/:league/:team", async (req, res) => {
       round_no: number | null;
       latest_seq: string | null; // public.data の最大 seq（当日・ペア別）
       latest_times: string | null; // その行の times
+      home_score: number | null;
+      away_score: number | null;
       status: "LIVE" | "FINISHED";
     };
 
     // 置き換え対象: prismaStats.$queryRawUnsafe<Row[]>(` ... `, `${country}: ${league}%`, teamJa)
     const rows = await prismaStats.$queryRawUnsafe<Row[]>(
       `
-  /* ===== LIVE / FINISHED を当日スナップショットから取得 ===== */
-
   WITH
-  /* チーム名（日本語）を SQL 内で正規化してキー化 */
   team_norm AS (
     SELECT lower(
              btrim(
                regexp_replace(
-                 translate(TRIM($2), CHR(12288) || CHR(160), '  '),  /* 全角/nbsp→半角2スペース */
-                 '\\s+', ' ', 'g'                                    /* 連続空白を1つへ */
+                 translate(TRIM($2), CHR(12288) || CHR(160), '  '),
+                 '\\s+', ' ', 'g'
                )
              )
            ) AS key
   ),
-
-  /* 試合（future_master）側の候補。ここでは大会カテゴリでだけ絞り、チームは後段のキー突合で絞る */
   base AS (
     SELECT
       f.seq::text AS seq,
@@ -77,28 +74,11 @@ gameRouter.get("/:country/:league/:team", async (req, res) => {
         WHEN regexp_match(f.game_team_category, '(ラウンド|Round)\\s*([0-9]+)') IS NULL THEN NULL
         ELSE ((regexp_match(f.game_team_category, '(ラウンド|Round)\\s*([0-9]+)'))[2])::int
       END AS round_no,
-      /* 正規化キー（home/away それぞれ） */
-      lower(
-        btrim(
-          regexp_replace(
-            translate(TRIM(f.home_team_name), CHR(12288) || CHR(160), '  '),
-            '\\s+',' ','g'
-          )
-        )
-      ) AS home_key,
-      lower(
-        btrim(
-          regexp_replace(
-            translate(TRIM(f.away_team_name), CHR(12288) || CHR(160), '  '),
-            '\\s+',' ','g'
-          )
-        )
-      ) AS away_key
+      lower(btrim(regexp_replace(translate(TRIM(f.home_team_name), CHR(12288) || CHR(160), '  '), '\\s+',' ','g'))) AS home_key,
+      lower(btrim(regexp_replace(translate(TRIM(f.away_team_name), CHR(12288) || CHR(160), '  '), '\\s+',' ','g'))) AS away_key
     FROM future_master f
-    WHERE f.game_team_category LIKE $1   /* 例: '日本: J3 リーグ%' */
+    WHERE f.game_team_category LIKE $1
   ),
-
-  /* 順不同ペアキーを付与 */
   base_keyed AS (
     SELECT
       b.*,
@@ -108,43 +88,26 @@ gameRouter.get("/:country/:league/:team", async (req, res) => {
       END AS pair_key
     FROM base b
   ),
-
-  /* 指定チームに該当するカードだけに絞る（正規化キーで突合） */
   base_for_team AS (
     SELECT bk.*
     FROM base_keyed bk
     CROSS JOIN team_norm t
     WHERE bk.home_key = t.key OR bk.away_key = t.key
   ),
-
-  /* data 側：JST 当日分のみ・同一大会のみ */
   data_norm AS (
     SELECT
       d.seq::bigint AS seq_big,
-      lower(
-        btrim(
-          regexp_replace(
-            translate(TRIM(d.home_team_name), CHR(12288) || CHR(160), '  '),
-            '\\s+',' ','g'
-          )
-        )
-      ) AS home_key,
-      lower(
-        btrim(
-          regexp_replace(
-            translate(TRIM(d.away_team_name), CHR(12288) || CHR(160), '  '),
-            '\\s+',' ','g'
-          )
-        )
-      ) AS away_key,
-      NULLIF(TRIM(d.times), '') AS times
+      lower(btrim(regexp_replace(translate(TRIM(d.home_team_name), CHR(12288) || CHR(160), '  '), '\\s+',' ','g'))) AS home_key,
+      lower(btrim(regexp_replace(translate(TRIM(d.away_team_name), CHR(12288) || CHR(160), '  '), '\\s+',' ','g'))) AS away_key,
+      NULLIF(TRIM(d.times), '') AS times,
+      NULLIF(TRIM(d.home_score), '')::int AS home_score,
+      NULLIF(TRIM(d.away_score), '')::int AS away_score
     FROM public.data d
     WHERE d.home_team_name IS NOT NULL
       AND d.away_team_name IS NOT NULL
       AND d.data_category LIKE $1
       AND (d.record_time AT TIME ZONE 'Asia/Tokyo')::date = (now() AT TIME ZONE 'Asia/Tokyo')::date
   ),
-
   data_keyed AS (
     SELECT
       dn.*,
@@ -154,20 +117,38 @@ gameRouter.get("/:country/:league/:team", async (req, res) => {
       END AS pair_key
     FROM data_norm dn
   ),
-
-  /* ペアごとに最大 seq を最新スナップショットとする */
-  latest AS (
-    SELECT pair_key, MAX(seq_big) AS max_seq
+  latest_any AS (
+    SELECT pair_key, MAX(seq_big) AS seq_any
     FROM data_keyed
     GROUP BY pair_key
   ),
-
-  latest_rows AS (
-    SELECT dk.pair_key, dk.seq_big, dk.times
-    FROM data_keyed dk
-    JOIN latest l ON l.pair_key = dk.pair_key AND l.max_seq = dk.seq_big
+  latest_fin AS (
+    SELECT pair_key, MAX(seq_big) AS seq_fin
+    FROM data_keyed
+    WHERE times ILIKE '%終了%'
+    GROUP BY pair_key
+  ),
+  chosen AS (
+    SELECT
+      la.pair_key,
+      COALESCE(lf.seq_fin, la.seq_any) AS chosen_seq,
+      (lf.seq_fin IS NOT NULL)         AS is_finished
+    FROM latest_any la
+    LEFT JOIN latest_fin lf ON lf.pair_key = la.pair_key
+  ),
+  chosen_rows AS (
+    SELECT
+      dk.pair_key,
+      c.chosen_seq,
+      c.is_finished,
+      dk.times,
+      dk.home_score,
+      dk.away_score
+    FROM chosen c
+    JOIN data_keyed dk
+      ON dk.pair_key = c.pair_key
+     AND dk.seq_big  = c.chosen_seq
   )
-
   SELECT
     bft.seq,
     bft.game_team_category,
@@ -176,18 +157,17 @@ gameRouter.get("/:country/:league/:team", async (req, res) => {
     bft.away_team_name,
     bft.game_link,
     bft.round_no,
-    lr.seq_big::text AS latest_seq,       /* ← data 側の最大 seq（詳細遷移に使用） */
-    lr.times         AS latest_times,
-    CASE
-      WHEN lr.times ILIKE '%終了%' THEN 'FINISHED'
-      ELSE 'LIVE'
-    END AS status
+    cr.chosen_seq::text AS latest_seq,
+    cr.times            AS latest_times,
+    cr.home_score       AS home_score,
+    cr.away_score       AS away_score,
+    CASE WHEN cr.is_finished THEN 'FINISHED' ELSE 'LIVE' END AS status
   FROM base_for_team bft
-  JOIN latest_rows lr ON lr.pair_key = bft.pair_key
+  JOIN chosen_rows cr ON cr.pair_key = bft.pair_key
   ORDER BY bft.round_no NULLS LAST, bft.future_time ASC;
   `,
-      `${country}: ${league}%`, // $1
-      teamJa // $2
+      `${country}: ${league}%`,
+      teamJa
     );
 
     // 行を LIVE / FINISHED に振り分け
@@ -205,6 +185,8 @@ gameRouter.get("/:country/:league/:team", async (req, res) => {
         round_no: r.round_no,
         latest_times: r.latest_times ?? null,
         latest_seq: r.latest_seq ? Number.parseInt(r.latest_seq, 10) : null, // ← 詳細遷移に使用
+        home_score: r.home_score,
+        away_score: r.away_score,
         status: r.status,
       };
       if (r.status === "FINISHED") finished.push(obj);

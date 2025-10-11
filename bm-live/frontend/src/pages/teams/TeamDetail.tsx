@@ -296,15 +296,50 @@ export default function TeamDetail() {
                   ) : (
                     <ul className="divide-y">
                       {displayMatches.map((it) => {
-                        const clickable = (it as any).latest_seq != null; // 型が古い環境でも落ちないよう保険
+                        const clickable = (it as any).latest_seq != null;
                         const latestSeq = (it as any).latest_seq as number | null;
                         const detailPath = clickable ? `/${encodeURIComponent(countryLabel)}/${encodeURIComponent(leagueLabel)}/${encodeURIComponent(teamSlug)}/game/${latestSeq}` : "";
+
+                        // 勝敗バッジ（終了済のみ）
+                        const resultBadge =
+                          it.status === "FINISHED" && it.home_score != null && it.away_score != null && detailQ.data
+                            ? (() => {
+                                const norm = (s: string) =>
+                                  s
+                                    .replace(/[\u3000\u00A0]/g, " ")
+                                    .replace(/\s+/g, " ")
+                                    .trim()
+                                    .toLowerCase();
+                                const team = norm(detailQ.data!.name);
+                                const home = norm(it.home_team);
+                                const away = norm(it.away_team);
+                                const hs = Number(it.home_score);
+                                const as = Number(it.away_score);
+                                let label: "WIN" | "LOSE" | "DRAW" = "DRAW";
+                                if (home === team) label = hs > as ? "WIN" : hs < as ? "LOSE" : "DRAW";
+                                else if (away === team) label = as > hs ? "WIN" : as < hs ? "LOSE" : "DRAW";
+                                const cls = label === "WIN" ? "text-red-600 font-extrabold" : label === "LOSE" ? "text-blue-600 font-extrabold" : "text-green-600 font-extrabold";
+                                return <span className={`text-xs ${cls}`}>{label}</span>;
+                              })()
+                            : null;
+
+                        const RightPane =
+                          it.status === "FINISHED" && it.home_score != null && it.away_score != null ? (
+                            <div className="w-28 text-right shrink-0">
+                              <div className="text-sm">
+                                {it.home_score} <span className="text-muted-foreground">-</span> {it.away_score}
+                              </div>
+                              <div className="mt-0.5">{resultBadge}</div>
+                            </div>
+                          ) : null;
 
                         const RowInner = (
                           <>
                             <div className="w-32 shrink-0 text-sm">
                               {it.round_no != null ? <span className="font-bold">ラウンド {it.round_no}</span> : <span className="text-muted-foreground">ラウンド -</span>}
                             </div>
+
+                            {/* 左側（対戦/時刻） */}
                             <div className="flex-1">
                               <div className="text-sm">
                                 {it.home_team} vs {it.away_team}
@@ -323,6 +358,9 @@ export default function TeamDetail() {
                                 ) : null}
                               </div>
                             </div>
+
+                            {/* 右側（終了時のみ: スコア + 勝敗） */}
+                            {RightPane}
                           </>
                         );
 

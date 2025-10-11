@@ -9,6 +9,8 @@ export type GameMatch = {
   round_no: number | null;
   latest_times: string | null; // public.data の最大 seq の times
   latest_seq: number | null;
+  home_score?: number | null;
+  away_score?: number | null;
   status: "LIVE" | "FINISHED"; // latest_times が「終了済」を含むかで判定
 };
 
