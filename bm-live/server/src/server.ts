@@ -6,6 +6,7 @@ import { correlationRouter } from "./routes/correlation";
 import eachStatsRouter from "./routes/eachscoredstats";
 import futureRouter from "./routes/futures";
 import gameRouter from "./routes/game";
+import gameDetailRouter from "./routes/gameDetails";
 import historyRouter from "./routes/histories";
 import { playersRouter } from "./routes/players";
 
@@ -26,6 +27,7 @@ app.use("/api/leagues", correlationRouter);
 app.use("/api/stats", eachStatsRouter);
 app.use("/api/future", futureRouter);
 app.use("/api/games", gameRouter);
+app.use("/api/games/detail", gameDetailRouter);
 app.use("/api/history", historyRouter);
 app.use("/api/players", playersRouter);
 

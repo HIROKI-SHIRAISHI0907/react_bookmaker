@@ -1,4 +1,4 @@
-// frontend/src/pages/TeamDetail.tsx
+// frontend/src/pages/teams/TeamDetail.tsx
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
@@ -16,6 +16,29 @@ import TeamFeaturePanel from "../../components/feature/TeamFeaturePanel";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../components/ui/tabs";
 import { Skeleton } from "../../components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
+
+/** times -> “分”表記に統一（HT/第一ハーフ/前半/後半などは原文表示） */
+function formatTimesMinute(s?: string | null) {
+  if (!s) return "-";
+  const t = s.trim();
+  // そのまま見せたい表現
+  if (/ハーフタイム|第一ハーフ|前半|後半/i.test(t)) return t;
+
+  // "MM:SS" -> "MM'"
+  const m1 = t.match(/^(\d{1,3}):\d{2}$/);
+  if (m1) return `${Number(m1[1])}'`;
+
+  // "MM'" -> "MM'"
+  const m2 = t.match(/^(\d{1,3})'$/);
+  if (m2) return `${Number(m2[1])}'`;
+
+  // "MM+X'" -> "MM'"
+  const m3 = t.match(/^(\d{1,3})\+\d{1,2}'$/);
+  if (m3) return `${Number(m3[1])}'`;
+
+  // それ以外は原文
+  return t;
+}
 
 export default function TeamDetail() {
   const params = useParams<{ country?: string; league?: string; team?: string; teams?: string }>();
@@ -37,7 +60,7 @@ export default function TeamDetail() {
   // 相手チーム選択（相関/統計用）
   const [opponent, setOpponent] = useState<string>("");
 
-  // --------- Queries ----------
+  // ========== Queries ==========
   const detailQ = useQuery<TeamDetailType>({
     queryKey: ["team-detail", countryLabel, leagueLabel, teamSlug],
     queryFn: () => fetchTeamDetail(countryLabel, leagueLabel, teamSlug),
@@ -67,7 +90,7 @@ export default function TeamDetail() {
     staleTime: 30_000,
   });
 
-  // 開催中/試合終了（game.ts が返す LIVE or FINISHED）
+  // 当日ヒット（LIVE/FINISHED のみ）
   const gameQ = useQuery<{ live: GameMatch[]; finished: GameMatch[] }>({
     queryKey: ["game-matches", countryLabel, leagueLabel, teamSlug],
     queryFn: () => fetchTeamGames(teamSlug, { country: countryLabel, league: leagueLabel }),
@@ -83,6 +106,7 @@ export default function TeamDetail() {
     staleTime: 60_000,
   });
 
+  // ========== Utils ==========
   const posOrder = (p?: string | null) => {
     switch (p) {
       case "ゴールキーパー":
@@ -146,22 +170,27 @@ export default function TeamDetail() {
     return new Date(a.future_time).getTime() - new Date(b.future_time).getTime();
   };
 
-  // 開催中 or 試合終了（どちらか一方のみ表示）
+  // LIVE/FINISHED を整列
   const liveSorted = useMemo<GameMatch[]>(() => (gameQ.data?.live ?? []).slice().sort(sortByRoundAndTime), [gameQ.data]);
   const finishedSorted = useMemo<GameMatch[]>(() => (gameQ.data?.finished ?? []).slice().sort(sortByRoundAndTime), [gameQ.data]);
 
-  const hasLive = liveSorted.length > 0;
-  const currentTitle = hasLive ? "開催中" : "試合終了";
-  const displayMatches: GameMatch[] = hasLive ? liveSorted : finishedSorted;
+  const hasLiveToday = liveSorted.length > 0;
+  const hasFinishedToday = finishedSorted.length > 0;
 
-  // 予定
-  const scheduledMatches = useMemo<FutureMatch[]>(() => (futureQ.data ?? []).slice().sort(sortByRoundAndTime), [futureQ.data]);
+  const sectionTitle = hasLiveToday ? "開催中" : "試合終了";
+  const displayMatches: GameMatch[] = hasLiveToday ? liveSorted : finishedSorted;
+
+  // 予定は当日ヒット（LIVE/FINISHED）が全く無いときだけ表示
+  const scheduledMatches = useMemo<FutureMatch[]>(
+    () => (!hasLiveToday && !hasFinishedToday ? (futureQ.data ?? []).slice().sort(sortByRoundAndTime) : []),
+    [futureQ.data, hasLiveToday, hasFinishedToday]
+  );
 
   // 戻るリンク/ヘッダ
   const toBack = `/${encodeURIComponent(countryLabel)}/${encodeURIComponent(leagueLabel)}`;
   const headerSubtitle = detailQ.data ? `${countryLabel} / ${leagueLabel} / ${detailQ.data.name}` : `${countryLabel} / ${leagueLabel}`;
 
-  // ★ 過去対戦履歴ページへのパス（params はエンコード済みをそのまま使う）
+  // 過去対戦履歴ページへの導線（params はエンコード済みをそのまま使う）
   const historyPath = `/${countryParam}/${leagueParam}/${teamSlug}/history`;
 
   return (
@@ -250,113 +279,117 @@ export default function TeamDetail() {
 
           {/* ---- 試合タブ ---- */}
           <TabsContent value="matches" className="space-y-6">
-            {/* ★ 過去の対戦履歴ページへの導線 */}
+            {/* 過去の対戦履歴ページへの導線 */}
             <div className="flex items-center justify-end">
-              <Link
-                to={historyPath}
-                onClick={(e) => e.stopPropagation()} // ← 親の onClick/Link へ伝播させない
-                className="inline-flex items-center text-sm font-medium rounded-md border px-3 py-1.5 hover:bg-accent"
-              >
+              <Link to={historyPath} onClick={(e) => e.stopPropagation()} className="inline-flex items-center text-sm font-medium rounded-md border px-3 py-1.5 hover:bg-accent">
                 過去の対戦履歴を見る →
               </Link>
             </div>
 
-            {/* 当日（JST）に public.data でヒットしたときだけ表示 */}
-            {!!(gameQ.data && (gameQ.data.live.length || gameQ.data.finished.length)) && (
+            {/* 当日ヒット（LIVE/FINISHED のどちらかがあれば表示） */}
+            {(hasLiveToday || hasFinishedToday) && (
               <section>
-                {(() => {
-                  const list = gameQ.data!;
-                  const anyLive = list.live.length > 0;
-                  const title = anyLive ? "開催中" : "試合終了";
-                  const rows = anyLive ? list.live : list.finished;
+                <h3 className="mb-2 text-base font-semibold">{sectionTitle}</h3>
+                <div className="rounded-xl border bg-card p-4 shadow-sm">
+                  {gameQ.isLoading ? (
+                    <div className="text-sm text-muted-foreground">読み込み中...</div>
+                  ) : (
+                    <ul className="divide-y">
+                      {displayMatches.map((it) => {
+                        const clickable = (it as any).latest_seq != null; // 型が古い環境でも落ちないよう保険
+                        const latestSeq = (it as any).latest_seq as number | null;
+                        const detailPath = clickable ? `/${encodeURIComponent(countryLabel)}/${encodeURIComponent(leagueLabel)}/${encodeURIComponent(teamSlug)}/game/${latestSeq}` : "";
 
-                  // 見栄えのため時刻昇順
-                  const sorted = [...rows].sort((a, b) => new Date(a.future_time).getTime() - new Date(b.future_time).getTime());
+                        const RowInner = (
+                          <>
+                            <div className="w-32 shrink-0 text-sm">
+                              {it.round_no != null ? <span className="font-bold">ラウンド {it.round_no}</span> : <span className="text-muted-foreground">ラウンド -</span>}
+                            </div>
+                            <div className="flex-1">
+                              <div className="text-sm">
+                                {it.home_team} vs {it.away_team}
+                                {it.status === "LIVE" && <span className="ml-2 inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] leading-none">LIVE</span>}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {formatTimesMinute(it.latest_times)}
+                                {it.link ? (
+                                  <>
+                                    {" "}
+                                    ·{" "}
+                                    <a href={it.link} target="_blank" rel="noreferrer" className="underline" onClick={(e) => e.stopPropagation()}>
+                                      外部詳細
+                                    </a>
+                                  </>
+                                ) : null}
+                              </div>
+                            </div>
+                          </>
+                        );
 
-                  return (
-                    <>
-                      <h3 className="mb-2 text-base font-semibold">{title}</h3>
-                      <div className="rounded-xl border bg-card p-4 shadow-sm">
-                        {gameQ.isLoading ? (
-                          <div className="text-sm text-muted-foreground">読み込み中...</div>
+                        return clickable ? (
+                          <li key={it.seq} className="py-2">
+                            <Link to={detailPath} className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-accent/40 transition">
+                              {RowInner}
+                            </Link>
+                          </li>
                         ) : (
-                          <ul className="divide-y">
-                            {sorted.map((it) => (
-                              <li key={it.seq} className="flex items-center gap-3 py-2">
-                                <div className="w-32 shrink-0 text-sm">
-                                  {it.round_no != null ? <span className="font-bold">ラウンド {it.round_no}</span> : <span className="text-muted-foreground">ラウンド -</span>}
-                                </div>
-                                <div className="flex-1">
-                                  <div className="text-sm">
-                                    {it.home_team} vs {it.away_team}
-                                    {it.status === "LIVE" && <span className="ml-2 inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] leading-none">LIVE</span>}
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    {/* 当日の最新 times を表示（終了なら「終了済」等、LIVEなら "68:09" など） */}
-                                    {it.latest_times ?? "-"}
-                                    {it.link ? (
-                                      <>
-                                        {" "}
-                                        ·{" "}
-                                        <a href={it.link} target="_blank" rel="noreferrer" className="underline">
-                                          詳細
-                                        </a>
-                                      </>
-                                    ) : null}
-                                  </div>
-                                </div>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    </>
-                  );
-                })()}
+                          <li key={it.seq} className="flex items-center gap-3 py-2 px-2 opacity-70 cursor-default">
+                            {RowInner}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </div>
               </section>
             )}
 
-            {/* 開催予定 */}
-            <section>
-              <h3 className="mb-2 text-base font-semibold">開催予定</h3>
-              <div className="rounded-xl border bg-card p-4 shadow-sm">
-                {futureQ.isLoading ? (
-                  <div className="text-sm text-muted-foreground">読み込み中...</div>
-                ) : scheduledMatches.length === 0 ? (
-                  <div className="text-sm text-muted-foreground">開催予定の試合はありません。</div>
-                ) : (
-                  <ul className="divide-y">
-                    {scheduledMatches.map((it) => (
-                      <li key={it.seq} className="flex items-center gap-3 py-2">
-                        <div className="w-32 shrink-0 text-sm">
-                          {it.round_no != null ? <span className="font-bold">ラウンド {it.round_no}</span> : <span className="text-muted-foreground">ラウンド -</span>}
-                        </div>
-                        <div className="flex-1">
-                          <div className="text-sm">
-                            {it.home_team} vs {it.away_team}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {new Date(it.future_time).toLocaleString()}
-                            {it.link ? (
-                              <>
-                                {" "}
-                                ·{" "}
-                                <a href={it.link} target="_blank" rel="noreferrer" className="underline">
-                                  詳細
-                                </a>
-                              </>
-                            ) : null}
-                          </div>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </section>
+            {/* 開催予定（当日ヒットが全くないときのみ表示） */}
+            {!hasLiveToday && !hasFinishedToday && (
+              <section>
+                <h3 className="mb-2 text-base font-semibold">開催予定</h3>
+                <div className="rounded-xl border bg-card p-4 shadow-sm">
+                  {futureQ.isLoading ? (
+                    <div className="text-sm text-muted-foreground">読み込み中...</div>
+                  ) : (futureQ.data?.length ?? 0) === 0 ? (
+                    <div className="text-sm text-muted-foreground">開催予定の試合はありません。</div>
+                  ) : (
+                    <ul className="divide-y">
+                      {(futureQ.data ?? [])
+                        .slice()
+                        .sort(sortByRoundAndTime)
+                        .map((it) => (
+                          <li key={it.seq} className="flex items-center gap-3 py-2">
+                            <div className="w-32 shrink-0 text-sm">
+                              {it.round_no != null ? <span className="font-bold">ラウンド {it.round_no}</span> : <span className="text-muted-foreground">ラウンド -</span>}
+                            </div>
+                            <div className="flex-1">
+                              <div className="text-sm">
+                                {it.home_team} vs {it.away_team}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {new Date(it.future_time).toLocaleString("ja-JP")}
+                                {it.link ? (
+                                  <>
+                                    {" "}
+                                    ·{" "}
+                                    <a href={it.link} target="_blank" rel="noreferrer" className="underline">
+                                      詳細
+                                    </a>
+                                  </>
+                                ) : null}
+                              </div>
+                            </div>
+                          </li>
+                        ))}
+                    </ul>
+                  )}
+                </div>
+              </section>
+            )}
           </TabsContent>
 
-          {/* ---- 選手タブ（プレースホルダ） ---- */}
+          {/* ---- 選手タブ ---- */}
           <TabsContent value="players">
             <section className="space-y-6">
               {playersQ.isLoading ? (
@@ -377,12 +410,7 @@ export default function TeamDetail() {
                       {members.map((m) => (
                         <li key={m.id} className="flex items-center gap-3 rounded-lg border p-3">
                           {/* 顔写真 */}
-                          <div className="w-14 h-14 rounded-md overflow-hidden bg-muted shrink-0">
-                            {m.face ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img src={m.face} alt={m.name} className="w-full h-full object-cover" />
-                            ) : null}
-                          </div>
+                          <div className="w-14 h-14 rounded-md overflow-hidden bg-muted shrink-0">{m.face ? <img src={m.face} alt={m.name} className="w-full h-full object-cover" /> : null}</div>
 
                           {/* 本文 */}
                           <div className="min-w-0 flex-1">
