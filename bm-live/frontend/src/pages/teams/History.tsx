@@ -1,3 +1,4 @@
+// frontend/src/pages/teams/History.tsx
 import { Link, useParams } from "react-router-dom";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -25,7 +26,7 @@ export default function History() {
   const countryLabel = safeDecode(countryParam);
   const leagueLabel = safeDecode(leagueParam);
 
-  // チーム表示名（勝敗判定でも利用）
+  // 表示/判定用：チーム正式名
   const teamQ = useQuery<TeamDetailType>({
     queryKey: ["team-detail", countryLabel, leagueLabel, teamSlug],
     queryFn: () => fetchTeamDetail(countryLabel, leagueLabel, teamSlug),
@@ -33,7 +34,7 @@ export default function History() {
     staleTime: 60_000,
   });
 
-  // 履歴
+  // 履歴一覧
   const historyQ = useQuery<PastMatch[]>({
     queryKey: ["team-history", countryLabel, leagueLabel, teamSlug],
     queryFn: () => fetchPastMatches(countryLabel, leagueLabel, teamSlug),
@@ -41,7 +42,7 @@ export default function History() {
     staleTime: 60_000,
   });
 
-  // 勝敗判定ユーティリティ（全角/半角・余分スペースを吸収）
+  // 勝敗判定（全角/半角スペースゆらぎ吸収）
   const norm = (s: string) =>
     s
       .replace(/[\u3000\u00A0]/g, " ")
@@ -58,18 +59,22 @@ export default function History() {
 
     if (home === key) return hs > as ? "WIN" : hs < as ? "LOSE" : "DRAW";
     if (away === key) return as > hs ? "WIN" : as < hs ? "LOSE" : "DRAW";
-    // 万一どちらにも合致しない場合はスコアのみで判断不能→DRAW扱い（色は緑）
-    return "DRAW";
+    return "DRAW"; // 万一一致しなければ引き分け扱い（色は緑）
   };
 
-  // 並び順: 新しい順（match_time 降順）
+  // 新しい順に整列
   const rows = useMemo(() => {
     const list = historyQ.data ?? [];
     return [...list].sort((a, b) => new Date(b.match_time).getTime() - new Date(a.match_time).getTime());
   }, [historyQ.data]);
 
-  // 戻るリンク/ヘッダ小見出し
-  const toBack = `/${encodeURIComponent(countryLabel)}/${encodeURIComponent(leagueLabel)}`;
+  // パス生成用（詳細へ）
+  const encCountry = encodeURIComponent(countryLabel);
+  const encLeague = encodeURIComponent(leagueLabel);
+  const encTeam = encodeURIComponent(teamSlug);
+
+  // 戻るリンク/サブタイトル
+  const toBack = `/${encCountry}/${encLeague}`;
   const headerSubtitle = `${countryLabel} / ${leagueLabel} / 過去の対戦履歴`;
 
   return (
@@ -85,7 +90,7 @@ export default function History() {
           </Link>
         </div>
 
-        {/* 本体カード */}
+        {/* カード */}
         <section className="rounded-xl border bg-card shadow-sm">
           {historyQ.isLoading || teamQ.isLoading ? (
             <div className="p-4 space-y-3">
@@ -103,28 +108,29 @@ export default function History() {
                 const result = resultOf(m, teamQ.data!.name);
                 const resultClass = result === "WIN" ? "text-red-600 font-extrabold" : result === "LOSE" ? "text-blue-600 font-extrabold" : "text-green-600 font-extrabold";
 
+                const detailPath = `/${encodeURIComponent(countryLabel)}/${encodeURIComponent(leagueLabel)}/${encodeURIComponent(teamSlug)}/history/${m.seq}`;
+
                 return (
-                  <li key={m.seq} className="flex items-center gap-3 py-3 px-4">
+                  <Link key={m.seq} to={detailPath} className="group flex items-center gap-3 py-3 px-4 hover:bg-accent/40 transition rounded-md">
                     {/* ラウンド */}
                     <div className="w-32 shrink-0 text-sm">
                       {m.round_no != null ? <span className="font-bold">ラウンド {m.round_no}</span> : <span className="text-muted-foreground">ラウンド -</span>}
                     </div>
 
-                    {/* 左（対戦） */}
+                    {/* 左（対戦 + 日付） */}
                     <div className="flex-1">
                       <div className="text-sm">
                         {m.home_team} vs {m.away_team}
-                        {m.link ? (
+                        {m.link && (
                           <>
                             {" "}
                             ·{" "}
-                            <a className="underline" href={m.link} target="_blank" rel="noreferrer">
-                              詳細
+                            <a className="underline" href={m.link} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>
+                              外部詳細
                             </a>
                           </>
-                        ) : null}
+                        )}
                       </div>
-                      {/* 日付 */}
                       <div className="text-xs text-muted-foreground">{m.match_time ? new Date(m.match_time).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" }) : "-"}</div>
                     </div>
 
@@ -135,7 +141,7 @@ export default function History() {
                       </div>
                       <div className={`text-xs ${resultClass}`}>{result}</div>
                     </div>
-                  </li>
+                  </Link>
                 );
               })}
             </ul>

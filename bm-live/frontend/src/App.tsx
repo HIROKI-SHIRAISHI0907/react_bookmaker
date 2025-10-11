@@ -9,6 +9,7 @@ import LeagueMenu from "./pages/humberger/LeagueMenu";
 import LeagueTeams from "./pages/teams/Team";
 import TeamDetail from "./pages/teams/TeamDetail";
 import History from "./pages/teams/History";
+import HistoryDetail from "./pages/teams/HistoryDetail";
 
 export default function App() {
   return (
@@ -23,6 +24,8 @@ export default function App() {
       <Route path="/:country/:league/:team" element={<TeamDetail />} />
 
       <Route path="/:country/:league/:team/history" element={<History />} />
+
+      <Route path="/:country/:league/:team/history/:seq" element={<HistoryDetail />} />
 
       {/* 認証保護ページ */}
       {/* <Route element={<RequireAuth />}>*/}
