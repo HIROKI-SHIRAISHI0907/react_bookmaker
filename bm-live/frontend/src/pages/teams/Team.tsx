@@ -40,12 +40,19 @@ export default function LeagueTeams() {
       <AppHeader title="チーム一覧" subtitle={`${countryRaw} / ${leagueRaw}`} />
 
       <main className="container mx-auto px-4 py-6">
-        {/* 見出し（ページ内見出しは残しつつヘッダーと整合） */}
-        <div className="mb-4">
-          <h1 className="text-2xl font-bold">
-            {countryRaw} / {leagueRaw}
-          </h1>
-          <p className="text-muted-foreground text-sm">Team List</p>
+        {/* 見出し + 右上に「現在開催中の試合」ボタン */}
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold">
+              {countryRaw} / {leagueRaw}
+            </h1>
+            <p className="text-muted-foreground text-sm">Team List</p>
+          </div>
+
+          {/* ← TeamDetailの「過去の対戦履歴を見る」と同じクラスを使用 */}
+          <Link to={`/live`} className="inline-flex items-center text-sm font-medium rounded-md border px-3 py-1.5 hover:bg-accent">
+            現在開催中の試合 →
+          </Link>
         </div>
 
         {/* ローディング */}

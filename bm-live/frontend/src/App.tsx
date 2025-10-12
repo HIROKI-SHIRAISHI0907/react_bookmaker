@@ -11,6 +11,8 @@ import TeamDetail from "./pages/teams/TeamDetail";
 import History from "./pages/teams/History";
 import HistoryDetail from "./pages/teams/HistoryDetail";
 import GameDetail from "./pages/teams/GameDetail";
+import LiveNow from "./pages/teams/LiveNow";
+import ScheduledDetail from "./pages/teams/OverviewDetail";
 
 export default function App() {
   return (
@@ -20,7 +22,11 @@ export default function App() {
       <Route path="/register" element={<Register />} />
 
       {/* パラメタ付きページ */}
+      <Route path="/live" element={<LiveNow />} />
       <Route path="/:country/:league" element={<LeagueTeams />} />
+
+      {/* ★ live は team よりも前に置く（順番重要！）liveがteam扱いになってしまう */}
+      <Route path="/:country/:league/live" element={<LiveNow />} />
 
       <Route path="/:country/:league/:team" element={<TeamDetail />} />
 
@@ -29,6 +35,8 @@ export default function App() {
       <Route path="/:country/:league/:team/history/:seq" element={<HistoryDetail />} />
 
       <Route path="/:country/:league/:team/game/:seq" element={<GameDetail />} />
+
+      <Route path="/:country/:league/:team/scheduled/:seq" element={<ScheduledDetail />} />
 
       {/* 認証保護ページ */}
       {/* <Route element={<RequireAuth />}>*/}
