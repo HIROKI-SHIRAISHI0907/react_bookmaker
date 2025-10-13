@@ -1,6 +1,5 @@
 // frontend/src/pages/teams/TeamDetail.tsx
-import { Link, useParams } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 
@@ -22,28 +21,18 @@ import { ArrowLeft } from "lucide-react";
 function formatTimesMinute(s?: string | null) {
   if (!s) return "-";
   const t = s.trim();
-  // そのまま見せたい表現
   if (/ハーフタイム|第一ハーフ|前半|後半/i.test(t)) return t;
-
-  // "MM:SS" -> "MM'"
   const m1 = t.match(/^(\d{1,3}):\d{2}$/);
   if (m1) return `${Number(m1[1])}'`;
-
-  // "MM'" -> "MM'"
   const m2 = t.match(/^(\d{1,3})'$/);
   if (m2) return `${Number(m2[1])}'`;
-
-  // "MM+X'" -> "MM'"
   const m3 = t.match(/^(\d{1,3})\+\d{1,2}'$/);
   if (m3) return `${Number(m3[1])}'`;
-
-  // それ以外は原文
   return t;
 }
 
 export default function TeamDetail() {
   const params = useParams<{ country?: string; league?: string; team?: string; teams?: string }>();
-
   const navigate = useNavigate();
 
   const countryParam = params.country ?? "";
@@ -86,7 +75,7 @@ export default function TeamDetail() {
   });
 
   // 試合予定（future.ts が返す SCHEDULED）
-  const futureQ = useQuery({
+  const futureQ = useQuery<FutureMatch[]>({
     queryKey: ["future-matches", countryLabel, leagueLabel, teamSlug],
     queryFn: () => fetchFutureMatches(teamSlug, { country: countryLabel, league: leagueLabel }),
     enabled: !!countryLabel && !!leagueLabel && !!teamSlug,
@@ -173,21 +162,21 @@ export default function TeamDetail() {
     return new Date(a.future_time).getTime() - new Date(b.future_time).getTime();
   };
 
-  // LIVE/FINISHED を整列
+  // ========== 当日・予定の表示判定 ==========
   const liveSorted = useMemo<GameMatch[]>(() => (gameQ.data?.live ?? []).slice().sort(sortByRoundAndTime), [gameQ.data]);
   const finishedSorted = useMemo<GameMatch[]>(() => (gameQ.data?.finished ?? []).slice().sort(sortByRoundAndTime), [gameQ.data]);
 
+  // 3フラグ（LIVE と FINISHED は排他的）
   const hasLiveToday = liveSorted.length > 0;
-  const hasFinishedToday = finishedSorted.length > 0;
+  const hasFinishedToday = !hasLiveToday && finishedSorted.length > 0;
+  const hasFuture = (futureQ.data?.length ?? 0) > 0;
 
-  const sectionTitle = hasLiveToday ? "開催中" : "試合終了";
-  const displayMatches: GameMatch[] = hasLiveToday ? liveSorted : finishedSorted;
+  // 当日の見出しとリスト
+  const todaysTitle = hasLiveToday ? "開催中" : hasFinishedToday ? "試合終了" : null;
+  const todaysMatches: GameMatch[] = hasLiveToday ? liveSorted : hasFinishedToday ? finishedSorted : [];
 
-  // 予定は当日ヒット（LIVE/FINISHED）が全く無いときだけ表示
-  const scheduledMatches = useMemo<FutureMatch[]>(
-    () => (!hasLiveToday && !hasFinishedToday ? (futureQ.data ?? []).slice().sort(sortByRoundAndTime) : []),
-    [futureQ.data, hasLiveToday, hasFinishedToday]
-  );
+  // 予定は常に並べ替え（有れば出す）
+  const scheduledSorted = useMemo<FutureMatch[]>(() => (futureQ.data ?? []).slice().sort(sortByRoundAndTime), [futureQ.data]);
 
   // 戻るリンク/ヘッダ
   const toBack = `/${encodeURIComponent(countryLabel)}/${encodeURIComponent(leagueLabel)}`;
@@ -282,8 +271,8 @@ export default function TeamDetail() {
 
           {/* ---- 試合タブ ---- */}
           <TabsContent value="matches" className="space-y-6">
-            {/* 過去の対戦履歴ページへの導線 */}
-            <div className="flex items-center justify-end">
+            {/* 導線 */}
+            <div className="flex items-center justify-end gap-2">
               <Link to={`/live`} onClick={(e) => e.stopPropagation()} className="inline-flex items-center text-sm font-medium rounded-md border px-3 py-1.5 hover:bg-accent">
                 現在開催中の試合 →
               </Link>
@@ -292,21 +281,59 @@ export default function TeamDetail() {
               </Link>
             </div>
 
-            {/* 当日ヒット（LIVE/FINISHED のどちらかがあれば表示） */}
-            {(hasLiveToday || hasFinishedToday) && (
+            {/* 当日（開催中 or 試合終了） */}
+            {todaysTitle && (
               <section>
-                <h3 className="mb-2 text-base font-semibold">{sectionTitle}</h3>
+                <h3 className="mb-2 text-base font-semibold">{todaysTitle}</h3>
                 <div className="rounded-xl border bg-card p-4 shadow-sm">
                   {gameQ.isLoading ? (
                     <div className="text-sm text-muted-foreground">読み込み中...</div>
                   ) : (
                     <ul className="divide-y">
-                      {displayMatches.map((it) => {
+                      {todaysMatches.map((it) => {
                         const clickable = (it as any).latest_seq != null;
                         const latestSeq = (it as any).latest_seq as number | null;
                         const detailPath = clickable ? `/${encodeURIComponent(countryLabel)}/${encodeURIComponent(leagueLabel)}/${encodeURIComponent(teamSlug)}/game/${latestSeq}` : "";
 
-                        // 右パネルなどは既存ロジックでOK（省略可）
+                        // ＝＝＝＝ 勝敗バッジ & 右側スコア ＝＝＝＝
+                        const ResultBadge = () => {
+                          if (it.status !== "FINISHED") return null;
+                          if (it.home_score == null || it.away_score == null || !detailQ.data) return null;
+
+                          const norm = (s: string) =>
+                            s
+                              .replace(/[\u3000\u00A0]/g, " ")
+                              .replace(/\s+/g, " ")
+                              .trim()
+                              .toLowerCase();
+                          const teamName = norm(detailQ.data.name);
+                          const home = norm(it.home_team);
+                          const away = norm(it.away_team);
+                          const hs = Number(it.home_score);
+                          const as = Number(it.away_score);
+
+                          let label: "WIN" | "LOSE" | "DRAW" = "DRAW";
+                          if (home === teamName) label = hs > as ? "WIN" : hs < as ? "LOSE" : "DRAW";
+                          else if (away === teamName) label = as > hs ? "WIN" : as < hs ? "LOSE" : "DRAW";
+
+                          const cls = label === "WIN" ? "bg-green-100 text-green-700" : label === "LOSE" ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-700";
+
+                          return <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${cls}`}>{label}</span>;
+                        };
+
+                        const RightPane =
+                          it.status === "FINISHED" && it.home_score != null && it.away_score != null ? (
+                            <div className="w-28 text-right shrink-0">
+                              <div className="text-sm font-semibold tabular-nums">
+                                {it.home_score} <span className="text-muted-foreground">-</span> {it.away_score}
+                              </div>
+                              <div className="mt-1">
+                                <ResultBadge />
+                              </div>
+                            </div>
+                          ) : null;
+
+                        // ＝＝＝＝ 行本体 ＝＝＝＝
                         return (
                           <li key={it.seq} className="py-2">
                             <div
@@ -332,7 +359,7 @@ export default function TeamDetail() {
                                 </div>
                                 <div className="text-xs text-muted-foreground">
                                   {formatTimesMinute((it as any).latest_times)}
-                                  {(it as any).link ? (
+                                  {(it as any).link && (
                                     <>
                                       {" "}
                                       &middot;{" "}
@@ -347,11 +374,12 @@ export default function TeamDetail() {
                                         外部詳細
                                       </button>
                                     </>
-                                  ) : null}
+                                  )}
                                 </div>
                               </div>
 
-                              {/* 終了時スコア右側の UI は既存をそのまま */}
+                              {/* 右側：試合終了のみ表示 */}
+                              {RightPane}
                             </div>
                           </li>
                         );
@@ -362,67 +390,62 @@ export default function TeamDetail() {
               </section>
             )}
 
-            {/* 開催予定（当日ヒットが全くないときのみ表示） */}
-            {!hasLiveToday && !hasFinishedToday && (
+            {/* 開催予定（当日の状況に関係なく、件数があれば出す） */}
+            {hasFuture && (
               <section>
                 <h3 className="mb-2 text-base font-semibold">開催予定</h3>
                 <div className="rounded-xl border bg-card p-4 shadow-sm">
                   {futureQ.isLoading ? (
                     <div className="text-sm text-muted-foreground">読み込み中...</div>
-                  ) : (futureQ.data?.length ?? 0) === 0 ? (
-                    <div className="text-sm text-muted-foreground">開催予定の試合はありません。</div>
                   ) : (
                     <ul className="divide-y">
-                      {(futureQ.data ?? [])
-                        .slice()
-                        .sort(sortByRoundAndTime)
-                        .map((it) => {
-                          const detailPath = `/${countryParam}/${leagueParam}/${teamSlug}/scheduled/${it.seq}`;
-                          return (
-                            <li key={it.seq} className="py-2">
-                              <div
-                                role="button"
-                                tabIndex={0}
-                                className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-accent/40 transition cursor-pointer"
-                                onClick={() => navigate(detailPath)}
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter" || e.key === " ") {
-                                    e.preventDefault();
-                                    navigate(detailPath);
-                                  }
-                                }}
-                              >
-                                <div className="w-32 shrink-0 text-sm">
-                                  {it.round_no != null ? <span className="font-bold">ラウンド {it.round_no}</span> : <span className="text-muted-foreground">ラウンド -</span>}
+                      {scheduledSorted.map((it) => {
+                        const detailPath = `/${countryParam}/${leagueParam}/${teamSlug}/scheduled/${it.seq}`;
+                        return (
+                          <li key={it.seq} className="py-2">
+                            <div
+                              role="button"
+                              tabIndex={0}
+                              className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-accent/40 transition cursor-pointer"
+                              onClick={() => navigate(detailPath)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.preventDefault();
+                                  navigate(detailPath);
+                                }
+                              }}
+                            >
+                              <div className="w-32 shrink-0 text-sm">
+                                {it.round_no != null ? <span className="font-bold">ラウンド {it.round_no}</span> : <span className="text-muted-foreground">ラウンド -</span>}
+                              </div>
+                              <div className="flex-1">
+                                <div className="text-sm">
+                                  {it.home_team} vs {it.away_team}
                                 </div>
-                                <div className="flex-1">
-                                  <div className="text-sm">
-                                    {it.home_team} vs {it.away_team}
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    {new Date(it.future_time).toLocaleString("ja-JP")}
-                                    {it.link ? (
-                                      <>
-                                        {" "}
-                                        &middot;{" "}
-                                        <button
-                                          type="button"
-                                          className="underline"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            window.open(it.link!, "_blank", "noopener,noreferrer");
-                                          }}
-                                        >
-                                          詳細
-                                        </button>
-                                      </>
-                                    ) : null}
-                                  </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {new Date(it.future_time).toLocaleString("ja-JP")}
+                                  {it.link && (
+                                    <>
+                                      {" "}
+                                      &middot;{" "}
+                                      <button
+                                        type="button"
+                                        className="underline"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          window.open(it.link!, "_blank", "noopener,noreferrer");
+                                        }}
+                                      >
+                                        詳細
+                                      </button>
+                                    </>
+                                  )}
                                 </div>
                               </div>
-                            </li>
-                          );
-                        })}
+                            </div>
+                          </li>
+                        );
+                      })}
                     </ul>
                   )}
                 </div>
@@ -450,10 +473,7 @@ export default function TeamDetail() {
                     <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       {members.map((m) => (
                         <li key={m.id} className="flex items-center gap-3 rounded-lg border p-3">
-                          {/* 顔写真 */}
                           <div className="w-14 h-14 rounded-md overflow-hidden bg-muted shrink-0">{m.face ? <img src={m.face} alt={m.name} className="w-full h-full object-cover" /> : null}</div>
-
-                          {/* 本文 */}
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
                               {m.jersey != null && <span className="inline-flex items-center justify-center rounded-md border text-xs px-1.5 py-0.5">#{m.jersey}</span>}
@@ -465,8 +485,6 @@ export default function TeamDetail() {
                               {m.weight && <span>{m.weight}</span>}
                               {m.market_value && <span>市場価値: {m.market_value}</span>}
                             </div>
-
-                            {/* 補足行 */}
                             <div className="mt-1 text-[11px] text-muted-foreground space-x-2">
                               {m.loan_belong && <span>レンタル元: {m.loan_belong}</span>}
                               {m.injury && <span>負傷: {m.injury}</span>}
