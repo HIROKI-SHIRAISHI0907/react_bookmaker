@@ -1,3 +1,10 @@
+// PrismaClient を new する前に環境変数をセット
+process.env.PGOPTIONS = [
+  "-c enable_parallel=off",
+  "-c max_parallel_workers_per_gather=0",
+  "-c jit=off", // JIT も止める（DSM・メモリ圧を減らす）
+].join(" ");
+
 // 2つの PrismaClient を別名で import
 // 生成先を server/generated/* にしたので相対パスで import
 import { PrismaClient as UserClient } from "../generated/user";

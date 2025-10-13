@@ -284,11 +284,7 @@ export default function TeamDetail() {
           <TabsContent value="matches" className="space-y-6">
             {/* 過去の対戦履歴ページへの導線 */}
             <div className="flex items-center justify-end">
-              <Link
-                to={`/${countryParam}/${leagueParam}/live`}
-                onClick={(e) => e.stopPropagation()}
-                className="inline-flex items-center text-sm font-medium rounded-md border px-3 py-1.5 hover:bg-accent"
-              >
+              <Link to={`/live`} onClick={(e) => e.stopPropagation()} className="inline-flex items-center text-sm font-medium rounded-md border px-3 py-1.5 hover:bg-accent">
                 現在開催中の試合 →
               </Link>
               <Link to={historyPath} onClick={(e) => e.stopPropagation()} className="inline-flex items-center text-sm font-medium rounded-md border px-3 py-1.5 hover:bg-accent">
