@@ -71,7 +71,6 @@ export default function History() {
   // パス生成用（詳細へ）
   const encCountry = encodeURIComponent(countryLabel);
   const encLeague = encodeURIComponent(leagueLabel);
-  const encTeam = encodeURIComponent(teamSlug);
 
   // 戻るリンク/サブタイトル
   const toBack = `/${encCountry}/${encLeague}`;

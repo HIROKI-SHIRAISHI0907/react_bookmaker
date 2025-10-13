@@ -6,10 +6,12 @@ const router = Router();
 
 /**
  * GET /api/live-matches
- *  - ?country=...&league=... 指定で絞り込み。未指定なら全カテゴリ（当日JST）。
- *  - public.data (当日JST) から対戦ペアごとに最新 seq だけを抽出。
- *  - times に「終了」を含む行は除外（LIVEのみ）。
- *  - スコア "1.0" などは floor で整数化（小数点以下切り捨て）。
+ *   ?country=国名&league=リーグ名 で絞り込み。未指定なら全カテゴリ。
+ * 仕様:
+ *   - public.data（JST 当日）から pair_key（home/away 正規化）ごとの最新 seq を採用
+ *   - times に「終了」を含む行は除外（LIVE のみ）
+ *   - スコアは小数でも floor で切り捨て int 化
+ *   - country_league_master を正規化キーで JOIN し、/team/<slug>/ の <slug> を返す
  */
 router.get("/", async (req, res) => {
   const country = safeDecode(String(req.query.country ?? ""));
@@ -32,18 +34,11 @@ router.get("/", async (req, res) => {
       record_time: string | null;
       update_time: string | null;
       goal_time: string | null;
+      home_slug: string | null;
+      away_slug: string | null;
     };
 
-    const rows = await prismaStats.$transaction(
-      async (tx) => {
-        // 重い集計対策（このトランザクション内だけ適用）
-        await tx.$executeRawUnsafe(`SET LOCAL max_parallel_workers_per_gather = 0`);
-        await tx.$executeRawUnsafe(`SET LOCAL max_parallel_workers = 0`);
-        await tx.$executeRawUnsafe(`SET LOCAL force_parallel_mode = off`);
-        await tx.$executeRawUnsafe(`SET LOCAL jit = off`);
-        await tx.$executeRawUnsafe(`SET LOCAL statement_timeout = '25s'`);
-
-        const sql = `
+    const sql = `
 WITH data_norm AS (
   SELECT
     d.seq::bigint AS seq_big,
@@ -53,19 +48,35 @@ WITH data_norm AS (
     NULLIF(TRIM(d.home_team_name), '')          AS home_team_name,
     NULLIF(TRIM(d.away_team_name), '')          AS away_team_name,
 
-    /* 一旦「クリーン文字列」を作ってから変換する（構文安定 & 速度向上） */
-    regexp_replace(COALESCE(TRIM(d.home_score), ''),      '[^0-9.-]', '', 'g') AS home_score_s,
-    regexp_replace(COALESCE(TRIM(d.away_score), ''),      '[^0-9.-]', '', 'g') AS away_score_s,
-    regexp_replace(COALESCE(TRIM(d.home_exp), ''),        '[^0-9.-]', '', 'g') AS home_exp_s,
-    regexp_replace(COALESCE(TRIM(d.away_exp), ''),        '[^0-9.-]', '', 'g') AS away_exp_s,
-    regexp_replace(COALESCE(TRIM(d.home_shoot_in), ''),   '[^0-9-]',  '', 'g') AS home_shoot_in_s,
-    regexp_replace(COALESCE(TRIM(d.away_shoot_in), ''),   '[^0-9-]',  '', 'g') AS away_shoot_in_s,
+    /* スコア: 非数字と '.' '-' を除去 → float → floor → int */
+    CASE
+      WHEN NULLIF(regexp_replace(TRIM(d.home_score), '[-0-9.]', '', 'g'), '') IS NULL
+      THEN NULL
+      ELSE floor(NULLIF(regexp_replace(TRIM(d.home_score), '[^0-9.-]', '', 'g'), '')::float)::int
+    END AS home_score,
+    CASE
+      WHEN NULLIF(regexp_replace(TRIM(d.away_score), '[-0-9.]', '', 'g'), '') IS NULL
+      THEN NULL
+      ELSE floor(NULLIF(regexp_replace(TRIM(d.away_score), '[^0-9.-]', '', 'g'), '')::float)::int
+    END AS away_score,
+
+    /* xG: float 正規化（数字と '.' '-' のみ残す） */
+    NULLIF(regexp_replace(TRIM(d.home_exp),      '[^0-9.-]', '', 'g'), '')::float AS home_exp,
+    NULLIF(regexp_replace(TRIM(d.away_exp),      '[^0-9.-]', '', 'g'), '')::float AS away_exp,
+
+    /* 枠内シュート: int 正規化（数字と '-' のみ残す） */
+    NULLIF(regexp_replace(TRIM(d.home_shoot_in), '[^0-9-]',  '', 'g'), '')::int   AS home_shoot_in,
+    NULLIF(regexp_replace(TRIM(d.away_shoot_in), '[^0-9-]',  '', 'g'), '')::int   AS away_shoot_in,
 
     d.record_time,
     d.update_time,
     NULLIF(TRIM(d.goal_time), '')               AS goal_time,
 
-    /* チーム名の正規化: 全角/NBSP→半角スペース、空白畳み、lower */
+    /* data_category → country / league 抜き出し（例: "日本: J1 リーグ - ラウンド 12"） */
+    btrim(split_part(COALESCE(NULLIF(TRIM(d.data_category), ''), ''), ':', 1)) AS dc_country,
+    btrim(split_part(split_part(COALESCE(NULLIF(TRIM(d.data_category), ''), ''), ':', 2), '-', 1)) AS dc_league,
+
+    /* チーム名の正規化キー（全角/nbsp→半角、空白畳み、lower） */
     lower(
       btrim(
         regexp_replace(
@@ -88,38 +99,14 @@ WITH data_norm AS (
     AND d.data_category LIKE $1
     AND (d.record_time AT TIME ZONE 'Asia/Tokyo')::date = (now() AT TIME ZONE 'Asia/Tokyo')::date
 ),
-/* ここで数値化（home_score_s 等を CASE で安全に変換） */
-data_cast AS (
-  SELECT
-    dn.seq_big,
-    dn.seq,
-    dn.data_category,
-    dn.times,
-    dn.home_team_name,
-    dn.away_team_name,
-
-    CASE WHEN dn.home_score_s       = '' THEN NULL ELSE floor((dn.home_score_s)::float)::int END AS home_score,
-    CASE WHEN dn.away_score_s       = '' THEN NULL ELSE floor((dn.away_score_s)::float)::int END AS away_score,
-    CASE WHEN dn.home_exp_s         = '' THEN NULL ELSE (dn.home_exp_s)::float END               AS home_exp,
-    CASE WHEN dn.away_exp_s         = '' THEN NULL ELSE (dn.away_exp_s)::float END               AS away_exp,
-    CASE WHEN dn.home_shoot_in_s    = '' THEN NULL ELSE (dn.home_shoot_in_s)::int END            AS home_shoot_in,
-    CASE WHEN dn.away_shoot_in_s    = '' THEN NULL ELSE (dn.away_shoot_in_s)::int END            AS away_shoot_in,
-
-    dn.record_time,
-    dn.update_time,
-    dn.goal_time,
-    dn.home_key,
-    dn.away_key
-  FROM data_norm dn
-),
 data_keyed AS (
   SELECT
-    dc.*,
-    CASE WHEN dc.home_key <= dc.away_key
-         THEN dc.home_key || '|' || dc.away_key
-         ELSE dc.away_key || '|' || dc.home_key
+    dn.*,
+    CASE WHEN dn.home_key <= dn.away_key
+         THEN dn.home_key || '|' || dn.away_key
+         ELSE dn.away_key || '|' || dn.home_key
     END AS pair_key
-  FROM data_cast dc
+  FROM data_norm dn
 ),
 latest_any AS (
   SELECT pair_key, MAX(seq_big) AS seq_any
@@ -132,7 +119,28 @@ latest_rows AS (
   JOIN latest_any la
     ON la.pair_key = dk.pair_key
    AND la.seq_any  = dk.seq_big
+),
+
+/* マスタ側: 同じ正規化キーを用意し、/team/<slug>/ の <slug> を抽出 */
+clm_norm AS (
+  SELECT
+    m.country,
+    m.league,
+    m.team,
+    m.link,
+    NULLIF(substring(m.link from '/team/([^/]+)/'), '') AS slug,
+    lower(
+      btrim(
+        regexp_replace(
+          translate(TRIM(m.team), CHR(12288) || CHR(160), '  '),
+          '[[:space:]]+', ' ', 'g'
+        )
+      )
+    ) AS team_key
+  FROM public.country_league_master m
 )
+
+/* 最新行 + スラグ付与 */
 SELECT
   lr.seq,
   lr.data_category,
@@ -147,21 +155,29 @@ SELECT
   lr.away_shoot_in,
   lr.record_time,
   lr.update_time,
-  lr.goal_time
+  lr.goal_time,
+  ch.slug AS home_slug,
+  ca.slug AS away_slug
 FROM latest_rows lr
+LEFT JOIN clm_norm ch
+  ON ch.country = lr.dc_country
+ AND ch.league  = lr.dc_league
+ AND ch.team_key = lr.home_key
+LEFT JOIN clm_norm ca
+  ON ca.country = lr.dc_country
+ AND ca.league  = lr.dc_league
+ AND ca.team_key = lr.away_key
 WHERE lr.times IS NOT NULL
   AND lr.times NOT ILIKE '%終了%'
 ORDER BY
   COALESCE(lr.data_category, '') ASC,
-  lr.seq_big DESC
+  lr.seq DESC
 `;
-        return await tx.$queryRawUnsafe<Row[]>(sql, like);
-      },
-      { timeout: 30000, maxWait: 10000 }
-    );
+
+    const rows = await prismaStats.$queryRawUnsafe<Row[]>(sql, like);
 
     const payload = (rows ?? []).map((r) => ({
-      seq: r.seq != null ? Number.parseInt(r.seq, 10) : 0,
+      seq: r.seq ? Number.parseInt(r.seq, 10) : 0,
       data_category: r.data_category ?? "",
       times: r.times ?? "",
       home_team_name: r.home_team_name ?? "",
@@ -172,19 +188,21 @@ ORDER BY
       away_exp: r.away_exp ?? null,
       home_shoot_in: r.home_shoot_in ?? null,
       away_shoot_in: r.away_shoot_in ?? null,
-      record_time: r.record_time ?? null,
+      record_time: r.record_time ?? r.update_time ?? null,
       update_time: r.update_time ?? null,
       goal_time: r.goal_time ?? null,
+      home_slug: r.home_slug ?? null,
+      away_slug: r.away_slug ?? null,
     }));
 
-    res.json(payload);
+    return res.json(payload);
   } catch (e: any) {
     console.error("GET /api/live-matches failed:", {
       query: req.query,
       err: e?.message,
       stack: e?.stack,
     });
-    res.status(500).json({ message: "server error", detail: e?.message ?? String(e) });
+    return res.status(500).json({ message: "server error", detail: e?.message ?? String(e) });
   }
 });
 

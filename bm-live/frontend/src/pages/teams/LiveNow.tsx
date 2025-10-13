@@ -1,11 +1,23 @@
-// src/pages/teams/LiveNow.tsx
+// frontend/src/pages/teams/LiveNow.tsx
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import AppHeader from "../../components/layout/AppHeader";
 import { Skeleton } from "../../components/ui/skeleton";
 import { fetchLiveMatchesTodayAll, type LiveMatch } from "../../api/lives";
-import { useNavigate } from "react-router-dom"; // ★追加
+import { useNavigate } from "react-router-dom";
+
+/** 半角英数と -/_ 以外をハイフンに置換する簡易 slugify */
+function slugifyLoose(s: string) {
+  return s
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[\u3000\u00a0]/g, " ")
+    .trim()
+    .replace(/[^a-z0-9/_-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^[-/]+|[-/]+$/g, "");
+}
 
 /** "90:58" -> "90'" など軽い整形。HT/前後半はそのまま */
 function formatTimesMinute(s?: string | null) {
@@ -37,11 +49,19 @@ function liveMinuteValue(s?: string | null): number {
   return -1;
 }
 
+/** "日本: J1 リーグ - ラウンド 12" のような data_category から {country, league} を抜く */
+function parseCategory(category: string): { country: string; league: string } {
+  const [countryPart, rest = ""] = category.split(":");
+  const country = (countryPart ?? "").trim();
+  const league = rest.split("-")[0]?.trim() ?? "";
+  return { country, league };
+}
+
 export default function LiveNow() {
   const navigate = useNavigate();
 
   const { data, isLoading, isError } = useQuery<LiveMatch[]>({
-    queryKey: ["live-now"],
+    queryKey: ["live-now-all"],
     queryFn: () => fetchLiveMatchesTodayAll(),
     refetchInterval: 20_000,
     staleTime: 10_000,
@@ -55,9 +75,7 @@ export default function LiveNow() {
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(m);
     });
-    // 見出し（カテゴリ）を日本語ロケールでソート
     const categories = Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b, "ja"));
-    // 各カテゴリ内は “現在の分” 降順（進んでいる試合が上）
     return categories.map(([cat, list]) => [cat, list.slice().sort((a, b) => liveMinuteValue(b.times) - liveMinuteValue(a.times))]) as Array<[string, LiveMatch[]]>;
   }, [data]);
 
@@ -68,11 +86,7 @@ export default function LiveNow() {
       <main className="container mx-auto px-4 py-6 space-y-6">
         {/* パンくず */}
         <div className="mb-2 flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => navigate(-1)} // ★戻る
-            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:underline"
-          >
+          <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:underline">
             <ArrowLeft className="w-4 h-4" />
             戻る
           </button>
@@ -101,51 +115,100 @@ export default function LiveNow() {
           <div className="text-muted-foreground">現在ライブ中の試合はありません。</div>
         ) : (
           <div className="space-y-6">
-            {grouped.map(([category, matches]) => (
-              <section key={category} className="space-y-3">
-                <h2 className="text-lg font-semibold">{category}</h2>
-                <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {matches.map((m) => (
-                    <li key={m.seq} className="group border rounded p-3 hover:bg-accent transition-colors">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium truncate">{m.home_team_name}</span>
-                            <span className="text-xl font-bold tabular-nums">{m.home_score ?? "-"}</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium truncate">{m.away_team_name}</span>
-                            <span className="text-xl font-bold tabular-nums">{m.away_score ?? "-"}</span>
-                          </div>
-                        </div>
-                        <div className="ml-3 text-right">
-                          <span className="inline-flex items-center rounded-full bg-red-100 text-red-700 text-[11px] font-semibold px-2 py-0.5 mb-1">LIVE</span>
-                          <div className="font-semibold tabular-nums">{formatTimesMinute(m.times)}</div>
-                        </div>
-                      </div>
+            {grouped.map(([category, matches]) => {
+              const { country, league } = parseCategory(category);
 
-                      <div className="mt-2 grid grid-cols-3 gap-2 text-xs text-muted-foreground">
-                        <div>
-                          on target: <span className="font-medium text-foreground">{m.home_shoot_in ?? "-"}</span> / <span className="font-medium text-foreground">{m.away_shoot_in ?? "-"}</span>
-                        </div>
-                        <div>
-                          xG: <span className="font-medium text-foreground">{m.home_exp ?? "-"}</span> / <span className="font-medium text-foreground">{m.away_exp ?? "-"}</span>
-                        </div>
-                        <div>更新: {m.record_time ? new Date(m.record_time).toLocaleString("ja-JP") : "-"}</div>
-                      </div>
+              return (
+                <section key={category} className="space-y-3">
+                  <h2 className="text-lg font-semibold">{category}</h2>
 
-                      {m.link && (
-                        <div className="mt-2 text-right">
-                          <a href={m.link} rel="noreferrer" className="text-xs underline" onClick={(e) => e.stopPropagation()}>
-                            外部詳細
-                          </a>
-                        </div>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            ))}
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {matches.map((m) => {
+                      // teamSlug はサーバーから渡された home_slug を最優先に利用
+                      const teamSlug = (m.home_slug && m.home_slug.trim()) || slugifyLoose(m.home_team_name) || m.home_team_name;
+
+                      // History / GameDetails と同形式のパスに内部遷移
+                      const detailPath = `/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(teamSlug)}/history/${m.seq}`;
+
+                      return (
+                        <li key={m.seq}>
+                          <div
+                            role="button"
+                            tabIndex={0}
+                            className="group border rounded p-3 hover:bg-accent transition-colors cursor-pointer"
+                            onClick={() => navigate(detailPath)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                navigate(detailPath);
+                              }
+                            }}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between">
+                                  <span className="font-medium truncate">{m.home_team_name}</span>
+                                  <span className="text-xl font-bold tabular-nums">{m.home_score ?? "-"}</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span className="font-medium truncate">{m.away_team_name}</span>
+                                  <span className="text-xl font-bold tabular-nums">{m.away_score ?? "-"}</span>
+                                </div>
+                              </div>
+                              <div className="ml-3 text-right">
+                                <span className="inline-flex items-center rounded-full bg-red-100 text-red-700 text-[11px] font-semibold px-2 py-0.5 mb-1">LIVE</span>
+                                <div className="font-semibold tabular-nums">{formatTimesMinute(m.times)}</div>
+                              </div>
+                            </div>
+
+                            <div className="mt-2 grid grid-cols-3 gap-2 text-xs text-muted-foreground">
+                              <div>
+                                on target: <span className="font-medium text-foreground">{m.home_shoot_in ?? "-"}</span> / <span className="font-medium text-foreground">{m.away_shoot_in ?? "-"}</span>
+                              </div>
+                              <div>
+                                xG: <span className="font-medium text-foreground">{m.home_exp ?? "-"}</span> / <span className="font-medium text-foreground">{m.away_exp ?? "-"}</span>
+                              </div>
+                              <div>更新: {m.record_time ? new Date(m.record_time).toLocaleString("ja-JP") : "-"}</div>
+                            </div>
+
+                            {/* “詳細”は内部遷移に統一（外部URLは必要なら別タブ用ボタンを出す） */}
+                            <div className="mt-2 text-right">
+                              <button
+                                type="button"
+                                className="text-xs underline"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(detailPath);
+                                }}
+                              >
+                                詳細
+                              </button>
+                            </div>
+
+                            {/* 外部URLを残したい場合は以下をコメントアウト外す
+                            {m.link && (
+                              <div className="mt-1 text-right">
+                                <button
+                                  type="button"
+                                  className="text-[11px] underline opacity-70 hover:opacity-100"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    window.open(m.link!, "_blank", "noopener,noreferrer");
+                                  }}
+                                >
+                                  外部詳細
+                                </button>
+                              </div>
+                            )}
+                            */}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </section>
+              );
+            })}
           </div>
         )}
       </main>
