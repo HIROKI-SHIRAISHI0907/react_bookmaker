@@ -17,7 +17,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../components/ui/ta
 import { Skeleton } from "../../components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
 
-// 月次サマリ API（単数ファイル名を推奨）
+// 月次サマリ API
 import { fetchMonthlyOverview, type MonthlyOverviewResponse } from "../../api/overviews";
 
 // recharts
@@ -425,6 +425,8 @@ export default function TeamDetail() {
                     <ul className="divide-y">
                       {scheduledSorted.map((it) => {
                         const detailPath = `/${countryParam}/${leagueParam}/${teamSlug}/scheduled/${it.seq}`;
+                        const ovPath = `/${countryParam}/${leagueParam}/${teamSlug}/overview/${it.seq}?home=${encodeURIComponent(it.home_team)}&away=${encodeURIComponent(it.away_team)}`;
+
                         return (
                           <li key={it.seq} className="py-2">
                             <div
@@ -446,23 +448,24 @@ export default function TeamDetail() {
                                 <div className="text-sm">
                                   {it.home_team} vs {it.away_team}
                                 </div>
-                                <div className="text-xs text-muted-foreground">
-                                  {new Date(it.future_time).toLocaleString("ja-JP")}
+                                <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1">
+                                  <span>{new Date(it.future_time).toLocaleString("ja-JP")}</span>
+                                  {/* 内部詳細（OverviewDetail.tsx）へのリンク */}
+                                  <Link to={ovPath} onClick={(e) => e.stopPropagation()} className="inline-flex items-center text-sm font-medium rounded-md border px-3 py-1.5 hover:bg-accent">
+                                    内部詳細
+                                  </Link>
+                                  {/* 既存の外部リンク（Flashscore等） */}
                                   {it.link && (
-                                    <>
-                                      {" "}
-                                      &middot;{" "}
-                                      <button
-                                        type="button"
-                                        className="underline"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          window.open(it.link!, "_blank", "noopener,noreferrer");
-                                        }}
-                                      >
-                                        詳細
-                                      </button>
-                                    </>
+                                    <button
+                                      type="button"
+                                      className="underline"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        window.open(it.link!, "_blank", "noopener,noreferrer");
+                                      }}
+                                    >
+                                      外部詳細
+                                    </button>
                                   )}
                                 </div>
                               </div>
@@ -604,10 +607,10 @@ export default function TeamDetail() {
                       <YAxis allowDecimals={false} />
                       <Tooltip />
                       <Legend />
-                      {/* 積み上げ表示にしたい場合は stackId を同じ値にする */}
-                      <Bar dataKey="win" name="勝" /* stackId="result" */ />
-                      <Bar dataKey="draw" name="分" /* stackId="result" */ />
-                      <Bar dataKey="lose" name="負" /* stackId="result" */ />
+                      {/* 積み上げにしたい場合は stackId="result" を3本に同じ値で付ける */}
+                      <Bar dataKey="win" name="勝" />
+                      <Bar dataKey="draw" name="分" />
+                      <Bar dataKey="lose" name="負" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>

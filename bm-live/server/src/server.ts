@@ -12,6 +12,7 @@ import { playersRouter } from "./routes/players";
 import liveRouter from "./routes/lives";
 import overviewRouter from "./routes/overviews";
 import standingsRouter from "./routes/standings";
+import scheduledOverviewRouter from "./routes/scheduled_overviews";
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use("/api/players", playersRouter);
 app.use("/api/live-matches", liveRouter);
 app.use("/api/overview", overviewRouter);
 app.use("/api/standings", standingsRouter);
+app.use("/api/scheduled-overview", scheduledOverviewRouter);
 
 // healthcheck（任意）
 app.get("/health", (_req, res) => res.json({ ok: true }));

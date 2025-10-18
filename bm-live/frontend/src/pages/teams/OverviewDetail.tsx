@@ -1,9 +1,12 @@
+// src/pages/teams/OverviewDetail.tsx
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Trophy, TrendingUp, TrendingDown, Shield, Target, AlertTriangle } from "lucide-react";
 import AppHeader from "../../components/layout/AppHeader";
 import { Skeleton } from "../../components/ui/skeleton";
-import { fetchMonthlyOverview, type MonthlyOverviewResponse } from "../../api/overviews";
+
+// ↓ SurfaceOverviewLite を一緒に import する
+import { fetchScheduleOverview, type ScheduleOverviewResponse, type SurfaceSnapshot } from "../../api/scheduled_overviews";
 
 function Badge({ icon, text, tone = "default" }: { icon: React.ReactNode; text: string; tone?: "default" | "good" | "bad" }) {
   const color = tone === "good" ? "text-green-700 bg-green-100 border-green-200" : tone === "bad" ? "text-red-700 bg-red-100 border-red-200" : "text-foreground bg-muted border-border";
@@ -15,7 +18,8 @@ function Badge({ icon, text, tone = "default" }: { icon: React.ReactNode; text: 
   );
 }
 
-function badgesFromSurface(s: MonthlyOverviewResponse) {
+// ← ここを修正: SurfaceOverviewLite 型にする
+function badgesFromSurface(s: SurfaceSnapshot) {
   const list: JSX.Element[] = [];
   if (s.consecutive_win_disp) list.push(<Badge key="win" icon={<TrendingUp className="w-3 h-3" />} text={s.consecutive_win_disp} tone="good" />);
   if (s.unbeaten_streak_disp) list.push(<Badge key="unbeat" icon={<Shield className="w-3 h-3" />} text={s.unbeaten_streak_disp} />);
@@ -32,7 +36,8 @@ function badgesFromSurface(s: MonthlyOverviewResponse) {
   return list;
 }
 
-export default function ScheduledDetail() {
+// ← コンポーネント名は OverviewDetail のままでOK
+export default function OverviewDetail() {
   const { country = "", league = "", team = "", seq = "" } = useParams<{ country: string; league: string; team: string; seq: string }>();
   const countryRaw = decodeURIComponent(country);
   const leagueRaw = decodeURIComponent(league);
@@ -72,8 +77,7 @@ export default function ScheduledDetail() {
               </h1>
               <div className="text-sm text-muted-foreground">
                 {data.match.round_no != null ? `ラウンド ${data.match.round_no} · ` : ""}
-                {new Date(data.match.future_time).toLocaleString("ja-JP")}
-                {` · ${data.match.game_year}年${data.match.game_month}月`}
+                {data.match.game_year != null && data.match.game_month != null ? ` · ${data.match.game_year}年${data.match.game_month}月` : ""}
               </div>
             </header>
 
