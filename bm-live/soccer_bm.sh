@@ -24,6 +24,9 @@ TABLES=(
   league_score_time_band_stats
   league_score_time_band_stats_split_score
   no_goal_match_stats
+  past_data_history
+  user_visibility_option
+  flyway_schema_history
   within_data_20minutes_away_all_league
   within_data_20minutes_away_scored
   within_data_20minutes_same_scored
@@ -34,6 +37,8 @@ TABLES=(
   match_classification_result
   match_classification_result_count
   score_based_feature_stats
+  score_based_feature_stats_history
+  team_match_final_stats
   team_monthly_score_summary
   team_time_segment_shooting_stat
   condition_result_data
@@ -43,7 +48,9 @@ TABLES=(
   surface_overview
   country_league_summary
   within_data
+  stat_size_finalize_master
   each_team_score_based_feature_stats
+  each_team_score_based_feature_stats_history
   country_league_master
   country_league_season_master
   team_member_master
@@ -56,7 +63,7 @@ ensure_dumpdir() { mkdir -p "$DUMPDIR"; }
 
 dc() {
   # docker compose or docker-compose のどちらでも動くように
-  if docker compose version >/dev/null 2>&1; then
+  if docker compose version >/dev/null 2&> /dev/null; then
     docker compose "$@"
   else
     docker-compose "$@"
@@ -82,10 +89,43 @@ export_table() {
   if [[ "$t" == "$ZIP_ONLY_TABLE" ]]; then
     local zipfile="${outfile}${ZIP_EXT}"
     echo "🗜️  Zipping ${outfile} -> ${zipfile}"
-    # zipコマンドで同名.zipを作成し、元CSVは削除
     (cd "$DUMPDIR" && zip -q -j "$(basename "$zipfile")" "$(basename "$outfile")")
     rm -f "$outfile"
   fi
+}
+
+# === FUTURE_MASTER SEQ SYNC ===
+sync_future_master_seq() {
+  echo "🔧 Syncing sequence for ${SCHEMA}.future_master(seq)"
+  compose_psql "
+    -- 1) 無ければシーケンスを作成して seq に紐付け、デフォルトを設定
+    DO \$\$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1
+        FROM   pg_class c
+        JOIN   pg_namespace n ON n.oid = c.relnamespace
+        WHERE  c.relkind = 'S'
+        AND    c.relname = 'future_master_seq'
+        AND    n.nspname = '${SCHEMA}'
+      ) THEN
+        EXECUTE 'CREATE SEQUENCE ${SCHEMA}.future_master_seq OWNED BY ${SCHEMA}.future_master.seq';
+      END IF;
+
+      -- seq に nextval のデフォルトが無い場合も含め、常に設定しておく
+      EXECUTE 'ALTER TABLE ${SCHEMA}.future_master
+               ALTER COLUMN seq SET DEFAULT nextval(''${SCHEMA}.future_master_seq'')';
+    END
+    \$\$;
+
+    -- 2) 既存最大値に合わせて setval。次の INSERT から MAX(seq)+1 を返す
+    SELECT setval(
+      pg_get_serial_sequence('${SCHEMA}.future_master', 'seq'),
+      COALESCE((SELECT MAX(seq) FROM ${SCHEMA}.future_master), 0),
+      true
+    );
+  "
+  echo "✅ Sequence synced."
 }
 
 import_table() {
@@ -104,7 +144,6 @@ import_table() {
   fi
 
   if [[ ! -f "$infile" ]]; then
-    # CSVもZIPも無い（またはZIP展開失敗）場合はスキップ
     if [[ "$t" == "$ZIP_ONLY_TABLE" ]]; then
       echo "⚠️  Skip ${t}: CSV/ZIPが見つかりません -> ${infile} / ${infile}${ZIP_EXT}"
     else
@@ -121,7 +160,6 @@ import_table() {
   fi
 
   echo "🔽 Importing ${infile} -> ${SCHEMA}.${t}"
-  # コンテナ内の STDIN にホストのCSVを流し込む
   dc exec -T "$SERVICE_NAME" \
     psql -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 \
       -c "\copy ${SCHEMA}.\"${t}\" FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',', ENCODING 'UTF8', NULL 'NULL')" \
@@ -131,6 +169,11 @@ import_table() {
   if [[ "$extracted_tmp" == true ]]; then
     echo "🧹 Removing extracted temp file ${infile}"
     rm -f "$infile"
+  fi
+
+  # === FUTURE_MASTER SEQ SYNC: このテーブルだけは毎回同期 ===
+  if [[ "$t" == "future_master" ]]; then
+    sync_future_master_seq
   fi
 }
 
@@ -161,6 +204,7 @@ Notes:
   - ファイル名: ${FILE_PREFIX}<テーブル名>${FILE_SUFFIX}
   - テーブル "${ZIP_ONLY_TABLE}" のみ、CSVは "${FILE_SUFFIX}${ZIP_EXT}" へzip化（例: soccer_bm_data.csv.zip）。
   - import時は "${ZIP_ONLY_TABLE}" のZIPがあれば展開してから取り込み、取り込み後は展開CSVを削除します。
+  - future_master は取り込み後に seq シーケンスを自動同期します。
 EOF
 }
 

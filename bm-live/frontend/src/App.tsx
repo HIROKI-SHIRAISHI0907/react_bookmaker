@@ -13,6 +13,7 @@ import HistoryDetail from "./pages/teams/HistoryDetail";
 import GameDetail from "./pages/teams/GameDetail";
 import LiveNow from "./pages/teams/LiveNow";
 import ScheduledDetail from "./pages/teams/OverviewDetail";
+import RankingPage from "./pages/ranking/Ranking";
 
 export default function App() {
   return (
@@ -37,6 +38,8 @@ export default function App() {
       <Route path="/:country/:league/:team/game/:seq" element={<GameDetail />} />
 
       <Route path="/:country/:league/:team/scheduled/:seq" element={<ScheduledDetail />} />
+
+      <Route path="/ranking/:country/:league" element={<RankingPage />} />
 
       {/* 認証保護ページ */}
       {/* <Route element={<RequireAuth />}>*/}

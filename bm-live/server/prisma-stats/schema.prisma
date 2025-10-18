@@ -251,7 +251,7 @@ model condition_result_data {
   no_result_count                   String?  @db.Text
   err_data                          String?  @db.Text
   condition_data                    Bytes
-  hash                              String?  @db.Text
+  hash                              String?  @db.Text @unique 
   register_id                       String   @db.VarChar(100)
   register_time                     DateTime @db.Timestamptz(0)
   update_id                         String   @db.VarChar(100)

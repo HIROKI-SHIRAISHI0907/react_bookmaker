@@ -53,6 +53,10 @@ export default function LeagueTeams() {
           <Link to={`/live`} className="inline-flex items-center text-sm font-medium rounded-md border px-3 py-1.5 hover:bg-accent">
             現在開催中の試合 →
           </Link>
+          {/* ← TeamDetailの「過去の対戦履歴を見る」と同じクラスを使用 */}
+          <Link to={`/ranking/${countryRaw}/${leagueRaw}`} className="inline-flex items-center text-sm font-medium rounded-md border px-3 py-1.5 hover:bg-accent">
+            順位表 →
+          </Link>
         </div>
 
         {/* ローディング */}
