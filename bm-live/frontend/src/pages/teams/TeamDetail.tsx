@@ -448,24 +448,28 @@ export default function TeamDetail() {
                                 <div className="text-sm">
                                   {it.home_team} vs {it.away_team}
                                 </div>
-                                <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1">
-                                  <span>{new Date(it.future_time).toLocaleString("ja-JP")}</span>
-                                  {/* 内部詳細（OverviewDetail.tsx）へのリンク */}
-                                  <Link to={ovPath} onClick={(e) => e.stopPropagation()} className="inline-flex items-center text-sm font-medium rounded-md border px-3 py-1.5 hover:bg-accent">
-                                    内部詳細
+                                // 既存の「外部 詳細」ボタンの隣に“分析を見る”を追加
+                                <div className="text-xs text-muted-foreground">
+                                  {new Date(it.future_time).toLocaleString("ja-JP")}
+                                  <span> · </span>
+                                  <Link to={ovPath} onClick={(e) => e.stopPropagation()} className="underline">
+                                    分析を見る
                                   </Link>
-                                  {/* 既存の外部リンク（Flashscore等） */}
                                   {it.link && (
-                                    <button
-                                      type="button"
-                                      className="underline"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        window.open(it.link!, "_blank", "noopener,noreferrer");
-                                      }}
-                                    >
-                                      外部詳細
-                                    </button>
+                                    <>
+                                      {" "}
+                                      &middot{" "}
+                                      <button
+                                        type="button"
+                                        className="underline"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          window.open(it.link!, "_blank", "noopener,noreferrer");
+                                        }}
+                                      >
+                                        外部詳細
+                                      </button>
+                                    </>
                                   )}
                                 </div>
                               </div>

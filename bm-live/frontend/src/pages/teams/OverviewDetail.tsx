@@ -1,11 +1,9 @@
 // src/pages/teams/OverviewDetail.tsx
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Trophy, TrendingUp, TrendingDown, Shield, Target, AlertTriangle } from "lucide-react";
 import AppHeader from "../../components/layout/AppHeader";
 import { Skeleton } from "../../components/ui/skeleton";
-
-// ↓ SurfaceOverviewLite を一緒に import する
 import { fetchScheduleOverview, type ScheduleOverviewResponse, type SurfaceSnapshot } from "../../api/scheduled_overviews";
 
 function Badge({ icon, text, tone = "default" }: { icon: React.ReactNode; text: string; tone?: "default" | "good" | "bad" }) {
@@ -18,7 +16,6 @@ function Badge({ icon, text, tone = "default" }: { icon: React.ReactNode; text: 
   );
 }
 
-// ← ここを修正: SurfaceOverviewLite 型にする
 function badgesFromSurface(s: SurfaceSnapshot) {
   const list: JSX.Element[] = [];
   if (s.consecutive_win_disp) list.push(<Badge key="win" icon={<TrendingUp className="w-3 h-3" />} text={s.consecutive_win_disp} tone="good" />);
@@ -36,17 +33,21 @@ function badgesFromSurface(s: SurfaceSnapshot) {
   return list;
 }
 
-// ← コンポーネント名は OverviewDetail のままでOK
 export default function OverviewDetail() {
   const { country = "", league = "", team = "", seq = "" } = useParams<{ country: string; league: string; team: string; seq: string }>();
+  const loc = useLocation();
+  const sp = new URLSearchParams(loc.search);
+  const home = sp.get("home") ?? undefined;
+  const away = sp.get("away") ?? undefined;
+
   const countryRaw = decodeURIComponent(country);
   const leagueRaw = decodeURIComponent(league);
   const seqNum = Number(seq);
 
   const { data, isLoading, isError } = useQuery<ScheduleOverviewResponse>({
-    queryKey: ["scheduled-overview", countryRaw, leagueRaw, seqNum],
-    queryFn: () => fetchScheduleOverview(countryRaw, leagueRaw, seqNum),
-    enabled: Number.isFinite(seqNum),
+    queryKey: ["scheduled-overview", countryRaw, leagueRaw, seqNum, home, away],
+    queryFn: () => fetchScheduleOverview(countryRaw, leagueRaw, seqNum, { home, away }),
+    enabled: Number.isFinite(seqNum) && (!!home || !!away),
     staleTime: 30_000,
   });
 
@@ -69,7 +70,9 @@ export default function OverviewDetail() {
           </div>
         ) : isError ? (
           <div className="text-destructive">データ取得に失敗しました。</div>
-        ) : !data ? null : (
+        ) : !data ? (
+          <div className="text-sm text-muted-foreground">パラメータが不足しています（home / away）。</div>
+        ) : (
           <>
             <header className="space-y-1">
               <h1 className="text-2xl font-bold">
@@ -77,7 +80,8 @@ export default function OverviewDetail() {
               </h1>
               <div className="text-sm text-muted-foreground">
                 {data.match.round_no != null ? `ラウンド ${data.match.round_no} · ` : ""}
-                {data.match.game_year != null && data.match.game_month != null ? ` · ${data.match.game_year}年${data.match.game_month}月` : ""}
+                {data.match.future_time ? new Date(data.match.future_time).toLocaleString("ja-JP") : "日程情報なし"}
+                {data.match.game_year && data.match.game_month ? ` · ${data.match.game_year}年${data.match.game_month}月` : ""}
               </div>
             </header>
 
