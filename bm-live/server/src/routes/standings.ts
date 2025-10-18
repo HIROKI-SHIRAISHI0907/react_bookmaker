@@ -21,59 +21,55 @@ standingsRouter.get("/:country/:league", async (req, res) => {
     const rows = await prismaStats.$queryRawUnsafe<any[]>(
       `
       WITH base AS (
-        SELECT
-          o.team,
-          SUM(COALESCE(NULLIF(BTRIM(o.win),  '')::int, 0))   AS win,
-          SUM(COALESCE(NULLIF(BTRIM(o.lose), '')::int, 0))   AS lose,
-          SUM(COALESCE(NULLIF(BTRIM(o.draw), '')::int, 0))   AS draw,
-          SUM(COALESCE(NULLIF(BTRIM(o.winning_points), '')::int, 0)) AS points
-        FROM public.surface_overview o
-        WHERE o.country = $1
-          AND o.league  = $2
-        GROUP BY o.team
-      ),
-      cm_agg AS (
-        SELECT
-          team,
-          MIN(NULLIF(TRIM(link), '')) AS link
-        FROM country_league_master
-        WHERE country = $1
-          AND league  = $2
-        GROUP BY team
-      ),
-      with_meta AS (
-        SELECT
-          b.*,
-          (b.win + b.draw + b.lose) AS game,
-          c.link
-        FROM base b
-        LEFT JOIN cm_agg c
-          ON c.team = b.team
-      ),
-      ranked AS (
-        SELECT
-          ROW_NUMBER() OVER (
-            ORDER BY
-              points DESC NULLS LAST,
-              win    DESC NULLS LAST,
-              lose   ASC  NULLS LAST,
-              draw   DESC NULLS LAST,
-              team   ASC
-          ) AS position,
-          *
-        FROM with_meta
-      )
-      SELECT
-        r.position,
-        r.team                                        AS "teamName",
-        COALESCE(split_part(NULLIF(r.link,''), '/', 3), '') AS "teamEnglish",
-        r.game                                        AS "game",
-        r.win                                         AS "win",
-        r.draw                                        AS "draw",
-        r.lose                                        AS "lose",
-        r.points                                      AS "winningPoints"
-      FROM ranked r
-      ORDER BY r.position ASC
+  SELECT
+    o.team,
+    SUM(COALESCE(NULLIF(BTRIM(o.win),  '')::int, 0))   AS win,
+    SUM(COALESCE(NULLIF(BTRIM(o.lose), '')::int, 0))   AS lose,
+    SUM(COALESCE(NULLIF(BTRIM(o.draw), '')::int, 0))   AS draw,
+    SUM(COALESCE(NULLIF(BTRIM(o.winning_points), '')::int, 0)) AS points,
+    SUM(COALESCE(NULLIF(BTRIM(o.home_sum_score), '')::int, 0)
+      + COALESCE(NULLIF(BTRIM(o.away_sum_score), '')::int, 0)) AS goals_for,
+    SUM(COALESCE(NULLIF(BTRIM(o.away_sum_score), '')::int, 0)
+      + COALESCE(NULLIF(BTRIM(o.home_sum_score), '')::int, 0)) AS goals_against
+  FROM public.surface_overview o
+  WHERE o.country = $1
+    AND o.league  = $2
+  GROUP BY o.team
+),
+with_meta AS (
+  SELECT
+    b.*,
+    (b.win + b.draw + b.lose) AS game,
+    (b.goals_for - b.goals_against) AS goal_diff,
+    c.link
+  FROM base b
+  LEFT JOIN (
+    SELECT team, MIN(NULLIF(TRIM(link), '')) AS link
+    FROM country_league_master
+    WHERE country = $1 AND league = $2
+    GROUP BY team
+  ) c ON c.team = b.team
+),
+ranked AS (
+  SELECT
+    ROW_NUMBER() OVER (
+      ORDER BY points DESC, win DESC, goal_diff DESC, lose ASC, team ASC
+    ) AS position,
+    *
+  FROM with_meta
+)
+SELECT
+  r.position,
+  r.team AS "teamName",
+  COALESCE(split_part(NULLIF(r.link,''), '/', 3), '') AS "teamEnglish",
+  r.game AS "game",
+  r.win AS "win",
+  r.draw AS "draw",
+  r.lose AS "lose",
+  r.points AS "winningPoints",
+  r.goal_diff AS "goalDiff"
+FROM ranked r
+ORDER BY r.position ASC;
       `,
       country,
       league

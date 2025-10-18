@@ -42,7 +42,7 @@ export default function RankingPage() {
         {/* ローディング */}
         {isLoading && (
           <div className="border rounded-md">
-            <div className="grid grid-cols-12 gap-2 p-3 border-b text-xs sm:text-sm font-medium text-muted-foreground">
+            <div className="grid grid-cols-13 gap-2 p-3 border-b text-xs sm:text-sm font-medium text-muted-foreground">
               <div className="col-span-1">#</div>
               <div className="col-span-6">チーム</div>
               <div className="col-span-1 text-right">試合</div>
@@ -50,9 +50,10 @@ export default function RankingPage() {
               <div className="col-span-1 text-right">分</div>
               <div className="col-span-1 text-right">負</div>
               <div className="col-span-1 text-right">勝点</div>
+              <div className="col-span-1 text-right">得失</div>
             </div>
             {Array.from({ length: 10 }).map((_, i) => (
-              <div key={i} className="grid grid-cols-12 gap-2 p-3 border-b">
+              <div key={i} className="grid grid-cols-13 gap-2 p-3 border-b">
                 <div className="col-span-1">
                   <Skeleton className="h-4 w-6" />
                 </div>
@@ -74,6 +75,9 @@ export default function RankingPage() {
                 <div className="col-span-1">
                   <Skeleton className="h-4 w-10 ml-auto" />
                 </div>
+                <div className="col-span-1">
+                  <Skeleton className="h-4 w-10 ml-auto" />
+                </div>
               </div>
             ))}
           </div>
@@ -86,7 +90,7 @@ export default function RankingPage() {
           ) : (
             <div className="border rounded-md overflow-hidden">
               {/* ヘッダー */}
-              <div className="grid grid-cols-12 gap-2 p-3 border-b text-xs sm:text-sm font-medium text-muted-foreground bg-muted/40">
+              <div className="grid grid-cols-13 gap-2 p-3 border-b text-xs sm:text-sm font-medium text-muted-foreground bg-muted/40">
                 <div className="col-span-1">#</div>
                 <div className="col-span-6">チーム</div>
                 <div className="col-span-1 text-right tabular-nums">試合</div>
@@ -94,6 +98,7 @@ export default function RankingPage() {
                 <div className="col-span-1 text-right tabular-nums">分</div>
                 <div className="col-span-1 text-right tabular-nums">負</div>
                 <div className="col-span-1 text-right tabular-nums">勝点</div>
+                <div className="col-span-1 text-right tabular-nums">得失</div>
               </div>
 
               {/* 各行 */}
@@ -102,7 +107,7 @@ export default function RankingPage() {
                 const posColor = r.position <= 4 ? "text-emerald-600" : r.position <= 6 ? "text-blue-600" : r.position >= data.rows.length - 2 ? "text-destructive" : "";
 
                 return (
-                  <div key={`${r.position}-${r.teamEnglish}`} className="grid grid-cols-12 gap-2 p-3 border-b hover:bg-accent/40 transition-colors">
+                  <div key={`${r.position}-${r.teamEnglish}`} className="grid grid-cols-13 gap-2 p-3 border-b hover:bg-accent/40 transition-colors">
                     <div className={`col-span-1 font-semibold ${posColor}`}>{r.position}</div>
                     <div className="col-span-6">
                       <Link to={teamRoute} className="font-medium hover:underline">
@@ -114,6 +119,7 @@ export default function RankingPage() {
                     <div className="col-span-1 text-right tabular-nums">{r.draw}</div>
                     <div className="col-span-1 text-right tabular-nums">{r.lose}</div>
                     <div className="col-span-1 text-right font-semibold tabular-nums">{r.winningPoints}</div>
+                    <div className="col-span-1 text-right font-semibold tabular-nums">{r.goalDiff}</div>
                   </div>
                 );
               })}

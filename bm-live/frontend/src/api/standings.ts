@@ -8,6 +8,7 @@ export type StandingRow = {
   draw: number;
   lose: number;
   winningPoints: number;
+  goalDiff: number;
 };
 
 export type LeagueStanding = {
