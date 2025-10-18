@@ -1,44 +1,45 @@
-export type SurfaceOverview = {
-  country: string;
-  league: string;
-  game_year: string;
-  game_month: string;
-  team: string;
-  games: number | null;
+// frontend/src/api/overview.ts
+export type MonthlyOverview = {
+  ym: string;
+  label: string;
+  year: number;
+  month: number;
   rank: number | null;
-  win: number | null;
-  draw: number | null;
-  lose: number | null;
-  winning_points: number | null;
-  consecutive_win_disp?: string | null;
-  consecutive_lose_disp?: string | null;
-  unbeaten_streak_disp?: string | null;
-  consecutive_score_count_disp?: string | null;
-  first_win_disp?: string | null;
-  lose_streak_disp?: string | null;
-  promote_disp?: string | null;
-  descend_disp?: string | null;
-  home_adversity_disp?: string | null;
-  away_adversity_disp?: string | null;
+
+  // ベース
+  winningPoints: number;
+  games: number;
+  win: number;
+  draw: number;
+  lose: number;
+
+  // トータル
+  goalsFor: number;
+  cleanSheets: number;
+
+  // Home/Away 明細
+  homeGoalsFor: number;
+  homeGoals1st: number;
+  homeGoals2nd: number;
+  homeCleanSheets: number;
+  homeWins: number;
+  homeLoses: number;
+  homeFirstGoals: number;
+
+  awayGoalsFor: number;
+  awayGoals1st: number;
+  awayGoals2nd: number;
+  awayCleanSheets: number;
+  awayWins: number;
+  awayLoses: number;
+  awayFirstGoals: number;
 };
 
-export type ScheduleOverviewResponse = {
-  match: {
-    seq: number;
-    future_time: string;
-    round_no: number | null;
-    game_team_category: string | null;
-    home_team: string;
-    away_team: string;
-    game_year: number;
-    game_month: number;
-  };
-  surfaces: SurfaceOverview[];
-};
+export type MonthlyOverviewResponse = { items: MonthlyOverview[] };
 
-export async function fetchScheduleOverview(country: string, league: string, seq: number): Promise<ScheduleOverviewResponse> {
-  const url = `/api/schedule-overview/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${seq}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error("failed to fetch schedule overview");
-  return res.json();
+export async function fetchMonthlyOverview(country: string, league: string, teamSlug: string): Promise<MonthlyOverviewResponse> {
+  const url = new URL(`/api/overview/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(teamSlug)}`, window.location.origin);
+  const res = await fetch(url.toString(), { headers: { Accept: "application/json" } });
+  if (!res.ok) throw new Error("Failed to fetch monthly overview");
+  return (await res.json()) as MonthlyOverviewResponse;
 }

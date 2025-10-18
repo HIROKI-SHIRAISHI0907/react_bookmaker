@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Trophy, TrendingUp, TrendingDown, Shield, Target, AlertTriangle } from "lucide-react";
 import AppHeader from "../../components/layout/AppHeader";
 import { Skeleton } from "../../components/ui/skeleton";
-import { fetchScheduleOverview, type SurfaceOverview, type ScheduleOverviewResponse } from "../../api/overviews";
+import { fetchMonthlyOverview, type MonthlyOverviewResponse } from "../../api/overviews";
 
 function Badge({ icon, text, tone = "default" }: { icon: React.ReactNode; text: string; tone?: "default" | "good" | "bad" }) {
   const color = tone === "good" ? "text-green-700 bg-green-100 border-green-200" : tone === "bad" ? "text-red-700 bg-red-100 border-red-200" : "text-foreground bg-muted border-border";
@@ -15,7 +15,7 @@ function Badge({ icon, text, tone = "default" }: { icon: React.ReactNode; text: 
   );
 }
 
-function badgesFromSurface(s: SurfaceOverview) {
+function badgesFromSurface(s: MonthlyOverviewResponse) {
   const list: JSX.Element[] = [];
   if (s.consecutive_win_disp) list.push(<Badge key="win" icon={<TrendingUp className="w-3 h-3" />} text={s.consecutive_win_disp} tone="good" />);
   if (s.unbeaten_streak_disp) list.push(<Badge key="unbeat" icon={<Shield className="w-3 h-3" />} text={s.unbeaten_streak_disp} />);
