@@ -20,6 +20,7 @@ export default function RankingPage() {
       <AppHeader title="順位表" subtitle={`${countryRaw} / ${leagueRaw}`} />
 
       <main className="container mx-auto px-4 py-6">
+        {/* タイトルとリンクボタン */}
         <div className="mb-4 flex items-center gap-3">
           <div className="flex-1">
             <h1 className="text-2xl font-bold">
@@ -27,7 +28,6 @@ export default function RankingPage() {
             </h1>
             <p className="text-muted-foreground text-sm">Standings</p>
           </div>
-
           <Link to={`/live`} className="inline-flex items-center text-sm font-medium rounded-md border px-3 py-1.5 hover:bg-accent">
             現在開催中の試合 →
           </Link>
@@ -36,6 +36,7 @@ export default function RankingPage() {
           </Link>
         </div>
 
+        {/* エラー */}
         {isError && <div className="text-destructive">データの取得に失敗しました</div>}
 
         {/* ローディング */}
@@ -78,76 +79,46 @@ export default function RankingPage() {
           </div>
         )}
 
-        {/* ヘッダー行 */}
-        <div className="grid grid-cols-12 gap-2 p-3 border-b text-xs sm:text-sm font-medium text-muted-foreground bg-muted/40">
-          <div className="col-span-1">#</div>
-          <div className="col-span-6">チーム</div>
-          <div className="col-span-1 text-right">試合</div>
-          <div className="col-span-1 text-right">勝</div>
-          <div className="col-span-1 text-right">分</div>
-          <div className="col-span-1 text-right">負</div>
-          <div className="col-span-1 text-right">勝点</div>
-        </div>
-
-        {/* データ行 */}
-        {data.rows.map((r) => {
-          const teamRoute = `/${country}/${league}/${encodeURIComponent(r.teamEnglish)}`;
-          const posColor = r.position <= 4 ? "text-emerald-600" : r.position <= 6 ? "text-blue-600" : r.position >= data.rows.length - 2 ? "text-destructive" : "";
-          return (
-            <div key={`${r.position}-${r.teamEnglish}`} className="grid grid-cols-12 gap-2 p-3 border-b hover:bg-accent/40 transition-colors">
-              <div className={`col-span-1 font-semibold ${posColor}`}>{r.position}</div>
-              <div className="col-span-6">
-                <Link to={teamRoute} className="font-medium hover:underline">
-                  {r.teamName}
-                </Link>
-              </div>
-              <div className="col-span-1 text-right tabular-nums">{r.game}</div>
-              <div className="col-span-1 text-right tabular-nums">{r.win}</div>
-              <div className="col-span-1 text-right tabular-nums">{r.draw}</div>
-              <div className="col-span-1 text-right tabular-nums">{r.lose}</div>
-              <div className="col-span-1 text-right font-semibold tabular-nums">{r.winningPoints}</div>
-            </div>
-          );
-        })}
-
+        {/* データ */}
         {data &&
           (data.rows.length === 0 ? (
             <div className="text-muted-foreground">表示する順位表がありません。</div>
           ) : (
             <div className="border rounded-md overflow-hidden">
-              {/* ヘッダー行 */}
+              {/* ヘッダー */}
               <div className="grid grid-cols-12 gap-2 p-3 border-b text-xs sm:text-sm font-medium text-muted-foreground bg-muted/40">
                 <div className="col-span-1">#</div>
-                <div className="col-span-5 sm:col-span-4">チーム</div>
-                <div className="col-span-2 text-right">試合</div>
-                <div className="col-span-2 text-right">勝</div>
-                <div className="col-span-2 text-right">分</div>
-                <div className="col-span-2 text-right">負</div>
-                <div className="col-span-2 text-right">勝点</div>
+                <div className="col-span-6">チーム</div>
+                <div className="col-span-1 text-right tabular-nums">試合</div>
+                <div className="col-span-1 text-right tabular-nums">勝</div>
+                <div className="col-span-1 text-right tabular-nums">分</div>
+                <div className="col-span-1 text-right tabular-nums">負</div>
+                <div className="col-span-1 text-right tabular-nums">勝点</div>
               </div>
 
-              {/* データ行 */}
+              {/* 各行 */}
               {data.rows.map((r) => {
                 const teamRoute = `/${country}/${league}/${encodeURIComponent(r.teamEnglish)}`;
                 const posColor = r.position <= 4 ? "text-emerald-600" : r.position <= 6 ? "text-blue-600" : r.position >= data.rows.length - 2 ? "text-destructive" : "";
+
                 return (
                   <div key={`${r.position}-${r.teamEnglish}`} className="grid grid-cols-12 gap-2 p-3 border-b hover:bg-accent/40 transition-colors">
                     <div className={`col-span-1 font-semibold ${posColor}`}>{r.position}</div>
-                    <div className="col-span-5 sm:col-span-4">
+                    <div className="col-span-6">
                       <Link to={teamRoute} className="font-medium hover:underline">
                         {r.teamName}
                       </Link>
                     </div>
-                    <div className="col-span-2 text-right tabular-nums">{r.game}</div>
-                    <div className="col-span-2 text-right tabular-nums">{r.win}</div>
-                    <div className="col-span-2 text-right tabular-nums">{r.draw}</div>
-                    <div className="col-span-2 text-right tabular-nums">{r.lose}</div>
-                    <div className="col-span-2 text-right font-semibold tabular-nums">{r.winningPoints}</div>
+                    <div className="col-span-1 text-right tabular-nums">{r.game}</div>
+                    <div className="col-span-1 text-right tabular-nums">{r.win}</div>
+                    <div className="col-span-1 text-right tabular-nums">{r.draw}</div>
+                    <div className="col-span-1 text-right tabular-nums">{r.lose}</div>
+                    <div className="col-span-1 text-right font-semibold tabular-nums">{r.winningPoints}</div>
                   </div>
                 );
               })}
 
-              {/* フッター: 更新日時など */}
+              {/* フッター */}
               <div className="p-3 text-xs text-muted-foreground">
                 {data.updatedAt ? `更新: ${new Date(data.updatedAt).toLocaleString()}` : null}
                 {data.season ? ` / シーズン: ${data.season}` : null}
