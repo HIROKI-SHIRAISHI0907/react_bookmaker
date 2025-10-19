@@ -6,6 +6,9 @@ import AppHeader from "../../components/layout/AppHeader";
 import { Skeleton } from "../../components/ui/skeleton";
 import { fetchScheduleOverview, type ScheduleOverviewResponse, type SurfaceSnapshot } from "../../api/scheduled_overviews";
 
+// ★ Recharts 追加
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
+
 function Badge({ icon, text, tone = "default" }: { icon: React.ReactNode; text: string; tone?: "default" | "good" | "bad" }) {
   const color = tone === "good" ? "text-green-700 bg-green-100 border-green-200" : tone === "bad" ? "text-red-700 bg-red-100 border-red-200" : "text-foreground bg-muted border-border";
   return (
@@ -19,18 +22,78 @@ function Badge({ icon, text, tone = "default" }: { icon: React.ReactNode; text: 
 function badgesFromSurface(s: SurfaceSnapshot) {
   const list: JSX.Element[] = [];
   if (s.consecutive_win_disp) list.push(<Badge key="win" icon={<TrendingUp className="w-3 h-3" />} text={s.consecutive_win_disp} tone="good" />);
+  if (s.consecutive_lose_disp) list.push(<Badge key="lose-b" icon={<TrendingDown className="w-3 h-3" />} text={s.consecutive_lose_disp} tone="bad" />);
   if (s.unbeaten_streak_disp) list.push(<Badge key="unbeat" icon={<Shield className="w-3 h-3" />} text={s.unbeaten_streak_disp} />);
   if (s.consecutive_score_count_disp) list.push(<Badge key="score" icon={<Target className="w-3 h-3" />} text={s.consecutive_score_count_disp} />);
-  if (s.first_win_disp) list.push(<Badge key="first" icon={<Trophy className="w-3 h-3" />} text={s.first_win_disp} tone="good" />);
-  if (s.lose_streak_disp || s.consecutive_lose_disp) {
-    const t = s.lose_streak_disp ?? s.consecutive_lose_disp!;
-    list.push(<Badge key="lose" icon={<TrendingDown className="w-3 h-3" />} text={t} tone="bad" />);
-  }
-  if (s.promote_disp) list.push(<Badge key="promote" icon={<TrendingUp className="w-3 h-3" />} text={s.promote_disp} tone="good" />);
-  if (s.descend_disp) list.push(<Badge key="descend" icon={<TrendingDown className="w-3 h-3" />} text={s.descend_disp} tone="bad" />);
-  if (s.home_adversity_disp) list.push(<Badge key="home_adv" icon={<AlertTriangle className="w-3 h-3" />} text={s.home_adversity_disp} />);
-  if (s.away_adversity_disp) list.push(<Badge key="away_adv" icon={<AlertTriangle className="w-3 h-3" />} text={s.away_adversity_disp} />);
+  if (s.first_week_game_win_disp) list.push(<Badge key="first" icon={<Trophy className="w-3 h-3" />} text={s.first_week_game_win_disp} tone="good" />);
+  if (s.mid_week_game_win_disp) list.push(<Badge key="mid" icon={<Trophy className="w-3 h-3" />} text={s.mid_week_game_win_disp} tone="good" />);
+  if (s.last_week_game_win_disp) list.push(<Badge key="last" icon={<Trophy className="w-3 h-3" />} text={s.last_week_game_win_disp} tone="good" />);
   return list;
+}
+
+// ===== 置き換え: ユーティリティ =====
+const toNum = (v: number | null | undefined) => (v == null ? null : Number(v));
+
+// 軽い共通Tooltip
+const SimpleTooltip = ({ active, payload }: any) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rounded-md border bg-popover px-2 py-1 text-xs shadow-sm">
+      <div className="font-medium">{payload[0].payload.label}</div>
+      <div className="tabular-nums">{payload[0].value}</div>
+    </div>
+  );
+};
+
+// 追加：ユーティリティ
+const num = (v: unknown): number | null => {
+  if (v === null || v === undefined) return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+};
+
+// 追加：1枚にまとめた横棒チャート
+function StatsSummaryChart({ s }: { s: SurfaceSnapshot }) {
+  const toNum = (v: unknown) => (v == null ? null : Number.isFinite(Number(v)) ? Number(v) : null);
+
+  const rows = [
+    { label: "合計得点", value: toNum(s.goals_for) },
+    { label: "クリーンシート", value: toNum(s.clean_sheets) },
+    { label: "前半得点", value: toNum(s.first_half_score) },
+    { label: "後半得点", value: toNum(s.second_half_score) },
+    { label: "先制回数", value: toNum(s.first_goal_count) },
+    { label: "逆転勝利数", value: toNum(s.win_behind_count) },
+    { label: "逆転敗北数", value: toNum(s.lose_behind_count) },
+    { label: "該当側勝利数", value: toNum(s.win_count_role) },
+    { label: "該当側敗北数", value: toNum(s.lose_count_role) },
+    { label: "無得点試合数", value: toNum(s.fail_to_score_game_count) },
+  ].filter((r) => r.value !== null);
+
+  if (rows.length === 0 || rows.every((r) => (r.value ?? 0) === 0)) {
+    return <div className="text-xs text-muted-foreground">表示できるスタッツのデータがありません。</div>;
+  }
+
+  const data = rows.map((r) => ({ label: r.label, value: r.value ?? 0 })).sort((a, b) => b.value - a.value);
+
+  return (
+    <div className="h-72">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          data={data}
+          layout="vertical"
+          margin={{ top: 10, right: 20, bottom: 10, left: 40 }}
+          barCategoryGap={40} // ← スタッツ同士の間隔を拡大
+          barGap={8} // ← 同じカテゴリ内のバー間隔（今回は単一バーなので軽めに）
+        >
+          <CartesianGrid vertical strokeDasharray="3 3" horizontal={false} />
+          <XAxis type="number" domain={[0, 20]} allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 11 }} />
+          <YAxis dataKey="label" type="category" width={84} axisLine={false} tickLine={false} tick={{ fontSize: 11 }} />
+          <Tooltip />
+          <Bar dataKey="value" fill="#000000" barSize={12} radius={[4, 4, 4, 4]} minPointSize={2} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
 }
 
 export default function OverviewDetail() {
@@ -97,7 +160,7 @@ export default function OverviewDetail() {
 
                   <div className="flex flex-wrap gap-2 mb-3">{badgesFromSurface(s)}</div>
 
-                  <div className="grid grid-cols-3 gap-3 text-sm">
+                  <div className="grid grid-cols-3 gap-3 text-sm mb-4">
                     <div className="rounded-lg border p-3">
                       <div className="text-xs text-muted-foreground">順位</div>
                       <div className="text-xl font-bold">{s.rank ?? "-"}</div>
@@ -105,7 +168,7 @@ export default function OverviewDetail() {
                     <div className="rounded-lg border p-3">
                       <div className="text-xs text-muted-foreground">成績</div>
                       <div className="text-xl font-bold">
-                        {s.win ?? 0}-{s.draw ?? 0}-{s.lose ?? 0}
+                        {s.win ?? 0}勝-{s.draw ?? 0}分-{s.lose ?? 0}敗
                       </div>
                     </div>
                     <div className="rounded-lg border p-3">
@@ -113,6 +176,13 @@ export default function OverviewDetail() {
                       <div className="text-xl font-bold">{s.games ?? "-"}</div>
                     </div>
                   </div>
+
+                  {/* ▼ ここから追加：ミニ棒グラフ */}
+                  <div className="rounded-lg border p-3 mt-2">
+                    <div className="text-xs text-muted-foreground mb-1">主要スタッツ（役割に応じて自動切替）</div>
+                    <StatsSummaryChart s={s} />
+                  </div>
+                  {/* ▲ 追加ここまで */}
                 </div>
               ))}
             </section>

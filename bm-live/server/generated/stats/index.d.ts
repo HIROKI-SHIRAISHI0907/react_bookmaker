@@ -68254,6 +68254,7 @@ export namespace Prisma {
 
   export type condition_result_dataWhereUniqueInput = Prisma.AtLeast<{
     data_seq?: number
+    hash?: string
     AND?: condition_result_dataWhereInput | condition_result_dataWhereInput[]
     OR?: condition_result_dataWhereInput[]
     NOT?: condition_result_dataWhereInput | condition_result_dataWhereInput[]
@@ -68269,12 +68270,11 @@ export namespace Prisma {
     no_result_count?: StringNullableFilter<"condition_result_data"> | string | null
     err_data?: StringNullableFilter<"condition_result_data"> | string | null
     condition_data?: BytesFilter<"condition_result_data"> | Uint8Array
-    hash?: StringNullableFilter<"condition_result_data"> | string | null
     register_id?: StringFilter<"condition_result_data"> | string
     register_time?: DateTimeFilter<"condition_result_data"> | Date | string
     update_id?: StringFilter<"condition_result_data"> | string
     update_time?: DateTimeFilter<"condition_result_data"> | Date | string
-  }, "data_seq">
+  }, "data_seq" | "hash">
 
   export type condition_result_dataOrderByWithAggregationInput = {
     data_seq?: SortOrder

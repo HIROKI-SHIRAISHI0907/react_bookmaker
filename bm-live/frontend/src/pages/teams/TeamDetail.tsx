@@ -425,7 +425,7 @@ export default function TeamDetail() {
                     <ul className="divide-y">
                       {scheduledSorted.map((it) => {
                         const detailPath = `/${countryParam}/${leagueParam}/${teamSlug}/scheduled/${it.seq}`;
-                        const ovPath = `/${countryParam}/${leagueParam}/${teamSlug}/overview/${it.seq}?home=${encodeURIComponent(it.home_team)}&away=${encodeURIComponent(it.away_team)}`;
+                        const ovPath = `/${countryParam}/${leagueParam}/${teamSlug}/overview/${it.seq}` + `?home=${encodeURIComponent(it.home_team)}&away=${encodeURIComponent(it.away_team)}`;
 
                         return (
                           <li key={it.seq} className="py-2">
@@ -448,7 +448,7 @@ export default function TeamDetail() {
                                 <div className="text-sm">
                                   {it.home_team} vs {it.away_team}
                                 </div>
-                                // 既存の「外部 詳細」ボタンの隣に“分析を見る”を追加
+                                {/*  既存の「外部 詳細」ボタンの隣に“分析を見る”を追加  */}
                                 <div className="text-xs text-muted-foreground">
                                   {new Date(it.future_time).toLocaleString("ja-JP")}
                                   <span> · </span>

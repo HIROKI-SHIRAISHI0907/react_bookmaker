@@ -9,14 +9,31 @@ export type SurfaceSnapshot = {
   draw: number | null;
   lose: number | null;
   winning_points: number | null;
+
+  // 既存
   goals_for: number | null;
   clean_sheets: number | null;
+  first_half_score: number | null;
+  second_half_score: number | null;
 
+  // ▼ 新規: 役割で home/away を自動切替して返す
+  first_goal_count?: number | null; // 先制回数
+  win_behind_count?: number | null; // 逆転勝利数
+  lose_behind_count?: number | null; // 逆転敗北数
+  win_count_role?: number | null; // （home or away の）勝利数
+  lose_count_role?: number | null; // （home or away の）敗北数
+
+  // 役割に依存しないカウント（そのまま）
+  fail_to_score_game_count?: number | null;
+
+  // バッジ表示は現状通り
   consecutive_win_disp?: string | null;
   consecutive_lose_disp?: string | null;
   unbeaten_streak_disp?: string | null;
   consecutive_score_count_disp?: string | null;
-  first_win_disp?: string | null;
+  first_week_game_win_disp?: string | null;
+  mid_week_game_win_disp?: string | null;
+  last_week_game_win_disp?: string | null;
   lose_streak_disp?: string | null;
   promote_disp?: string | null;
   descend_disp?: string | null;
