@@ -11,7 +11,7 @@ datasource db {
 }
 
 // 既存テーブルに合わせて PascalCase に
-model User {
+model users {
   userid       String   @id @default(uuid())
   email        String   @unique
   passwordHash String
@@ -22,11 +22,12 @@ model User {
   favorites Favorite[]
 }
 
-model Favorite {
+model favorites {
   id        BigInt   @id @default(autoincrement())
   userId    String
-  country   String   @db.VarChar(128)
-  league    String   @db.VarChar(128)
+  country   String   @db.VarChar(100)
+  league    String   @db.VarChar(100)
+  team      String   @db.VarChar(100)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -34,5 +35,5 @@ model Favorite {
 
   @@unique([userId, country, league], map: "uk_user_country_league")
   @@index([userId], map: "idx_fav_user")
-  @@index([country, league], map: "idx_fav_country_league")
+  @@index([country, league, team], map: "idx_fav_country_league")
 }
