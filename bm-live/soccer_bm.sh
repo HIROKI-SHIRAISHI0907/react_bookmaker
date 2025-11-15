@@ -1,56 +1,18 @@
 #!/usr/bin/env bash
-# soccer_bm CSV import/export helper (Docker版)
+# soccer_bm CSV import/export helper (Docker版・コア5テーブル専用)
 set -euo pipefail
 
 # ===== 設定 =====
-SERVICE_NAME="db"                # docker compose のサービス名
+SERVICE_NAME="db"
 DB_USER="postgres"
 DB_NAME="soccer_bm"
 SCHEMA="public"
 DUMPDIR="/Users/shiraishitoshio/dumps/soccer_bm_dumps"
 FILE_PREFIX="soccer_bm_"
 FILE_SUFFIX=".csv"
-
-# ZIP対象（このテーブルのCSVのみzip化）
-ZIP_ONLY_TABLE="data"
 ZIP_EXT=".zip"
 
-# 取り込み前に TRUNCATE したい場合は true
-TRUNCATE_BEFORE_IMPORT=false
-RESTART_IDENTITY=true
-
-# ===== テーブル一覧 (JavaのTABLE_MAPに対応) =====
-TABLES=(
-  league_score_time_band_stats
-  league_score_time_band_stats_split_score
-  no_goal_match_stats
-  past_data_history
-  user_visibility_option
-  flyway_schema_history
-  within_data_20minutes_away_all_league
-  within_data_20minutes_away_scored
-  within_data_20minutes_same_scored
-  within_data_45minutes_home_all_league
-  within_data_45minutes_home_scored
-  within_data_45minutes_away_all_league
-  within_data_45minutes_away_scored
-  match_classification_result
-  match_classification_result_count
-  score_based_feature_stats
-  score_based_feature_stats_history
-  team_match_final_stats
-  team_monthly_score_summary
-  team_time_segment_shooting_stat
-  condition_result_data
-  calc_correlation
-  calc_correlation_ranking
-  stat_encryption
-  surface_overview
-  country_league_summary
-  within_data
-  stat_size_finalize_master
-  each_team_score_based_feature_stats
-  each_team_score_based_feature_stats_history
+TABLES_CORE=(
   country_league_master
   country_league_season_master
   team_member_master
@@ -58,12 +20,9 @@ TABLES=(
   data
 )
 
-# ===== 内部関数 =====
-ensure_dumpdir() { mkdir -p "$DUMPDIR"; }
-
+# ===== 共通関数 =====
 dc() {
-  # docker compose or docker-compose のどちらでも動くように
-  if docker compose version >/dev/null 2&> /dev/null; then
+  if docker compose version >/dev/null 2>/dev/null; then
     docker compose "$@"
   else
     docker-compose "$@"
@@ -71,22 +30,102 @@ dc() {
 }
 
 compose_psql() {
-  # $1: psql -c に渡すSQL
   dc exec -T "$SERVICE_NAME" psql -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 -c "$1"
 }
 
+# ===== FORCE_NULL 対象列検出 =====
+get_force_null_cols() {
+  local t="$1"
+  dc exec -T "$SERVICE_NAME" \
+    psql -U "$DB_USER" -d "$DB_NAME" -At -v ON_ERROR_STOP=1 -c "
+      SELECT COALESCE(string_agg('\"' || column_name || '\"', ',' ORDER BY ordinal_position),'')
+      FROM information_schema.columns
+      WHERE table_schema='${SCHEMA}'
+        AND table_name='${t}'
+        AND data_type IN ('timestamp with time zone','timestamp without time zone','date');
+    " | tr -d '\r\n'
+}
+
+build_copy_opts() {
+  local t="$1"
+  local fnc; fnc="$(get_force_null_cols "$t")"
+  local opts="(FORMAT csv, HEADER true, DELIMITER ',', ENCODING 'UTF8', NULL '', QUOTE '\"'"
+  if [[ -n "${fnc//[[:space:]]/}" ]]; then
+    opts="${opts}, FORCE_NULL (${fnc})"
+  fi
+  echo "${opts})"
+}
+
+# ===== シーケンス同期 =====
+sync_seq_auto() {
+  local t="$1"
+  echo "🔧 Syncing sequences for ${SCHEMA}.${t}"
+  compose_psql "
+    DO \$\$
+    DECLARE
+      tname text := '${t}';
+      sch   text := '${SCHEMA}';
+      col   text;
+      seqreg regclass;
+      sqltext text;
+    BEGIN
+      -- seq または id を優先して検出
+      FOR col IN
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_schema = sch
+          AND table_name   = tname
+          AND column_name IN ('seq','id')
+        ORDER BY CASE column_name WHEN 'seq' THEN 1 WHEN 'id' THEN 2 ELSE 3 END
+      LOOP
+        SELECT pg_get_serial_sequence(format('%I.%I', sch, tname), col) INTO seqreg;
+        IF seqreg IS NOT NULL THEN
+          sqltext := format(
+            'SELECT setval(%L, COALESCE((SELECT MAX(%I) FROM %I.%I),0), true)',
+            seqreg::text, col, sch, tname
+          );
+          EXECUTE sqltext;
+          RETURN;
+        END IF;
+      END LOOP;
+
+      -- Identity列にも対応
+      SELECT column_name INTO col
+      FROM information_schema.columns
+      WHERE table_schema = sch
+        AND table_name   = tname
+        AND is_identity = 'YES'
+      LIMIT 1;
+
+      IF col IS NOT NULL THEN
+        SELECT pg_get_serial_sequence(format('%I.%I', sch, tname), col) INTO seqreg;
+        IF seqreg IS NOT NULL THEN
+          sqltext := format(
+            'SELECT setval(%L, COALESCE((SELECT MAX(%I) FROM %I.%I),0), true)',
+            seqreg::text, col, sch, tname
+          );
+          EXECUTE sqltext;
+        END IF;
+      END IF;
+    END
+    \$\$;
+  "
+  echo "✅ Sequences synced for ${t}"
+}
+
+# ===== CSV Export =====
 export_table() {
   local t="$1"
   local outfile="${DUMPDIR}/${FILE_PREFIX}${t}${FILE_SUFFIX}"
-  echo "🔼 Exporting ${SCHEMA}.${t} -> ${outfile}"
-  # \copy TO STDOUT をコンテナ内で実行し、ホスト側にリダイレクト
+
+  echo "🔼 Export ${SCHEMA}.${t} -> ${outfile}"
   dc exec -T "$SERVICE_NAME" \
     psql -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 \
-      -c "\copy (SELECT * FROM ${SCHEMA}.\"${t}\") TO STDOUT WITH (FORMAT CSV, HEADER true)" \
+      -c "\copy (SELECT * FROM ${SCHEMA}.\"${t}\") TO STDOUT WITH (FORMAT csv, HEADER true, ENCODING 'UTF8')" \
     > "$outfile"
 
-  # ===== dataテーブルのみzip化 =====
-  if [[ "$t" == "$ZIP_ONLY_TABLE" ]]; then
+  # data テーブルだけ zip 化
+  if [[ "$t" == "data" ]]; then
     local zipfile="${outfile}${ZIP_EXT}"
     echo "🗜️  Zipping ${outfile} -> ${zipfile}"
     (cd "$DUMPDIR" && zip -q -j "$(basename "$zipfile")" "$(basename "$outfile")")
@@ -94,125 +133,80 @@ export_table() {
   fi
 }
 
-# === FUTURE_MASTER SEQ SYNC ===
-sync_future_master_seq() {
-  echo "🔧 Syncing sequence for ${SCHEMA}.future_master(seq)"
-  compose_psql "
-    -- 1) 無ければシーケンスを作成して seq に紐付け、デフォルトを設定
-    DO \$\$
-    BEGIN
-      IF NOT EXISTS (
-        SELECT 1
-        FROM   pg_class c
-        JOIN   pg_namespace n ON n.oid = c.relnamespace
-        WHERE  c.relkind = 'S'
-        AND    c.relname = 'future_master_seq'
-        AND    n.nspname = '${SCHEMA}'
-      ) THEN
-        EXECUTE 'CREATE SEQUENCE ${SCHEMA}.future_master_seq OWNED BY ${SCHEMA}.future_master.seq';
-      END IF;
-
-      -- seq に nextval のデフォルトが無い場合も含め、常に設定しておく
-      EXECUTE 'ALTER TABLE ${SCHEMA}.future_master
-               ALTER COLUMN seq SET DEFAULT nextval(''${SCHEMA}.future_master_seq'')';
-    END
-    \$\$;
-
-    -- 2) 既存最大値に合わせて setval。次の INSERT から MAX(seq)+1 を返す
-    SELECT setval(
-      pg_get_serial_sequence('${SCHEMA}.future_master', 'seq'),
-      COALESCE((SELECT MAX(seq) FROM ${SCHEMA}.future_master), 0),
-      true
-    );
-  "
-  echo "✅ Sequence synced."
+export_core() {
+  mkdir -p "$DUMPDIR"
+  for t in "${TABLES_CORE[@]}"; do
+    export_table "$t"
+  done
+  echo "✅ Export completed for 5 core tables."
 }
 
+# ===== CSV Import =====
 import_table() {
   local t="$1"
   local infile="${DUMPDIR}/${FILE_PREFIX}${t}${FILE_SUFFIX}"
-  local extracted_tmp=false
+  local zipfile="${infile}${ZIP_EXT}"
 
-  # ===== dataテーブルはzipがあれば展開 =====
-  if [[ "$t" == "$ZIP_ONLY_TABLE" ]]; then
-    local zipfile="${infile}${ZIP_EXT}"
-    if [[ ! -f "$infile" && -f "$zipfile" ]]; then
-      echo "🗜️  Unzipping ${zipfile} -> ${DUMPDIR}/"
-      unzip -oq -d "$DUMPDIR" "$zipfile"
-      extracted_tmp=true
-    fi
+  if [[ ! -f "$infile" && -f "$zipfile" ]]; then
+    echo "🗜️  Unzipping ${zipfile}"
+    unzip -oq -d "$DUMPDIR" "$zipfile"
   fi
 
   if [[ ! -f "$infile" ]]; then
-    if [[ "$t" == "$ZIP_ONLY_TABLE" ]]; then
-      echo "⚠️  Skip ${t}: CSV/ZIPが見つかりません -> ${infile} / ${infile}${ZIP_EXT}"
-    else
-      echo "⚠️  Skip ${t}: ファイルなし -> ${infile}"
-    fi
+    echo "⚠️  Skip ${t}: CSV not found -> ${infile}"
     return 0
   fi
 
-  if $TRUNCATE_BEFORE_IMPORT; then
-    local restart=""
-    $RESTART_IDENTITY && restart=" RESTART IDENTITY"
-    echo "🧹 TRUNCATE ${SCHEMA}.\"${t}\"${restart}"
-    compose_psql "TRUNCATE ${SCHEMA}.\"${t}\"${restart} CASCADE;"
-  fi
+  echo "🔽 Import ${infile} -> ${SCHEMA}.${t}"
+  local opts; opts="$(build_copy_opts "$t")"
+  dc exec -T "$SERVICE_NAME" psql -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 \
+    -c "\copy ${SCHEMA}.\"${t}\" FROM STDIN WITH ${opts}" < "$infile"
 
-  echo "🔽 Importing ${infile} -> ${SCHEMA}.${t}"
-  dc exec -T "$SERVICE_NAME" \
-    psql -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 \
-      -c "\copy ${SCHEMA}.\"${t}\" FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',', ENCODING 'UTF8', NULL 'NULL')" \
-    < "$infile"
-
-  # ZIPから展開した一時CSVは後片付け
-  if [[ "$extracted_tmp" == true ]]; then
-    echo "🧹 Removing extracted temp file ${infile}"
-    rm -f "$infile"
-  fi
-
-  # === FUTURE_MASTER SEQ SYNC: このテーブルだけは毎回同期 ===
-  if [[ "$t" == "future_master" ]]; then
-    sync_future_master_seq
-  fi
+  sync_seq_auto "$t"
 }
 
-export_all() {
-  ensure_dumpdir
-  local targets=("$@"); [[ ${#targets[@]} -eq 0 ]] && targets=("${TABLES[@]}")
-  for t in "${targets[@]}"; do export_table "$t"; done
-  echo "✅ Export completed."
+truncate_core() {
+  local joined=""
+  for t in "${TABLES_CORE[@]}"; do
+    [[ -n "$joined" ]] && joined+=","
+    joined+="\"${SCHEMA}\".\"${t}\""
+  done
+  echo "🧹 TRUNCATE ${joined} RESTART IDENTITY CASCADE"
+  compose_psql "TRUNCATE ${joined} RESTART IDENTITY CASCADE;"
 }
 
-import_all() {
-  ensure_dumpdir
-  local targets=("$@"); [[ ${#targets[@]} -eq 0 ]] && targets=("${TABLES[@]}")
-  for t in "${targets[@]}"; do import_table "$t"; done
-  echo "✅ Import completed."
+reset_import_core() {
+  truncate_core
+  for t in "${TABLES_CORE[@]}"; do
+    import_table "$t"
+  done
+  echo "🎉 reset-import-core done."
 }
 
+# ===== Usage =====
 usage() {
   cat <<EOF
 Usage:
-  $(basename "$0") export [table ...]   # 全CSVを書き出し（または指定テーブルのみ）
-  $(basename "$0") import [table ...]   # 全CSVを取り込み（または指定テーブルのみ）
-  $(basename "$0") both   [table ...]   # 書き出し→取り込み
+  $(basename "$0") export-core        # 5テーブルをCSVエクスポート
+  $(basename "$0") reset-import-core  # 5テーブル(TRUNCATE→CSVインポート→シーケンス同期)
+
+対象テーブル:
+  - country_league_master
+  - country_league_season_master
+  - team_member_master
+  - future_master
+  - data
 
 Notes:
-  - docker compose のサービス名は "${SERVICE_NAME}" を想定。違う場合は変えてください。
-  - 出力/入力ディレクトリ: ${DUMPDIR}
-  - ファイル名: ${FILE_PREFIX}<テーブル名>${FILE_SUFFIX}
-  - テーブル "${ZIP_ONLY_TABLE}" のみ、CSVは "${FILE_SUFFIX}${ZIP_EXT}" へzip化（例: soccer_bm_data.csv.zip）。
-  - import時は "${ZIP_ONLY_TABLE}" のZIPがあれば展開してから取り込み、取り込み後は展開CSVを削除します。
-  - future_master は取り込み後に seq シーケンスを自動同期します。
+  - data は seq をCSV側で採番済み。通常のCOPYで取込。
+  - 各テーブル取込後に自動でシーケンスを MAX(id/seq) に同期。
+  - timestamp/date列は自動で FORCE_NULL を付与。
 EOF
 }
 
-# ===== エントリポイント =====
 cmd="${1:-}"; shift || true
 case "$cmd" in
-  export) export_all "$@" ;;
-  import) import_all "$@" ;;
-  both)   export_all "$@"; import_all "$@";;
-  *) usage; exit 1 ;;
+  export-core) export_core ;;
+  reset-import-core) reset_import_core ;;
+  *) usage ;;
 esac

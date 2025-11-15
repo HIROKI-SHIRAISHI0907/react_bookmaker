@@ -57,6 +57,9 @@ export type SurfaceSnapshot = {
   consecutive_lose_disp?: string | null;
   unbeaten_streak_disp?: string | null;
   consecutive_score_count_disp?: string | null;
+  first_week_game_win_disp?: string | null;
+  mid_week_game_win_disp?: string | null;
+  last_week_game_win_disp?: string | null;
   first_win_disp?: string | null;
   lose_streak_disp?: string | null;
   promote_disp?: string | null;

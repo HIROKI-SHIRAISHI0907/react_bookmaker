@@ -1,14 +1,18 @@
 // src/pages/teams/OverviewDetail.tsx
 import { Link, useParams, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Trophy, TrendingUp, TrendingDown, Shield, Target, AlertTriangle } from "lucide-react";
+import { ArrowLeft, TrendingUp, TrendingDown, ShieldCheck, Flame, Award, AlertTriangle, ArrowUp, ArrowDown, Home as HomeIcon, Plane, Activity, Flag, Rocket } from "lucide-react";
 import AppHeader from "../../components/layout/AppHeader";
 import { Skeleton } from "../../components/ui/skeleton";
-import { fetchScheduleOverview, type ScheduleOverviewResponse, type SurfaceSnapshot } from "../../api/scheduled_overviews";
+import { fetchScheduleOverview, type ScheduleOverviewApi, type ScheduleOverviewResponse, type SurfaceSnapshot } from "../../api/scheduled_overviews";
 
 // ★ Recharts 追加
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 
+// ---- 追加: API の 200/空 を安全に扱うためのローカル型 ----
+const isOverviewOK = (d: ScheduleOverviewApi): d is ScheduleOverviewResponse => !!d && Array.isArray((d as any).surfaces);
+
+// ---- 既存: バッジ ----
 function Badge({ icon, text, tone = "default" }: { icon: React.ReactNode; text: string; tone?: "default" | "good" | "bad" }) {
   const color = tone === "good" ? "text-green-700 bg-green-100 border-green-200" : tone === "bad" ? "text-red-700 bg-red-100 border-red-200" : "text-foreground bg-muted border-border";
   return (
@@ -19,38 +23,75 @@ function Badge({ icon, text, tone = "default" }: { icon: React.ReactNode; text: 
   );
 }
 
-function badgesFromSurface(s: SurfaceSnapshot) {
+// ---- 修正: バッジ生成 ----
+function badgesFromSurface(s: SurfaceSnapshot, opts?: { isHome?: boolean; isAway?: boolean }): React.ReactNode {
   const list: JSX.Element[] = [];
-  if (s.consecutive_win_disp) list.push(<Badge key="win" icon={<TrendingUp className="w-3 h-3" />} text={s.consecutive_win_disp} tone="good" />);
-  if (s.consecutive_lose_disp) list.push(<Badge key="lose-b" icon={<TrendingDown className="w-3 h-3" />} text={s.consecutive_lose_disp} tone="bad" />);
-  if (s.unbeaten_streak_disp) list.push(<Badge key="unbeat" icon={<Shield className="w-3 h-3" />} text={s.unbeaten_streak_disp} />);
-  if (s.consecutive_score_count_disp) list.push(<Badge key="score" icon={<Target className="w-3 h-3" />} text={s.consecutive_score_count_disp} />);
-  if (s.first_week_game_win_disp) list.push(<Badge key="first" icon={<Trophy className="w-3 h-3" />} text={s.first_week_game_win_disp} tone="good" />);
-  if (s.mid_week_game_win_disp) list.push(<Badge key="mid" icon={<Trophy className="w-3 h-3" />} text={s.mid_week_game_win_disp} tone="good" />);
-  if (s.last_week_game_win_disp) list.push(<Badge key="last" icon={<Trophy className="w-3 h-3" />} text={s.last_week_game_win_disp} tone="good" />);
-  return list;
+
+  // 直近連勝表示（3連勝以上）
+  if (s.consecutive_win_disp) {
+    list.push(<Badge key="consecutive-win" icon={<TrendingUp className="w-3 h-3" />} text={s.consecutive_win_disp} tone="good" />);
+  }
+
+  // 直近連敗表示（3連敗以上）
+  if (s.consecutive_lose_disp) {
+    list.push(<Badge key="consecutive-lose" icon={<TrendingDown className="w-3 h-3" />} text={s.consecutive_lose_disp} tone="bad" />);
+  }
+
+  // 無敗記録表示（無敗が3回連続）
+  if (s.unbeaten_streak_disp) {
+    list.push(<Badge key="unbeaten" icon={<ShieldCheck className="w-3 h-3" />} text={s.unbeaten_streak_disp} />);
+  }
+
+  // 得点継続表示（3試合連続得点）
+  if (s.consecutive_score_count_disp) {
+    list.push(<Badge key="scoring-streak" icon={<Flame className="w-3 h-3" />} text={s.consecutive_score_count_disp} tone="good" />);
+  }
+
+  // 序盤好調（勝率7割以上）
+  if (s.first_week_game_win_disp) {
+    list.push(<Badge key="first-week-hot" icon={<Rocket className="w-3 h-3" />} text={s.first_week_game_win_disp} tone="good" />);
+  }
+
+  // 中盤好調（勝率7割以上）
+  if (s.mid_week_game_win_disp) {
+    list.push(<Badge key="mid-week-hot" icon={<Activity className="w-3 h-3" />} text={s.mid_week_game_win_disp} tone="good" />);
+  }
+
+  // 終盤好調（勝率7割以上）
+  if (s.last_week_game_win_disp) {
+    list.push(<Badge key="last-week-hot" icon={<Flag className="w-3 h-3" />} text={s.last_week_game_win_disp} tone="good" />);
+  }
+
+  // 初勝利表示（5試合以上未勝利→初勝利）
+  if (s.first_win_disp) {
+    list.push(<Badge key="first-win" icon={<Award className="w-3 h-3" />} text={s.first_win_disp} tone="good" />);
+  }
+
+  // 負けが混んだ時（4連敗以上）
+  if (s.lose_streak_disp) {
+    list.push(<Badge key="lose-streak" icon={<AlertTriangle className="w-3 h-3" />} text={s.lose_streak_disp} tone="bad" />);
+  }
+
+  // 昇格表示（昇格組）
+  if (s.promote_disp) {
+    list.push(<Badge key="promote" icon={<ArrowUp className="w-3 h-3" />} text={s.promote_disp} tone="good" />);
+  }
+
+  // 降格表示（降格組）
+  if (s.descend_disp) {
+    list.push(<Badge key="descend" icon={<ArrowDown className="w-3 h-3" />} text={s.descend_disp} tone="bad" />);
+  }
+
+  // 逆境系（3割以上逆転勝利）※ホーム/アウェーで出し分け
+  if (opts?.isHome && s.home_adversity_disp) {
+    list.push(<Badge key="home-adversity" icon={<HomeIcon className="w-3 h-3" />} text={s.home_adversity_disp} tone="good" />);
+  }
+  if (opts?.isAway && s.away_adversity_disp) {
+    list.push(<Badge key="away-adversity" icon={<Plane className="w-3 h-3" />} text={s.away_adversity_disp} tone="good" />);
+  }
+
+  return list.length ? list : null;
 }
-
-// ===== 置き換え: ユーティリティ =====
-const toNum = (v: number | null | undefined) => (v == null ? null : Number(v));
-
-// 軽い共通Tooltip
-const SimpleTooltip = ({ active, payload }: any) => {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="rounded-md border bg-popover px-2 py-1 text-xs shadow-sm">
-      <div className="font-medium">{payload[0].payload.label}</div>
-      <div className="tabular-nums">{payload[0].value}</div>
-    </div>
-  );
-};
-
-// 追加：ユーティリティ
-const num = (v: unknown): number | null => {
-  if (v === null || v === undefined) return null;
-  const n = Number(v);
-  return Number.isFinite(n) ? n : null;
-};
 
 // 追加：1枚にまとめた横棒チャート
 function StatsSummaryChart({ s }: { s: SurfaceSnapshot }) {
@@ -78,13 +119,7 @@ function StatsSummaryChart({ s }: { s: SurfaceSnapshot }) {
   return (
     <div className="h-72">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart
-          data={data}
-          layout="vertical"
-          margin={{ top: 10, right: 20, bottom: 10, left: 40 }}
-          barCategoryGap={40} // ← スタッツ同士の間隔を拡大
-          barGap={8} // ← 同じカテゴリ内のバー間隔（今回は単一バーなので軽めに）
-        >
+        <BarChart data={data} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 40 }} barCategoryGap={40} barGap={8}>
           <CartesianGrid vertical strokeDasharray="3 3" horizontal={false} />
           <XAxis type="number" domain={[0, 20]} allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 11 }} />
           <YAxis dataKey="label" type="category" width={84} axisLine={false} tickLine={false} tick={{ fontSize: 11 }} />
@@ -107,14 +142,21 @@ export default function OverviewDetail() {
   const leagueRaw = decodeURIComponent(league);
   const seqNum = Number(seq);
 
-  const { data, isLoading, isError } = useQuery<ScheduleOverviewResponse>({
+  // ★ ここを ScheduleOverviewApi に（ローカル型）
+  const { data, isLoading, isError } = useQuery<ScheduleOverviewApi>({
     queryKey: ["scheduled-overview", countryRaw, leagueRaw, seqNum, home, away],
-    queryFn: () => fetchScheduleOverview(countryRaw, leagueRaw, seqNum, { home, away }),
+    queryFn: () => fetchScheduleOverview(countryRaw, leagueRaw, seqNum, { home, away }) as Promise<ScheduleOverviewApi>,
     enabled: Number.isFinite(seqNum) && (!!home || !!away),
     staleTime: 30_000,
   });
 
   const backTo = `/${country}/${league}/${team}`;
+
+  // ★ 「試合データがありません」判定
+  const noData =
+    !!data &&
+    ("message" in data || // { message: "..."} のケース
+      (isOverviewOK(data) && data.surfaces.length === 0)); // surfaces 空配列
 
   return (
     <div className="min-h-screen bg-background">
@@ -135,7 +177,11 @@ export default function OverviewDetail() {
           <div className="text-destructive">データ取得に失敗しました。</div>
         ) : !data ? (
           <div className="text-sm text-muted-foreground">パラメータが不足しています（home / away）。</div>
+        ) : noData ? (
+          // ★ 例外扱いにせず、明示文言で表示
+          <div className="text-sm text-muted-foreground">試合データがありません。</div>
         ) : (
+          // ★ ここからは通常データがある場合のみ描画
           <>
             <header className="space-y-1">
               <h1 className="text-2xl font-bold">
@@ -143,48 +189,76 @@ export default function OverviewDetail() {
               </h1>
               <div className="text-sm text-muted-foreground">
                 {data.match.round_no != null ? `ラウンド ${data.match.round_no} · ` : ""}
-                {data.match.future_time ? new Date(data.match.future_time).toLocaleString("ja-JP") : "日程情報なし"}
+                {data.match.future_time ? `開催予定: ${new Date(data.match.future_time).toLocaleString("ja-JP")}` : "日程情報なし"}
                 {data.match.game_year && data.match.game_month ? ` · ${data.match.game_year}年${data.match.game_month}月` : ""}
               </div>
             </header>
 
             <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {data.surfaces.map((s) => (
-                <div key={s.team} className="rounded-xl border bg-card p-4 shadow-sm">
-                  <div className="flex items-center justify-between mb-2">
-                    <h2 className="text-lg font-semibold">{s.team}</h2>
-                    <div className="text-sm text-muted-foreground">
-                      勝点 {s.winning_points ?? "-"} / {s.games ?? "-"}試合
-                    </div>
-                  </div>
+              {data.surfaces.map((s) => {
+                const isHome = s.team === data.match.home_team;
+                const isAway = s.team === data.match.away_team;
 
-                  <div className="flex flex-wrap gap-2 mb-3">{badgesFromSurface(s)}</div>
+                // 値の取得（camelCase → snake_case → 役割依存のフォールバックの順）
+                const homeWins = s.homeWinCount ?? (s as any).home_win_count ?? (isHome ? s.win_count_role : null) ?? 0;
+                const homeLoses = s.homeLoseCount ?? (s as any).home_lose_count ?? (isHome ? s.lose_count_role : null) ?? 0;
+                const awayWins = s.awayWinCount ?? (s as any).away_win_count ?? (isAway ? s.win_count_role : null) ?? 0;
+                const awayLoses = s.awayLoseCount ?? (s as any).away_lose_count ?? (isAway ? s.lose_count_role : null) ?? 0;
 
-                  <div className="grid grid-cols-3 gap-3 text-sm mb-4">
-                    <div className="rounded-lg border p-3">
-                      <div className="text-xs text-muted-foreground">順位</div>
-                      <div className="text-xl font-bold">{s.rank ?? "-"}</div>
-                    </div>
-                    <div className="rounded-lg border p-3">
-                      <div className="text-xs text-muted-foreground">成績</div>
-                      <div className="text-xl font-bold">
-                        {s.win ?? 0}勝-{s.draw ?? 0}分-{s.lose ?? 0}敗
+                return (
+                  <div key={s.team} className="rounded-xl border bg-card p-4 shadow-sm">
+                    <div className="flex items-center justify-between mb-2">
+                      <h2 className="text-lg font-semibold">
+                        {s.team} {isHome ? "(HOME)" : isAway ? "(AWAY)" : ""}
+                      </h2>
+
+                      {/* ★ 勝・敗（メインデータ） */}
+                      <div className="text-sm text-muted-foreground flex items-center gap-3">
+                        {isHome ? (
+                          <>
+                            <span className="font-medium">HOME</span>
+                            <span>勝 {homeWins}</span>
+                            <span>敗 {homeLoses}</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="font-medium">AWAY</span>
+                            <span>勝 {awayWins}</span>
+                            <span>敗 {awayLoses}</span>
+                          </>
+                        )}
                       </div>
                     </div>
-                    <div className="rounded-lg border p-3">
-                      <div className="text-xs text-muted-foreground">試合数</div>
-                      <div className="text-xl font-bold">{s.games ?? "-"}</div>
+
+                    {/* バッジ（home/away逆境は opts で出し分け） */}
+                    <div className="flex flex-wrap gap-2 mb-3">{badgesFromSurface(s, { isHome, isAway })}</div>
+
+                    {/* ▼ ランキング（順位は surface_overview.rank を s.rank に入れて返す想定） */}
+                    <div className="grid grid-cols-3 gap-3 text-sm mb-4">
+                      <div className="rounded-lg border p-3">
+                        <div className="text-xs text-muted-foreground">順位</div>
+                        <div className="text-xl font-bold">{s.rank ?? "—"}</div>
+                      </div>
+                      <div className="rounded-lg border p-3">
+                        <div className="text-xs text-muted-foreground">成績</div>
+                        <div className="text-xl font-bold">
+                          {s.win ?? 0}勝-{s.draw ?? 0}分-{s.lose ?? 0}敗
+                        </div>
+                      </div>
+                      <div className="rounded-lg border p-3">
+                        <div className="text-xs text-muted-foreground">試合数</div>
+                        <div className="text-xl font-bold">{s.games ?? "—"}</div>
+                      </div>
+                    </div>
+
+                    {/* 主要スタッツ（そのまま） */}
+                    <div className="rounded-lg border p-3 mt-2">
+                      <div className="text-xs text-muted-foreground mb-1">主要スタッツ（役割に応じて自動切替）</div>
+                      <StatsSummaryChart s={s} />
                     </div>
                   </div>
-
-                  {/* ▼ ここから追加：ミニ棒グラフ */}
-                  <div className="rounded-lg border p-3 mt-2">
-                    <div className="text-xs text-muted-foreground mb-1">主要スタッツ（役割に応じて自動切替）</div>
-                    <StatsSummaryChart s={s} />
-                  </div>
-                  {/* ▲ 追加ここまで */}
-                </div>
-              ))}
+                );
+              })}
             </section>
           </>
         )}

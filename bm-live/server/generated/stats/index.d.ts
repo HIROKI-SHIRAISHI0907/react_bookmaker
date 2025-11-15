@@ -19,11 +19,6 @@ export type PrismaPromise<T> = $Public.PrismaPromise<T>
  */
 export type average_statistics_csv_tmp_data = $Result.DefaultSelection<Prisma.$average_statistics_csv_tmp_dataPayload>
 /**
- * Model average_statistics_team_detail_data
- * 
- */
-export type average_statistics_team_detail_data = $Result.DefaultSelection<Prisma.$average_statistics_team_detail_dataPayload>
-/**
  * Model calc_correlation
  * 
  */
@@ -108,11 +103,6 @@ export type score_based_feature_stats = $Result.DefaultSelection<Prisma.$score_b
  * 
  */
 export type score_based_feature_stats_history = $Result.DefaultSelection<Prisma.$score_based_feature_stats_historyPayload>
-/**
- * Model scoring_playstyle_past_data
- * 
- */
-export type scoring_playstyle_past_data = $Result.DefaultSelection<Prisma.$scoring_playstyle_past_dataPayload>
 /**
  * Model stat_encryption
  * 
@@ -343,16 +333,6 @@ export class PrismaClient<
   get average_statistics_csv_tmp_data(): Prisma.average_statistics_csv_tmp_dataDelegate<ExtArgs, ClientOptions>;
 
   /**
-   * `prisma.average_statistics_team_detail_data`: Exposes CRUD operations for the **average_statistics_team_detail_data** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more Average_statistics_team_detail_data
-    * const average_statistics_team_detail_data = await prisma.average_statistics_team_detail_data.findMany()
-    * ```
-    */
-  get average_statistics_team_detail_data(): Prisma.average_statistics_team_detail_dataDelegate<ExtArgs, ClientOptions>;
-
-  /**
    * `prisma.calc_correlation`: Exposes CRUD operations for the **calc_correlation** model.
     * Example usage:
     * ```ts
@@ -521,16 +501,6 @@ export class PrismaClient<
     * ```
     */
   get score_based_feature_stats_history(): Prisma.score_based_feature_stats_historyDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.scoring_playstyle_past_data`: Exposes CRUD operations for the **scoring_playstyle_past_data** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more Scoring_playstyle_past_data
-    * const scoring_playstyle_past_data = await prisma.scoring_playstyle_past_data.findMany()
-    * ```
-    */
-  get scoring_playstyle_past_data(): Prisma.scoring_playstyle_past_dataDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.stat_encryption`: Exposes CRUD operations for the **stat_encryption** model.
@@ -1172,7 +1142,6 @@ export namespace Prisma {
 
   export const ModelName: {
     average_statistics_csv_tmp_data: 'average_statistics_csv_tmp_data',
-    average_statistics_team_detail_data: 'average_statistics_team_detail_data',
     calc_correlation: 'calc_correlation',
     calc_correlation_ranking: 'calc_correlation_ranking',
     condition_result_data: 'condition_result_data',
@@ -1190,7 +1159,6 @@ export namespace Prisma {
     no_goal_match_stats: 'no_goal_match_stats',
     score_based_feature_stats: 'score_based_feature_stats',
     score_based_feature_stats_history: 'score_based_feature_stats_history',
-    scoring_playstyle_past_data: 'scoring_playstyle_past_data',
     stat_encryption: 'stat_encryption',
     stat_size_finalize_master: 'stat_size_finalize_master',
     surface_overview: 'surface_overview',
@@ -1229,7 +1197,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "average_statistics_csv_tmp_data" | "average_statistics_team_detail_data" | "calc_correlation" | "calc_correlation_ranking" | "condition_result_data" | "country_league_master" | "country_league_season_master" | "country_league_summary" | "data" | "each_team_score_based_feature_stats" | "each_team_score_based_feature_stats_history" | "future_master" | "league_score_time_band_stats" | "league_score_time_band_stats_split_score" | "match_classification_result" | "match_classification_result_count" | "no_goal_match_stats" | "score_based_feature_stats" | "score_based_feature_stats_history" | "scoring_playstyle_past_data" | "stat_encryption" | "stat_size_finalize_master" | "surface_overview" | "team_match_final_stats" | "team_member_master" | "team_monthly_score_summary" | "team_time_segment_shooting_stat" | "within_data" | "within_data_20minutes_away_all_league" | "within_data_20minutes_away_scored" | "within_data_20minutes_home_all_league" | "within_data_20minutes_home_scored" | "within_data_20minutes_same_scored" | "within_data_45minutes_away_all_league" | "within_data_45minutes_away_scored" | "within_data_45minutes_home_all_league" | "within_data_45minutes_home_scored" | "country_league_visibility" | "user_visibility_option" | "past_data_history"
+      modelProps: "average_statistics_csv_tmp_data" | "calc_correlation" | "calc_correlation_ranking" | "condition_result_data" | "country_league_master" | "country_league_season_master" | "country_league_summary" | "data" | "each_team_score_based_feature_stats" | "each_team_score_based_feature_stats_history" | "future_master" | "league_score_time_band_stats" | "league_score_time_band_stats_split_score" | "match_classification_result" | "match_classification_result_count" | "no_goal_match_stats" | "score_based_feature_stats" | "score_based_feature_stats_history" | "stat_encryption" | "stat_size_finalize_master" | "surface_overview" | "team_match_final_stats" | "team_member_master" | "team_monthly_score_summary" | "team_time_segment_shooting_stat" | "within_data" | "within_data_20minutes_away_all_league" | "within_data_20minutes_away_scored" | "within_data_20minutes_home_all_league" | "within_data_20minutes_home_scored" | "within_data_20minutes_same_scored" | "within_data_45minutes_away_all_league" | "within_data_45minutes_away_scored" | "within_data_45minutes_home_all_league" | "within_data_45minutes_home_scored" | "country_league_visibility" | "user_visibility_option" | "past_data_history"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1304,80 +1272,6 @@ export namespace Prisma {
           count: {
             args: Prisma.average_statistics_csv_tmp_dataCountArgs<ExtArgs>
             result: $Utils.Optional<Average_statistics_csv_tmp_dataCountAggregateOutputType> | number
-          }
-        }
-      }
-      average_statistics_team_detail_data: {
-        payload: Prisma.$average_statistics_team_detail_dataPayload<ExtArgs>
-        fields: Prisma.average_statistics_team_detail_dataFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.average_statistics_team_detail_dataFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$average_statistics_team_detail_dataPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.average_statistics_team_detail_dataFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$average_statistics_team_detail_dataPayload>
-          }
-          findFirst: {
-            args: Prisma.average_statistics_team_detail_dataFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$average_statistics_team_detail_dataPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.average_statistics_team_detail_dataFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$average_statistics_team_detail_dataPayload>
-          }
-          findMany: {
-            args: Prisma.average_statistics_team_detail_dataFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$average_statistics_team_detail_dataPayload>[]
-          }
-          create: {
-            args: Prisma.average_statistics_team_detail_dataCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$average_statistics_team_detail_dataPayload>
-          }
-          createMany: {
-            args: Prisma.average_statistics_team_detail_dataCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.average_statistics_team_detail_dataCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$average_statistics_team_detail_dataPayload>[]
-          }
-          delete: {
-            args: Prisma.average_statistics_team_detail_dataDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$average_statistics_team_detail_dataPayload>
-          }
-          update: {
-            args: Prisma.average_statistics_team_detail_dataUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$average_statistics_team_detail_dataPayload>
-          }
-          deleteMany: {
-            args: Prisma.average_statistics_team_detail_dataDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.average_statistics_team_detail_dataUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.average_statistics_team_detail_dataUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$average_statistics_team_detail_dataPayload>[]
-          }
-          upsert: {
-            args: Prisma.average_statistics_team_detail_dataUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$average_statistics_team_detail_dataPayload>
-          }
-          aggregate: {
-            args: Prisma.Average_statistics_team_detail_dataAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateAverage_statistics_team_detail_data>
-          }
-          groupBy: {
-            args: Prisma.average_statistics_team_detail_dataGroupByArgs<ExtArgs>
-            result: $Utils.Optional<Average_statistics_team_detail_dataGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.average_statistics_team_detail_dataCountArgs<ExtArgs>
-            result: $Utils.Optional<Average_statistics_team_detail_dataCountAggregateOutputType> | number
           }
         }
       }
@@ -2636,80 +2530,6 @@ export namespace Prisma {
           count: {
             args: Prisma.score_based_feature_stats_historyCountArgs<ExtArgs>
             result: $Utils.Optional<Score_based_feature_stats_historyCountAggregateOutputType> | number
-          }
-        }
-      }
-      scoring_playstyle_past_data: {
-        payload: Prisma.$scoring_playstyle_past_dataPayload<ExtArgs>
-        fields: Prisma.scoring_playstyle_past_dataFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.scoring_playstyle_past_dataFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$scoring_playstyle_past_dataPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.scoring_playstyle_past_dataFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$scoring_playstyle_past_dataPayload>
-          }
-          findFirst: {
-            args: Prisma.scoring_playstyle_past_dataFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$scoring_playstyle_past_dataPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.scoring_playstyle_past_dataFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$scoring_playstyle_past_dataPayload>
-          }
-          findMany: {
-            args: Prisma.scoring_playstyle_past_dataFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$scoring_playstyle_past_dataPayload>[]
-          }
-          create: {
-            args: Prisma.scoring_playstyle_past_dataCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$scoring_playstyle_past_dataPayload>
-          }
-          createMany: {
-            args: Prisma.scoring_playstyle_past_dataCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.scoring_playstyle_past_dataCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$scoring_playstyle_past_dataPayload>[]
-          }
-          delete: {
-            args: Prisma.scoring_playstyle_past_dataDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$scoring_playstyle_past_dataPayload>
-          }
-          update: {
-            args: Prisma.scoring_playstyle_past_dataUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$scoring_playstyle_past_dataPayload>
-          }
-          deleteMany: {
-            args: Prisma.scoring_playstyle_past_dataDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.scoring_playstyle_past_dataUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.scoring_playstyle_past_dataUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$scoring_playstyle_past_dataPayload>[]
-          }
-          upsert: {
-            args: Prisma.scoring_playstyle_past_dataUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$scoring_playstyle_past_dataPayload>
-          }
-          aggregate: {
-            args: Prisma.Scoring_playstyle_past_dataAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateScoring_playstyle_past_data>
-          }
-          groupBy: {
-            args: Prisma.scoring_playstyle_past_dataGroupByArgs<ExtArgs>
-            result: $Utils.Optional<Scoring_playstyle_past_dataGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.scoring_playstyle_past_dataCountArgs<ExtArgs>
-            result: $Utils.Optional<Scoring_playstyle_past_dataCountAggregateOutputType> | number
           }
         }
       }
@@ -4290,7 +4110,6 @@ export namespace Prisma {
   }
   export type GlobalOmitConfig = {
     average_statistics_csv_tmp_data?: average_statistics_csv_tmp_dataOmit
-    average_statistics_team_detail_data?: average_statistics_team_detail_dataOmit
     calc_correlation?: calc_correlationOmit
     calc_correlation_ranking?: calc_correlation_rankingOmit
     condition_result_data?: condition_result_dataOmit
@@ -4308,7 +4127,6 @@ export namespace Prisma {
     no_goal_match_stats?: no_goal_match_statsOmit
     score_based_feature_stats?: score_based_feature_statsOmit
     score_based_feature_stats_history?: score_based_feature_stats_historyOmit
-    scoring_playstyle_past_data?: scoring_playstyle_past_dataOmit
     stat_encryption?: stat_encryptionOmit
     stat_size_finalize_master?: stat_size_finalize_masterOmit
     surface_overview?: surface_overviewOmit
@@ -5539,1451 +5357,6 @@ export namespace Prisma {
      * Omit specific fields from the average_statistics_csv_tmp_data
      */
     omit?: average_statistics_csv_tmp_dataOmit<ExtArgs> | null
-  }
-
-
-  /**
-   * Model average_statistics_team_detail_data
-   */
-
-  export type AggregateAverage_statistics_team_detail_data = {
-    _count: Average_statistics_team_detail_dataCountAggregateOutputType | null
-    _avg: Average_statistics_team_detail_dataAvgAggregateOutputType | null
-    _sum: Average_statistics_team_detail_dataSumAggregateOutputType | null
-    _min: Average_statistics_team_detail_dataMinAggregateOutputType | null
-    _max: Average_statistics_team_detail_dataMaxAggregateOutputType | null
-  }
-
-  export type Average_statistics_team_detail_dataAvgAggregateOutputType = {
-    id: number | null
-  }
-
-  export type Average_statistics_team_detail_dataSumAggregateOutputType = {
-    id: number | null
-  }
-
-  export type Average_statistics_team_detail_dataMinAggregateOutputType = {
-    id: number | null
-    situation: string | null
-    team: string | null
-    opposite_team: string | null
-    ha: string | null
-    country: string | null
-    league: string | null
-    exp_stat: string | null
-    donation_stat: string | null
-    shoot_all_stat: string | null
-    shoot_in_stat: string | null
-    shoot_out_stat: string | null
-    block_shoot_stat: string | null
-    big_chance_stat: string | null
-    corner_stat: string | null
-    box_shoot_in_stat: string | null
-    box_shoot_out_stat: string | null
-    goal_post_stat: string | null
-    goal_head_stat: string | null
-    keeper_save_stat: string | null
-    free_kick_stat: string | null
-    offside_stat: string | null
-    foul_stat: string | null
-    yellow_card_stat: string | null
-    red_card_stat: string | null
-    slow_in_stat: string | null
-    box_touch_stat: string | null
-    pass_count_stat: string | null
-    final_third_pass_count_stat: string | null
-    cross_count_stat: string | null
-    tackle_count_stat: string | null
-    clear_count_stat: string | null
-    intercept_count_stat: string | null
-    register_id: string | null
-    register_time: Date | null
-    update_id: string | null
-    update_time: Date | null
-  }
-
-  export type Average_statistics_team_detail_dataMaxAggregateOutputType = {
-    id: number | null
-    situation: string | null
-    team: string | null
-    opposite_team: string | null
-    ha: string | null
-    country: string | null
-    league: string | null
-    exp_stat: string | null
-    donation_stat: string | null
-    shoot_all_stat: string | null
-    shoot_in_stat: string | null
-    shoot_out_stat: string | null
-    block_shoot_stat: string | null
-    big_chance_stat: string | null
-    corner_stat: string | null
-    box_shoot_in_stat: string | null
-    box_shoot_out_stat: string | null
-    goal_post_stat: string | null
-    goal_head_stat: string | null
-    keeper_save_stat: string | null
-    free_kick_stat: string | null
-    offside_stat: string | null
-    foul_stat: string | null
-    yellow_card_stat: string | null
-    red_card_stat: string | null
-    slow_in_stat: string | null
-    box_touch_stat: string | null
-    pass_count_stat: string | null
-    final_third_pass_count_stat: string | null
-    cross_count_stat: string | null
-    tackle_count_stat: string | null
-    clear_count_stat: string | null
-    intercept_count_stat: string | null
-    register_id: string | null
-    register_time: Date | null
-    update_id: string | null
-    update_time: Date | null
-  }
-
-  export type Average_statistics_team_detail_dataCountAggregateOutputType = {
-    id: number
-    situation: number
-    team: number
-    opposite_team: number
-    ha: number
-    country: number
-    league: number
-    exp_stat: number
-    donation_stat: number
-    shoot_all_stat: number
-    shoot_in_stat: number
-    shoot_out_stat: number
-    block_shoot_stat: number
-    big_chance_stat: number
-    corner_stat: number
-    box_shoot_in_stat: number
-    box_shoot_out_stat: number
-    goal_post_stat: number
-    goal_head_stat: number
-    keeper_save_stat: number
-    free_kick_stat: number
-    offside_stat: number
-    foul_stat: number
-    yellow_card_stat: number
-    red_card_stat: number
-    slow_in_stat: number
-    box_touch_stat: number
-    pass_count_stat: number
-    final_third_pass_count_stat: number
-    cross_count_stat: number
-    tackle_count_stat: number
-    clear_count_stat: number
-    intercept_count_stat: number
-    register_id: number
-    register_time: number
-    update_id: number
-    update_time: number
-    _all: number
-  }
-
-
-  export type Average_statistics_team_detail_dataAvgAggregateInputType = {
-    id?: true
-  }
-
-  export type Average_statistics_team_detail_dataSumAggregateInputType = {
-    id?: true
-  }
-
-  export type Average_statistics_team_detail_dataMinAggregateInputType = {
-    id?: true
-    situation?: true
-    team?: true
-    opposite_team?: true
-    ha?: true
-    country?: true
-    league?: true
-    exp_stat?: true
-    donation_stat?: true
-    shoot_all_stat?: true
-    shoot_in_stat?: true
-    shoot_out_stat?: true
-    block_shoot_stat?: true
-    big_chance_stat?: true
-    corner_stat?: true
-    box_shoot_in_stat?: true
-    box_shoot_out_stat?: true
-    goal_post_stat?: true
-    goal_head_stat?: true
-    keeper_save_stat?: true
-    free_kick_stat?: true
-    offside_stat?: true
-    foul_stat?: true
-    yellow_card_stat?: true
-    red_card_stat?: true
-    slow_in_stat?: true
-    box_touch_stat?: true
-    pass_count_stat?: true
-    final_third_pass_count_stat?: true
-    cross_count_stat?: true
-    tackle_count_stat?: true
-    clear_count_stat?: true
-    intercept_count_stat?: true
-    register_id?: true
-    register_time?: true
-    update_id?: true
-    update_time?: true
-  }
-
-  export type Average_statistics_team_detail_dataMaxAggregateInputType = {
-    id?: true
-    situation?: true
-    team?: true
-    opposite_team?: true
-    ha?: true
-    country?: true
-    league?: true
-    exp_stat?: true
-    donation_stat?: true
-    shoot_all_stat?: true
-    shoot_in_stat?: true
-    shoot_out_stat?: true
-    block_shoot_stat?: true
-    big_chance_stat?: true
-    corner_stat?: true
-    box_shoot_in_stat?: true
-    box_shoot_out_stat?: true
-    goal_post_stat?: true
-    goal_head_stat?: true
-    keeper_save_stat?: true
-    free_kick_stat?: true
-    offside_stat?: true
-    foul_stat?: true
-    yellow_card_stat?: true
-    red_card_stat?: true
-    slow_in_stat?: true
-    box_touch_stat?: true
-    pass_count_stat?: true
-    final_third_pass_count_stat?: true
-    cross_count_stat?: true
-    tackle_count_stat?: true
-    clear_count_stat?: true
-    intercept_count_stat?: true
-    register_id?: true
-    register_time?: true
-    update_id?: true
-    update_time?: true
-  }
-
-  export type Average_statistics_team_detail_dataCountAggregateInputType = {
-    id?: true
-    situation?: true
-    team?: true
-    opposite_team?: true
-    ha?: true
-    country?: true
-    league?: true
-    exp_stat?: true
-    donation_stat?: true
-    shoot_all_stat?: true
-    shoot_in_stat?: true
-    shoot_out_stat?: true
-    block_shoot_stat?: true
-    big_chance_stat?: true
-    corner_stat?: true
-    box_shoot_in_stat?: true
-    box_shoot_out_stat?: true
-    goal_post_stat?: true
-    goal_head_stat?: true
-    keeper_save_stat?: true
-    free_kick_stat?: true
-    offside_stat?: true
-    foul_stat?: true
-    yellow_card_stat?: true
-    red_card_stat?: true
-    slow_in_stat?: true
-    box_touch_stat?: true
-    pass_count_stat?: true
-    final_third_pass_count_stat?: true
-    cross_count_stat?: true
-    tackle_count_stat?: true
-    clear_count_stat?: true
-    intercept_count_stat?: true
-    register_id?: true
-    register_time?: true
-    update_id?: true
-    update_time?: true
-    _all?: true
-  }
-
-  export type Average_statistics_team_detail_dataAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which average_statistics_team_detail_data to aggregate.
-     */
-    where?: average_statistics_team_detail_dataWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of average_statistics_team_detail_data to fetch.
-     */
-    orderBy?: average_statistics_team_detail_dataOrderByWithRelationInput | average_statistics_team_detail_dataOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: average_statistics_team_detail_dataWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` average_statistics_team_detail_data from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` average_statistics_team_detail_data.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned average_statistics_team_detail_data
-    **/
-    _count?: true | Average_statistics_team_detail_dataCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: Average_statistics_team_detail_dataAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: Average_statistics_team_detail_dataSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: Average_statistics_team_detail_dataMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: Average_statistics_team_detail_dataMaxAggregateInputType
-  }
-
-  export type GetAverage_statistics_team_detail_dataAggregateType<T extends Average_statistics_team_detail_dataAggregateArgs> = {
-        [P in keyof T & keyof AggregateAverage_statistics_team_detail_data]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateAverage_statistics_team_detail_data[P]>
-      : GetScalarType<T[P], AggregateAverage_statistics_team_detail_data[P]>
-  }
-
-
-
-
-  export type average_statistics_team_detail_dataGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: average_statistics_team_detail_dataWhereInput
-    orderBy?: average_statistics_team_detail_dataOrderByWithAggregationInput | average_statistics_team_detail_dataOrderByWithAggregationInput[]
-    by: Average_statistics_team_detail_dataScalarFieldEnum[] | Average_statistics_team_detail_dataScalarFieldEnum
-    having?: average_statistics_team_detail_dataScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: Average_statistics_team_detail_dataCountAggregateInputType | true
-    _avg?: Average_statistics_team_detail_dataAvgAggregateInputType
-    _sum?: Average_statistics_team_detail_dataSumAggregateInputType
-    _min?: Average_statistics_team_detail_dataMinAggregateInputType
-    _max?: Average_statistics_team_detail_dataMaxAggregateInputType
-  }
-
-  export type Average_statistics_team_detail_dataGroupByOutputType = {
-    id: number
-    situation: string | null
-    team: string | null
-    opposite_team: string | null
-    ha: string | null
-    country: string | null
-    league: string | null
-    exp_stat: string | null
-    donation_stat: string | null
-    shoot_all_stat: string | null
-    shoot_in_stat: string | null
-    shoot_out_stat: string | null
-    block_shoot_stat: string | null
-    big_chance_stat: string | null
-    corner_stat: string | null
-    box_shoot_in_stat: string | null
-    box_shoot_out_stat: string | null
-    goal_post_stat: string | null
-    goal_head_stat: string | null
-    keeper_save_stat: string | null
-    free_kick_stat: string | null
-    offside_stat: string | null
-    foul_stat: string | null
-    yellow_card_stat: string | null
-    red_card_stat: string | null
-    slow_in_stat: string | null
-    box_touch_stat: string | null
-    pass_count_stat: string | null
-    final_third_pass_count_stat: string | null
-    cross_count_stat: string | null
-    tackle_count_stat: string | null
-    clear_count_stat: string | null
-    intercept_count_stat: string | null
-    register_id: string | null
-    register_time: Date | null
-    update_id: string | null
-    update_time: Date | null
-    _count: Average_statistics_team_detail_dataCountAggregateOutputType | null
-    _avg: Average_statistics_team_detail_dataAvgAggregateOutputType | null
-    _sum: Average_statistics_team_detail_dataSumAggregateOutputType | null
-    _min: Average_statistics_team_detail_dataMinAggregateOutputType | null
-    _max: Average_statistics_team_detail_dataMaxAggregateOutputType | null
-  }
-
-  type GetAverage_statistics_team_detail_dataGroupByPayload<T extends average_statistics_team_detail_dataGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<Average_statistics_team_detail_dataGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof Average_statistics_team_detail_dataGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], Average_statistics_team_detail_dataGroupByOutputType[P]>
-            : GetScalarType<T[P], Average_statistics_team_detail_dataGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type average_statistics_team_detail_dataSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    situation?: boolean
-    team?: boolean
-    opposite_team?: boolean
-    ha?: boolean
-    country?: boolean
-    league?: boolean
-    exp_stat?: boolean
-    donation_stat?: boolean
-    shoot_all_stat?: boolean
-    shoot_in_stat?: boolean
-    shoot_out_stat?: boolean
-    block_shoot_stat?: boolean
-    big_chance_stat?: boolean
-    corner_stat?: boolean
-    box_shoot_in_stat?: boolean
-    box_shoot_out_stat?: boolean
-    goal_post_stat?: boolean
-    goal_head_stat?: boolean
-    keeper_save_stat?: boolean
-    free_kick_stat?: boolean
-    offside_stat?: boolean
-    foul_stat?: boolean
-    yellow_card_stat?: boolean
-    red_card_stat?: boolean
-    slow_in_stat?: boolean
-    box_touch_stat?: boolean
-    pass_count_stat?: boolean
-    final_third_pass_count_stat?: boolean
-    cross_count_stat?: boolean
-    tackle_count_stat?: boolean
-    clear_count_stat?: boolean
-    intercept_count_stat?: boolean
-    register_id?: boolean
-    register_time?: boolean
-    update_id?: boolean
-    update_time?: boolean
-  }, ExtArgs["result"]["average_statistics_team_detail_data"]>
-
-  export type average_statistics_team_detail_dataSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    situation?: boolean
-    team?: boolean
-    opposite_team?: boolean
-    ha?: boolean
-    country?: boolean
-    league?: boolean
-    exp_stat?: boolean
-    donation_stat?: boolean
-    shoot_all_stat?: boolean
-    shoot_in_stat?: boolean
-    shoot_out_stat?: boolean
-    block_shoot_stat?: boolean
-    big_chance_stat?: boolean
-    corner_stat?: boolean
-    box_shoot_in_stat?: boolean
-    box_shoot_out_stat?: boolean
-    goal_post_stat?: boolean
-    goal_head_stat?: boolean
-    keeper_save_stat?: boolean
-    free_kick_stat?: boolean
-    offside_stat?: boolean
-    foul_stat?: boolean
-    yellow_card_stat?: boolean
-    red_card_stat?: boolean
-    slow_in_stat?: boolean
-    box_touch_stat?: boolean
-    pass_count_stat?: boolean
-    final_third_pass_count_stat?: boolean
-    cross_count_stat?: boolean
-    tackle_count_stat?: boolean
-    clear_count_stat?: boolean
-    intercept_count_stat?: boolean
-    register_id?: boolean
-    register_time?: boolean
-    update_id?: boolean
-    update_time?: boolean
-  }, ExtArgs["result"]["average_statistics_team_detail_data"]>
-
-  export type average_statistics_team_detail_dataSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    situation?: boolean
-    team?: boolean
-    opposite_team?: boolean
-    ha?: boolean
-    country?: boolean
-    league?: boolean
-    exp_stat?: boolean
-    donation_stat?: boolean
-    shoot_all_stat?: boolean
-    shoot_in_stat?: boolean
-    shoot_out_stat?: boolean
-    block_shoot_stat?: boolean
-    big_chance_stat?: boolean
-    corner_stat?: boolean
-    box_shoot_in_stat?: boolean
-    box_shoot_out_stat?: boolean
-    goal_post_stat?: boolean
-    goal_head_stat?: boolean
-    keeper_save_stat?: boolean
-    free_kick_stat?: boolean
-    offside_stat?: boolean
-    foul_stat?: boolean
-    yellow_card_stat?: boolean
-    red_card_stat?: boolean
-    slow_in_stat?: boolean
-    box_touch_stat?: boolean
-    pass_count_stat?: boolean
-    final_third_pass_count_stat?: boolean
-    cross_count_stat?: boolean
-    tackle_count_stat?: boolean
-    clear_count_stat?: boolean
-    intercept_count_stat?: boolean
-    register_id?: boolean
-    register_time?: boolean
-    update_id?: boolean
-    update_time?: boolean
-  }, ExtArgs["result"]["average_statistics_team_detail_data"]>
-
-  export type average_statistics_team_detail_dataSelectScalar = {
-    id?: boolean
-    situation?: boolean
-    team?: boolean
-    opposite_team?: boolean
-    ha?: boolean
-    country?: boolean
-    league?: boolean
-    exp_stat?: boolean
-    donation_stat?: boolean
-    shoot_all_stat?: boolean
-    shoot_in_stat?: boolean
-    shoot_out_stat?: boolean
-    block_shoot_stat?: boolean
-    big_chance_stat?: boolean
-    corner_stat?: boolean
-    box_shoot_in_stat?: boolean
-    box_shoot_out_stat?: boolean
-    goal_post_stat?: boolean
-    goal_head_stat?: boolean
-    keeper_save_stat?: boolean
-    free_kick_stat?: boolean
-    offside_stat?: boolean
-    foul_stat?: boolean
-    yellow_card_stat?: boolean
-    red_card_stat?: boolean
-    slow_in_stat?: boolean
-    box_touch_stat?: boolean
-    pass_count_stat?: boolean
-    final_third_pass_count_stat?: boolean
-    cross_count_stat?: boolean
-    tackle_count_stat?: boolean
-    clear_count_stat?: boolean
-    intercept_count_stat?: boolean
-    register_id?: boolean
-    register_time?: boolean
-    update_id?: boolean
-    update_time?: boolean
-  }
-
-  export type average_statistics_team_detail_dataOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "situation" | "team" | "opposite_team" | "ha" | "country" | "league" | "exp_stat" | "donation_stat" | "shoot_all_stat" | "shoot_in_stat" | "shoot_out_stat" | "block_shoot_stat" | "big_chance_stat" | "corner_stat" | "box_shoot_in_stat" | "box_shoot_out_stat" | "goal_post_stat" | "goal_head_stat" | "keeper_save_stat" | "free_kick_stat" | "offside_stat" | "foul_stat" | "yellow_card_stat" | "red_card_stat" | "slow_in_stat" | "box_touch_stat" | "pass_count_stat" | "final_third_pass_count_stat" | "cross_count_stat" | "tackle_count_stat" | "clear_count_stat" | "intercept_count_stat" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["average_statistics_team_detail_data"]>
-
-  export type $average_statistics_team_detail_dataPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "average_statistics_team_detail_data"
-    objects: {}
-    scalars: $Extensions.GetPayloadResult<{
-      id: number
-      situation: string | null
-      team: string | null
-      opposite_team: string | null
-      ha: string | null
-      country: string | null
-      league: string | null
-      exp_stat: string | null
-      donation_stat: string | null
-      shoot_all_stat: string | null
-      shoot_in_stat: string | null
-      shoot_out_stat: string | null
-      block_shoot_stat: string | null
-      big_chance_stat: string | null
-      corner_stat: string | null
-      box_shoot_in_stat: string | null
-      box_shoot_out_stat: string | null
-      goal_post_stat: string | null
-      goal_head_stat: string | null
-      keeper_save_stat: string | null
-      free_kick_stat: string | null
-      offside_stat: string | null
-      foul_stat: string | null
-      yellow_card_stat: string | null
-      red_card_stat: string | null
-      slow_in_stat: string | null
-      box_touch_stat: string | null
-      pass_count_stat: string | null
-      final_third_pass_count_stat: string | null
-      cross_count_stat: string | null
-      tackle_count_stat: string | null
-      clear_count_stat: string | null
-      intercept_count_stat: string | null
-      register_id: string | null
-      register_time: Date | null
-      update_id: string | null
-      update_time: Date | null
-    }, ExtArgs["result"]["average_statistics_team_detail_data"]>
-    composites: {}
-  }
-
-  type average_statistics_team_detail_dataGetPayload<S extends boolean | null | undefined | average_statistics_team_detail_dataDefaultArgs> = $Result.GetResult<Prisma.$average_statistics_team_detail_dataPayload, S>
-
-  type average_statistics_team_detail_dataCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<average_statistics_team_detail_dataFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: Average_statistics_team_detail_dataCountAggregateInputType | true
-    }
-
-  export interface average_statistics_team_detail_dataDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['average_statistics_team_detail_data'], meta: { name: 'average_statistics_team_detail_data' } }
-    /**
-     * Find zero or one Average_statistics_team_detail_data that matches the filter.
-     * @param {average_statistics_team_detail_dataFindUniqueArgs} args - Arguments to find a Average_statistics_team_detail_data
-     * @example
-     * // Get one Average_statistics_team_detail_data
-     * const average_statistics_team_detail_data = await prisma.average_statistics_team_detail_data.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends average_statistics_team_detail_dataFindUniqueArgs>(args: SelectSubset<T, average_statistics_team_detail_dataFindUniqueArgs<ExtArgs>>): Prisma__average_statistics_team_detail_dataClient<$Result.GetResult<Prisma.$average_statistics_team_detail_dataPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one Average_statistics_team_detail_data that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {average_statistics_team_detail_dataFindUniqueOrThrowArgs} args - Arguments to find a Average_statistics_team_detail_data
-     * @example
-     * // Get one Average_statistics_team_detail_data
-     * const average_statistics_team_detail_data = await prisma.average_statistics_team_detail_data.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends average_statistics_team_detail_dataFindUniqueOrThrowArgs>(args: SelectSubset<T, average_statistics_team_detail_dataFindUniqueOrThrowArgs<ExtArgs>>): Prisma__average_statistics_team_detail_dataClient<$Result.GetResult<Prisma.$average_statistics_team_detail_dataPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first Average_statistics_team_detail_data that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {average_statistics_team_detail_dataFindFirstArgs} args - Arguments to find a Average_statistics_team_detail_data
-     * @example
-     * // Get one Average_statistics_team_detail_data
-     * const average_statistics_team_detail_data = await prisma.average_statistics_team_detail_data.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends average_statistics_team_detail_dataFindFirstArgs>(args?: SelectSubset<T, average_statistics_team_detail_dataFindFirstArgs<ExtArgs>>): Prisma__average_statistics_team_detail_dataClient<$Result.GetResult<Prisma.$average_statistics_team_detail_dataPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first Average_statistics_team_detail_data that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {average_statistics_team_detail_dataFindFirstOrThrowArgs} args - Arguments to find a Average_statistics_team_detail_data
-     * @example
-     * // Get one Average_statistics_team_detail_data
-     * const average_statistics_team_detail_data = await prisma.average_statistics_team_detail_data.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends average_statistics_team_detail_dataFindFirstOrThrowArgs>(args?: SelectSubset<T, average_statistics_team_detail_dataFindFirstOrThrowArgs<ExtArgs>>): Prisma__average_statistics_team_detail_dataClient<$Result.GetResult<Prisma.$average_statistics_team_detail_dataPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more Average_statistics_team_detail_data that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {average_statistics_team_detail_dataFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all Average_statistics_team_detail_data
-     * const average_statistics_team_detail_data = await prisma.average_statistics_team_detail_data.findMany()
-     * 
-     * // Get first 10 Average_statistics_team_detail_data
-     * const average_statistics_team_detail_data = await prisma.average_statistics_team_detail_data.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const average_statistics_team_detail_dataWithIdOnly = await prisma.average_statistics_team_detail_data.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends average_statistics_team_detail_dataFindManyArgs>(args?: SelectSubset<T, average_statistics_team_detail_dataFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$average_statistics_team_detail_dataPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a Average_statistics_team_detail_data.
-     * @param {average_statistics_team_detail_dataCreateArgs} args - Arguments to create a Average_statistics_team_detail_data.
-     * @example
-     * // Create one Average_statistics_team_detail_data
-     * const Average_statistics_team_detail_data = await prisma.average_statistics_team_detail_data.create({
-     *   data: {
-     *     // ... data to create a Average_statistics_team_detail_data
-     *   }
-     * })
-     * 
-     */
-    create<T extends average_statistics_team_detail_dataCreateArgs>(args: SelectSubset<T, average_statistics_team_detail_dataCreateArgs<ExtArgs>>): Prisma__average_statistics_team_detail_dataClient<$Result.GetResult<Prisma.$average_statistics_team_detail_dataPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many Average_statistics_team_detail_data.
-     * @param {average_statistics_team_detail_dataCreateManyArgs} args - Arguments to create many Average_statistics_team_detail_data.
-     * @example
-     * // Create many Average_statistics_team_detail_data
-     * const average_statistics_team_detail_data = await prisma.average_statistics_team_detail_data.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends average_statistics_team_detail_dataCreateManyArgs>(args?: SelectSubset<T, average_statistics_team_detail_dataCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many Average_statistics_team_detail_data and returns the data saved in the database.
-     * @param {average_statistics_team_detail_dataCreateManyAndReturnArgs} args - Arguments to create many Average_statistics_team_detail_data.
-     * @example
-     * // Create many Average_statistics_team_detail_data
-     * const average_statistics_team_detail_data = await prisma.average_statistics_team_detail_data.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many Average_statistics_team_detail_data and only return the `id`
-     * const average_statistics_team_detail_dataWithIdOnly = await prisma.average_statistics_team_detail_data.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends average_statistics_team_detail_dataCreateManyAndReturnArgs>(args?: SelectSubset<T, average_statistics_team_detail_dataCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$average_statistics_team_detail_dataPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a Average_statistics_team_detail_data.
-     * @param {average_statistics_team_detail_dataDeleteArgs} args - Arguments to delete one Average_statistics_team_detail_data.
-     * @example
-     * // Delete one Average_statistics_team_detail_data
-     * const Average_statistics_team_detail_data = await prisma.average_statistics_team_detail_data.delete({
-     *   where: {
-     *     // ... filter to delete one Average_statistics_team_detail_data
-     *   }
-     * })
-     * 
-     */
-    delete<T extends average_statistics_team_detail_dataDeleteArgs>(args: SelectSubset<T, average_statistics_team_detail_dataDeleteArgs<ExtArgs>>): Prisma__average_statistics_team_detail_dataClient<$Result.GetResult<Prisma.$average_statistics_team_detail_dataPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one Average_statistics_team_detail_data.
-     * @param {average_statistics_team_detail_dataUpdateArgs} args - Arguments to update one Average_statistics_team_detail_data.
-     * @example
-     * // Update one Average_statistics_team_detail_data
-     * const average_statistics_team_detail_data = await prisma.average_statistics_team_detail_data.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends average_statistics_team_detail_dataUpdateArgs>(args: SelectSubset<T, average_statistics_team_detail_dataUpdateArgs<ExtArgs>>): Prisma__average_statistics_team_detail_dataClient<$Result.GetResult<Prisma.$average_statistics_team_detail_dataPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more Average_statistics_team_detail_data.
-     * @param {average_statistics_team_detail_dataDeleteManyArgs} args - Arguments to filter Average_statistics_team_detail_data to delete.
-     * @example
-     * // Delete a few Average_statistics_team_detail_data
-     * const { count } = await prisma.average_statistics_team_detail_data.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends average_statistics_team_detail_dataDeleteManyArgs>(args?: SelectSubset<T, average_statistics_team_detail_dataDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more Average_statistics_team_detail_data.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {average_statistics_team_detail_dataUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many Average_statistics_team_detail_data
-     * const average_statistics_team_detail_data = await prisma.average_statistics_team_detail_data.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends average_statistics_team_detail_dataUpdateManyArgs>(args: SelectSubset<T, average_statistics_team_detail_dataUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more Average_statistics_team_detail_data and returns the data updated in the database.
-     * @param {average_statistics_team_detail_dataUpdateManyAndReturnArgs} args - Arguments to update many Average_statistics_team_detail_data.
-     * @example
-     * // Update many Average_statistics_team_detail_data
-     * const average_statistics_team_detail_data = await prisma.average_statistics_team_detail_data.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more Average_statistics_team_detail_data and only return the `id`
-     * const average_statistics_team_detail_dataWithIdOnly = await prisma.average_statistics_team_detail_data.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends average_statistics_team_detail_dataUpdateManyAndReturnArgs>(args: SelectSubset<T, average_statistics_team_detail_dataUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$average_statistics_team_detail_dataPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one Average_statistics_team_detail_data.
-     * @param {average_statistics_team_detail_dataUpsertArgs} args - Arguments to update or create a Average_statistics_team_detail_data.
-     * @example
-     * // Update or create a Average_statistics_team_detail_data
-     * const average_statistics_team_detail_data = await prisma.average_statistics_team_detail_data.upsert({
-     *   create: {
-     *     // ... data to create a Average_statistics_team_detail_data
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the Average_statistics_team_detail_data we want to update
-     *   }
-     * })
-     */
-    upsert<T extends average_statistics_team_detail_dataUpsertArgs>(args: SelectSubset<T, average_statistics_team_detail_dataUpsertArgs<ExtArgs>>): Prisma__average_statistics_team_detail_dataClient<$Result.GetResult<Prisma.$average_statistics_team_detail_dataPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of Average_statistics_team_detail_data.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {average_statistics_team_detail_dataCountArgs} args - Arguments to filter Average_statistics_team_detail_data to count.
-     * @example
-     * // Count the number of Average_statistics_team_detail_data
-     * const count = await prisma.average_statistics_team_detail_data.count({
-     *   where: {
-     *     // ... the filter for the Average_statistics_team_detail_data we want to count
-     *   }
-     * })
-    **/
-    count<T extends average_statistics_team_detail_dataCountArgs>(
-      args?: Subset<T, average_statistics_team_detail_dataCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], Average_statistics_team_detail_dataCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a Average_statistics_team_detail_data.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {Average_statistics_team_detail_dataAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends Average_statistics_team_detail_dataAggregateArgs>(args: Subset<T, Average_statistics_team_detail_dataAggregateArgs>): Prisma.PrismaPromise<GetAverage_statistics_team_detail_dataAggregateType<T>>
-
-    /**
-     * Group by Average_statistics_team_detail_data.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {average_statistics_team_detail_dataGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends average_statistics_team_detail_dataGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: average_statistics_team_detail_dataGroupByArgs['orderBy'] }
-        : { orderBy?: average_statistics_team_detail_dataGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, average_statistics_team_detail_dataGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAverage_statistics_team_detail_dataGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the average_statistics_team_detail_data model
-   */
-  readonly fields: average_statistics_team_detail_dataFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for average_statistics_team_detail_data.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__average_statistics_team_detail_dataClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the average_statistics_team_detail_data model
-   */
-  interface average_statistics_team_detail_dataFieldRefs {
-    readonly id: FieldRef<"average_statistics_team_detail_data", 'Int'>
-    readonly situation: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly team: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly opposite_team: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly ha: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly country: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly league: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly exp_stat: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly donation_stat: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly shoot_all_stat: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly shoot_in_stat: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly shoot_out_stat: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly block_shoot_stat: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly big_chance_stat: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly corner_stat: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly box_shoot_in_stat: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly box_shoot_out_stat: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly goal_post_stat: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly goal_head_stat: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly keeper_save_stat: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly free_kick_stat: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly offside_stat: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly foul_stat: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly yellow_card_stat: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly red_card_stat: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly slow_in_stat: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly box_touch_stat: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly pass_count_stat: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly final_third_pass_count_stat: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly cross_count_stat: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly tackle_count_stat: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly clear_count_stat: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly intercept_count_stat: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly register_id: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly register_time: FieldRef<"average_statistics_team_detail_data", 'DateTime'>
-    readonly update_id: FieldRef<"average_statistics_team_detail_data", 'String'>
-    readonly update_time: FieldRef<"average_statistics_team_detail_data", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * average_statistics_team_detail_data findUnique
-   */
-  export type average_statistics_team_detail_dataFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the average_statistics_team_detail_data
-     */
-    select?: average_statistics_team_detail_dataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the average_statistics_team_detail_data
-     */
-    omit?: average_statistics_team_detail_dataOmit<ExtArgs> | null
-    /**
-     * Filter, which average_statistics_team_detail_data to fetch.
-     */
-    where: average_statistics_team_detail_dataWhereUniqueInput
-  }
-
-  /**
-   * average_statistics_team_detail_data findUniqueOrThrow
-   */
-  export type average_statistics_team_detail_dataFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the average_statistics_team_detail_data
-     */
-    select?: average_statistics_team_detail_dataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the average_statistics_team_detail_data
-     */
-    omit?: average_statistics_team_detail_dataOmit<ExtArgs> | null
-    /**
-     * Filter, which average_statistics_team_detail_data to fetch.
-     */
-    where: average_statistics_team_detail_dataWhereUniqueInput
-  }
-
-  /**
-   * average_statistics_team_detail_data findFirst
-   */
-  export type average_statistics_team_detail_dataFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the average_statistics_team_detail_data
-     */
-    select?: average_statistics_team_detail_dataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the average_statistics_team_detail_data
-     */
-    omit?: average_statistics_team_detail_dataOmit<ExtArgs> | null
-    /**
-     * Filter, which average_statistics_team_detail_data to fetch.
-     */
-    where?: average_statistics_team_detail_dataWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of average_statistics_team_detail_data to fetch.
-     */
-    orderBy?: average_statistics_team_detail_dataOrderByWithRelationInput | average_statistics_team_detail_dataOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for average_statistics_team_detail_data.
-     */
-    cursor?: average_statistics_team_detail_dataWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` average_statistics_team_detail_data from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` average_statistics_team_detail_data.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of average_statistics_team_detail_data.
-     */
-    distinct?: Average_statistics_team_detail_dataScalarFieldEnum | Average_statistics_team_detail_dataScalarFieldEnum[]
-  }
-
-  /**
-   * average_statistics_team_detail_data findFirstOrThrow
-   */
-  export type average_statistics_team_detail_dataFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the average_statistics_team_detail_data
-     */
-    select?: average_statistics_team_detail_dataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the average_statistics_team_detail_data
-     */
-    omit?: average_statistics_team_detail_dataOmit<ExtArgs> | null
-    /**
-     * Filter, which average_statistics_team_detail_data to fetch.
-     */
-    where?: average_statistics_team_detail_dataWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of average_statistics_team_detail_data to fetch.
-     */
-    orderBy?: average_statistics_team_detail_dataOrderByWithRelationInput | average_statistics_team_detail_dataOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for average_statistics_team_detail_data.
-     */
-    cursor?: average_statistics_team_detail_dataWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` average_statistics_team_detail_data from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` average_statistics_team_detail_data.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of average_statistics_team_detail_data.
-     */
-    distinct?: Average_statistics_team_detail_dataScalarFieldEnum | Average_statistics_team_detail_dataScalarFieldEnum[]
-  }
-
-  /**
-   * average_statistics_team_detail_data findMany
-   */
-  export type average_statistics_team_detail_dataFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the average_statistics_team_detail_data
-     */
-    select?: average_statistics_team_detail_dataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the average_statistics_team_detail_data
-     */
-    omit?: average_statistics_team_detail_dataOmit<ExtArgs> | null
-    /**
-     * Filter, which average_statistics_team_detail_data to fetch.
-     */
-    where?: average_statistics_team_detail_dataWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of average_statistics_team_detail_data to fetch.
-     */
-    orderBy?: average_statistics_team_detail_dataOrderByWithRelationInput | average_statistics_team_detail_dataOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing average_statistics_team_detail_data.
-     */
-    cursor?: average_statistics_team_detail_dataWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` average_statistics_team_detail_data from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` average_statistics_team_detail_data.
-     */
-    skip?: number
-    distinct?: Average_statistics_team_detail_dataScalarFieldEnum | Average_statistics_team_detail_dataScalarFieldEnum[]
-  }
-
-  /**
-   * average_statistics_team_detail_data create
-   */
-  export type average_statistics_team_detail_dataCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the average_statistics_team_detail_data
-     */
-    select?: average_statistics_team_detail_dataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the average_statistics_team_detail_data
-     */
-    omit?: average_statistics_team_detail_dataOmit<ExtArgs> | null
-    /**
-     * The data needed to create a average_statistics_team_detail_data.
-     */
-    data: XOR<average_statistics_team_detail_dataCreateInput, average_statistics_team_detail_dataUncheckedCreateInput>
-  }
-
-  /**
-   * average_statistics_team_detail_data createMany
-   */
-  export type average_statistics_team_detail_dataCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many average_statistics_team_detail_data.
-     */
-    data: average_statistics_team_detail_dataCreateManyInput | average_statistics_team_detail_dataCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * average_statistics_team_detail_data createManyAndReturn
-   */
-  export type average_statistics_team_detail_dataCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the average_statistics_team_detail_data
-     */
-    select?: average_statistics_team_detail_dataSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the average_statistics_team_detail_data
-     */
-    omit?: average_statistics_team_detail_dataOmit<ExtArgs> | null
-    /**
-     * The data used to create many average_statistics_team_detail_data.
-     */
-    data: average_statistics_team_detail_dataCreateManyInput | average_statistics_team_detail_dataCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * average_statistics_team_detail_data update
-   */
-  export type average_statistics_team_detail_dataUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the average_statistics_team_detail_data
-     */
-    select?: average_statistics_team_detail_dataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the average_statistics_team_detail_data
-     */
-    omit?: average_statistics_team_detail_dataOmit<ExtArgs> | null
-    /**
-     * The data needed to update a average_statistics_team_detail_data.
-     */
-    data: XOR<average_statistics_team_detail_dataUpdateInput, average_statistics_team_detail_dataUncheckedUpdateInput>
-    /**
-     * Choose, which average_statistics_team_detail_data to update.
-     */
-    where: average_statistics_team_detail_dataWhereUniqueInput
-  }
-
-  /**
-   * average_statistics_team_detail_data updateMany
-   */
-  export type average_statistics_team_detail_dataUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update average_statistics_team_detail_data.
-     */
-    data: XOR<average_statistics_team_detail_dataUpdateManyMutationInput, average_statistics_team_detail_dataUncheckedUpdateManyInput>
-    /**
-     * Filter which average_statistics_team_detail_data to update
-     */
-    where?: average_statistics_team_detail_dataWhereInput
-    /**
-     * Limit how many average_statistics_team_detail_data to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * average_statistics_team_detail_data updateManyAndReturn
-   */
-  export type average_statistics_team_detail_dataUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the average_statistics_team_detail_data
-     */
-    select?: average_statistics_team_detail_dataSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the average_statistics_team_detail_data
-     */
-    omit?: average_statistics_team_detail_dataOmit<ExtArgs> | null
-    /**
-     * The data used to update average_statistics_team_detail_data.
-     */
-    data: XOR<average_statistics_team_detail_dataUpdateManyMutationInput, average_statistics_team_detail_dataUncheckedUpdateManyInput>
-    /**
-     * Filter which average_statistics_team_detail_data to update
-     */
-    where?: average_statistics_team_detail_dataWhereInput
-    /**
-     * Limit how many average_statistics_team_detail_data to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * average_statistics_team_detail_data upsert
-   */
-  export type average_statistics_team_detail_dataUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the average_statistics_team_detail_data
-     */
-    select?: average_statistics_team_detail_dataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the average_statistics_team_detail_data
-     */
-    omit?: average_statistics_team_detail_dataOmit<ExtArgs> | null
-    /**
-     * The filter to search for the average_statistics_team_detail_data to update in case it exists.
-     */
-    where: average_statistics_team_detail_dataWhereUniqueInput
-    /**
-     * In case the average_statistics_team_detail_data found by the `where` argument doesn't exist, create a new average_statistics_team_detail_data with this data.
-     */
-    create: XOR<average_statistics_team_detail_dataCreateInput, average_statistics_team_detail_dataUncheckedCreateInput>
-    /**
-     * In case the average_statistics_team_detail_data was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<average_statistics_team_detail_dataUpdateInput, average_statistics_team_detail_dataUncheckedUpdateInput>
-  }
-
-  /**
-   * average_statistics_team_detail_data delete
-   */
-  export type average_statistics_team_detail_dataDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the average_statistics_team_detail_data
-     */
-    select?: average_statistics_team_detail_dataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the average_statistics_team_detail_data
-     */
-    omit?: average_statistics_team_detail_dataOmit<ExtArgs> | null
-    /**
-     * Filter which average_statistics_team_detail_data to delete.
-     */
-    where: average_statistics_team_detail_dataWhereUniqueInput
-  }
-
-  /**
-   * average_statistics_team_detail_data deleteMany
-   */
-  export type average_statistics_team_detail_dataDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which average_statistics_team_detail_data to delete
-     */
-    where?: average_statistics_team_detail_dataWhereInput
-    /**
-     * Limit how many average_statistics_team_detail_data to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * average_statistics_team_detail_data without action
-   */
-  export type average_statistics_team_detail_dataDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the average_statistics_team_detail_data
-     */
-    select?: average_statistics_team_detail_dataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the average_statistics_team_detail_data
-     */
-    omit?: average_statistics_team_detail_dataOmit<ExtArgs> | null
   }
 
 
@@ -15731,6 +14104,8 @@ export namespace Prisma {
     game_id: string | null
     match_id: string | null
     time_sort_seconds: string | null
+    add_manual_flg: string | null
+    logic_flg: string | null
     register_id: string | null
     register_time: Date | null
     update_id: string | null
@@ -15843,6 +14218,8 @@ export namespace Prisma {
     game_id: string | null
     match_id: string | null
     time_sort_seconds: string | null
+    add_manual_flg: string | null
+    logic_flg: string | null
     register_id: string | null
     register_time: Date | null
     update_id: string | null
@@ -15955,6 +14332,8 @@ export namespace Prisma {
     game_id: number
     match_id: number
     time_sort_seconds: number
+    add_manual_flg: number
+    logic_flg: number
     register_id: number
     register_time: number
     update_id: number
@@ -16077,6 +14456,8 @@ export namespace Prisma {
     game_id?: true
     match_id?: true
     time_sort_seconds?: true
+    add_manual_flg?: true
+    logic_flg?: true
     register_id?: true
     register_time?: true
     update_id?: true
@@ -16189,6 +14570,8 @@ export namespace Prisma {
     game_id?: true
     match_id?: true
     time_sort_seconds?: true
+    add_manual_flg?: true
+    logic_flg?: true
     register_id?: true
     register_time?: true
     update_id?: true
@@ -16301,6 +14684,8 @@ export namespace Prisma {
     game_id?: true
     match_id?: true
     time_sort_seconds?: true
+    add_manual_flg?: true
+    logic_flg?: true
     register_id?: true
     register_time?: true
     update_id?: true
@@ -16500,6 +14885,8 @@ export namespace Prisma {
     game_id: string | null
     match_id: string | null
     time_sort_seconds: string | null
+    add_manual_flg: string | null
+    logic_flg: string | null
     register_id: string | null
     register_time: Date | null
     update_id: string | null
@@ -16631,6 +15018,8 @@ export namespace Prisma {
     game_id?: boolean
     match_id?: boolean
     time_sort_seconds?: boolean
+    add_manual_flg?: boolean
+    logic_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
@@ -16743,6 +15132,8 @@ export namespace Prisma {
     game_id?: boolean
     match_id?: boolean
     time_sort_seconds?: boolean
+    add_manual_flg?: boolean
+    logic_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
@@ -16855,6 +15246,8 @@ export namespace Prisma {
     game_id?: boolean
     match_id?: boolean
     time_sort_seconds?: boolean
+    add_manual_flg?: boolean
+    logic_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
@@ -16967,13 +15360,15 @@ export namespace Prisma {
     game_id?: boolean
     match_id?: boolean
     time_sort_seconds?: boolean
+    add_manual_flg?: boolean
+    logic_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
     update_time?: boolean
   }
 
-  export type dataOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"seq" | "condition_result_data_seq_id" | "data_category" | "times" | "home_rank" | "home_team_name" | "home_score" | "away_rank" | "away_team_name" | "away_score" | "home_exp" | "away_exp" | "home_in_goal_exp" | "away_in_goal_exp" | "home_donation" | "away_donation" | "home_shoot_all" | "away_shoot_all" | "home_shoot_in" | "away_shoot_in" | "home_shoot_out" | "away_shoot_out" | "home_block_shoot" | "away_block_shoot" | "home_big_chance" | "away_big_chance" | "home_corner" | "away_corner" | "home_box_shoot_in" | "away_box_shoot_in" | "home_box_shoot_out" | "away_box_shoot_out" | "home_goal_post" | "away_goal_post" | "home_goal_head" | "away_goal_head" | "home_keeper_save" | "away_keeper_save" | "home_free_kick" | "away_free_kick" | "home_offside" | "away_offside" | "home_foul" | "away_foul" | "home_yellow_card" | "away_yellow_card" | "home_red_card" | "away_red_card" | "home_slow_in" | "away_slow_in" | "home_box_touch" | "away_box_touch" | "home_pass_count" | "away_pass_count" | "home_long_pass_count" | "away_long_pass_count" | "home_final_third_pass_count" | "away_final_third_pass_count" | "home_cross_count" | "away_cross_count" | "home_tackle_count" | "away_tackle_count" | "home_clear_count" | "away_clear_count" | "home_duel_count" | "away_duel_count" | "home_intercept_count" | "away_intercept_count" | "record_time" | "weather" | "temparature" | "humid" | "judge_member" | "home_manager" | "away_manager" | "home_formation" | "away_formation" | "studium" | "capacity" | "audience" | "location" | "home_max_getting_scorer" | "away_max_getting_scorer" | "home_max_getting_scorer_game_situation" | "away_max_getting_scorer_game_situation" | "home_team_home_score" | "home_team_home_lost" | "away_team_home_score" | "away_team_home_lost" | "home_team_away_score" | "home_team_away_lost" | "away_team_away_score" | "away_team_away_lost" | "notice_flg" | "game_link" | "goal_time" | "goal_team_member" | "judge" | "home_team_style" | "away_team_style" | "probablity" | "prediction_score_time" | "game_id" | "match_id" | "time_sort_seconds" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["data"]>
+  export type dataOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"seq" | "condition_result_data_seq_id" | "data_category" | "times" | "home_rank" | "home_team_name" | "home_score" | "away_rank" | "away_team_name" | "away_score" | "home_exp" | "away_exp" | "home_in_goal_exp" | "away_in_goal_exp" | "home_donation" | "away_donation" | "home_shoot_all" | "away_shoot_all" | "home_shoot_in" | "away_shoot_in" | "home_shoot_out" | "away_shoot_out" | "home_block_shoot" | "away_block_shoot" | "home_big_chance" | "away_big_chance" | "home_corner" | "away_corner" | "home_box_shoot_in" | "away_box_shoot_in" | "home_box_shoot_out" | "away_box_shoot_out" | "home_goal_post" | "away_goal_post" | "home_goal_head" | "away_goal_head" | "home_keeper_save" | "away_keeper_save" | "home_free_kick" | "away_free_kick" | "home_offside" | "away_offside" | "home_foul" | "away_foul" | "home_yellow_card" | "away_yellow_card" | "home_red_card" | "away_red_card" | "home_slow_in" | "away_slow_in" | "home_box_touch" | "away_box_touch" | "home_pass_count" | "away_pass_count" | "home_long_pass_count" | "away_long_pass_count" | "home_final_third_pass_count" | "away_final_third_pass_count" | "home_cross_count" | "away_cross_count" | "home_tackle_count" | "away_tackle_count" | "home_clear_count" | "away_clear_count" | "home_duel_count" | "away_duel_count" | "home_intercept_count" | "away_intercept_count" | "record_time" | "weather" | "temparature" | "humid" | "judge_member" | "home_manager" | "away_manager" | "home_formation" | "away_formation" | "studium" | "capacity" | "audience" | "location" | "home_max_getting_scorer" | "away_max_getting_scorer" | "home_max_getting_scorer_game_situation" | "away_max_getting_scorer_game_situation" | "home_team_home_score" | "home_team_home_lost" | "away_team_home_score" | "away_team_home_lost" | "home_team_away_score" | "home_team_away_lost" | "away_team_away_score" | "away_team_away_lost" | "notice_flg" | "game_link" | "goal_time" | "goal_team_member" | "judge" | "home_team_style" | "away_team_style" | "probablity" | "prediction_score_time" | "game_id" | "match_id" | "time_sort_seconds" | "add_manual_flg" | "logic_flg" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["data"]>
 
   export type $dataPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "data"
@@ -17084,6 +15479,8 @@ export namespace Prisma {
       game_id: string | null
       match_id: string | null
       time_sort_seconds: string | null
+      add_manual_flg: string | null
+      logic_flg: string | null
       register_id: string | null
       register_time: Date | null
       update_id: string | null
@@ -17616,6 +16013,8 @@ export namespace Prisma {
     readonly game_id: FieldRef<"data", 'String'>
     readonly match_id: FieldRef<"data", 'String'>
     readonly time_sort_seconds: FieldRef<"data", 'String'>
+    readonly add_manual_flg: FieldRef<"data", 'String'>
+    readonly logic_flg: FieldRef<"data", 'String'>
     readonly register_id: FieldRef<"data", 'String'>
     readonly register_time: FieldRef<"data", 'DateTime'>
     readonly update_id: FieldRef<"data", 'String'>
@@ -34686,1776 +33085,6 @@ export namespace Prisma {
 
 
   /**
-   * Model scoring_playstyle_past_data
-   */
-
-  export type AggregateScoring_playstyle_past_data = {
-    _count: Scoring_playstyle_past_dataCountAggregateOutputType | null
-    _avg: Scoring_playstyle_past_dataAvgAggregateOutputType | null
-    _sum: Scoring_playstyle_past_dataSumAggregateOutputType | null
-    _min: Scoring_playstyle_past_dataMinAggregateOutputType | null
-    _max: Scoring_playstyle_past_dataMaxAggregateOutputType | null
-  }
-
-  export type Scoring_playstyle_past_dataAvgAggregateOutputType = {
-    id: number | null
-  }
-
-  export type Scoring_playstyle_past_dataSumAggregateOutputType = {
-    id: number | null
-  }
-
-  export type Scoring_playstyle_past_dataMinAggregateOutputType = {
-    id: number | null
-    data_category: string | null
-    home_team_name: string | null
-    away_team_name: string | null
-    diff_home_score: string | null
-    diff_away_score: string | null
-    diff_home_donation: string | null
-    diff_away_donation: string | null
-    diff_home_shoot_all: string | null
-    diff_away_shoot_all: string | null
-    diff_home_shoot_in: string | null
-    diff_away_shoot_in: string | null
-    diff_home_shoot_out: string | null
-    diff_away_shoot_out: string | null
-    diff_home_block_shoot: string | null
-    diff_away_block_shoot: string | null
-    diff_home_big_chance: string | null
-    diff_away_big_chance: string | null
-    diff_home_corner: string | null
-    diff_away_corner: string | null
-    diff_home_box_shoot_in: string | null
-    diff_away_box_shoot_in: string | null
-    diff_home_box_shoot_out: string | null
-    diff_away_box_shoot_out: string | null
-    diff_home_goal_post: string | null
-    diff_away_goal_post: string | null
-    diff_home_goal_head: string | null
-    diff_away_goal_head: string | null
-    diff_home_keeper_save: string | null
-    diff_away_keeper_save: string | null
-    diff_home_free_kick: string | null
-    diff_away_free_kick: string | null
-    diff_home_offside: string | null
-    diff_away_offside: string | null
-    diff_home_foul: string | null
-    diff_away_foul: string | null
-    diff_home_yellow_card: string | null
-    diff_away_yellow_card: string | null
-    diff_home_red_card: string | null
-    diff_away_red_card: string | null
-    diff_home_slow_in: string | null
-    diff_away_slow_in: string | null
-    diff_home_box_touch: string | null
-    diff_away_box_touch: string | null
-    diff_home_pass_count: string | null
-    diff_away_pass_count: string | null
-    diff_home_final_third_pass_count: string | null
-    diff_away_final_third_pass_count: string | null
-    diff_home_cross_count: string | null
-    diff_away_cross_count: string | null
-    diff_home_tackle_count: string | null
-    diff_away_tackle_count: string | null
-    diff_home_clear_count: string | null
-    diff_away_clear_count: string | null
-    diff_home_intercept_count: string | null
-    diff_away_intercept_count: string | null
-    home_play_style: string | null
-    away_play_style: string | null
-    register_id: string | null
-    register_time: Date | null
-    update_id: string | null
-    update_time: Date | null
-  }
-
-  export type Scoring_playstyle_past_dataMaxAggregateOutputType = {
-    id: number | null
-    data_category: string | null
-    home_team_name: string | null
-    away_team_name: string | null
-    diff_home_score: string | null
-    diff_away_score: string | null
-    diff_home_donation: string | null
-    diff_away_donation: string | null
-    diff_home_shoot_all: string | null
-    diff_away_shoot_all: string | null
-    diff_home_shoot_in: string | null
-    diff_away_shoot_in: string | null
-    diff_home_shoot_out: string | null
-    diff_away_shoot_out: string | null
-    diff_home_block_shoot: string | null
-    diff_away_block_shoot: string | null
-    diff_home_big_chance: string | null
-    diff_away_big_chance: string | null
-    diff_home_corner: string | null
-    diff_away_corner: string | null
-    diff_home_box_shoot_in: string | null
-    diff_away_box_shoot_in: string | null
-    diff_home_box_shoot_out: string | null
-    diff_away_box_shoot_out: string | null
-    diff_home_goal_post: string | null
-    diff_away_goal_post: string | null
-    diff_home_goal_head: string | null
-    diff_away_goal_head: string | null
-    diff_home_keeper_save: string | null
-    diff_away_keeper_save: string | null
-    diff_home_free_kick: string | null
-    diff_away_free_kick: string | null
-    diff_home_offside: string | null
-    diff_away_offside: string | null
-    diff_home_foul: string | null
-    diff_away_foul: string | null
-    diff_home_yellow_card: string | null
-    diff_away_yellow_card: string | null
-    diff_home_red_card: string | null
-    diff_away_red_card: string | null
-    diff_home_slow_in: string | null
-    diff_away_slow_in: string | null
-    diff_home_box_touch: string | null
-    diff_away_box_touch: string | null
-    diff_home_pass_count: string | null
-    diff_away_pass_count: string | null
-    diff_home_final_third_pass_count: string | null
-    diff_away_final_third_pass_count: string | null
-    diff_home_cross_count: string | null
-    diff_away_cross_count: string | null
-    diff_home_tackle_count: string | null
-    diff_away_tackle_count: string | null
-    diff_home_clear_count: string | null
-    diff_away_clear_count: string | null
-    diff_home_intercept_count: string | null
-    diff_away_intercept_count: string | null
-    home_play_style: string | null
-    away_play_style: string | null
-    register_id: string | null
-    register_time: Date | null
-    update_id: string | null
-    update_time: Date | null
-  }
-
-  export type Scoring_playstyle_past_dataCountAggregateOutputType = {
-    id: number
-    data_category: number
-    home_team_name: number
-    away_team_name: number
-    diff_home_score: number
-    diff_away_score: number
-    diff_home_donation: number
-    diff_away_donation: number
-    diff_home_shoot_all: number
-    diff_away_shoot_all: number
-    diff_home_shoot_in: number
-    diff_away_shoot_in: number
-    diff_home_shoot_out: number
-    diff_away_shoot_out: number
-    diff_home_block_shoot: number
-    diff_away_block_shoot: number
-    diff_home_big_chance: number
-    diff_away_big_chance: number
-    diff_home_corner: number
-    diff_away_corner: number
-    diff_home_box_shoot_in: number
-    diff_away_box_shoot_in: number
-    diff_home_box_shoot_out: number
-    diff_away_box_shoot_out: number
-    diff_home_goal_post: number
-    diff_away_goal_post: number
-    diff_home_goal_head: number
-    diff_away_goal_head: number
-    diff_home_keeper_save: number
-    diff_away_keeper_save: number
-    diff_home_free_kick: number
-    diff_away_free_kick: number
-    diff_home_offside: number
-    diff_away_offside: number
-    diff_home_foul: number
-    diff_away_foul: number
-    diff_home_yellow_card: number
-    diff_away_yellow_card: number
-    diff_home_red_card: number
-    diff_away_red_card: number
-    diff_home_slow_in: number
-    diff_away_slow_in: number
-    diff_home_box_touch: number
-    diff_away_box_touch: number
-    diff_home_pass_count: number
-    diff_away_pass_count: number
-    diff_home_final_third_pass_count: number
-    diff_away_final_third_pass_count: number
-    diff_home_cross_count: number
-    diff_away_cross_count: number
-    diff_home_tackle_count: number
-    diff_away_tackle_count: number
-    diff_home_clear_count: number
-    diff_away_clear_count: number
-    diff_home_intercept_count: number
-    diff_away_intercept_count: number
-    home_play_style: number
-    away_play_style: number
-    register_id: number
-    register_time: number
-    update_id: number
-    update_time: number
-    _all: number
-  }
-
-
-  export type Scoring_playstyle_past_dataAvgAggregateInputType = {
-    id?: true
-  }
-
-  export type Scoring_playstyle_past_dataSumAggregateInputType = {
-    id?: true
-  }
-
-  export type Scoring_playstyle_past_dataMinAggregateInputType = {
-    id?: true
-    data_category?: true
-    home_team_name?: true
-    away_team_name?: true
-    diff_home_score?: true
-    diff_away_score?: true
-    diff_home_donation?: true
-    diff_away_donation?: true
-    diff_home_shoot_all?: true
-    diff_away_shoot_all?: true
-    diff_home_shoot_in?: true
-    diff_away_shoot_in?: true
-    diff_home_shoot_out?: true
-    diff_away_shoot_out?: true
-    diff_home_block_shoot?: true
-    diff_away_block_shoot?: true
-    diff_home_big_chance?: true
-    diff_away_big_chance?: true
-    diff_home_corner?: true
-    diff_away_corner?: true
-    diff_home_box_shoot_in?: true
-    diff_away_box_shoot_in?: true
-    diff_home_box_shoot_out?: true
-    diff_away_box_shoot_out?: true
-    diff_home_goal_post?: true
-    diff_away_goal_post?: true
-    diff_home_goal_head?: true
-    diff_away_goal_head?: true
-    diff_home_keeper_save?: true
-    diff_away_keeper_save?: true
-    diff_home_free_kick?: true
-    diff_away_free_kick?: true
-    diff_home_offside?: true
-    diff_away_offside?: true
-    diff_home_foul?: true
-    diff_away_foul?: true
-    diff_home_yellow_card?: true
-    diff_away_yellow_card?: true
-    diff_home_red_card?: true
-    diff_away_red_card?: true
-    diff_home_slow_in?: true
-    diff_away_slow_in?: true
-    diff_home_box_touch?: true
-    diff_away_box_touch?: true
-    diff_home_pass_count?: true
-    diff_away_pass_count?: true
-    diff_home_final_third_pass_count?: true
-    diff_away_final_third_pass_count?: true
-    diff_home_cross_count?: true
-    diff_away_cross_count?: true
-    diff_home_tackle_count?: true
-    diff_away_tackle_count?: true
-    diff_home_clear_count?: true
-    diff_away_clear_count?: true
-    diff_home_intercept_count?: true
-    diff_away_intercept_count?: true
-    home_play_style?: true
-    away_play_style?: true
-    register_id?: true
-    register_time?: true
-    update_id?: true
-    update_time?: true
-  }
-
-  export type Scoring_playstyle_past_dataMaxAggregateInputType = {
-    id?: true
-    data_category?: true
-    home_team_name?: true
-    away_team_name?: true
-    diff_home_score?: true
-    diff_away_score?: true
-    diff_home_donation?: true
-    diff_away_donation?: true
-    diff_home_shoot_all?: true
-    diff_away_shoot_all?: true
-    diff_home_shoot_in?: true
-    diff_away_shoot_in?: true
-    diff_home_shoot_out?: true
-    diff_away_shoot_out?: true
-    diff_home_block_shoot?: true
-    diff_away_block_shoot?: true
-    diff_home_big_chance?: true
-    diff_away_big_chance?: true
-    diff_home_corner?: true
-    diff_away_corner?: true
-    diff_home_box_shoot_in?: true
-    diff_away_box_shoot_in?: true
-    diff_home_box_shoot_out?: true
-    diff_away_box_shoot_out?: true
-    diff_home_goal_post?: true
-    diff_away_goal_post?: true
-    diff_home_goal_head?: true
-    diff_away_goal_head?: true
-    diff_home_keeper_save?: true
-    diff_away_keeper_save?: true
-    diff_home_free_kick?: true
-    diff_away_free_kick?: true
-    diff_home_offside?: true
-    diff_away_offside?: true
-    diff_home_foul?: true
-    diff_away_foul?: true
-    diff_home_yellow_card?: true
-    diff_away_yellow_card?: true
-    diff_home_red_card?: true
-    diff_away_red_card?: true
-    diff_home_slow_in?: true
-    diff_away_slow_in?: true
-    diff_home_box_touch?: true
-    diff_away_box_touch?: true
-    diff_home_pass_count?: true
-    diff_away_pass_count?: true
-    diff_home_final_third_pass_count?: true
-    diff_away_final_third_pass_count?: true
-    diff_home_cross_count?: true
-    diff_away_cross_count?: true
-    diff_home_tackle_count?: true
-    diff_away_tackle_count?: true
-    diff_home_clear_count?: true
-    diff_away_clear_count?: true
-    diff_home_intercept_count?: true
-    diff_away_intercept_count?: true
-    home_play_style?: true
-    away_play_style?: true
-    register_id?: true
-    register_time?: true
-    update_id?: true
-    update_time?: true
-  }
-
-  export type Scoring_playstyle_past_dataCountAggregateInputType = {
-    id?: true
-    data_category?: true
-    home_team_name?: true
-    away_team_name?: true
-    diff_home_score?: true
-    diff_away_score?: true
-    diff_home_donation?: true
-    diff_away_donation?: true
-    diff_home_shoot_all?: true
-    diff_away_shoot_all?: true
-    diff_home_shoot_in?: true
-    diff_away_shoot_in?: true
-    diff_home_shoot_out?: true
-    diff_away_shoot_out?: true
-    diff_home_block_shoot?: true
-    diff_away_block_shoot?: true
-    diff_home_big_chance?: true
-    diff_away_big_chance?: true
-    diff_home_corner?: true
-    diff_away_corner?: true
-    diff_home_box_shoot_in?: true
-    diff_away_box_shoot_in?: true
-    diff_home_box_shoot_out?: true
-    diff_away_box_shoot_out?: true
-    diff_home_goal_post?: true
-    diff_away_goal_post?: true
-    diff_home_goal_head?: true
-    diff_away_goal_head?: true
-    diff_home_keeper_save?: true
-    diff_away_keeper_save?: true
-    diff_home_free_kick?: true
-    diff_away_free_kick?: true
-    diff_home_offside?: true
-    diff_away_offside?: true
-    diff_home_foul?: true
-    diff_away_foul?: true
-    diff_home_yellow_card?: true
-    diff_away_yellow_card?: true
-    diff_home_red_card?: true
-    diff_away_red_card?: true
-    diff_home_slow_in?: true
-    diff_away_slow_in?: true
-    diff_home_box_touch?: true
-    diff_away_box_touch?: true
-    diff_home_pass_count?: true
-    diff_away_pass_count?: true
-    diff_home_final_third_pass_count?: true
-    diff_away_final_third_pass_count?: true
-    diff_home_cross_count?: true
-    diff_away_cross_count?: true
-    diff_home_tackle_count?: true
-    diff_away_tackle_count?: true
-    diff_home_clear_count?: true
-    diff_away_clear_count?: true
-    diff_home_intercept_count?: true
-    diff_away_intercept_count?: true
-    home_play_style?: true
-    away_play_style?: true
-    register_id?: true
-    register_time?: true
-    update_id?: true
-    update_time?: true
-    _all?: true
-  }
-
-  export type Scoring_playstyle_past_dataAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which scoring_playstyle_past_data to aggregate.
-     */
-    where?: scoring_playstyle_past_dataWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of scoring_playstyle_past_data to fetch.
-     */
-    orderBy?: scoring_playstyle_past_dataOrderByWithRelationInput | scoring_playstyle_past_dataOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: scoring_playstyle_past_dataWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` scoring_playstyle_past_data from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` scoring_playstyle_past_data.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned scoring_playstyle_past_data
-    **/
-    _count?: true | Scoring_playstyle_past_dataCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: Scoring_playstyle_past_dataAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: Scoring_playstyle_past_dataSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: Scoring_playstyle_past_dataMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: Scoring_playstyle_past_dataMaxAggregateInputType
-  }
-
-  export type GetScoring_playstyle_past_dataAggregateType<T extends Scoring_playstyle_past_dataAggregateArgs> = {
-        [P in keyof T & keyof AggregateScoring_playstyle_past_data]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateScoring_playstyle_past_data[P]>
-      : GetScalarType<T[P], AggregateScoring_playstyle_past_data[P]>
-  }
-
-
-
-
-  export type scoring_playstyle_past_dataGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: scoring_playstyle_past_dataWhereInput
-    orderBy?: scoring_playstyle_past_dataOrderByWithAggregationInput | scoring_playstyle_past_dataOrderByWithAggregationInput[]
-    by: Scoring_playstyle_past_dataScalarFieldEnum[] | Scoring_playstyle_past_dataScalarFieldEnum
-    having?: scoring_playstyle_past_dataScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: Scoring_playstyle_past_dataCountAggregateInputType | true
-    _avg?: Scoring_playstyle_past_dataAvgAggregateInputType
-    _sum?: Scoring_playstyle_past_dataSumAggregateInputType
-    _min?: Scoring_playstyle_past_dataMinAggregateInputType
-    _max?: Scoring_playstyle_past_dataMaxAggregateInputType
-  }
-
-  export type Scoring_playstyle_past_dataGroupByOutputType = {
-    id: number
-    data_category: string | null
-    home_team_name: string | null
-    away_team_name: string | null
-    diff_home_score: string | null
-    diff_away_score: string | null
-    diff_home_donation: string | null
-    diff_away_donation: string | null
-    diff_home_shoot_all: string | null
-    diff_away_shoot_all: string | null
-    diff_home_shoot_in: string | null
-    diff_away_shoot_in: string | null
-    diff_home_shoot_out: string | null
-    diff_away_shoot_out: string | null
-    diff_home_block_shoot: string | null
-    diff_away_block_shoot: string | null
-    diff_home_big_chance: string | null
-    diff_away_big_chance: string | null
-    diff_home_corner: string | null
-    diff_away_corner: string | null
-    diff_home_box_shoot_in: string | null
-    diff_away_box_shoot_in: string | null
-    diff_home_box_shoot_out: string | null
-    diff_away_box_shoot_out: string | null
-    diff_home_goal_post: string | null
-    diff_away_goal_post: string | null
-    diff_home_goal_head: string | null
-    diff_away_goal_head: string | null
-    diff_home_keeper_save: string | null
-    diff_away_keeper_save: string | null
-    diff_home_free_kick: string | null
-    diff_away_free_kick: string | null
-    diff_home_offside: string | null
-    diff_away_offside: string | null
-    diff_home_foul: string | null
-    diff_away_foul: string | null
-    diff_home_yellow_card: string | null
-    diff_away_yellow_card: string | null
-    diff_home_red_card: string | null
-    diff_away_red_card: string | null
-    diff_home_slow_in: string | null
-    diff_away_slow_in: string | null
-    diff_home_box_touch: string | null
-    diff_away_box_touch: string | null
-    diff_home_pass_count: string | null
-    diff_away_pass_count: string | null
-    diff_home_final_third_pass_count: string | null
-    diff_away_final_third_pass_count: string | null
-    diff_home_cross_count: string | null
-    diff_away_cross_count: string | null
-    diff_home_tackle_count: string | null
-    diff_away_tackle_count: string | null
-    diff_home_clear_count: string | null
-    diff_away_clear_count: string | null
-    diff_home_intercept_count: string | null
-    diff_away_intercept_count: string | null
-    home_play_style: string | null
-    away_play_style: string | null
-    register_id: string
-    register_time: Date
-    update_id: string
-    update_time: Date
-    _count: Scoring_playstyle_past_dataCountAggregateOutputType | null
-    _avg: Scoring_playstyle_past_dataAvgAggregateOutputType | null
-    _sum: Scoring_playstyle_past_dataSumAggregateOutputType | null
-    _min: Scoring_playstyle_past_dataMinAggregateOutputType | null
-    _max: Scoring_playstyle_past_dataMaxAggregateOutputType | null
-  }
-
-  type GetScoring_playstyle_past_dataGroupByPayload<T extends scoring_playstyle_past_dataGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<Scoring_playstyle_past_dataGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof Scoring_playstyle_past_dataGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], Scoring_playstyle_past_dataGroupByOutputType[P]>
-            : GetScalarType<T[P], Scoring_playstyle_past_dataGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type scoring_playstyle_past_dataSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    data_category?: boolean
-    home_team_name?: boolean
-    away_team_name?: boolean
-    diff_home_score?: boolean
-    diff_away_score?: boolean
-    diff_home_donation?: boolean
-    diff_away_donation?: boolean
-    diff_home_shoot_all?: boolean
-    diff_away_shoot_all?: boolean
-    diff_home_shoot_in?: boolean
-    diff_away_shoot_in?: boolean
-    diff_home_shoot_out?: boolean
-    diff_away_shoot_out?: boolean
-    diff_home_block_shoot?: boolean
-    diff_away_block_shoot?: boolean
-    diff_home_big_chance?: boolean
-    diff_away_big_chance?: boolean
-    diff_home_corner?: boolean
-    diff_away_corner?: boolean
-    diff_home_box_shoot_in?: boolean
-    diff_away_box_shoot_in?: boolean
-    diff_home_box_shoot_out?: boolean
-    diff_away_box_shoot_out?: boolean
-    diff_home_goal_post?: boolean
-    diff_away_goal_post?: boolean
-    diff_home_goal_head?: boolean
-    diff_away_goal_head?: boolean
-    diff_home_keeper_save?: boolean
-    diff_away_keeper_save?: boolean
-    diff_home_free_kick?: boolean
-    diff_away_free_kick?: boolean
-    diff_home_offside?: boolean
-    diff_away_offside?: boolean
-    diff_home_foul?: boolean
-    diff_away_foul?: boolean
-    diff_home_yellow_card?: boolean
-    diff_away_yellow_card?: boolean
-    diff_home_red_card?: boolean
-    diff_away_red_card?: boolean
-    diff_home_slow_in?: boolean
-    diff_away_slow_in?: boolean
-    diff_home_box_touch?: boolean
-    diff_away_box_touch?: boolean
-    diff_home_pass_count?: boolean
-    diff_away_pass_count?: boolean
-    diff_home_final_third_pass_count?: boolean
-    diff_away_final_third_pass_count?: boolean
-    diff_home_cross_count?: boolean
-    diff_away_cross_count?: boolean
-    diff_home_tackle_count?: boolean
-    diff_away_tackle_count?: boolean
-    diff_home_clear_count?: boolean
-    diff_away_clear_count?: boolean
-    diff_home_intercept_count?: boolean
-    diff_away_intercept_count?: boolean
-    home_play_style?: boolean
-    away_play_style?: boolean
-    register_id?: boolean
-    register_time?: boolean
-    update_id?: boolean
-    update_time?: boolean
-  }, ExtArgs["result"]["scoring_playstyle_past_data"]>
-
-  export type scoring_playstyle_past_dataSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    data_category?: boolean
-    home_team_name?: boolean
-    away_team_name?: boolean
-    diff_home_score?: boolean
-    diff_away_score?: boolean
-    diff_home_donation?: boolean
-    diff_away_donation?: boolean
-    diff_home_shoot_all?: boolean
-    diff_away_shoot_all?: boolean
-    diff_home_shoot_in?: boolean
-    diff_away_shoot_in?: boolean
-    diff_home_shoot_out?: boolean
-    diff_away_shoot_out?: boolean
-    diff_home_block_shoot?: boolean
-    diff_away_block_shoot?: boolean
-    diff_home_big_chance?: boolean
-    diff_away_big_chance?: boolean
-    diff_home_corner?: boolean
-    diff_away_corner?: boolean
-    diff_home_box_shoot_in?: boolean
-    diff_away_box_shoot_in?: boolean
-    diff_home_box_shoot_out?: boolean
-    diff_away_box_shoot_out?: boolean
-    diff_home_goal_post?: boolean
-    diff_away_goal_post?: boolean
-    diff_home_goal_head?: boolean
-    diff_away_goal_head?: boolean
-    diff_home_keeper_save?: boolean
-    diff_away_keeper_save?: boolean
-    diff_home_free_kick?: boolean
-    diff_away_free_kick?: boolean
-    diff_home_offside?: boolean
-    diff_away_offside?: boolean
-    diff_home_foul?: boolean
-    diff_away_foul?: boolean
-    diff_home_yellow_card?: boolean
-    diff_away_yellow_card?: boolean
-    diff_home_red_card?: boolean
-    diff_away_red_card?: boolean
-    diff_home_slow_in?: boolean
-    diff_away_slow_in?: boolean
-    diff_home_box_touch?: boolean
-    diff_away_box_touch?: boolean
-    diff_home_pass_count?: boolean
-    diff_away_pass_count?: boolean
-    diff_home_final_third_pass_count?: boolean
-    diff_away_final_third_pass_count?: boolean
-    diff_home_cross_count?: boolean
-    diff_away_cross_count?: boolean
-    diff_home_tackle_count?: boolean
-    diff_away_tackle_count?: boolean
-    diff_home_clear_count?: boolean
-    diff_away_clear_count?: boolean
-    diff_home_intercept_count?: boolean
-    diff_away_intercept_count?: boolean
-    home_play_style?: boolean
-    away_play_style?: boolean
-    register_id?: boolean
-    register_time?: boolean
-    update_id?: boolean
-    update_time?: boolean
-  }, ExtArgs["result"]["scoring_playstyle_past_data"]>
-
-  export type scoring_playstyle_past_dataSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    data_category?: boolean
-    home_team_name?: boolean
-    away_team_name?: boolean
-    diff_home_score?: boolean
-    diff_away_score?: boolean
-    diff_home_donation?: boolean
-    diff_away_donation?: boolean
-    diff_home_shoot_all?: boolean
-    diff_away_shoot_all?: boolean
-    diff_home_shoot_in?: boolean
-    diff_away_shoot_in?: boolean
-    diff_home_shoot_out?: boolean
-    diff_away_shoot_out?: boolean
-    diff_home_block_shoot?: boolean
-    diff_away_block_shoot?: boolean
-    diff_home_big_chance?: boolean
-    diff_away_big_chance?: boolean
-    diff_home_corner?: boolean
-    diff_away_corner?: boolean
-    diff_home_box_shoot_in?: boolean
-    diff_away_box_shoot_in?: boolean
-    diff_home_box_shoot_out?: boolean
-    diff_away_box_shoot_out?: boolean
-    diff_home_goal_post?: boolean
-    diff_away_goal_post?: boolean
-    diff_home_goal_head?: boolean
-    diff_away_goal_head?: boolean
-    diff_home_keeper_save?: boolean
-    diff_away_keeper_save?: boolean
-    diff_home_free_kick?: boolean
-    diff_away_free_kick?: boolean
-    diff_home_offside?: boolean
-    diff_away_offside?: boolean
-    diff_home_foul?: boolean
-    diff_away_foul?: boolean
-    diff_home_yellow_card?: boolean
-    diff_away_yellow_card?: boolean
-    diff_home_red_card?: boolean
-    diff_away_red_card?: boolean
-    diff_home_slow_in?: boolean
-    diff_away_slow_in?: boolean
-    diff_home_box_touch?: boolean
-    diff_away_box_touch?: boolean
-    diff_home_pass_count?: boolean
-    diff_away_pass_count?: boolean
-    diff_home_final_third_pass_count?: boolean
-    diff_away_final_third_pass_count?: boolean
-    diff_home_cross_count?: boolean
-    diff_away_cross_count?: boolean
-    diff_home_tackle_count?: boolean
-    diff_away_tackle_count?: boolean
-    diff_home_clear_count?: boolean
-    diff_away_clear_count?: boolean
-    diff_home_intercept_count?: boolean
-    diff_away_intercept_count?: boolean
-    home_play_style?: boolean
-    away_play_style?: boolean
-    register_id?: boolean
-    register_time?: boolean
-    update_id?: boolean
-    update_time?: boolean
-  }, ExtArgs["result"]["scoring_playstyle_past_data"]>
-
-  export type scoring_playstyle_past_dataSelectScalar = {
-    id?: boolean
-    data_category?: boolean
-    home_team_name?: boolean
-    away_team_name?: boolean
-    diff_home_score?: boolean
-    diff_away_score?: boolean
-    diff_home_donation?: boolean
-    diff_away_donation?: boolean
-    diff_home_shoot_all?: boolean
-    diff_away_shoot_all?: boolean
-    diff_home_shoot_in?: boolean
-    diff_away_shoot_in?: boolean
-    diff_home_shoot_out?: boolean
-    diff_away_shoot_out?: boolean
-    diff_home_block_shoot?: boolean
-    diff_away_block_shoot?: boolean
-    diff_home_big_chance?: boolean
-    diff_away_big_chance?: boolean
-    diff_home_corner?: boolean
-    diff_away_corner?: boolean
-    diff_home_box_shoot_in?: boolean
-    diff_away_box_shoot_in?: boolean
-    diff_home_box_shoot_out?: boolean
-    diff_away_box_shoot_out?: boolean
-    diff_home_goal_post?: boolean
-    diff_away_goal_post?: boolean
-    diff_home_goal_head?: boolean
-    diff_away_goal_head?: boolean
-    diff_home_keeper_save?: boolean
-    diff_away_keeper_save?: boolean
-    diff_home_free_kick?: boolean
-    diff_away_free_kick?: boolean
-    diff_home_offside?: boolean
-    diff_away_offside?: boolean
-    diff_home_foul?: boolean
-    diff_away_foul?: boolean
-    diff_home_yellow_card?: boolean
-    diff_away_yellow_card?: boolean
-    diff_home_red_card?: boolean
-    diff_away_red_card?: boolean
-    diff_home_slow_in?: boolean
-    diff_away_slow_in?: boolean
-    diff_home_box_touch?: boolean
-    diff_away_box_touch?: boolean
-    diff_home_pass_count?: boolean
-    diff_away_pass_count?: boolean
-    diff_home_final_third_pass_count?: boolean
-    diff_away_final_third_pass_count?: boolean
-    diff_home_cross_count?: boolean
-    diff_away_cross_count?: boolean
-    diff_home_tackle_count?: boolean
-    diff_away_tackle_count?: boolean
-    diff_home_clear_count?: boolean
-    diff_away_clear_count?: boolean
-    diff_home_intercept_count?: boolean
-    diff_away_intercept_count?: boolean
-    home_play_style?: boolean
-    away_play_style?: boolean
-    register_id?: boolean
-    register_time?: boolean
-    update_id?: boolean
-    update_time?: boolean
-  }
-
-  export type scoring_playstyle_past_dataOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "data_category" | "home_team_name" | "away_team_name" | "diff_home_score" | "diff_away_score" | "diff_home_donation" | "diff_away_donation" | "diff_home_shoot_all" | "diff_away_shoot_all" | "diff_home_shoot_in" | "diff_away_shoot_in" | "diff_home_shoot_out" | "diff_away_shoot_out" | "diff_home_block_shoot" | "diff_away_block_shoot" | "diff_home_big_chance" | "diff_away_big_chance" | "diff_home_corner" | "diff_away_corner" | "diff_home_box_shoot_in" | "diff_away_box_shoot_in" | "diff_home_box_shoot_out" | "diff_away_box_shoot_out" | "diff_home_goal_post" | "diff_away_goal_post" | "diff_home_goal_head" | "diff_away_goal_head" | "diff_home_keeper_save" | "diff_away_keeper_save" | "diff_home_free_kick" | "diff_away_free_kick" | "diff_home_offside" | "diff_away_offside" | "diff_home_foul" | "diff_away_foul" | "diff_home_yellow_card" | "diff_away_yellow_card" | "diff_home_red_card" | "diff_away_red_card" | "diff_home_slow_in" | "diff_away_slow_in" | "diff_home_box_touch" | "diff_away_box_touch" | "diff_home_pass_count" | "diff_away_pass_count" | "diff_home_final_third_pass_count" | "diff_away_final_third_pass_count" | "diff_home_cross_count" | "diff_away_cross_count" | "diff_home_tackle_count" | "diff_away_tackle_count" | "diff_home_clear_count" | "diff_away_clear_count" | "diff_home_intercept_count" | "diff_away_intercept_count" | "home_play_style" | "away_play_style" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["scoring_playstyle_past_data"]>
-
-  export type $scoring_playstyle_past_dataPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "scoring_playstyle_past_data"
-    objects: {}
-    scalars: $Extensions.GetPayloadResult<{
-      id: number
-      data_category: string | null
-      home_team_name: string | null
-      away_team_name: string | null
-      diff_home_score: string | null
-      diff_away_score: string | null
-      diff_home_donation: string | null
-      diff_away_donation: string | null
-      diff_home_shoot_all: string | null
-      diff_away_shoot_all: string | null
-      diff_home_shoot_in: string | null
-      diff_away_shoot_in: string | null
-      diff_home_shoot_out: string | null
-      diff_away_shoot_out: string | null
-      diff_home_block_shoot: string | null
-      diff_away_block_shoot: string | null
-      diff_home_big_chance: string | null
-      diff_away_big_chance: string | null
-      diff_home_corner: string | null
-      diff_away_corner: string | null
-      diff_home_box_shoot_in: string | null
-      diff_away_box_shoot_in: string | null
-      diff_home_box_shoot_out: string | null
-      diff_away_box_shoot_out: string | null
-      diff_home_goal_post: string | null
-      diff_away_goal_post: string | null
-      diff_home_goal_head: string | null
-      diff_away_goal_head: string | null
-      diff_home_keeper_save: string | null
-      diff_away_keeper_save: string | null
-      diff_home_free_kick: string | null
-      diff_away_free_kick: string | null
-      diff_home_offside: string | null
-      diff_away_offside: string | null
-      diff_home_foul: string | null
-      diff_away_foul: string | null
-      diff_home_yellow_card: string | null
-      diff_away_yellow_card: string | null
-      diff_home_red_card: string | null
-      diff_away_red_card: string | null
-      diff_home_slow_in: string | null
-      diff_away_slow_in: string | null
-      diff_home_box_touch: string | null
-      diff_away_box_touch: string | null
-      diff_home_pass_count: string | null
-      diff_away_pass_count: string | null
-      diff_home_final_third_pass_count: string | null
-      diff_away_final_third_pass_count: string | null
-      diff_home_cross_count: string | null
-      diff_away_cross_count: string | null
-      diff_home_tackle_count: string | null
-      diff_away_tackle_count: string | null
-      diff_home_clear_count: string | null
-      diff_away_clear_count: string | null
-      diff_home_intercept_count: string | null
-      diff_away_intercept_count: string | null
-      home_play_style: string | null
-      away_play_style: string | null
-      register_id: string
-      register_time: Date
-      update_id: string
-      update_time: Date
-    }, ExtArgs["result"]["scoring_playstyle_past_data"]>
-    composites: {}
-  }
-
-  type scoring_playstyle_past_dataGetPayload<S extends boolean | null | undefined | scoring_playstyle_past_dataDefaultArgs> = $Result.GetResult<Prisma.$scoring_playstyle_past_dataPayload, S>
-
-  type scoring_playstyle_past_dataCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<scoring_playstyle_past_dataFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: Scoring_playstyle_past_dataCountAggregateInputType | true
-    }
-
-  export interface scoring_playstyle_past_dataDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['scoring_playstyle_past_data'], meta: { name: 'scoring_playstyle_past_data' } }
-    /**
-     * Find zero or one Scoring_playstyle_past_data that matches the filter.
-     * @param {scoring_playstyle_past_dataFindUniqueArgs} args - Arguments to find a Scoring_playstyle_past_data
-     * @example
-     * // Get one Scoring_playstyle_past_data
-     * const scoring_playstyle_past_data = await prisma.scoring_playstyle_past_data.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends scoring_playstyle_past_dataFindUniqueArgs>(args: SelectSubset<T, scoring_playstyle_past_dataFindUniqueArgs<ExtArgs>>): Prisma__scoring_playstyle_past_dataClient<$Result.GetResult<Prisma.$scoring_playstyle_past_dataPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one Scoring_playstyle_past_data that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {scoring_playstyle_past_dataFindUniqueOrThrowArgs} args - Arguments to find a Scoring_playstyle_past_data
-     * @example
-     * // Get one Scoring_playstyle_past_data
-     * const scoring_playstyle_past_data = await prisma.scoring_playstyle_past_data.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends scoring_playstyle_past_dataFindUniqueOrThrowArgs>(args: SelectSubset<T, scoring_playstyle_past_dataFindUniqueOrThrowArgs<ExtArgs>>): Prisma__scoring_playstyle_past_dataClient<$Result.GetResult<Prisma.$scoring_playstyle_past_dataPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first Scoring_playstyle_past_data that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {scoring_playstyle_past_dataFindFirstArgs} args - Arguments to find a Scoring_playstyle_past_data
-     * @example
-     * // Get one Scoring_playstyle_past_data
-     * const scoring_playstyle_past_data = await prisma.scoring_playstyle_past_data.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends scoring_playstyle_past_dataFindFirstArgs>(args?: SelectSubset<T, scoring_playstyle_past_dataFindFirstArgs<ExtArgs>>): Prisma__scoring_playstyle_past_dataClient<$Result.GetResult<Prisma.$scoring_playstyle_past_dataPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first Scoring_playstyle_past_data that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {scoring_playstyle_past_dataFindFirstOrThrowArgs} args - Arguments to find a Scoring_playstyle_past_data
-     * @example
-     * // Get one Scoring_playstyle_past_data
-     * const scoring_playstyle_past_data = await prisma.scoring_playstyle_past_data.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends scoring_playstyle_past_dataFindFirstOrThrowArgs>(args?: SelectSubset<T, scoring_playstyle_past_dataFindFirstOrThrowArgs<ExtArgs>>): Prisma__scoring_playstyle_past_dataClient<$Result.GetResult<Prisma.$scoring_playstyle_past_dataPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more Scoring_playstyle_past_data that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {scoring_playstyle_past_dataFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all Scoring_playstyle_past_data
-     * const scoring_playstyle_past_data = await prisma.scoring_playstyle_past_data.findMany()
-     * 
-     * // Get first 10 Scoring_playstyle_past_data
-     * const scoring_playstyle_past_data = await prisma.scoring_playstyle_past_data.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const scoring_playstyle_past_dataWithIdOnly = await prisma.scoring_playstyle_past_data.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends scoring_playstyle_past_dataFindManyArgs>(args?: SelectSubset<T, scoring_playstyle_past_dataFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$scoring_playstyle_past_dataPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a Scoring_playstyle_past_data.
-     * @param {scoring_playstyle_past_dataCreateArgs} args - Arguments to create a Scoring_playstyle_past_data.
-     * @example
-     * // Create one Scoring_playstyle_past_data
-     * const Scoring_playstyle_past_data = await prisma.scoring_playstyle_past_data.create({
-     *   data: {
-     *     // ... data to create a Scoring_playstyle_past_data
-     *   }
-     * })
-     * 
-     */
-    create<T extends scoring_playstyle_past_dataCreateArgs>(args: SelectSubset<T, scoring_playstyle_past_dataCreateArgs<ExtArgs>>): Prisma__scoring_playstyle_past_dataClient<$Result.GetResult<Prisma.$scoring_playstyle_past_dataPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many Scoring_playstyle_past_data.
-     * @param {scoring_playstyle_past_dataCreateManyArgs} args - Arguments to create many Scoring_playstyle_past_data.
-     * @example
-     * // Create many Scoring_playstyle_past_data
-     * const scoring_playstyle_past_data = await prisma.scoring_playstyle_past_data.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends scoring_playstyle_past_dataCreateManyArgs>(args?: SelectSubset<T, scoring_playstyle_past_dataCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many Scoring_playstyle_past_data and returns the data saved in the database.
-     * @param {scoring_playstyle_past_dataCreateManyAndReturnArgs} args - Arguments to create many Scoring_playstyle_past_data.
-     * @example
-     * // Create many Scoring_playstyle_past_data
-     * const scoring_playstyle_past_data = await prisma.scoring_playstyle_past_data.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many Scoring_playstyle_past_data and only return the `id`
-     * const scoring_playstyle_past_dataWithIdOnly = await prisma.scoring_playstyle_past_data.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends scoring_playstyle_past_dataCreateManyAndReturnArgs>(args?: SelectSubset<T, scoring_playstyle_past_dataCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$scoring_playstyle_past_dataPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a Scoring_playstyle_past_data.
-     * @param {scoring_playstyle_past_dataDeleteArgs} args - Arguments to delete one Scoring_playstyle_past_data.
-     * @example
-     * // Delete one Scoring_playstyle_past_data
-     * const Scoring_playstyle_past_data = await prisma.scoring_playstyle_past_data.delete({
-     *   where: {
-     *     // ... filter to delete one Scoring_playstyle_past_data
-     *   }
-     * })
-     * 
-     */
-    delete<T extends scoring_playstyle_past_dataDeleteArgs>(args: SelectSubset<T, scoring_playstyle_past_dataDeleteArgs<ExtArgs>>): Prisma__scoring_playstyle_past_dataClient<$Result.GetResult<Prisma.$scoring_playstyle_past_dataPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one Scoring_playstyle_past_data.
-     * @param {scoring_playstyle_past_dataUpdateArgs} args - Arguments to update one Scoring_playstyle_past_data.
-     * @example
-     * // Update one Scoring_playstyle_past_data
-     * const scoring_playstyle_past_data = await prisma.scoring_playstyle_past_data.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends scoring_playstyle_past_dataUpdateArgs>(args: SelectSubset<T, scoring_playstyle_past_dataUpdateArgs<ExtArgs>>): Prisma__scoring_playstyle_past_dataClient<$Result.GetResult<Prisma.$scoring_playstyle_past_dataPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more Scoring_playstyle_past_data.
-     * @param {scoring_playstyle_past_dataDeleteManyArgs} args - Arguments to filter Scoring_playstyle_past_data to delete.
-     * @example
-     * // Delete a few Scoring_playstyle_past_data
-     * const { count } = await prisma.scoring_playstyle_past_data.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends scoring_playstyle_past_dataDeleteManyArgs>(args?: SelectSubset<T, scoring_playstyle_past_dataDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more Scoring_playstyle_past_data.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {scoring_playstyle_past_dataUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many Scoring_playstyle_past_data
-     * const scoring_playstyle_past_data = await prisma.scoring_playstyle_past_data.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends scoring_playstyle_past_dataUpdateManyArgs>(args: SelectSubset<T, scoring_playstyle_past_dataUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more Scoring_playstyle_past_data and returns the data updated in the database.
-     * @param {scoring_playstyle_past_dataUpdateManyAndReturnArgs} args - Arguments to update many Scoring_playstyle_past_data.
-     * @example
-     * // Update many Scoring_playstyle_past_data
-     * const scoring_playstyle_past_data = await prisma.scoring_playstyle_past_data.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more Scoring_playstyle_past_data and only return the `id`
-     * const scoring_playstyle_past_dataWithIdOnly = await prisma.scoring_playstyle_past_data.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends scoring_playstyle_past_dataUpdateManyAndReturnArgs>(args: SelectSubset<T, scoring_playstyle_past_dataUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$scoring_playstyle_past_dataPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one Scoring_playstyle_past_data.
-     * @param {scoring_playstyle_past_dataUpsertArgs} args - Arguments to update or create a Scoring_playstyle_past_data.
-     * @example
-     * // Update or create a Scoring_playstyle_past_data
-     * const scoring_playstyle_past_data = await prisma.scoring_playstyle_past_data.upsert({
-     *   create: {
-     *     // ... data to create a Scoring_playstyle_past_data
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the Scoring_playstyle_past_data we want to update
-     *   }
-     * })
-     */
-    upsert<T extends scoring_playstyle_past_dataUpsertArgs>(args: SelectSubset<T, scoring_playstyle_past_dataUpsertArgs<ExtArgs>>): Prisma__scoring_playstyle_past_dataClient<$Result.GetResult<Prisma.$scoring_playstyle_past_dataPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of Scoring_playstyle_past_data.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {scoring_playstyle_past_dataCountArgs} args - Arguments to filter Scoring_playstyle_past_data to count.
-     * @example
-     * // Count the number of Scoring_playstyle_past_data
-     * const count = await prisma.scoring_playstyle_past_data.count({
-     *   where: {
-     *     // ... the filter for the Scoring_playstyle_past_data we want to count
-     *   }
-     * })
-    **/
-    count<T extends scoring_playstyle_past_dataCountArgs>(
-      args?: Subset<T, scoring_playstyle_past_dataCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], Scoring_playstyle_past_dataCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a Scoring_playstyle_past_data.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {Scoring_playstyle_past_dataAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends Scoring_playstyle_past_dataAggregateArgs>(args: Subset<T, Scoring_playstyle_past_dataAggregateArgs>): Prisma.PrismaPromise<GetScoring_playstyle_past_dataAggregateType<T>>
-
-    /**
-     * Group by Scoring_playstyle_past_data.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {scoring_playstyle_past_dataGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends scoring_playstyle_past_dataGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: scoring_playstyle_past_dataGroupByArgs['orderBy'] }
-        : { orderBy?: scoring_playstyle_past_dataGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, scoring_playstyle_past_dataGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetScoring_playstyle_past_dataGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the scoring_playstyle_past_data model
-   */
-  readonly fields: scoring_playstyle_past_dataFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for scoring_playstyle_past_data.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__scoring_playstyle_past_dataClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the scoring_playstyle_past_data model
-   */
-  interface scoring_playstyle_past_dataFieldRefs {
-    readonly id: FieldRef<"scoring_playstyle_past_data", 'Int'>
-    readonly data_category: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly home_team_name: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly away_team_name: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_home_score: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_away_score: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_home_donation: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_away_donation: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_home_shoot_all: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_away_shoot_all: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_home_shoot_in: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_away_shoot_in: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_home_shoot_out: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_away_shoot_out: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_home_block_shoot: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_away_block_shoot: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_home_big_chance: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_away_big_chance: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_home_corner: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_away_corner: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_home_box_shoot_in: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_away_box_shoot_in: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_home_box_shoot_out: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_away_box_shoot_out: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_home_goal_post: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_away_goal_post: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_home_goal_head: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_away_goal_head: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_home_keeper_save: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_away_keeper_save: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_home_free_kick: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_away_free_kick: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_home_offside: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_away_offside: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_home_foul: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_away_foul: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_home_yellow_card: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_away_yellow_card: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_home_red_card: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_away_red_card: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_home_slow_in: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_away_slow_in: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_home_box_touch: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_away_box_touch: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_home_pass_count: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_away_pass_count: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_home_final_third_pass_count: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_away_final_third_pass_count: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_home_cross_count: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_away_cross_count: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_home_tackle_count: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_away_tackle_count: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_home_clear_count: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_away_clear_count: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_home_intercept_count: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly diff_away_intercept_count: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly home_play_style: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly away_play_style: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly register_id: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly register_time: FieldRef<"scoring_playstyle_past_data", 'DateTime'>
-    readonly update_id: FieldRef<"scoring_playstyle_past_data", 'String'>
-    readonly update_time: FieldRef<"scoring_playstyle_past_data", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * scoring_playstyle_past_data findUnique
-   */
-  export type scoring_playstyle_past_dataFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the scoring_playstyle_past_data
-     */
-    select?: scoring_playstyle_past_dataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the scoring_playstyle_past_data
-     */
-    omit?: scoring_playstyle_past_dataOmit<ExtArgs> | null
-    /**
-     * Filter, which scoring_playstyle_past_data to fetch.
-     */
-    where: scoring_playstyle_past_dataWhereUniqueInput
-  }
-
-  /**
-   * scoring_playstyle_past_data findUniqueOrThrow
-   */
-  export type scoring_playstyle_past_dataFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the scoring_playstyle_past_data
-     */
-    select?: scoring_playstyle_past_dataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the scoring_playstyle_past_data
-     */
-    omit?: scoring_playstyle_past_dataOmit<ExtArgs> | null
-    /**
-     * Filter, which scoring_playstyle_past_data to fetch.
-     */
-    where: scoring_playstyle_past_dataWhereUniqueInput
-  }
-
-  /**
-   * scoring_playstyle_past_data findFirst
-   */
-  export type scoring_playstyle_past_dataFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the scoring_playstyle_past_data
-     */
-    select?: scoring_playstyle_past_dataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the scoring_playstyle_past_data
-     */
-    omit?: scoring_playstyle_past_dataOmit<ExtArgs> | null
-    /**
-     * Filter, which scoring_playstyle_past_data to fetch.
-     */
-    where?: scoring_playstyle_past_dataWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of scoring_playstyle_past_data to fetch.
-     */
-    orderBy?: scoring_playstyle_past_dataOrderByWithRelationInput | scoring_playstyle_past_dataOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for scoring_playstyle_past_data.
-     */
-    cursor?: scoring_playstyle_past_dataWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` scoring_playstyle_past_data from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` scoring_playstyle_past_data.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of scoring_playstyle_past_data.
-     */
-    distinct?: Scoring_playstyle_past_dataScalarFieldEnum | Scoring_playstyle_past_dataScalarFieldEnum[]
-  }
-
-  /**
-   * scoring_playstyle_past_data findFirstOrThrow
-   */
-  export type scoring_playstyle_past_dataFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the scoring_playstyle_past_data
-     */
-    select?: scoring_playstyle_past_dataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the scoring_playstyle_past_data
-     */
-    omit?: scoring_playstyle_past_dataOmit<ExtArgs> | null
-    /**
-     * Filter, which scoring_playstyle_past_data to fetch.
-     */
-    where?: scoring_playstyle_past_dataWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of scoring_playstyle_past_data to fetch.
-     */
-    orderBy?: scoring_playstyle_past_dataOrderByWithRelationInput | scoring_playstyle_past_dataOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for scoring_playstyle_past_data.
-     */
-    cursor?: scoring_playstyle_past_dataWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` scoring_playstyle_past_data from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` scoring_playstyle_past_data.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of scoring_playstyle_past_data.
-     */
-    distinct?: Scoring_playstyle_past_dataScalarFieldEnum | Scoring_playstyle_past_dataScalarFieldEnum[]
-  }
-
-  /**
-   * scoring_playstyle_past_data findMany
-   */
-  export type scoring_playstyle_past_dataFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the scoring_playstyle_past_data
-     */
-    select?: scoring_playstyle_past_dataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the scoring_playstyle_past_data
-     */
-    omit?: scoring_playstyle_past_dataOmit<ExtArgs> | null
-    /**
-     * Filter, which scoring_playstyle_past_data to fetch.
-     */
-    where?: scoring_playstyle_past_dataWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of scoring_playstyle_past_data to fetch.
-     */
-    orderBy?: scoring_playstyle_past_dataOrderByWithRelationInput | scoring_playstyle_past_dataOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing scoring_playstyle_past_data.
-     */
-    cursor?: scoring_playstyle_past_dataWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` scoring_playstyle_past_data from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` scoring_playstyle_past_data.
-     */
-    skip?: number
-    distinct?: Scoring_playstyle_past_dataScalarFieldEnum | Scoring_playstyle_past_dataScalarFieldEnum[]
-  }
-
-  /**
-   * scoring_playstyle_past_data create
-   */
-  export type scoring_playstyle_past_dataCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the scoring_playstyle_past_data
-     */
-    select?: scoring_playstyle_past_dataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the scoring_playstyle_past_data
-     */
-    omit?: scoring_playstyle_past_dataOmit<ExtArgs> | null
-    /**
-     * The data needed to create a scoring_playstyle_past_data.
-     */
-    data: XOR<scoring_playstyle_past_dataCreateInput, scoring_playstyle_past_dataUncheckedCreateInput>
-  }
-
-  /**
-   * scoring_playstyle_past_data createMany
-   */
-  export type scoring_playstyle_past_dataCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many scoring_playstyle_past_data.
-     */
-    data: scoring_playstyle_past_dataCreateManyInput | scoring_playstyle_past_dataCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * scoring_playstyle_past_data createManyAndReturn
-   */
-  export type scoring_playstyle_past_dataCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the scoring_playstyle_past_data
-     */
-    select?: scoring_playstyle_past_dataSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the scoring_playstyle_past_data
-     */
-    omit?: scoring_playstyle_past_dataOmit<ExtArgs> | null
-    /**
-     * The data used to create many scoring_playstyle_past_data.
-     */
-    data: scoring_playstyle_past_dataCreateManyInput | scoring_playstyle_past_dataCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * scoring_playstyle_past_data update
-   */
-  export type scoring_playstyle_past_dataUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the scoring_playstyle_past_data
-     */
-    select?: scoring_playstyle_past_dataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the scoring_playstyle_past_data
-     */
-    omit?: scoring_playstyle_past_dataOmit<ExtArgs> | null
-    /**
-     * The data needed to update a scoring_playstyle_past_data.
-     */
-    data: XOR<scoring_playstyle_past_dataUpdateInput, scoring_playstyle_past_dataUncheckedUpdateInput>
-    /**
-     * Choose, which scoring_playstyle_past_data to update.
-     */
-    where: scoring_playstyle_past_dataWhereUniqueInput
-  }
-
-  /**
-   * scoring_playstyle_past_data updateMany
-   */
-  export type scoring_playstyle_past_dataUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update scoring_playstyle_past_data.
-     */
-    data: XOR<scoring_playstyle_past_dataUpdateManyMutationInput, scoring_playstyle_past_dataUncheckedUpdateManyInput>
-    /**
-     * Filter which scoring_playstyle_past_data to update
-     */
-    where?: scoring_playstyle_past_dataWhereInput
-    /**
-     * Limit how many scoring_playstyle_past_data to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * scoring_playstyle_past_data updateManyAndReturn
-   */
-  export type scoring_playstyle_past_dataUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the scoring_playstyle_past_data
-     */
-    select?: scoring_playstyle_past_dataSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the scoring_playstyle_past_data
-     */
-    omit?: scoring_playstyle_past_dataOmit<ExtArgs> | null
-    /**
-     * The data used to update scoring_playstyle_past_data.
-     */
-    data: XOR<scoring_playstyle_past_dataUpdateManyMutationInput, scoring_playstyle_past_dataUncheckedUpdateManyInput>
-    /**
-     * Filter which scoring_playstyle_past_data to update
-     */
-    where?: scoring_playstyle_past_dataWhereInput
-    /**
-     * Limit how many scoring_playstyle_past_data to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * scoring_playstyle_past_data upsert
-   */
-  export type scoring_playstyle_past_dataUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the scoring_playstyle_past_data
-     */
-    select?: scoring_playstyle_past_dataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the scoring_playstyle_past_data
-     */
-    omit?: scoring_playstyle_past_dataOmit<ExtArgs> | null
-    /**
-     * The filter to search for the scoring_playstyle_past_data to update in case it exists.
-     */
-    where: scoring_playstyle_past_dataWhereUniqueInput
-    /**
-     * In case the scoring_playstyle_past_data found by the `where` argument doesn't exist, create a new scoring_playstyle_past_data with this data.
-     */
-    create: XOR<scoring_playstyle_past_dataCreateInput, scoring_playstyle_past_dataUncheckedCreateInput>
-    /**
-     * In case the scoring_playstyle_past_data was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<scoring_playstyle_past_dataUpdateInput, scoring_playstyle_past_dataUncheckedUpdateInput>
-  }
-
-  /**
-   * scoring_playstyle_past_data delete
-   */
-  export type scoring_playstyle_past_dataDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the scoring_playstyle_past_data
-     */
-    select?: scoring_playstyle_past_dataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the scoring_playstyle_past_data
-     */
-    omit?: scoring_playstyle_past_dataOmit<ExtArgs> | null
-    /**
-     * Filter which scoring_playstyle_past_data to delete.
-     */
-    where: scoring_playstyle_past_dataWhereUniqueInput
-  }
-
-  /**
-   * scoring_playstyle_past_data deleteMany
-   */
-  export type scoring_playstyle_past_dataDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which scoring_playstyle_past_data to delete
-     */
-    where?: scoring_playstyle_past_dataWhereInput
-    /**
-     * Limit how many scoring_playstyle_past_data to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * scoring_playstyle_past_data without action
-   */
-  export type scoring_playstyle_past_dataDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the scoring_playstyle_past_data
-     */
-    select?: scoring_playstyle_past_dataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the scoring_playstyle_past_data
-     */
-    omit?: scoring_playstyle_past_dataOmit<ExtArgs> | null
-  }
-
-
-  /**
    * Model stat_encryption
    */
 
@@ -39532,6 +36161,16 @@ export namespace Prisma {
     away_1st_half_score_ratio: string | null
     away_2nd_half_score_ratio: string | null
     away_clean_sheet: string | null
+    home_1st_half_lost: string | null
+    home_2nd_half_lost: string | null
+    home_sum_lost: string | null
+    home_1st_half_lost_ratio: string | null
+    home_2nd_half_lost_ratio: string | null
+    away_1st_half_lost: string | null
+    away_2nd_half_lost: string | null
+    away_sum_lost: string | null
+    away_1st_half_lost_ratio: string | null
+    away_2nd_half_lost_ratio: string | null
     fail_to_score_game_count: string | null
     consecutive_win_disp: string | null
     consecutive_lose_disp: string | null
@@ -39609,6 +36248,16 @@ export namespace Prisma {
     away_1st_half_score_ratio: string | null
     away_2nd_half_score_ratio: string | null
     away_clean_sheet: string | null
+    home_1st_half_lost: string | null
+    home_2nd_half_lost: string | null
+    home_sum_lost: string | null
+    home_1st_half_lost_ratio: string | null
+    home_2nd_half_lost_ratio: string | null
+    away_1st_half_lost: string | null
+    away_2nd_half_lost: string | null
+    away_sum_lost: string | null
+    away_1st_half_lost_ratio: string | null
+    away_2nd_half_lost_ratio: string | null
     fail_to_score_game_count: string | null
     consecutive_win_disp: string | null
     consecutive_lose_disp: string | null
@@ -39686,6 +36335,16 @@ export namespace Prisma {
     away_1st_half_score_ratio: number
     away_2nd_half_score_ratio: number
     away_clean_sheet: number
+    home_1st_half_lost: number
+    home_2nd_half_lost: number
+    home_sum_lost: number
+    home_1st_half_lost_ratio: number
+    home_2nd_half_lost_ratio: number
+    away_1st_half_lost: number
+    away_2nd_half_lost: number
+    away_sum_lost: number
+    away_1st_half_lost_ratio: number
+    away_2nd_half_lost_ratio: number
     fail_to_score_game_count: number
     consecutive_win_disp: number
     consecutive_lose_disp: number
@@ -39773,6 +36432,16 @@ export namespace Prisma {
     away_1st_half_score_ratio?: true
     away_2nd_half_score_ratio?: true
     away_clean_sheet?: true
+    home_1st_half_lost?: true
+    home_2nd_half_lost?: true
+    home_sum_lost?: true
+    home_1st_half_lost_ratio?: true
+    home_2nd_half_lost_ratio?: true
+    away_1st_half_lost?: true
+    away_2nd_half_lost?: true
+    away_sum_lost?: true
+    away_1st_half_lost_ratio?: true
+    away_2nd_half_lost_ratio?: true
     fail_to_score_game_count?: true
     consecutive_win_disp?: true
     consecutive_lose_disp?: true
@@ -39850,6 +36519,16 @@ export namespace Prisma {
     away_1st_half_score_ratio?: true
     away_2nd_half_score_ratio?: true
     away_clean_sheet?: true
+    home_1st_half_lost?: true
+    home_2nd_half_lost?: true
+    home_sum_lost?: true
+    home_1st_half_lost_ratio?: true
+    home_2nd_half_lost_ratio?: true
+    away_1st_half_lost?: true
+    away_2nd_half_lost?: true
+    away_sum_lost?: true
+    away_1st_half_lost_ratio?: true
+    away_2nd_half_lost_ratio?: true
     fail_to_score_game_count?: true
     consecutive_win_disp?: true
     consecutive_lose_disp?: true
@@ -39927,6 +36606,16 @@ export namespace Prisma {
     away_1st_half_score_ratio?: true
     away_2nd_half_score_ratio?: true
     away_clean_sheet?: true
+    home_1st_half_lost?: true
+    home_2nd_half_lost?: true
+    home_sum_lost?: true
+    home_1st_half_lost_ratio?: true
+    home_2nd_half_lost_ratio?: true
+    away_1st_half_lost?: true
+    away_2nd_half_lost?: true
+    away_sum_lost?: true
+    away_1st_half_lost_ratio?: true
+    away_2nd_half_lost_ratio?: true
     fail_to_score_game_count?: true
     consecutive_win_disp?: true
     consecutive_lose_disp?: true
@@ -40091,6 +36780,16 @@ export namespace Prisma {
     away_1st_half_score_ratio: string | null
     away_2nd_half_score_ratio: string | null
     away_clean_sheet: string | null
+    home_1st_half_lost: string | null
+    home_2nd_half_lost: string | null
+    home_sum_lost: string | null
+    home_1st_half_lost_ratio: string | null
+    home_2nd_half_lost_ratio: string | null
+    away_1st_half_lost: string | null
+    away_2nd_half_lost: string | null
+    away_sum_lost: string | null
+    away_1st_half_lost_ratio: string | null
+    away_2nd_half_lost_ratio: string | null
     fail_to_score_game_count: string | null
     consecutive_win_disp: string | null
     consecutive_lose_disp: string | null
@@ -40187,6 +36886,16 @@ export namespace Prisma {
     away_1st_half_score_ratio?: boolean
     away_2nd_half_score_ratio?: boolean
     away_clean_sheet?: boolean
+    home_1st_half_lost?: boolean
+    home_2nd_half_lost?: boolean
+    home_sum_lost?: boolean
+    home_1st_half_lost_ratio?: boolean
+    home_2nd_half_lost_ratio?: boolean
+    away_1st_half_lost?: boolean
+    away_2nd_half_lost?: boolean
+    away_sum_lost?: boolean
+    away_1st_half_lost_ratio?: boolean
+    away_2nd_half_lost_ratio?: boolean
     fail_to_score_game_count?: boolean
     consecutive_win_disp?: boolean
     consecutive_lose_disp?: boolean
@@ -40264,6 +36973,16 @@ export namespace Prisma {
     away_1st_half_score_ratio?: boolean
     away_2nd_half_score_ratio?: boolean
     away_clean_sheet?: boolean
+    home_1st_half_lost?: boolean
+    home_2nd_half_lost?: boolean
+    home_sum_lost?: boolean
+    home_1st_half_lost_ratio?: boolean
+    home_2nd_half_lost_ratio?: boolean
+    away_1st_half_lost?: boolean
+    away_2nd_half_lost?: boolean
+    away_sum_lost?: boolean
+    away_1st_half_lost_ratio?: boolean
+    away_2nd_half_lost_ratio?: boolean
     fail_to_score_game_count?: boolean
     consecutive_win_disp?: boolean
     consecutive_lose_disp?: boolean
@@ -40341,6 +37060,16 @@ export namespace Prisma {
     away_1st_half_score_ratio?: boolean
     away_2nd_half_score_ratio?: boolean
     away_clean_sheet?: boolean
+    home_1st_half_lost?: boolean
+    home_2nd_half_lost?: boolean
+    home_sum_lost?: boolean
+    home_1st_half_lost_ratio?: boolean
+    home_2nd_half_lost_ratio?: boolean
+    away_1st_half_lost?: boolean
+    away_2nd_half_lost?: boolean
+    away_sum_lost?: boolean
+    away_1st_half_lost_ratio?: boolean
+    away_2nd_half_lost_ratio?: boolean
     fail_to_score_game_count?: boolean
     consecutive_win_disp?: boolean
     consecutive_lose_disp?: boolean
@@ -40418,6 +37147,16 @@ export namespace Prisma {
     away_1st_half_score_ratio?: boolean
     away_2nd_half_score_ratio?: boolean
     away_clean_sheet?: boolean
+    home_1st_half_lost?: boolean
+    home_2nd_half_lost?: boolean
+    home_sum_lost?: boolean
+    home_1st_half_lost_ratio?: boolean
+    home_2nd_half_lost_ratio?: boolean
+    away_1st_half_lost?: boolean
+    away_2nd_half_lost?: boolean
+    away_sum_lost?: boolean
+    away_1st_half_lost_ratio?: boolean
+    away_2nd_half_lost_ratio?: boolean
     fail_to_score_game_count?: boolean
     consecutive_win_disp?: boolean
     consecutive_lose_disp?: boolean
@@ -40470,7 +37209,7 @@ export namespace Prisma {
     update_time?: boolean
   }
 
-  export type surface_overviewOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "country" | "league" | "game_year" | "game_month" | "team" | "games" | "rank" | "win" | "lose" | "draw" | "winning_points" | "home_1st_half_score" | "home_2nd_half_score" | "home_sum_score" | "home_1st_half_score_ratio" | "home_2nd_half_score_ratio" | "home_clean_sheet" | "away_1st_half_score" | "away_2nd_half_score" | "away_sum_score" | "away_1st_half_score_ratio" | "away_2nd_half_score_ratio" | "away_clean_sheet" | "fail_to_score_game_count" | "consecutive_win_disp" | "consecutive_lose_disp" | "unbeaten_streak_count" | "unbeaten_streak_disp" | "consecutive_score_count" | "consecutive_score_count_disp" | "first_week_game_win_count" | "first_week_game_lost_count" | "first_week_game_win_disp" | "mid_week_game_win_count" | "mid_week_game_lost_count" | "mid_week_game_win_disp" | "last_week_game_win_count" | "last_week_game_lost_count" | "last_week_game_win_disp" | "home_win_count" | "home_lose_count" | "home_first_goal_count" | "home_win_behind_count" | "home_lose_behind_count" | "home_win_behind_0vs1_count" | "home_lose_behind_1vs0_count" | "home_win_behind_0vs2_count" | "home_lose_behind_2vs0_count" | "home_win_behind_other_count" | "home_lose_behind_other_count" | "home_adversity_disp" | "away_win_count" | "away_lose_count" | "away_first_goal_count" | "away_win_behind_count" | "away_lose_behind_count" | "away_win_behind_1vs0_count" | "away_lose_behind_0vs1_count" | "away_win_behind_2vs0_count" | "away_lose_behind_0vs2_count" | "away_win_behind_other_count" | "away_lose_behind_other_count" | "away_adversity_disp" | "promote_disp" | "descend_disp" | "first_win_disp" | "lose_streak_disp" | "round_conc" | "logic_flg" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["surface_overview"]>
+  export type surface_overviewOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "country" | "league" | "game_year" | "game_month" | "team" | "games" | "rank" | "win" | "lose" | "draw" | "winning_points" | "home_1st_half_score" | "home_2nd_half_score" | "home_sum_score" | "home_1st_half_score_ratio" | "home_2nd_half_score_ratio" | "home_clean_sheet" | "away_1st_half_score" | "away_2nd_half_score" | "away_sum_score" | "away_1st_half_score_ratio" | "away_2nd_half_score_ratio" | "away_clean_sheet" | "home_1st_half_lost" | "home_2nd_half_lost" | "home_sum_lost" | "home_1st_half_lost_ratio" | "home_2nd_half_lost_ratio" | "away_1st_half_lost" | "away_2nd_half_lost" | "away_sum_lost" | "away_1st_half_lost_ratio" | "away_2nd_half_lost_ratio" | "fail_to_score_game_count" | "consecutive_win_disp" | "consecutive_lose_disp" | "unbeaten_streak_count" | "unbeaten_streak_disp" | "consecutive_score_count" | "consecutive_score_count_disp" | "first_week_game_win_count" | "first_week_game_lost_count" | "first_week_game_win_disp" | "mid_week_game_win_count" | "mid_week_game_lost_count" | "mid_week_game_win_disp" | "last_week_game_win_count" | "last_week_game_lost_count" | "last_week_game_win_disp" | "home_win_count" | "home_lose_count" | "home_first_goal_count" | "home_win_behind_count" | "home_lose_behind_count" | "home_win_behind_0vs1_count" | "home_lose_behind_1vs0_count" | "home_win_behind_0vs2_count" | "home_lose_behind_2vs0_count" | "home_win_behind_other_count" | "home_lose_behind_other_count" | "home_adversity_disp" | "away_win_count" | "away_lose_count" | "away_first_goal_count" | "away_win_behind_count" | "away_lose_behind_count" | "away_win_behind_1vs0_count" | "away_lose_behind_0vs1_count" | "away_win_behind_2vs0_count" | "away_lose_behind_0vs2_count" | "away_win_behind_other_count" | "away_lose_behind_other_count" | "away_adversity_disp" | "promote_disp" | "descend_disp" | "first_win_disp" | "lose_streak_disp" | "round_conc" | "logic_flg" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["surface_overview"]>
 
   export type $surface_overviewPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "surface_overview"
@@ -40500,6 +37239,16 @@ export namespace Prisma {
       away_1st_half_score_ratio: string | null
       away_2nd_half_score_ratio: string | null
       away_clean_sheet: string | null
+      home_1st_half_lost: string | null
+      home_2nd_half_lost: string | null
+      home_sum_lost: string | null
+      home_1st_half_lost_ratio: string | null
+      home_2nd_half_lost_ratio: string | null
+      away_1st_half_lost: string | null
+      away_2nd_half_lost: string | null
+      away_sum_lost: string | null
+      away_1st_half_lost_ratio: string | null
+      away_2nd_half_lost_ratio: string | null
       fail_to_score_game_count: string | null
       consecutive_win_disp: string | null
       consecutive_lose_disp: string | null
@@ -40997,6 +37746,16 @@ export namespace Prisma {
     readonly away_1st_half_score_ratio: FieldRef<"surface_overview", 'String'>
     readonly away_2nd_half_score_ratio: FieldRef<"surface_overview", 'String'>
     readonly away_clean_sheet: FieldRef<"surface_overview", 'String'>
+    readonly home_1st_half_lost: FieldRef<"surface_overview", 'String'>
+    readonly home_2nd_half_lost: FieldRef<"surface_overview", 'String'>
+    readonly home_sum_lost: FieldRef<"surface_overview", 'String'>
+    readonly home_1st_half_lost_ratio: FieldRef<"surface_overview", 'String'>
+    readonly home_2nd_half_lost_ratio: FieldRef<"surface_overview", 'String'>
+    readonly away_1st_half_lost: FieldRef<"surface_overview", 'String'>
+    readonly away_2nd_half_lost: FieldRef<"surface_overview", 'String'>
+    readonly away_sum_lost: FieldRef<"surface_overview", 'String'>
+    readonly away_1st_half_lost_ratio: FieldRef<"surface_overview", 'String'>
+    readonly away_2nd_half_lost_ratio: FieldRef<"surface_overview", 'String'>
     readonly fail_to_score_game_count: FieldRef<"surface_overview", 'String'>
     readonly consecutive_win_disp: FieldRef<"surface_overview", 'String'>
     readonly consecutive_lose_disp: FieldRef<"surface_overview", 'String'>
@@ -41523,6 +38282,7 @@ export namespace Prisma {
     weather: string | null
     temperature: string | null
     humid: string | null
+    logic_flg: string | null
     register_id: string | null
     register_time: Date | null
     update_id: string | null
@@ -41619,6 +38379,7 @@ export namespace Prisma {
     weather: string | null
     temperature: string | null
     humid: string | null
+    logic_flg: string | null
     register_id: string | null
     register_time: Date | null
     update_id: string | null
@@ -41715,6 +38476,7 @@ export namespace Prisma {
     weather: number
     temperature: number
     humid: number
+    logic_flg: number
     register_id: number
     register_time: number
     update_id: number
@@ -41821,6 +38583,7 @@ export namespace Prisma {
     weather?: true
     temperature?: true
     humid?: true
+    logic_flg?: true
     register_id?: true
     register_time?: true
     update_id?: true
@@ -41917,6 +38680,7 @@ export namespace Prisma {
     weather?: true
     temperature?: true
     humid?: true
+    logic_flg?: true
     register_id?: true
     register_time?: true
     update_id?: true
@@ -42013,6 +38777,7 @@ export namespace Prisma {
     weather?: true
     temperature?: true
     humid?: true
+    logic_flg?: true
     register_id?: true
     register_time?: true
     update_id?: true
@@ -42196,6 +38961,7 @@ export namespace Prisma {
     weather: string | null
     temperature: string | null
     humid: string | null
+    logic_flg: string | null
     register_id: string | null
     register_time: Date | null
     update_id: string | null
@@ -42311,6 +39077,7 @@ export namespace Prisma {
     weather?: boolean
     temperature?: boolean
     humid?: boolean
+    logic_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
@@ -42407,6 +39174,7 @@ export namespace Prisma {
     weather?: boolean
     temperature?: boolean
     humid?: boolean
+    logic_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
@@ -42503,6 +39271,7 @@ export namespace Prisma {
     weather?: boolean
     temperature?: boolean
     humid?: boolean
+    logic_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
@@ -42599,13 +39368,14 @@ export namespace Prisma {
     weather?: boolean
     temperature?: boolean
     humid?: boolean
+    logic_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
     update_time?: boolean
   }
 
-  export type team_match_final_statsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"seq" | "team_name" | "versus_team_name" | "ha" | "score" | "result" | "game_fin_rank" | "opposite_game_fin_rank" | "exp" | "opposite_exp" | "in_goal_exp" | "opposite_in_goal_exp" | "donation" | "opposite_donation" | "shoot_all" | "opposite_shoot_all" | "shoot_in" | "opposite_shoot_in" | "shoot_out" | "opposite_shoot_out" | "block_shoot" | "opposite_block_shoot" | "big_chance" | "opposite_big_chance" | "corner" | "opposite_corner" | "box_shoot_in" | "opposite_box_shoot_in" | "box_shoot_out" | "opposite_box_shoot_out" | "goal_post" | "opposite_goal_post" | "goal_head" | "opposite_goal_head" | "keeper_save" | "opposite_keeper_save" | "free_kick" | "opposite_free_kick" | "offside" | "opposite_offside" | "foul" | "opposite_foul" | "yellow_card" | "opposite_yellow_card" | "red_card" | "opposite_red_card" | "slow_in" | "opposite_slow_in" | "box_touch" | "opposite_box_touch" | "pass_count_success_ratio" | "pass_count_success_count" | "pass_count_try_count" | "opposite_pass_count_success_ratio" | "opposite_pass_count_success_count" | "opposite_pass_count_try_count" | "long_pass_count_success_ratio" | "long_pass_count_success_count" | "long_pass_count_try_count" | "opposite_long_pass_count_success_ratio" | "opposite_long_pass_count_success_count" | "opposite_long_pass_count_try_count" | "final_third_pass_count_success_ratio" | "final_third_pass_count_success_count" | "final_third_pass_count_try_count" | "opposite_final_third_pass_count_success_ratio" | "opposite_final_third_pass_count_success_count" | "opposite_final_third_pass_count_try_count" | "cross_count_success_ratio" | "cross_count_success_count" | "cross_count_try_count" | "opposite_cross_count_success_ratio" | "opposite_cross_count_success_count" | "opposite_cross_count_try_count" | "tackle_count_success_ratio" | "tackle_count_success_count" | "tackle_count_try_count" | "opposite_tackle_count_success_ratio" | "opposite_tackle_count_success_count" | "opposite_tackle_count_try_count" | "clear_count" | "opposite_clear_count" | "duel_count" | "opposite_duel_count" | "intercept_count" | "opposite_intercept_count" | "weather" | "temperature" | "humid" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["team_match_final_stats"]>
+  export type team_match_final_statsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"seq" | "team_name" | "versus_team_name" | "ha" | "score" | "result" | "game_fin_rank" | "opposite_game_fin_rank" | "exp" | "opposite_exp" | "in_goal_exp" | "opposite_in_goal_exp" | "donation" | "opposite_donation" | "shoot_all" | "opposite_shoot_all" | "shoot_in" | "opposite_shoot_in" | "shoot_out" | "opposite_shoot_out" | "block_shoot" | "opposite_block_shoot" | "big_chance" | "opposite_big_chance" | "corner" | "opposite_corner" | "box_shoot_in" | "opposite_box_shoot_in" | "box_shoot_out" | "opposite_box_shoot_out" | "goal_post" | "opposite_goal_post" | "goal_head" | "opposite_goal_head" | "keeper_save" | "opposite_keeper_save" | "free_kick" | "opposite_free_kick" | "offside" | "opposite_offside" | "foul" | "opposite_foul" | "yellow_card" | "opposite_yellow_card" | "red_card" | "opposite_red_card" | "slow_in" | "opposite_slow_in" | "box_touch" | "opposite_box_touch" | "pass_count_success_ratio" | "pass_count_success_count" | "pass_count_try_count" | "opposite_pass_count_success_ratio" | "opposite_pass_count_success_count" | "opposite_pass_count_try_count" | "long_pass_count_success_ratio" | "long_pass_count_success_count" | "long_pass_count_try_count" | "opposite_long_pass_count_success_ratio" | "opposite_long_pass_count_success_count" | "opposite_long_pass_count_try_count" | "final_third_pass_count_success_ratio" | "final_third_pass_count_success_count" | "final_third_pass_count_try_count" | "opposite_final_third_pass_count_success_ratio" | "opposite_final_third_pass_count_success_count" | "opposite_final_third_pass_count_try_count" | "cross_count_success_ratio" | "cross_count_success_count" | "cross_count_try_count" | "opposite_cross_count_success_ratio" | "opposite_cross_count_success_count" | "opposite_cross_count_try_count" | "tackle_count_success_ratio" | "tackle_count_success_count" | "tackle_count_try_count" | "opposite_tackle_count_success_ratio" | "opposite_tackle_count_success_count" | "opposite_tackle_count_try_count" | "clear_count" | "opposite_clear_count" | "duel_count" | "opposite_duel_count" | "intercept_count" | "opposite_intercept_count" | "weather" | "temperature" | "humid" | "logic_flg" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["team_match_final_stats"]>
 
   export type $team_match_final_statsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "team_match_final_stats"
@@ -42700,6 +39470,7 @@ export namespace Prisma {
       weather: string | null
       temperature: string | null
       humid: string | null
+      logic_flg: string | null
       register_id: string | null
       register_time: Date | null
       update_id: string | null
@@ -43216,6 +39987,7 @@ export namespace Prisma {
     readonly weather: FieldRef<"team_match_final_stats", 'String'>
     readonly temperature: FieldRef<"team_match_final_stats", 'String'>
     readonly humid: FieldRef<"team_match_final_stats", 'String'>
+    readonly logic_flg: FieldRef<"team_match_final_stats", 'String'>
     readonly register_id: FieldRef<"team_match_final_stats", 'String'>
     readonly register_time: FieldRef<"team_match_final_stats", 'DateTime'>
     readonly update_id: FieldRef<"team_match_final_stats", 'String'>
@@ -64995,49 +61767,6 @@ export namespace Prisma {
   export type Average_statistics_csv_tmp_dataScalarFieldEnum = (typeof Average_statistics_csv_tmp_dataScalarFieldEnum)[keyof typeof Average_statistics_csv_tmp_dataScalarFieldEnum]
 
 
-  export const Average_statistics_team_detail_dataScalarFieldEnum: {
-    id: 'id',
-    situation: 'situation',
-    team: 'team',
-    opposite_team: 'opposite_team',
-    ha: 'ha',
-    country: 'country',
-    league: 'league',
-    exp_stat: 'exp_stat',
-    donation_stat: 'donation_stat',
-    shoot_all_stat: 'shoot_all_stat',
-    shoot_in_stat: 'shoot_in_stat',
-    shoot_out_stat: 'shoot_out_stat',
-    block_shoot_stat: 'block_shoot_stat',
-    big_chance_stat: 'big_chance_stat',
-    corner_stat: 'corner_stat',
-    box_shoot_in_stat: 'box_shoot_in_stat',
-    box_shoot_out_stat: 'box_shoot_out_stat',
-    goal_post_stat: 'goal_post_stat',
-    goal_head_stat: 'goal_head_stat',
-    keeper_save_stat: 'keeper_save_stat',
-    free_kick_stat: 'free_kick_stat',
-    offside_stat: 'offside_stat',
-    foul_stat: 'foul_stat',
-    yellow_card_stat: 'yellow_card_stat',
-    red_card_stat: 'red_card_stat',
-    slow_in_stat: 'slow_in_stat',
-    box_touch_stat: 'box_touch_stat',
-    pass_count_stat: 'pass_count_stat',
-    final_third_pass_count_stat: 'final_third_pass_count_stat',
-    cross_count_stat: 'cross_count_stat',
-    tackle_count_stat: 'tackle_count_stat',
-    clear_count_stat: 'clear_count_stat',
-    intercept_count_stat: 'intercept_count_stat',
-    register_id: 'register_id',
-    register_time: 'register_time',
-    update_id: 'update_id',
-    update_time: 'update_time'
-  };
-
-  export type Average_statistics_team_detail_dataScalarFieldEnum = (typeof Average_statistics_team_detail_dataScalarFieldEnum)[keyof typeof Average_statistics_team_detail_dataScalarFieldEnum]
-
-
   export const Calc_correlationScalarFieldEnum: {
     id: 'id',
     file: 'file',
@@ -65398,6 +62127,8 @@ export namespace Prisma {
     game_id: 'game_id',
     match_id: 'match_id',
     time_sort_seconds: 'time_sort_seconds',
+    add_manual_flg: 'add_manual_flg',
+    logic_flg: 'logic_flg',
     register_id: 'register_id',
     register_time: 'register_time',
     update_id: 'update_id',
@@ -66010,74 +62741,6 @@ export namespace Prisma {
   export type Score_based_feature_stats_historyScalarFieldEnum = (typeof Score_based_feature_stats_historyScalarFieldEnum)[keyof typeof Score_based_feature_stats_historyScalarFieldEnum]
 
 
-  export const Scoring_playstyle_past_dataScalarFieldEnum: {
-    id: 'id',
-    data_category: 'data_category',
-    home_team_name: 'home_team_name',
-    away_team_name: 'away_team_name',
-    diff_home_score: 'diff_home_score',
-    diff_away_score: 'diff_away_score',
-    diff_home_donation: 'diff_home_donation',
-    diff_away_donation: 'diff_away_donation',
-    diff_home_shoot_all: 'diff_home_shoot_all',
-    diff_away_shoot_all: 'diff_away_shoot_all',
-    diff_home_shoot_in: 'diff_home_shoot_in',
-    diff_away_shoot_in: 'diff_away_shoot_in',
-    diff_home_shoot_out: 'diff_home_shoot_out',
-    diff_away_shoot_out: 'diff_away_shoot_out',
-    diff_home_block_shoot: 'diff_home_block_shoot',
-    diff_away_block_shoot: 'diff_away_block_shoot',
-    diff_home_big_chance: 'diff_home_big_chance',
-    diff_away_big_chance: 'diff_away_big_chance',
-    diff_home_corner: 'diff_home_corner',
-    diff_away_corner: 'diff_away_corner',
-    diff_home_box_shoot_in: 'diff_home_box_shoot_in',
-    diff_away_box_shoot_in: 'diff_away_box_shoot_in',
-    diff_home_box_shoot_out: 'diff_home_box_shoot_out',
-    diff_away_box_shoot_out: 'diff_away_box_shoot_out',
-    diff_home_goal_post: 'diff_home_goal_post',
-    diff_away_goal_post: 'diff_away_goal_post',
-    diff_home_goal_head: 'diff_home_goal_head',
-    diff_away_goal_head: 'diff_away_goal_head',
-    diff_home_keeper_save: 'diff_home_keeper_save',
-    diff_away_keeper_save: 'diff_away_keeper_save',
-    diff_home_free_kick: 'diff_home_free_kick',
-    diff_away_free_kick: 'diff_away_free_kick',
-    diff_home_offside: 'diff_home_offside',
-    diff_away_offside: 'diff_away_offside',
-    diff_home_foul: 'diff_home_foul',
-    diff_away_foul: 'diff_away_foul',
-    diff_home_yellow_card: 'diff_home_yellow_card',
-    diff_away_yellow_card: 'diff_away_yellow_card',
-    diff_home_red_card: 'diff_home_red_card',
-    diff_away_red_card: 'diff_away_red_card',
-    diff_home_slow_in: 'diff_home_slow_in',
-    diff_away_slow_in: 'diff_away_slow_in',
-    diff_home_box_touch: 'diff_home_box_touch',
-    diff_away_box_touch: 'diff_away_box_touch',
-    diff_home_pass_count: 'diff_home_pass_count',
-    diff_away_pass_count: 'diff_away_pass_count',
-    diff_home_final_third_pass_count: 'diff_home_final_third_pass_count',
-    diff_away_final_third_pass_count: 'diff_away_final_third_pass_count',
-    diff_home_cross_count: 'diff_home_cross_count',
-    diff_away_cross_count: 'diff_away_cross_count',
-    diff_home_tackle_count: 'diff_home_tackle_count',
-    diff_away_tackle_count: 'diff_away_tackle_count',
-    diff_home_clear_count: 'diff_home_clear_count',
-    diff_away_clear_count: 'diff_away_clear_count',
-    diff_home_intercept_count: 'diff_home_intercept_count',
-    diff_away_intercept_count: 'diff_away_intercept_count',
-    home_play_style: 'home_play_style',
-    away_play_style: 'away_play_style',
-    register_id: 'register_id',
-    register_time: 'register_time',
-    update_id: 'update_id',
-    update_time: 'update_time'
-  };
-
-  export type Scoring_playstyle_past_dataScalarFieldEnum = (typeof Scoring_playstyle_past_dataScalarFieldEnum)[keyof typeof Scoring_playstyle_past_dataScalarFieldEnum]
-
-
   export const Stat_encryptionScalarFieldEnum: {
     id: 'id',
     country: 'country',
@@ -66192,6 +62855,16 @@ export namespace Prisma {
     away_1st_half_score_ratio: 'away_1st_half_score_ratio',
     away_2nd_half_score_ratio: 'away_2nd_half_score_ratio',
     away_clean_sheet: 'away_clean_sheet',
+    home_1st_half_lost: 'home_1st_half_lost',
+    home_2nd_half_lost: 'home_2nd_half_lost',
+    home_sum_lost: 'home_sum_lost',
+    home_1st_half_lost_ratio: 'home_1st_half_lost_ratio',
+    home_2nd_half_lost_ratio: 'home_2nd_half_lost_ratio',
+    away_1st_half_lost: 'away_1st_half_lost',
+    away_2nd_half_lost: 'away_2nd_half_lost',
+    away_sum_lost: 'away_sum_lost',
+    away_1st_half_lost_ratio: 'away_1st_half_lost_ratio',
+    away_2nd_half_lost_ratio: 'away_2nd_half_lost_ratio',
     fail_to_score_game_count: 'fail_to_score_game_count',
     consecutive_win_disp: 'consecutive_win_disp',
     consecutive_lose_disp: 'consecutive_lose_disp',
@@ -66337,6 +63010,7 @@ export namespace Prisma {
     weather: 'weather',
     temperature: 'temperature',
     humid: 'humid',
+    logic_flg: 'logic_flg',
     register_id: 'register_id',
     register_time: 'register_time',
     update_id: 'update_id',
@@ -67088,220 +63762,6 @@ export namespace Prisma {
     register_time?: DateTimeNullableWithAggregatesFilter<"average_statistics_csv_tmp_data"> | Date | string | null
     update_id?: StringNullableWithAggregatesFilter<"average_statistics_csv_tmp_data"> | string | null
     update_time?: DateTimeNullableWithAggregatesFilter<"average_statistics_csv_tmp_data"> | Date | string | null
-  }
-
-  export type average_statistics_team_detail_dataWhereInput = {
-    AND?: average_statistics_team_detail_dataWhereInput | average_statistics_team_detail_dataWhereInput[]
-    OR?: average_statistics_team_detail_dataWhereInput[]
-    NOT?: average_statistics_team_detail_dataWhereInput | average_statistics_team_detail_dataWhereInput[]
-    id?: IntFilter<"average_statistics_team_detail_data"> | number
-    situation?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    team?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    opposite_team?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    ha?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    country?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    league?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    exp_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    donation_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    shoot_all_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    shoot_in_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    shoot_out_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    block_shoot_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    big_chance_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    corner_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    box_shoot_in_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    box_shoot_out_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    goal_post_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    goal_head_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    keeper_save_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    free_kick_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    offside_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    foul_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    yellow_card_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    red_card_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    slow_in_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    box_touch_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    pass_count_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    final_third_pass_count_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    cross_count_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    tackle_count_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    clear_count_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    intercept_count_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    register_id?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    register_time?: DateTimeNullableFilter<"average_statistics_team_detail_data"> | Date | string | null
-    update_id?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    update_time?: DateTimeNullableFilter<"average_statistics_team_detail_data"> | Date | string | null
-  }
-
-  export type average_statistics_team_detail_dataOrderByWithRelationInput = {
-    id?: SortOrder
-    situation?: SortOrderInput | SortOrder
-    team?: SortOrderInput | SortOrder
-    opposite_team?: SortOrderInput | SortOrder
-    ha?: SortOrderInput | SortOrder
-    country?: SortOrderInput | SortOrder
-    league?: SortOrderInput | SortOrder
-    exp_stat?: SortOrderInput | SortOrder
-    donation_stat?: SortOrderInput | SortOrder
-    shoot_all_stat?: SortOrderInput | SortOrder
-    shoot_in_stat?: SortOrderInput | SortOrder
-    shoot_out_stat?: SortOrderInput | SortOrder
-    block_shoot_stat?: SortOrderInput | SortOrder
-    big_chance_stat?: SortOrderInput | SortOrder
-    corner_stat?: SortOrderInput | SortOrder
-    box_shoot_in_stat?: SortOrderInput | SortOrder
-    box_shoot_out_stat?: SortOrderInput | SortOrder
-    goal_post_stat?: SortOrderInput | SortOrder
-    goal_head_stat?: SortOrderInput | SortOrder
-    keeper_save_stat?: SortOrderInput | SortOrder
-    free_kick_stat?: SortOrderInput | SortOrder
-    offside_stat?: SortOrderInput | SortOrder
-    foul_stat?: SortOrderInput | SortOrder
-    yellow_card_stat?: SortOrderInput | SortOrder
-    red_card_stat?: SortOrderInput | SortOrder
-    slow_in_stat?: SortOrderInput | SortOrder
-    box_touch_stat?: SortOrderInput | SortOrder
-    pass_count_stat?: SortOrderInput | SortOrder
-    final_third_pass_count_stat?: SortOrderInput | SortOrder
-    cross_count_stat?: SortOrderInput | SortOrder
-    tackle_count_stat?: SortOrderInput | SortOrder
-    clear_count_stat?: SortOrderInput | SortOrder
-    intercept_count_stat?: SortOrderInput | SortOrder
-    register_id?: SortOrderInput | SortOrder
-    register_time?: SortOrderInput | SortOrder
-    update_id?: SortOrderInput | SortOrder
-    update_time?: SortOrderInput | SortOrder
-  }
-
-  export type average_statistics_team_detail_dataWhereUniqueInput = Prisma.AtLeast<{
-    id?: number
-    AND?: average_statistics_team_detail_dataWhereInput | average_statistics_team_detail_dataWhereInput[]
-    OR?: average_statistics_team_detail_dataWhereInput[]
-    NOT?: average_statistics_team_detail_dataWhereInput | average_statistics_team_detail_dataWhereInput[]
-    situation?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    team?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    opposite_team?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    ha?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    country?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    league?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    exp_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    donation_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    shoot_all_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    shoot_in_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    shoot_out_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    block_shoot_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    big_chance_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    corner_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    box_shoot_in_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    box_shoot_out_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    goal_post_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    goal_head_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    keeper_save_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    free_kick_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    offside_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    foul_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    yellow_card_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    red_card_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    slow_in_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    box_touch_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    pass_count_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    final_third_pass_count_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    cross_count_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    tackle_count_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    clear_count_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    intercept_count_stat?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    register_id?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    register_time?: DateTimeNullableFilter<"average_statistics_team_detail_data"> | Date | string | null
-    update_id?: StringNullableFilter<"average_statistics_team_detail_data"> | string | null
-    update_time?: DateTimeNullableFilter<"average_statistics_team_detail_data"> | Date | string | null
-  }, "id">
-
-  export type average_statistics_team_detail_dataOrderByWithAggregationInput = {
-    id?: SortOrder
-    situation?: SortOrderInput | SortOrder
-    team?: SortOrderInput | SortOrder
-    opposite_team?: SortOrderInput | SortOrder
-    ha?: SortOrderInput | SortOrder
-    country?: SortOrderInput | SortOrder
-    league?: SortOrderInput | SortOrder
-    exp_stat?: SortOrderInput | SortOrder
-    donation_stat?: SortOrderInput | SortOrder
-    shoot_all_stat?: SortOrderInput | SortOrder
-    shoot_in_stat?: SortOrderInput | SortOrder
-    shoot_out_stat?: SortOrderInput | SortOrder
-    block_shoot_stat?: SortOrderInput | SortOrder
-    big_chance_stat?: SortOrderInput | SortOrder
-    corner_stat?: SortOrderInput | SortOrder
-    box_shoot_in_stat?: SortOrderInput | SortOrder
-    box_shoot_out_stat?: SortOrderInput | SortOrder
-    goal_post_stat?: SortOrderInput | SortOrder
-    goal_head_stat?: SortOrderInput | SortOrder
-    keeper_save_stat?: SortOrderInput | SortOrder
-    free_kick_stat?: SortOrderInput | SortOrder
-    offside_stat?: SortOrderInput | SortOrder
-    foul_stat?: SortOrderInput | SortOrder
-    yellow_card_stat?: SortOrderInput | SortOrder
-    red_card_stat?: SortOrderInput | SortOrder
-    slow_in_stat?: SortOrderInput | SortOrder
-    box_touch_stat?: SortOrderInput | SortOrder
-    pass_count_stat?: SortOrderInput | SortOrder
-    final_third_pass_count_stat?: SortOrderInput | SortOrder
-    cross_count_stat?: SortOrderInput | SortOrder
-    tackle_count_stat?: SortOrderInput | SortOrder
-    clear_count_stat?: SortOrderInput | SortOrder
-    intercept_count_stat?: SortOrderInput | SortOrder
-    register_id?: SortOrderInput | SortOrder
-    register_time?: SortOrderInput | SortOrder
-    update_id?: SortOrderInput | SortOrder
-    update_time?: SortOrderInput | SortOrder
-    _count?: average_statistics_team_detail_dataCountOrderByAggregateInput
-    _avg?: average_statistics_team_detail_dataAvgOrderByAggregateInput
-    _max?: average_statistics_team_detail_dataMaxOrderByAggregateInput
-    _min?: average_statistics_team_detail_dataMinOrderByAggregateInput
-    _sum?: average_statistics_team_detail_dataSumOrderByAggregateInput
-  }
-
-  export type average_statistics_team_detail_dataScalarWhereWithAggregatesInput = {
-    AND?: average_statistics_team_detail_dataScalarWhereWithAggregatesInput | average_statistics_team_detail_dataScalarWhereWithAggregatesInput[]
-    OR?: average_statistics_team_detail_dataScalarWhereWithAggregatesInput[]
-    NOT?: average_statistics_team_detail_dataScalarWhereWithAggregatesInput | average_statistics_team_detail_dataScalarWhereWithAggregatesInput[]
-    id?: IntWithAggregatesFilter<"average_statistics_team_detail_data"> | number
-    situation?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    team?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    opposite_team?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    ha?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    country?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    league?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    exp_stat?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    donation_stat?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    shoot_all_stat?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    shoot_in_stat?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    shoot_out_stat?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    block_shoot_stat?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    big_chance_stat?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    corner_stat?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    box_shoot_in_stat?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    box_shoot_out_stat?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    goal_post_stat?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    goal_head_stat?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    keeper_save_stat?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    free_kick_stat?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    offside_stat?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    foul_stat?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    yellow_card_stat?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    red_card_stat?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    slow_in_stat?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    box_touch_stat?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    pass_count_stat?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    final_third_pass_count_stat?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    cross_count_stat?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    tackle_count_stat?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    clear_count_stat?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    intercept_count_stat?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    register_id?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    register_time?: DateTimeNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | Date | string | null
-    update_id?: StringNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | string | null
-    update_time?: DateTimeNullableWithAggregatesFilter<"average_statistics_team_detail_data"> | Date | string | null
   }
 
   export type calc_correlationWhereInput = {
@@ -68678,6 +65138,8 @@ export namespace Prisma {
     game_id?: StringNullableFilter<"data"> | string | null
     match_id?: StringNullableFilter<"data"> | string | null
     time_sort_seconds?: StringNullableFilter<"data"> | string | null
+    add_manual_flg?: StringNullableFilter<"data"> | string | null
+    logic_flg?: StringNullableFilter<"data"> | string | null
     register_id?: StringNullableFilter<"data"> | string | null
     register_time?: DateTimeNullableFilter<"data"> | Date | string | null
     update_id?: StringNullableFilter<"data"> | string | null
@@ -68790,6 +65252,8 @@ export namespace Prisma {
     game_id?: SortOrderInput | SortOrder
     match_id?: SortOrderInput | SortOrder
     time_sort_seconds?: SortOrderInput | SortOrder
+    add_manual_flg?: SortOrderInput | SortOrder
+    logic_flg?: SortOrderInput | SortOrder
     register_id?: SortOrderInput | SortOrder
     register_time?: SortOrderInput | SortOrder
     update_id?: SortOrderInput | SortOrder
@@ -68905,6 +65369,8 @@ export namespace Prisma {
     game_id?: StringNullableFilter<"data"> | string | null
     match_id?: StringNullableFilter<"data"> | string | null
     time_sort_seconds?: StringNullableFilter<"data"> | string | null
+    add_manual_flg?: StringNullableFilter<"data"> | string | null
+    logic_flg?: StringNullableFilter<"data"> | string | null
     register_id?: StringNullableFilter<"data"> | string | null
     register_time?: DateTimeNullableFilter<"data"> | Date | string | null
     update_id?: StringNullableFilter<"data"> | string | null
@@ -69017,6 +65483,8 @@ export namespace Prisma {
     game_id?: SortOrderInput | SortOrder
     match_id?: SortOrderInput | SortOrder
     time_sort_seconds?: SortOrderInput | SortOrder
+    add_manual_flg?: SortOrderInput | SortOrder
+    logic_flg?: SortOrderInput | SortOrder
     register_id?: SortOrderInput | SortOrder
     register_time?: SortOrderInput | SortOrder
     update_id?: SortOrderInput | SortOrder
@@ -69137,6 +65605,8 @@ export namespace Prisma {
     game_id?: StringNullableWithAggregatesFilter<"data"> | string | null
     match_id?: StringNullableWithAggregatesFilter<"data"> | string | null
     time_sort_seconds?: StringNullableWithAggregatesFilter<"data"> | string | null
+    add_manual_flg?: StringNullableWithAggregatesFilter<"data"> | string | null
+    logic_flg?: StringNullableWithAggregatesFilter<"data"> | string | null
     register_id?: StringNullableWithAggregatesFilter<"data"> | string | null
     register_time?: DateTimeNullableWithAggregatesFilter<"data"> | Date | string | null
     update_id?: StringNullableWithAggregatesFilter<"data"> | string | null
@@ -72148,345 +68618,6 @@ export namespace Prisma {
     update_time?: DateTimeNullableWithAggregatesFilter<"score_based_feature_stats_history"> | Date | string | null
   }
 
-  export type scoring_playstyle_past_dataWhereInput = {
-    AND?: scoring_playstyle_past_dataWhereInput | scoring_playstyle_past_dataWhereInput[]
-    OR?: scoring_playstyle_past_dataWhereInput[]
-    NOT?: scoring_playstyle_past_dataWhereInput | scoring_playstyle_past_dataWhereInput[]
-    id?: IntFilter<"scoring_playstyle_past_data"> | number
-    data_category?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    home_team_name?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    away_team_name?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_score?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_score?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_donation?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_donation?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_shoot_all?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_shoot_all?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_shoot_in?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_shoot_in?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_shoot_out?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_shoot_out?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_block_shoot?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_block_shoot?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_big_chance?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_big_chance?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_corner?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_corner?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_box_shoot_in?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_box_shoot_in?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_box_shoot_out?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_box_shoot_out?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_goal_post?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_goal_post?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_goal_head?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_goal_head?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_keeper_save?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_keeper_save?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_free_kick?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_free_kick?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_offside?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_offside?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_foul?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_foul?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_yellow_card?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_yellow_card?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_red_card?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_red_card?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_slow_in?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_slow_in?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_box_touch?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_box_touch?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_pass_count?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_pass_count?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_final_third_pass_count?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_final_third_pass_count?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_cross_count?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_cross_count?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_tackle_count?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_tackle_count?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_clear_count?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_clear_count?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_intercept_count?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_intercept_count?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    home_play_style?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    away_play_style?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    register_id?: StringFilter<"scoring_playstyle_past_data"> | string
-    register_time?: DateTimeFilter<"scoring_playstyle_past_data"> | Date | string
-    update_id?: StringFilter<"scoring_playstyle_past_data"> | string
-    update_time?: DateTimeFilter<"scoring_playstyle_past_data"> | Date | string
-  }
-
-  export type scoring_playstyle_past_dataOrderByWithRelationInput = {
-    id?: SortOrder
-    data_category?: SortOrderInput | SortOrder
-    home_team_name?: SortOrderInput | SortOrder
-    away_team_name?: SortOrderInput | SortOrder
-    diff_home_score?: SortOrderInput | SortOrder
-    diff_away_score?: SortOrderInput | SortOrder
-    diff_home_donation?: SortOrderInput | SortOrder
-    diff_away_donation?: SortOrderInput | SortOrder
-    diff_home_shoot_all?: SortOrderInput | SortOrder
-    diff_away_shoot_all?: SortOrderInput | SortOrder
-    diff_home_shoot_in?: SortOrderInput | SortOrder
-    diff_away_shoot_in?: SortOrderInput | SortOrder
-    diff_home_shoot_out?: SortOrderInput | SortOrder
-    diff_away_shoot_out?: SortOrderInput | SortOrder
-    diff_home_block_shoot?: SortOrderInput | SortOrder
-    diff_away_block_shoot?: SortOrderInput | SortOrder
-    diff_home_big_chance?: SortOrderInput | SortOrder
-    diff_away_big_chance?: SortOrderInput | SortOrder
-    diff_home_corner?: SortOrderInput | SortOrder
-    diff_away_corner?: SortOrderInput | SortOrder
-    diff_home_box_shoot_in?: SortOrderInput | SortOrder
-    diff_away_box_shoot_in?: SortOrderInput | SortOrder
-    diff_home_box_shoot_out?: SortOrderInput | SortOrder
-    diff_away_box_shoot_out?: SortOrderInput | SortOrder
-    diff_home_goal_post?: SortOrderInput | SortOrder
-    diff_away_goal_post?: SortOrderInput | SortOrder
-    diff_home_goal_head?: SortOrderInput | SortOrder
-    diff_away_goal_head?: SortOrderInput | SortOrder
-    diff_home_keeper_save?: SortOrderInput | SortOrder
-    diff_away_keeper_save?: SortOrderInput | SortOrder
-    diff_home_free_kick?: SortOrderInput | SortOrder
-    diff_away_free_kick?: SortOrderInput | SortOrder
-    diff_home_offside?: SortOrderInput | SortOrder
-    diff_away_offside?: SortOrderInput | SortOrder
-    diff_home_foul?: SortOrderInput | SortOrder
-    diff_away_foul?: SortOrderInput | SortOrder
-    diff_home_yellow_card?: SortOrderInput | SortOrder
-    diff_away_yellow_card?: SortOrderInput | SortOrder
-    diff_home_red_card?: SortOrderInput | SortOrder
-    diff_away_red_card?: SortOrderInput | SortOrder
-    diff_home_slow_in?: SortOrderInput | SortOrder
-    diff_away_slow_in?: SortOrderInput | SortOrder
-    diff_home_box_touch?: SortOrderInput | SortOrder
-    diff_away_box_touch?: SortOrderInput | SortOrder
-    diff_home_pass_count?: SortOrderInput | SortOrder
-    diff_away_pass_count?: SortOrderInput | SortOrder
-    diff_home_final_third_pass_count?: SortOrderInput | SortOrder
-    diff_away_final_third_pass_count?: SortOrderInput | SortOrder
-    diff_home_cross_count?: SortOrderInput | SortOrder
-    diff_away_cross_count?: SortOrderInput | SortOrder
-    diff_home_tackle_count?: SortOrderInput | SortOrder
-    diff_away_tackle_count?: SortOrderInput | SortOrder
-    diff_home_clear_count?: SortOrderInput | SortOrder
-    diff_away_clear_count?: SortOrderInput | SortOrder
-    diff_home_intercept_count?: SortOrderInput | SortOrder
-    diff_away_intercept_count?: SortOrderInput | SortOrder
-    home_play_style?: SortOrderInput | SortOrder
-    away_play_style?: SortOrderInput | SortOrder
-    register_id?: SortOrder
-    register_time?: SortOrder
-    update_id?: SortOrder
-    update_time?: SortOrder
-  }
-
-  export type scoring_playstyle_past_dataWhereUniqueInput = Prisma.AtLeast<{
-    id?: number
-    AND?: scoring_playstyle_past_dataWhereInput | scoring_playstyle_past_dataWhereInput[]
-    OR?: scoring_playstyle_past_dataWhereInput[]
-    NOT?: scoring_playstyle_past_dataWhereInput | scoring_playstyle_past_dataWhereInput[]
-    data_category?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    home_team_name?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    away_team_name?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_score?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_score?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_donation?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_donation?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_shoot_all?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_shoot_all?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_shoot_in?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_shoot_in?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_shoot_out?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_shoot_out?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_block_shoot?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_block_shoot?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_big_chance?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_big_chance?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_corner?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_corner?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_box_shoot_in?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_box_shoot_in?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_box_shoot_out?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_box_shoot_out?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_goal_post?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_goal_post?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_goal_head?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_goal_head?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_keeper_save?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_keeper_save?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_free_kick?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_free_kick?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_offside?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_offside?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_foul?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_foul?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_yellow_card?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_yellow_card?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_red_card?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_red_card?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_slow_in?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_slow_in?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_box_touch?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_box_touch?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_pass_count?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_pass_count?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_final_third_pass_count?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_final_third_pass_count?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_cross_count?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_cross_count?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_tackle_count?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_tackle_count?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_clear_count?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_clear_count?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_intercept_count?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_intercept_count?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    home_play_style?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    away_play_style?: StringNullableFilter<"scoring_playstyle_past_data"> | string | null
-    register_id?: StringFilter<"scoring_playstyle_past_data"> | string
-    register_time?: DateTimeFilter<"scoring_playstyle_past_data"> | Date | string
-    update_id?: StringFilter<"scoring_playstyle_past_data"> | string
-    update_time?: DateTimeFilter<"scoring_playstyle_past_data"> | Date | string
-  }, "id">
-
-  export type scoring_playstyle_past_dataOrderByWithAggregationInput = {
-    id?: SortOrder
-    data_category?: SortOrderInput | SortOrder
-    home_team_name?: SortOrderInput | SortOrder
-    away_team_name?: SortOrderInput | SortOrder
-    diff_home_score?: SortOrderInput | SortOrder
-    diff_away_score?: SortOrderInput | SortOrder
-    diff_home_donation?: SortOrderInput | SortOrder
-    diff_away_donation?: SortOrderInput | SortOrder
-    diff_home_shoot_all?: SortOrderInput | SortOrder
-    diff_away_shoot_all?: SortOrderInput | SortOrder
-    diff_home_shoot_in?: SortOrderInput | SortOrder
-    diff_away_shoot_in?: SortOrderInput | SortOrder
-    diff_home_shoot_out?: SortOrderInput | SortOrder
-    diff_away_shoot_out?: SortOrderInput | SortOrder
-    diff_home_block_shoot?: SortOrderInput | SortOrder
-    diff_away_block_shoot?: SortOrderInput | SortOrder
-    diff_home_big_chance?: SortOrderInput | SortOrder
-    diff_away_big_chance?: SortOrderInput | SortOrder
-    diff_home_corner?: SortOrderInput | SortOrder
-    diff_away_corner?: SortOrderInput | SortOrder
-    diff_home_box_shoot_in?: SortOrderInput | SortOrder
-    diff_away_box_shoot_in?: SortOrderInput | SortOrder
-    diff_home_box_shoot_out?: SortOrderInput | SortOrder
-    diff_away_box_shoot_out?: SortOrderInput | SortOrder
-    diff_home_goal_post?: SortOrderInput | SortOrder
-    diff_away_goal_post?: SortOrderInput | SortOrder
-    diff_home_goal_head?: SortOrderInput | SortOrder
-    diff_away_goal_head?: SortOrderInput | SortOrder
-    diff_home_keeper_save?: SortOrderInput | SortOrder
-    diff_away_keeper_save?: SortOrderInput | SortOrder
-    diff_home_free_kick?: SortOrderInput | SortOrder
-    diff_away_free_kick?: SortOrderInput | SortOrder
-    diff_home_offside?: SortOrderInput | SortOrder
-    diff_away_offside?: SortOrderInput | SortOrder
-    diff_home_foul?: SortOrderInput | SortOrder
-    diff_away_foul?: SortOrderInput | SortOrder
-    diff_home_yellow_card?: SortOrderInput | SortOrder
-    diff_away_yellow_card?: SortOrderInput | SortOrder
-    diff_home_red_card?: SortOrderInput | SortOrder
-    diff_away_red_card?: SortOrderInput | SortOrder
-    diff_home_slow_in?: SortOrderInput | SortOrder
-    diff_away_slow_in?: SortOrderInput | SortOrder
-    diff_home_box_touch?: SortOrderInput | SortOrder
-    diff_away_box_touch?: SortOrderInput | SortOrder
-    diff_home_pass_count?: SortOrderInput | SortOrder
-    diff_away_pass_count?: SortOrderInput | SortOrder
-    diff_home_final_third_pass_count?: SortOrderInput | SortOrder
-    diff_away_final_third_pass_count?: SortOrderInput | SortOrder
-    diff_home_cross_count?: SortOrderInput | SortOrder
-    diff_away_cross_count?: SortOrderInput | SortOrder
-    diff_home_tackle_count?: SortOrderInput | SortOrder
-    diff_away_tackle_count?: SortOrderInput | SortOrder
-    diff_home_clear_count?: SortOrderInput | SortOrder
-    diff_away_clear_count?: SortOrderInput | SortOrder
-    diff_home_intercept_count?: SortOrderInput | SortOrder
-    diff_away_intercept_count?: SortOrderInput | SortOrder
-    home_play_style?: SortOrderInput | SortOrder
-    away_play_style?: SortOrderInput | SortOrder
-    register_id?: SortOrder
-    register_time?: SortOrder
-    update_id?: SortOrder
-    update_time?: SortOrder
-    _count?: scoring_playstyle_past_dataCountOrderByAggregateInput
-    _avg?: scoring_playstyle_past_dataAvgOrderByAggregateInput
-    _max?: scoring_playstyle_past_dataMaxOrderByAggregateInput
-    _min?: scoring_playstyle_past_dataMinOrderByAggregateInput
-    _sum?: scoring_playstyle_past_dataSumOrderByAggregateInput
-  }
-
-  export type scoring_playstyle_past_dataScalarWhereWithAggregatesInput = {
-    AND?: scoring_playstyle_past_dataScalarWhereWithAggregatesInput | scoring_playstyle_past_dataScalarWhereWithAggregatesInput[]
-    OR?: scoring_playstyle_past_dataScalarWhereWithAggregatesInput[]
-    NOT?: scoring_playstyle_past_dataScalarWhereWithAggregatesInput | scoring_playstyle_past_dataScalarWhereWithAggregatesInput[]
-    id?: IntWithAggregatesFilter<"scoring_playstyle_past_data"> | number
-    data_category?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    home_team_name?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    away_team_name?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_score?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_score?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_donation?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_donation?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_shoot_all?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_shoot_all?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_shoot_in?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_shoot_in?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_shoot_out?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_shoot_out?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_block_shoot?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_block_shoot?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_big_chance?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_big_chance?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_corner?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_corner?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_box_shoot_in?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_box_shoot_in?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_box_shoot_out?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_box_shoot_out?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_goal_post?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_goal_post?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_goal_head?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_goal_head?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_keeper_save?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_keeper_save?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_free_kick?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_free_kick?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_offside?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_offside?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_foul?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_foul?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_yellow_card?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_yellow_card?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_red_card?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_red_card?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_slow_in?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_slow_in?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_box_touch?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_box_touch?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_pass_count?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_pass_count?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_final_third_pass_count?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_final_third_pass_count?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_cross_count?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_cross_count?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_tackle_count?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_tackle_count?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_clear_count?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_clear_count?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_home_intercept_count?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    diff_away_intercept_count?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    home_play_style?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    away_play_style?: StringNullableWithAggregatesFilter<"scoring_playstyle_past_data"> | string | null
-    register_id?: StringWithAggregatesFilter<"scoring_playstyle_past_data"> | string
-    register_time?: DateTimeWithAggregatesFilter<"scoring_playstyle_past_data"> | Date | string
-    update_id?: StringWithAggregatesFilter<"scoring_playstyle_past_data"> | string
-    update_time?: DateTimeWithAggregatesFilter<"scoring_playstyle_past_data"> | Date | string
-  }
-
   export type stat_encryptionWhereInput = {
     AND?: stat_encryptionWhereInput | stat_encryptionWhereInput[]
     OR?: stat_encryptionWhereInput[]
@@ -72964,6 +69095,16 @@ export namespace Prisma {
     away_1st_half_score_ratio?: StringNullableFilter<"surface_overview"> | string | null
     away_2nd_half_score_ratio?: StringNullableFilter<"surface_overview"> | string | null
     away_clean_sheet?: StringNullableFilter<"surface_overview"> | string | null
+    home_1st_half_lost?: StringNullableFilter<"surface_overview"> | string | null
+    home_2nd_half_lost?: StringNullableFilter<"surface_overview"> | string | null
+    home_sum_lost?: StringNullableFilter<"surface_overview"> | string | null
+    home_1st_half_lost_ratio?: StringNullableFilter<"surface_overview"> | string | null
+    home_2nd_half_lost_ratio?: StringNullableFilter<"surface_overview"> | string | null
+    away_1st_half_lost?: StringNullableFilter<"surface_overview"> | string | null
+    away_2nd_half_lost?: StringNullableFilter<"surface_overview"> | string | null
+    away_sum_lost?: StringNullableFilter<"surface_overview"> | string | null
+    away_1st_half_lost_ratio?: StringNullableFilter<"surface_overview"> | string | null
+    away_2nd_half_lost_ratio?: StringNullableFilter<"surface_overview"> | string | null
     fail_to_score_game_count?: StringNullableFilter<"surface_overview"> | string | null
     consecutive_win_disp?: StringNullableFilter<"surface_overview"> | string | null
     consecutive_lose_disp?: StringNullableFilter<"surface_overview"> | string | null
@@ -73041,6 +69182,16 @@ export namespace Prisma {
     away_1st_half_score_ratio?: SortOrderInput | SortOrder
     away_2nd_half_score_ratio?: SortOrderInput | SortOrder
     away_clean_sheet?: SortOrderInput | SortOrder
+    home_1st_half_lost?: SortOrderInput | SortOrder
+    home_2nd_half_lost?: SortOrderInput | SortOrder
+    home_sum_lost?: SortOrderInput | SortOrder
+    home_1st_half_lost_ratio?: SortOrderInput | SortOrder
+    home_2nd_half_lost_ratio?: SortOrderInput | SortOrder
+    away_1st_half_lost?: SortOrderInput | SortOrder
+    away_2nd_half_lost?: SortOrderInput | SortOrder
+    away_sum_lost?: SortOrderInput | SortOrder
+    away_1st_half_lost_ratio?: SortOrderInput | SortOrder
+    away_2nd_half_lost_ratio?: SortOrderInput | SortOrder
     fail_to_score_game_count?: SortOrderInput | SortOrder
     consecutive_win_disp?: SortOrderInput | SortOrder
     consecutive_lose_disp?: SortOrderInput | SortOrder
@@ -73122,6 +69273,16 @@ export namespace Prisma {
     away_1st_half_score_ratio?: StringNullableFilter<"surface_overview"> | string | null
     away_2nd_half_score_ratio?: StringNullableFilter<"surface_overview"> | string | null
     away_clean_sheet?: StringNullableFilter<"surface_overview"> | string | null
+    home_1st_half_lost?: StringNullableFilter<"surface_overview"> | string | null
+    home_2nd_half_lost?: StringNullableFilter<"surface_overview"> | string | null
+    home_sum_lost?: StringNullableFilter<"surface_overview"> | string | null
+    home_1st_half_lost_ratio?: StringNullableFilter<"surface_overview"> | string | null
+    home_2nd_half_lost_ratio?: StringNullableFilter<"surface_overview"> | string | null
+    away_1st_half_lost?: StringNullableFilter<"surface_overview"> | string | null
+    away_2nd_half_lost?: StringNullableFilter<"surface_overview"> | string | null
+    away_sum_lost?: StringNullableFilter<"surface_overview"> | string | null
+    away_1st_half_lost_ratio?: StringNullableFilter<"surface_overview"> | string | null
+    away_2nd_half_lost_ratio?: StringNullableFilter<"surface_overview"> | string | null
     fail_to_score_game_count?: StringNullableFilter<"surface_overview"> | string | null
     consecutive_win_disp?: StringNullableFilter<"surface_overview"> | string | null
     consecutive_lose_disp?: StringNullableFilter<"surface_overview"> | string | null
@@ -73199,6 +69360,16 @@ export namespace Prisma {
     away_1st_half_score_ratio?: SortOrderInput | SortOrder
     away_2nd_half_score_ratio?: SortOrderInput | SortOrder
     away_clean_sheet?: SortOrderInput | SortOrder
+    home_1st_half_lost?: SortOrderInput | SortOrder
+    home_2nd_half_lost?: SortOrderInput | SortOrder
+    home_sum_lost?: SortOrderInput | SortOrder
+    home_1st_half_lost_ratio?: SortOrderInput | SortOrder
+    home_2nd_half_lost_ratio?: SortOrderInput | SortOrder
+    away_1st_half_lost?: SortOrderInput | SortOrder
+    away_2nd_half_lost?: SortOrderInput | SortOrder
+    away_sum_lost?: SortOrderInput | SortOrder
+    away_1st_half_lost_ratio?: SortOrderInput | SortOrder
+    away_2nd_half_lost_ratio?: SortOrderInput | SortOrder
     fail_to_score_game_count?: SortOrderInput | SortOrder
     consecutive_win_disp?: SortOrderInput | SortOrder
     consecutive_lose_disp?: SortOrderInput | SortOrder
@@ -73284,6 +69455,16 @@ export namespace Prisma {
     away_1st_half_score_ratio?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
     away_2nd_half_score_ratio?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
     away_clean_sheet?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    home_1st_half_lost?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    home_2nd_half_lost?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    home_sum_lost?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    home_1st_half_lost_ratio?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    home_2nd_half_lost_ratio?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    away_1st_half_lost?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    away_2nd_half_lost?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    away_sum_lost?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    away_1st_half_lost_ratio?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    away_2nd_half_lost_ratio?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
     fail_to_score_game_count?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
     consecutive_win_disp?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
     consecutive_lose_disp?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
@@ -73429,6 +69610,7 @@ export namespace Prisma {
     weather?: StringNullableFilter<"team_match_final_stats"> | string | null
     temperature?: StringNullableFilter<"team_match_final_stats"> | string | null
     humid?: StringNullableFilter<"team_match_final_stats"> | string | null
+    logic_flg?: StringNullableFilter<"team_match_final_stats"> | string | null
     register_id?: StringNullableFilter<"team_match_final_stats"> | string | null
     register_time?: DateTimeNullableFilter<"team_match_final_stats"> | Date | string | null
     update_id?: StringNullableFilter<"team_match_final_stats"> | string | null
@@ -73525,6 +69707,7 @@ export namespace Prisma {
     weather?: SortOrderInput | SortOrder
     temperature?: SortOrderInput | SortOrder
     humid?: SortOrderInput | SortOrder
+    logic_flg?: SortOrderInput | SortOrder
     register_id?: SortOrderInput | SortOrder
     register_time?: SortOrderInput | SortOrder
     update_id?: SortOrderInput | SortOrder
@@ -73624,6 +69807,7 @@ export namespace Prisma {
     weather?: StringNullableFilter<"team_match_final_stats"> | string | null
     temperature?: StringNullableFilter<"team_match_final_stats"> | string | null
     humid?: StringNullableFilter<"team_match_final_stats"> | string | null
+    logic_flg?: StringNullableFilter<"team_match_final_stats"> | string | null
     register_id?: StringNullableFilter<"team_match_final_stats"> | string | null
     register_time?: DateTimeNullableFilter<"team_match_final_stats"> | Date | string | null
     update_id?: StringNullableFilter<"team_match_final_stats"> | string | null
@@ -73720,6 +69904,7 @@ export namespace Prisma {
     weather?: SortOrderInput | SortOrder
     temperature?: SortOrderInput | SortOrder
     humid?: SortOrderInput | SortOrder
+    logic_flg?: SortOrderInput | SortOrder
     register_id?: SortOrderInput | SortOrder
     register_time?: SortOrderInput | SortOrder
     update_id?: SortOrderInput | SortOrder
@@ -73824,6 +70009,7 @@ export namespace Prisma {
     weather?: StringNullableWithAggregatesFilter<"team_match_final_stats"> | string | null
     temperature?: StringNullableWithAggregatesFilter<"team_match_final_stats"> | string | null
     humid?: StringNullableWithAggregatesFilter<"team_match_final_stats"> | string | null
+    logic_flg?: StringNullableWithAggregatesFilter<"team_match_final_stats"> | string | null
     register_id?: StringNullableWithAggregatesFilter<"team_match_final_stats"> | string | null
     register_time?: DateTimeNullableWithAggregatesFilter<"team_match_final_stats"> | Date | string | null
     update_id?: StringNullableWithAggregatesFilter<"team_match_final_stats"> | string | null
@@ -76624,286 +72810,6 @@ export namespace Prisma {
     update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
-  export type average_statistics_team_detail_dataCreateInput = {
-    id: number
-    situation?: string | null
-    team?: string | null
-    opposite_team?: string | null
-    ha?: string | null
-    country?: string | null
-    league?: string | null
-    exp_stat?: string | null
-    donation_stat?: string | null
-    shoot_all_stat?: string | null
-    shoot_in_stat?: string | null
-    shoot_out_stat?: string | null
-    block_shoot_stat?: string | null
-    big_chance_stat?: string | null
-    corner_stat?: string | null
-    box_shoot_in_stat?: string | null
-    box_shoot_out_stat?: string | null
-    goal_post_stat?: string | null
-    goal_head_stat?: string | null
-    keeper_save_stat?: string | null
-    free_kick_stat?: string | null
-    offside_stat?: string | null
-    foul_stat?: string | null
-    yellow_card_stat?: string | null
-    red_card_stat?: string | null
-    slow_in_stat?: string | null
-    box_touch_stat?: string | null
-    pass_count_stat?: string | null
-    final_third_pass_count_stat?: string | null
-    cross_count_stat?: string | null
-    tackle_count_stat?: string | null
-    clear_count_stat?: string | null
-    intercept_count_stat?: string | null
-    register_id?: string | null
-    register_time?: Date | string | null
-    update_id?: string | null
-    update_time?: Date | string | null
-  }
-
-  export type average_statistics_team_detail_dataUncheckedCreateInput = {
-    id: number
-    situation?: string | null
-    team?: string | null
-    opposite_team?: string | null
-    ha?: string | null
-    country?: string | null
-    league?: string | null
-    exp_stat?: string | null
-    donation_stat?: string | null
-    shoot_all_stat?: string | null
-    shoot_in_stat?: string | null
-    shoot_out_stat?: string | null
-    block_shoot_stat?: string | null
-    big_chance_stat?: string | null
-    corner_stat?: string | null
-    box_shoot_in_stat?: string | null
-    box_shoot_out_stat?: string | null
-    goal_post_stat?: string | null
-    goal_head_stat?: string | null
-    keeper_save_stat?: string | null
-    free_kick_stat?: string | null
-    offside_stat?: string | null
-    foul_stat?: string | null
-    yellow_card_stat?: string | null
-    red_card_stat?: string | null
-    slow_in_stat?: string | null
-    box_touch_stat?: string | null
-    pass_count_stat?: string | null
-    final_third_pass_count_stat?: string | null
-    cross_count_stat?: string | null
-    tackle_count_stat?: string | null
-    clear_count_stat?: string | null
-    intercept_count_stat?: string | null
-    register_id?: string | null
-    register_time?: Date | string | null
-    update_id?: string | null
-    update_time?: Date | string | null
-  }
-
-  export type average_statistics_team_detail_dataUpdateInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    situation?: NullableStringFieldUpdateOperationsInput | string | null
-    team?: NullableStringFieldUpdateOperationsInput | string | null
-    opposite_team?: NullableStringFieldUpdateOperationsInput | string | null
-    ha?: NullableStringFieldUpdateOperationsInput | string | null
-    country?: NullableStringFieldUpdateOperationsInput | string | null
-    league?: NullableStringFieldUpdateOperationsInput | string | null
-    exp_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    donation_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    shoot_all_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    shoot_in_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    shoot_out_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    block_shoot_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    big_chance_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    corner_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    box_shoot_in_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    box_shoot_out_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    goal_post_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    goal_head_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    keeper_save_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    free_kick_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    offside_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    foul_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    yellow_card_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    red_card_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    slow_in_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    box_touch_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    pass_count_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    final_third_pass_count_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    cross_count_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    tackle_count_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    clear_count_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    intercept_count_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    register_id?: NullableStringFieldUpdateOperationsInput | string | null
-    register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    update_id?: NullableStringFieldUpdateOperationsInput | string | null
-    update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type average_statistics_team_detail_dataUncheckedUpdateInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    situation?: NullableStringFieldUpdateOperationsInput | string | null
-    team?: NullableStringFieldUpdateOperationsInput | string | null
-    opposite_team?: NullableStringFieldUpdateOperationsInput | string | null
-    ha?: NullableStringFieldUpdateOperationsInput | string | null
-    country?: NullableStringFieldUpdateOperationsInput | string | null
-    league?: NullableStringFieldUpdateOperationsInput | string | null
-    exp_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    donation_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    shoot_all_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    shoot_in_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    shoot_out_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    block_shoot_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    big_chance_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    corner_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    box_shoot_in_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    box_shoot_out_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    goal_post_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    goal_head_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    keeper_save_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    free_kick_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    offside_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    foul_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    yellow_card_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    red_card_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    slow_in_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    box_touch_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    pass_count_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    final_third_pass_count_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    cross_count_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    tackle_count_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    clear_count_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    intercept_count_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    register_id?: NullableStringFieldUpdateOperationsInput | string | null
-    register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    update_id?: NullableStringFieldUpdateOperationsInput | string | null
-    update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type average_statistics_team_detail_dataCreateManyInput = {
-    id: number
-    situation?: string | null
-    team?: string | null
-    opposite_team?: string | null
-    ha?: string | null
-    country?: string | null
-    league?: string | null
-    exp_stat?: string | null
-    donation_stat?: string | null
-    shoot_all_stat?: string | null
-    shoot_in_stat?: string | null
-    shoot_out_stat?: string | null
-    block_shoot_stat?: string | null
-    big_chance_stat?: string | null
-    corner_stat?: string | null
-    box_shoot_in_stat?: string | null
-    box_shoot_out_stat?: string | null
-    goal_post_stat?: string | null
-    goal_head_stat?: string | null
-    keeper_save_stat?: string | null
-    free_kick_stat?: string | null
-    offside_stat?: string | null
-    foul_stat?: string | null
-    yellow_card_stat?: string | null
-    red_card_stat?: string | null
-    slow_in_stat?: string | null
-    box_touch_stat?: string | null
-    pass_count_stat?: string | null
-    final_third_pass_count_stat?: string | null
-    cross_count_stat?: string | null
-    tackle_count_stat?: string | null
-    clear_count_stat?: string | null
-    intercept_count_stat?: string | null
-    register_id?: string | null
-    register_time?: Date | string | null
-    update_id?: string | null
-    update_time?: Date | string | null
-  }
-
-  export type average_statistics_team_detail_dataUpdateManyMutationInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    situation?: NullableStringFieldUpdateOperationsInput | string | null
-    team?: NullableStringFieldUpdateOperationsInput | string | null
-    opposite_team?: NullableStringFieldUpdateOperationsInput | string | null
-    ha?: NullableStringFieldUpdateOperationsInput | string | null
-    country?: NullableStringFieldUpdateOperationsInput | string | null
-    league?: NullableStringFieldUpdateOperationsInput | string | null
-    exp_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    donation_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    shoot_all_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    shoot_in_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    shoot_out_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    block_shoot_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    big_chance_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    corner_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    box_shoot_in_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    box_shoot_out_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    goal_post_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    goal_head_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    keeper_save_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    free_kick_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    offside_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    foul_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    yellow_card_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    red_card_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    slow_in_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    box_touch_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    pass_count_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    final_third_pass_count_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    cross_count_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    tackle_count_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    clear_count_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    intercept_count_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    register_id?: NullableStringFieldUpdateOperationsInput | string | null
-    register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    update_id?: NullableStringFieldUpdateOperationsInput | string | null
-    update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type average_statistics_team_detail_dataUncheckedUpdateManyInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    situation?: NullableStringFieldUpdateOperationsInput | string | null
-    team?: NullableStringFieldUpdateOperationsInput | string | null
-    opposite_team?: NullableStringFieldUpdateOperationsInput | string | null
-    ha?: NullableStringFieldUpdateOperationsInput | string | null
-    country?: NullableStringFieldUpdateOperationsInput | string | null
-    league?: NullableStringFieldUpdateOperationsInput | string | null
-    exp_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    donation_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    shoot_all_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    shoot_in_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    shoot_out_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    block_shoot_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    big_chance_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    corner_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    box_shoot_in_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    box_shoot_out_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    goal_post_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    goal_head_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    keeper_save_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    free_kick_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    offside_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    foul_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    yellow_card_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    red_card_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    slow_in_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    box_touch_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    pass_count_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    final_third_pass_count_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    cross_count_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    tackle_count_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    clear_count_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    intercept_count_stat?: NullableStringFieldUpdateOperationsInput | string | null
-    register_id?: NullableStringFieldUpdateOperationsInput | string | null
-    register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    update_id?: NullableStringFieldUpdateOperationsInput | string | null
-    update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
   export type calc_correlationCreateInput = {
     file?: string | null
     country?: string | null
@@ -78643,6 +74549,8 @@ export namespace Prisma {
     game_id?: string | null
     match_id?: string | null
     time_sort_seconds?: string | null
+    add_manual_flg?: string | null
+    logic_flg?: string | null
     register_id?: string | null
     register_time?: Date | string | null
     update_id?: string | null
@@ -78755,6 +74663,8 @@ export namespace Prisma {
     game_id?: string | null
     match_id?: string | null
     time_sort_seconds?: string | null
+    add_manual_flg?: string | null
+    logic_flg?: string | null
     register_id?: string | null
     register_time?: Date | string | null
     update_id?: string | null
@@ -78866,6 +74776,8 @@ export namespace Prisma {
     game_id?: NullableStringFieldUpdateOperationsInput | string | null
     match_id?: NullableStringFieldUpdateOperationsInput | string | null
     time_sort_seconds?: NullableStringFieldUpdateOperationsInput | string | null
+    add_manual_flg?: NullableStringFieldUpdateOperationsInput | string | null
+    logic_flg?: NullableStringFieldUpdateOperationsInput | string | null
     register_id?: NullableStringFieldUpdateOperationsInput | string | null
     register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     update_id?: NullableStringFieldUpdateOperationsInput | string | null
@@ -78978,6 +74890,8 @@ export namespace Prisma {
     game_id?: NullableStringFieldUpdateOperationsInput | string | null
     match_id?: NullableStringFieldUpdateOperationsInput | string | null
     time_sort_seconds?: NullableStringFieldUpdateOperationsInput | string | null
+    add_manual_flg?: NullableStringFieldUpdateOperationsInput | string | null
+    logic_flg?: NullableStringFieldUpdateOperationsInput | string | null
     register_id?: NullableStringFieldUpdateOperationsInput | string | null
     register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     update_id?: NullableStringFieldUpdateOperationsInput | string | null
@@ -79090,6 +75004,8 @@ export namespace Prisma {
     game_id?: string | null
     match_id?: string | null
     time_sort_seconds?: string | null
+    add_manual_flg?: string | null
+    logic_flg?: string | null
     register_id?: string | null
     register_time?: Date | string | null
     update_id?: string | null
@@ -79201,6 +75117,8 @@ export namespace Prisma {
     game_id?: NullableStringFieldUpdateOperationsInput | string | null
     match_id?: NullableStringFieldUpdateOperationsInput | string | null
     time_sort_seconds?: NullableStringFieldUpdateOperationsInput | string | null
+    add_manual_flg?: NullableStringFieldUpdateOperationsInput | string | null
+    logic_flg?: NullableStringFieldUpdateOperationsInput | string | null
     register_id?: NullableStringFieldUpdateOperationsInput | string | null
     register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     update_id?: NullableStringFieldUpdateOperationsInput | string | null
@@ -79313,6 +75231,8 @@ export namespace Prisma {
     game_id?: NullableStringFieldUpdateOperationsInput | string | null
     match_id?: NullableStringFieldUpdateOperationsInput | string | null
     time_sort_seconds?: NullableStringFieldUpdateOperationsInput | string | null
+    add_manual_flg?: NullableStringFieldUpdateOperationsInput | string | null
+    logic_flg?: NullableStringFieldUpdateOperationsInput | string | null
     register_id?: NullableStringFieldUpdateOperationsInput | string | null
     register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     update_id?: NullableStringFieldUpdateOperationsInput | string | null
@@ -83303,461 +79223,6 @@ export namespace Prisma {
     update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
-  export type scoring_playstyle_past_dataCreateInput = {
-    id: number
-    data_category?: string | null
-    home_team_name?: string | null
-    away_team_name?: string | null
-    diff_home_score?: string | null
-    diff_away_score?: string | null
-    diff_home_donation?: string | null
-    diff_away_donation?: string | null
-    diff_home_shoot_all?: string | null
-    diff_away_shoot_all?: string | null
-    diff_home_shoot_in?: string | null
-    diff_away_shoot_in?: string | null
-    diff_home_shoot_out?: string | null
-    diff_away_shoot_out?: string | null
-    diff_home_block_shoot?: string | null
-    diff_away_block_shoot?: string | null
-    diff_home_big_chance?: string | null
-    diff_away_big_chance?: string | null
-    diff_home_corner?: string | null
-    diff_away_corner?: string | null
-    diff_home_box_shoot_in?: string | null
-    diff_away_box_shoot_in?: string | null
-    diff_home_box_shoot_out?: string | null
-    diff_away_box_shoot_out?: string | null
-    diff_home_goal_post?: string | null
-    diff_away_goal_post?: string | null
-    diff_home_goal_head?: string | null
-    diff_away_goal_head?: string | null
-    diff_home_keeper_save?: string | null
-    diff_away_keeper_save?: string | null
-    diff_home_free_kick?: string | null
-    diff_away_free_kick?: string | null
-    diff_home_offside?: string | null
-    diff_away_offside?: string | null
-    diff_home_foul?: string | null
-    diff_away_foul?: string | null
-    diff_home_yellow_card?: string | null
-    diff_away_yellow_card?: string | null
-    diff_home_red_card?: string | null
-    diff_away_red_card?: string | null
-    diff_home_slow_in?: string | null
-    diff_away_slow_in?: string | null
-    diff_home_box_touch?: string | null
-    diff_away_box_touch?: string | null
-    diff_home_pass_count?: string | null
-    diff_away_pass_count?: string | null
-    diff_home_final_third_pass_count?: string | null
-    diff_away_final_third_pass_count?: string | null
-    diff_home_cross_count?: string | null
-    diff_away_cross_count?: string | null
-    diff_home_tackle_count?: string | null
-    diff_away_tackle_count?: string | null
-    diff_home_clear_count?: string | null
-    diff_away_clear_count?: string | null
-    diff_home_intercept_count?: string | null
-    diff_away_intercept_count?: string | null
-    home_play_style?: string | null
-    away_play_style?: string | null
-    register_id: string
-    register_time: Date | string
-    update_id: string
-    update_time: Date | string
-  }
-
-  export type scoring_playstyle_past_dataUncheckedCreateInput = {
-    id: number
-    data_category?: string | null
-    home_team_name?: string | null
-    away_team_name?: string | null
-    diff_home_score?: string | null
-    diff_away_score?: string | null
-    diff_home_donation?: string | null
-    diff_away_donation?: string | null
-    diff_home_shoot_all?: string | null
-    diff_away_shoot_all?: string | null
-    diff_home_shoot_in?: string | null
-    diff_away_shoot_in?: string | null
-    diff_home_shoot_out?: string | null
-    diff_away_shoot_out?: string | null
-    diff_home_block_shoot?: string | null
-    diff_away_block_shoot?: string | null
-    diff_home_big_chance?: string | null
-    diff_away_big_chance?: string | null
-    diff_home_corner?: string | null
-    diff_away_corner?: string | null
-    diff_home_box_shoot_in?: string | null
-    diff_away_box_shoot_in?: string | null
-    diff_home_box_shoot_out?: string | null
-    diff_away_box_shoot_out?: string | null
-    diff_home_goal_post?: string | null
-    diff_away_goal_post?: string | null
-    diff_home_goal_head?: string | null
-    diff_away_goal_head?: string | null
-    diff_home_keeper_save?: string | null
-    diff_away_keeper_save?: string | null
-    diff_home_free_kick?: string | null
-    diff_away_free_kick?: string | null
-    diff_home_offside?: string | null
-    diff_away_offside?: string | null
-    diff_home_foul?: string | null
-    diff_away_foul?: string | null
-    diff_home_yellow_card?: string | null
-    diff_away_yellow_card?: string | null
-    diff_home_red_card?: string | null
-    diff_away_red_card?: string | null
-    diff_home_slow_in?: string | null
-    diff_away_slow_in?: string | null
-    diff_home_box_touch?: string | null
-    diff_away_box_touch?: string | null
-    diff_home_pass_count?: string | null
-    diff_away_pass_count?: string | null
-    diff_home_final_third_pass_count?: string | null
-    diff_away_final_third_pass_count?: string | null
-    diff_home_cross_count?: string | null
-    diff_away_cross_count?: string | null
-    diff_home_tackle_count?: string | null
-    diff_away_tackle_count?: string | null
-    diff_home_clear_count?: string | null
-    diff_away_clear_count?: string | null
-    diff_home_intercept_count?: string | null
-    diff_away_intercept_count?: string | null
-    home_play_style?: string | null
-    away_play_style?: string | null
-    register_id: string
-    register_time: Date | string
-    update_id: string
-    update_time: Date | string
-  }
-
-  export type scoring_playstyle_past_dataUpdateInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    data_category?: NullableStringFieldUpdateOperationsInput | string | null
-    home_team_name?: NullableStringFieldUpdateOperationsInput | string | null
-    away_team_name?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_score?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_score?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_donation?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_donation?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_shoot_all?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_shoot_all?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_shoot_in?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_shoot_in?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_shoot_out?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_shoot_out?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_block_shoot?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_block_shoot?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_big_chance?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_big_chance?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_corner?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_corner?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_box_shoot_in?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_box_shoot_in?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_box_shoot_out?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_box_shoot_out?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_goal_post?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_goal_post?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_goal_head?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_goal_head?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_keeper_save?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_keeper_save?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_free_kick?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_free_kick?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_offside?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_offside?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_foul?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_foul?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_yellow_card?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_yellow_card?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_red_card?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_red_card?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_slow_in?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_slow_in?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_box_touch?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_box_touch?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_pass_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_pass_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_final_third_pass_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_final_third_pass_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_cross_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_cross_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_tackle_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_tackle_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_clear_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_clear_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_intercept_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_intercept_count?: NullableStringFieldUpdateOperationsInput | string | null
-    home_play_style?: NullableStringFieldUpdateOperationsInput | string | null
-    away_play_style?: NullableStringFieldUpdateOperationsInput | string | null
-    register_id?: StringFieldUpdateOperationsInput | string
-    register_time?: DateTimeFieldUpdateOperationsInput | Date | string
-    update_id?: StringFieldUpdateOperationsInput | string
-    update_time?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type scoring_playstyle_past_dataUncheckedUpdateInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    data_category?: NullableStringFieldUpdateOperationsInput | string | null
-    home_team_name?: NullableStringFieldUpdateOperationsInput | string | null
-    away_team_name?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_score?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_score?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_donation?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_donation?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_shoot_all?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_shoot_all?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_shoot_in?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_shoot_in?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_shoot_out?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_shoot_out?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_block_shoot?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_block_shoot?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_big_chance?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_big_chance?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_corner?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_corner?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_box_shoot_in?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_box_shoot_in?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_box_shoot_out?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_box_shoot_out?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_goal_post?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_goal_post?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_goal_head?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_goal_head?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_keeper_save?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_keeper_save?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_free_kick?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_free_kick?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_offside?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_offside?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_foul?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_foul?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_yellow_card?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_yellow_card?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_red_card?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_red_card?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_slow_in?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_slow_in?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_box_touch?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_box_touch?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_pass_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_pass_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_final_third_pass_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_final_third_pass_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_cross_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_cross_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_tackle_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_tackle_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_clear_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_clear_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_intercept_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_intercept_count?: NullableStringFieldUpdateOperationsInput | string | null
-    home_play_style?: NullableStringFieldUpdateOperationsInput | string | null
-    away_play_style?: NullableStringFieldUpdateOperationsInput | string | null
-    register_id?: StringFieldUpdateOperationsInput | string
-    register_time?: DateTimeFieldUpdateOperationsInput | Date | string
-    update_id?: StringFieldUpdateOperationsInput | string
-    update_time?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type scoring_playstyle_past_dataCreateManyInput = {
-    id: number
-    data_category?: string | null
-    home_team_name?: string | null
-    away_team_name?: string | null
-    diff_home_score?: string | null
-    diff_away_score?: string | null
-    diff_home_donation?: string | null
-    diff_away_donation?: string | null
-    diff_home_shoot_all?: string | null
-    diff_away_shoot_all?: string | null
-    diff_home_shoot_in?: string | null
-    diff_away_shoot_in?: string | null
-    diff_home_shoot_out?: string | null
-    diff_away_shoot_out?: string | null
-    diff_home_block_shoot?: string | null
-    diff_away_block_shoot?: string | null
-    diff_home_big_chance?: string | null
-    diff_away_big_chance?: string | null
-    diff_home_corner?: string | null
-    diff_away_corner?: string | null
-    diff_home_box_shoot_in?: string | null
-    diff_away_box_shoot_in?: string | null
-    diff_home_box_shoot_out?: string | null
-    diff_away_box_shoot_out?: string | null
-    diff_home_goal_post?: string | null
-    diff_away_goal_post?: string | null
-    diff_home_goal_head?: string | null
-    diff_away_goal_head?: string | null
-    diff_home_keeper_save?: string | null
-    diff_away_keeper_save?: string | null
-    diff_home_free_kick?: string | null
-    diff_away_free_kick?: string | null
-    diff_home_offside?: string | null
-    diff_away_offside?: string | null
-    diff_home_foul?: string | null
-    diff_away_foul?: string | null
-    diff_home_yellow_card?: string | null
-    diff_away_yellow_card?: string | null
-    diff_home_red_card?: string | null
-    diff_away_red_card?: string | null
-    diff_home_slow_in?: string | null
-    diff_away_slow_in?: string | null
-    diff_home_box_touch?: string | null
-    diff_away_box_touch?: string | null
-    diff_home_pass_count?: string | null
-    diff_away_pass_count?: string | null
-    diff_home_final_third_pass_count?: string | null
-    diff_away_final_third_pass_count?: string | null
-    diff_home_cross_count?: string | null
-    diff_away_cross_count?: string | null
-    diff_home_tackle_count?: string | null
-    diff_away_tackle_count?: string | null
-    diff_home_clear_count?: string | null
-    diff_away_clear_count?: string | null
-    diff_home_intercept_count?: string | null
-    diff_away_intercept_count?: string | null
-    home_play_style?: string | null
-    away_play_style?: string | null
-    register_id: string
-    register_time: Date | string
-    update_id: string
-    update_time: Date | string
-  }
-
-  export type scoring_playstyle_past_dataUpdateManyMutationInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    data_category?: NullableStringFieldUpdateOperationsInput | string | null
-    home_team_name?: NullableStringFieldUpdateOperationsInput | string | null
-    away_team_name?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_score?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_score?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_donation?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_donation?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_shoot_all?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_shoot_all?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_shoot_in?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_shoot_in?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_shoot_out?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_shoot_out?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_block_shoot?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_block_shoot?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_big_chance?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_big_chance?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_corner?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_corner?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_box_shoot_in?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_box_shoot_in?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_box_shoot_out?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_box_shoot_out?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_goal_post?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_goal_post?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_goal_head?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_goal_head?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_keeper_save?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_keeper_save?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_free_kick?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_free_kick?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_offside?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_offside?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_foul?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_foul?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_yellow_card?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_yellow_card?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_red_card?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_red_card?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_slow_in?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_slow_in?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_box_touch?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_box_touch?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_pass_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_pass_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_final_third_pass_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_final_third_pass_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_cross_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_cross_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_tackle_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_tackle_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_clear_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_clear_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_intercept_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_intercept_count?: NullableStringFieldUpdateOperationsInput | string | null
-    home_play_style?: NullableStringFieldUpdateOperationsInput | string | null
-    away_play_style?: NullableStringFieldUpdateOperationsInput | string | null
-    register_id?: StringFieldUpdateOperationsInput | string
-    register_time?: DateTimeFieldUpdateOperationsInput | Date | string
-    update_id?: StringFieldUpdateOperationsInput | string
-    update_time?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type scoring_playstyle_past_dataUncheckedUpdateManyInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    data_category?: NullableStringFieldUpdateOperationsInput | string | null
-    home_team_name?: NullableStringFieldUpdateOperationsInput | string | null
-    away_team_name?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_score?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_score?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_donation?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_donation?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_shoot_all?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_shoot_all?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_shoot_in?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_shoot_in?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_shoot_out?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_shoot_out?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_block_shoot?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_block_shoot?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_big_chance?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_big_chance?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_corner?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_corner?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_box_shoot_in?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_box_shoot_in?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_box_shoot_out?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_box_shoot_out?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_goal_post?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_goal_post?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_goal_head?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_goal_head?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_keeper_save?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_keeper_save?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_free_kick?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_free_kick?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_offside?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_offside?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_foul?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_foul?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_yellow_card?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_yellow_card?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_red_card?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_red_card?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_slow_in?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_slow_in?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_box_touch?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_box_touch?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_pass_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_pass_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_final_third_pass_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_final_third_pass_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_cross_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_cross_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_tackle_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_tackle_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_clear_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_clear_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_home_intercept_count?: NullableStringFieldUpdateOperationsInput | string | null
-    diff_away_intercept_count?: NullableStringFieldUpdateOperationsInput | string | null
-    home_play_style?: NullableStringFieldUpdateOperationsInput | string | null
-    away_play_style?: NullableStringFieldUpdateOperationsInput | string | null
-    register_id?: StringFieldUpdateOperationsInput | string
-    register_time?: DateTimeFieldUpdateOperationsInput | Date | string
-    update_id?: StringFieldUpdateOperationsInput | string
-    update_time?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
   export type stat_encryptionCreateInput = {
     id?: bigint | number
     country?: string | null
@@ -84368,6 +79833,16 @@ export namespace Prisma {
     away_1st_half_score_ratio?: string | null
     away_2nd_half_score_ratio?: string | null
     away_clean_sheet?: string | null
+    home_1st_half_lost?: string | null
+    home_2nd_half_lost?: string | null
+    home_sum_lost?: string | null
+    home_1st_half_lost_ratio?: string | null
+    home_2nd_half_lost_ratio?: string | null
+    away_1st_half_lost?: string | null
+    away_2nd_half_lost?: string | null
+    away_sum_lost?: string | null
+    away_1st_half_lost_ratio?: string | null
+    away_2nd_half_lost_ratio?: string | null
     fail_to_score_game_count?: string | null
     consecutive_win_disp?: string | null
     consecutive_lose_disp?: string | null
@@ -84445,6 +79920,16 @@ export namespace Prisma {
     away_1st_half_score_ratio?: string | null
     away_2nd_half_score_ratio?: string | null
     away_clean_sheet?: string | null
+    home_1st_half_lost?: string | null
+    home_2nd_half_lost?: string | null
+    home_sum_lost?: string | null
+    home_1st_half_lost_ratio?: string | null
+    home_2nd_half_lost_ratio?: string | null
+    away_1st_half_lost?: string | null
+    away_2nd_half_lost?: string | null
+    away_sum_lost?: string | null
+    away_1st_half_lost_ratio?: string | null
+    away_2nd_half_lost_ratio?: string | null
     fail_to_score_game_count?: string | null
     consecutive_win_disp?: string | null
     consecutive_lose_disp?: string | null
@@ -84521,6 +80006,16 @@ export namespace Prisma {
     away_1st_half_score_ratio?: NullableStringFieldUpdateOperationsInput | string | null
     away_2nd_half_score_ratio?: NullableStringFieldUpdateOperationsInput | string | null
     away_clean_sheet?: NullableStringFieldUpdateOperationsInput | string | null
+    home_1st_half_lost?: NullableStringFieldUpdateOperationsInput | string | null
+    home_2nd_half_lost?: NullableStringFieldUpdateOperationsInput | string | null
+    home_sum_lost?: NullableStringFieldUpdateOperationsInput | string | null
+    home_1st_half_lost_ratio?: NullableStringFieldUpdateOperationsInput | string | null
+    home_2nd_half_lost_ratio?: NullableStringFieldUpdateOperationsInput | string | null
+    away_1st_half_lost?: NullableStringFieldUpdateOperationsInput | string | null
+    away_2nd_half_lost?: NullableStringFieldUpdateOperationsInput | string | null
+    away_sum_lost?: NullableStringFieldUpdateOperationsInput | string | null
+    away_1st_half_lost_ratio?: NullableStringFieldUpdateOperationsInput | string | null
+    away_2nd_half_lost_ratio?: NullableStringFieldUpdateOperationsInput | string | null
     fail_to_score_game_count?: NullableStringFieldUpdateOperationsInput | string | null
     consecutive_win_disp?: NullableStringFieldUpdateOperationsInput | string | null
     consecutive_lose_disp?: NullableStringFieldUpdateOperationsInput | string | null
@@ -84598,6 +80093,16 @@ export namespace Prisma {
     away_1st_half_score_ratio?: NullableStringFieldUpdateOperationsInput | string | null
     away_2nd_half_score_ratio?: NullableStringFieldUpdateOperationsInput | string | null
     away_clean_sheet?: NullableStringFieldUpdateOperationsInput | string | null
+    home_1st_half_lost?: NullableStringFieldUpdateOperationsInput | string | null
+    home_2nd_half_lost?: NullableStringFieldUpdateOperationsInput | string | null
+    home_sum_lost?: NullableStringFieldUpdateOperationsInput | string | null
+    home_1st_half_lost_ratio?: NullableStringFieldUpdateOperationsInput | string | null
+    home_2nd_half_lost_ratio?: NullableStringFieldUpdateOperationsInput | string | null
+    away_1st_half_lost?: NullableStringFieldUpdateOperationsInput | string | null
+    away_2nd_half_lost?: NullableStringFieldUpdateOperationsInput | string | null
+    away_sum_lost?: NullableStringFieldUpdateOperationsInput | string | null
+    away_1st_half_lost_ratio?: NullableStringFieldUpdateOperationsInput | string | null
+    away_2nd_half_lost_ratio?: NullableStringFieldUpdateOperationsInput | string | null
     fail_to_score_game_count?: NullableStringFieldUpdateOperationsInput | string | null
     consecutive_win_disp?: NullableStringFieldUpdateOperationsInput | string | null
     consecutive_lose_disp?: NullableStringFieldUpdateOperationsInput | string | null
@@ -84675,6 +80180,16 @@ export namespace Prisma {
     away_1st_half_score_ratio?: string | null
     away_2nd_half_score_ratio?: string | null
     away_clean_sheet?: string | null
+    home_1st_half_lost?: string | null
+    home_2nd_half_lost?: string | null
+    home_sum_lost?: string | null
+    home_1st_half_lost_ratio?: string | null
+    home_2nd_half_lost_ratio?: string | null
+    away_1st_half_lost?: string | null
+    away_2nd_half_lost?: string | null
+    away_sum_lost?: string | null
+    away_1st_half_lost_ratio?: string | null
+    away_2nd_half_lost_ratio?: string | null
     fail_to_score_game_count?: string | null
     consecutive_win_disp?: string | null
     consecutive_lose_disp?: string | null
@@ -84751,6 +80266,16 @@ export namespace Prisma {
     away_1st_half_score_ratio?: NullableStringFieldUpdateOperationsInput | string | null
     away_2nd_half_score_ratio?: NullableStringFieldUpdateOperationsInput | string | null
     away_clean_sheet?: NullableStringFieldUpdateOperationsInput | string | null
+    home_1st_half_lost?: NullableStringFieldUpdateOperationsInput | string | null
+    home_2nd_half_lost?: NullableStringFieldUpdateOperationsInput | string | null
+    home_sum_lost?: NullableStringFieldUpdateOperationsInput | string | null
+    home_1st_half_lost_ratio?: NullableStringFieldUpdateOperationsInput | string | null
+    home_2nd_half_lost_ratio?: NullableStringFieldUpdateOperationsInput | string | null
+    away_1st_half_lost?: NullableStringFieldUpdateOperationsInput | string | null
+    away_2nd_half_lost?: NullableStringFieldUpdateOperationsInput | string | null
+    away_sum_lost?: NullableStringFieldUpdateOperationsInput | string | null
+    away_1st_half_lost_ratio?: NullableStringFieldUpdateOperationsInput | string | null
+    away_2nd_half_lost_ratio?: NullableStringFieldUpdateOperationsInput | string | null
     fail_to_score_game_count?: NullableStringFieldUpdateOperationsInput | string | null
     consecutive_win_disp?: NullableStringFieldUpdateOperationsInput | string | null
     consecutive_lose_disp?: NullableStringFieldUpdateOperationsInput | string | null
@@ -84828,6 +80353,16 @@ export namespace Prisma {
     away_1st_half_score_ratio?: NullableStringFieldUpdateOperationsInput | string | null
     away_2nd_half_score_ratio?: NullableStringFieldUpdateOperationsInput | string | null
     away_clean_sheet?: NullableStringFieldUpdateOperationsInput | string | null
+    home_1st_half_lost?: NullableStringFieldUpdateOperationsInput | string | null
+    home_2nd_half_lost?: NullableStringFieldUpdateOperationsInput | string | null
+    home_sum_lost?: NullableStringFieldUpdateOperationsInput | string | null
+    home_1st_half_lost_ratio?: NullableStringFieldUpdateOperationsInput | string | null
+    home_2nd_half_lost_ratio?: NullableStringFieldUpdateOperationsInput | string | null
+    away_1st_half_lost?: NullableStringFieldUpdateOperationsInput | string | null
+    away_2nd_half_lost?: NullableStringFieldUpdateOperationsInput | string | null
+    away_sum_lost?: NullableStringFieldUpdateOperationsInput | string | null
+    away_1st_half_lost_ratio?: NullableStringFieldUpdateOperationsInput | string | null
+    away_2nd_half_lost_ratio?: NullableStringFieldUpdateOperationsInput | string | null
     fail_to_score_game_count?: NullableStringFieldUpdateOperationsInput | string | null
     consecutive_win_disp?: NullableStringFieldUpdateOperationsInput | string | null
     consecutive_lose_disp?: NullableStringFieldUpdateOperationsInput | string | null
@@ -84969,6 +80504,7 @@ export namespace Prisma {
     weather?: string | null
     temperature?: string | null
     humid?: string | null
+    logic_flg?: string | null
     register_id?: string | null
     register_time?: Date | string | null
     update_id?: string | null
@@ -85065,6 +80601,7 @@ export namespace Prisma {
     weather?: string | null
     temperature?: string | null
     humid?: string | null
+    logic_flg?: string | null
     register_id?: string | null
     register_time?: Date | string | null
     update_id?: string | null
@@ -85160,6 +80697,7 @@ export namespace Prisma {
     weather?: NullableStringFieldUpdateOperationsInput | string | null
     temperature?: NullableStringFieldUpdateOperationsInput | string | null
     humid?: NullableStringFieldUpdateOperationsInput | string | null
+    logic_flg?: NullableStringFieldUpdateOperationsInput | string | null
     register_id?: NullableStringFieldUpdateOperationsInput | string | null
     register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     update_id?: NullableStringFieldUpdateOperationsInput | string | null
@@ -85256,6 +80794,7 @@ export namespace Prisma {
     weather?: NullableStringFieldUpdateOperationsInput | string | null
     temperature?: NullableStringFieldUpdateOperationsInput | string | null
     humid?: NullableStringFieldUpdateOperationsInput | string | null
+    logic_flg?: NullableStringFieldUpdateOperationsInput | string | null
     register_id?: NullableStringFieldUpdateOperationsInput | string | null
     register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     update_id?: NullableStringFieldUpdateOperationsInput | string | null
@@ -85352,6 +80891,7 @@ export namespace Prisma {
     weather?: string | null
     temperature?: string | null
     humid?: string | null
+    logic_flg?: string | null
     register_id?: string | null
     register_time?: Date | string | null
     update_id?: string | null
@@ -85447,6 +80987,7 @@ export namespace Prisma {
     weather?: NullableStringFieldUpdateOperationsInput | string | null
     temperature?: NullableStringFieldUpdateOperationsInput | string | null
     humid?: NullableStringFieldUpdateOperationsInput | string | null
+    logic_flg?: NullableStringFieldUpdateOperationsInput | string | null
     register_id?: NullableStringFieldUpdateOperationsInput | string | null
     register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     update_id?: NullableStringFieldUpdateOperationsInput | string | null
@@ -85543,6 +81084,7 @@ export namespace Prisma {
     weather?: NullableStringFieldUpdateOperationsInput | string | null
     temperature?: NullableStringFieldUpdateOperationsInput | string | null
     humid?: NullableStringFieldUpdateOperationsInput | string | null
+    logic_flg?: NullableStringFieldUpdateOperationsInput | string | null
     register_id?: NullableStringFieldUpdateOperationsInput | string | null
     register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     update_id?: NullableStringFieldUpdateOperationsInput | string | null
@@ -89097,134 +84639,6 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
-  export type average_statistics_team_detail_dataCountOrderByAggregateInput = {
-    id?: SortOrder
-    situation?: SortOrder
-    team?: SortOrder
-    opposite_team?: SortOrder
-    ha?: SortOrder
-    country?: SortOrder
-    league?: SortOrder
-    exp_stat?: SortOrder
-    donation_stat?: SortOrder
-    shoot_all_stat?: SortOrder
-    shoot_in_stat?: SortOrder
-    shoot_out_stat?: SortOrder
-    block_shoot_stat?: SortOrder
-    big_chance_stat?: SortOrder
-    corner_stat?: SortOrder
-    box_shoot_in_stat?: SortOrder
-    box_shoot_out_stat?: SortOrder
-    goal_post_stat?: SortOrder
-    goal_head_stat?: SortOrder
-    keeper_save_stat?: SortOrder
-    free_kick_stat?: SortOrder
-    offside_stat?: SortOrder
-    foul_stat?: SortOrder
-    yellow_card_stat?: SortOrder
-    red_card_stat?: SortOrder
-    slow_in_stat?: SortOrder
-    box_touch_stat?: SortOrder
-    pass_count_stat?: SortOrder
-    final_third_pass_count_stat?: SortOrder
-    cross_count_stat?: SortOrder
-    tackle_count_stat?: SortOrder
-    clear_count_stat?: SortOrder
-    intercept_count_stat?: SortOrder
-    register_id?: SortOrder
-    register_time?: SortOrder
-    update_id?: SortOrder
-    update_time?: SortOrder
-  }
-
-  export type average_statistics_team_detail_dataAvgOrderByAggregateInput = {
-    id?: SortOrder
-  }
-
-  export type average_statistics_team_detail_dataMaxOrderByAggregateInput = {
-    id?: SortOrder
-    situation?: SortOrder
-    team?: SortOrder
-    opposite_team?: SortOrder
-    ha?: SortOrder
-    country?: SortOrder
-    league?: SortOrder
-    exp_stat?: SortOrder
-    donation_stat?: SortOrder
-    shoot_all_stat?: SortOrder
-    shoot_in_stat?: SortOrder
-    shoot_out_stat?: SortOrder
-    block_shoot_stat?: SortOrder
-    big_chance_stat?: SortOrder
-    corner_stat?: SortOrder
-    box_shoot_in_stat?: SortOrder
-    box_shoot_out_stat?: SortOrder
-    goal_post_stat?: SortOrder
-    goal_head_stat?: SortOrder
-    keeper_save_stat?: SortOrder
-    free_kick_stat?: SortOrder
-    offside_stat?: SortOrder
-    foul_stat?: SortOrder
-    yellow_card_stat?: SortOrder
-    red_card_stat?: SortOrder
-    slow_in_stat?: SortOrder
-    box_touch_stat?: SortOrder
-    pass_count_stat?: SortOrder
-    final_third_pass_count_stat?: SortOrder
-    cross_count_stat?: SortOrder
-    tackle_count_stat?: SortOrder
-    clear_count_stat?: SortOrder
-    intercept_count_stat?: SortOrder
-    register_id?: SortOrder
-    register_time?: SortOrder
-    update_id?: SortOrder
-    update_time?: SortOrder
-  }
-
-  export type average_statistics_team_detail_dataMinOrderByAggregateInput = {
-    id?: SortOrder
-    situation?: SortOrder
-    team?: SortOrder
-    opposite_team?: SortOrder
-    ha?: SortOrder
-    country?: SortOrder
-    league?: SortOrder
-    exp_stat?: SortOrder
-    donation_stat?: SortOrder
-    shoot_all_stat?: SortOrder
-    shoot_in_stat?: SortOrder
-    shoot_out_stat?: SortOrder
-    block_shoot_stat?: SortOrder
-    big_chance_stat?: SortOrder
-    corner_stat?: SortOrder
-    box_shoot_in_stat?: SortOrder
-    box_shoot_out_stat?: SortOrder
-    goal_post_stat?: SortOrder
-    goal_head_stat?: SortOrder
-    keeper_save_stat?: SortOrder
-    free_kick_stat?: SortOrder
-    offside_stat?: SortOrder
-    foul_stat?: SortOrder
-    yellow_card_stat?: SortOrder
-    red_card_stat?: SortOrder
-    slow_in_stat?: SortOrder
-    box_touch_stat?: SortOrder
-    pass_count_stat?: SortOrder
-    final_third_pass_count_stat?: SortOrder
-    cross_count_stat?: SortOrder
-    tackle_count_stat?: SortOrder
-    clear_count_stat?: SortOrder
-    intercept_count_stat?: SortOrder
-    register_id?: SortOrder
-    register_time?: SortOrder
-    update_id?: SortOrder
-    update_time?: SortOrder
-  }
-
-  export type average_statistics_team_detail_dataSumOrderByAggregateInput = {
-    id?: SortOrder
-  }
-
   export type calc_correlationCountOrderByAggregateInput = {
     id?: SortOrder
     file?: SortOrder
@@ -90167,6 +85581,8 @@ export namespace Prisma {
     game_id?: SortOrder
     match_id?: SortOrder
     time_sort_seconds?: SortOrder
+    add_manual_flg?: SortOrder
+    logic_flg?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -90283,6 +85699,8 @@ export namespace Prisma {
     game_id?: SortOrder
     match_id?: SortOrder
     time_sort_seconds?: SortOrder
+    add_manual_flg?: SortOrder
+    logic_flg?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -90395,6 +85813,8 @@ export namespace Prisma {
     game_id?: SortOrder
     match_id?: SortOrder
     time_sort_seconds?: SortOrder
+    add_manual_flg?: SortOrder
+    logic_flg?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -92231,209 +87651,6 @@ export namespace Prisma {
     id?: SortOrder
   }
 
-  export type scoring_playstyle_past_dataCountOrderByAggregateInput = {
-    id?: SortOrder
-    data_category?: SortOrder
-    home_team_name?: SortOrder
-    away_team_name?: SortOrder
-    diff_home_score?: SortOrder
-    diff_away_score?: SortOrder
-    diff_home_donation?: SortOrder
-    diff_away_donation?: SortOrder
-    diff_home_shoot_all?: SortOrder
-    diff_away_shoot_all?: SortOrder
-    diff_home_shoot_in?: SortOrder
-    diff_away_shoot_in?: SortOrder
-    diff_home_shoot_out?: SortOrder
-    diff_away_shoot_out?: SortOrder
-    diff_home_block_shoot?: SortOrder
-    diff_away_block_shoot?: SortOrder
-    diff_home_big_chance?: SortOrder
-    diff_away_big_chance?: SortOrder
-    diff_home_corner?: SortOrder
-    diff_away_corner?: SortOrder
-    diff_home_box_shoot_in?: SortOrder
-    diff_away_box_shoot_in?: SortOrder
-    diff_home_box_shoot_out?: SortOrder
-    diff_away_box_shoot_out?: SortOrder
-    diff_home_goal_post?: SortOrder
-    diff_away_goal_post?: SortOrder
-    diff_home_goal_head?: SortOrder
-    diff_away_goal_head?: SortOrder
-    diff_home_keeper_save?: SortOrder
-    diff_away_keeper_save?: SortOrder
-    diff_home_free_kick?: SortOrder
-    diff_away_free_kick?: SortOrder
-    diff_home_offside?: SortOrder
-    diff_away_offside?: SortOrder
-    diff_home_foul?: SortOrder
-    diff_away_foul?: SortOrder
-    diff_home_yellow_card?: SortOrder
-    diff_away_yellow_card?: SortOrder
-    diff_home_red_card?: SortOrder
-    diff_away_red_card?: SortOrder
-    diff_home_slow_in?: SortOrder
-    diff_away_slow_in?: SortOrder
-    diff_home_box_touch?: SortOrder
-    diff_away_box_touch?: SortOrder
-    diff_home_pass_count?: SortOrder
-    diff_away_pass_count?: SortOrder
-    diff_home_final_third_pass_count?: SortOrder
-    diff_away_final_third_pass_count?: SortOrder
-    diff_home_cross_count?: SortOrder
-    diff_away_cross_count?: SortOrder
-    diff_home_tackle_count?: SortOrder
-    diff_away_tackle_count?: SortOrder
-    diff_home_clear_count?: SortOrder
-    diff_away_clear_count?: SortOrder
-    diff_home_intercept_count?: SortOrder
-    diff_away_intercept_count?: SortOrder
-    home_play_style?: SortOrder
-    away_play_style?: SortOrder
-    register_id?: SortOrder
-    register_time?: SortOrder
-    update_id?: SortOrder
-    update_time?: SortOrder
-  }
-
-  export type scoring_playstyle_past_dataAvgOrderByAggregateInput = {
-    id?: SortOrder
-  }
-
-  export type scoring_playstyle_past_dataMaxOrderByAggregateInput = {
-    id?: SortOrder
-    data_category?: SortOrder
-    home_team_name?: SortOrder
-    away_team_name?: SortOrder
-    diff_home_score?: SortOrder
-    diff_away_score?: SortOrder
-    diff_home_donation?: SortOrder
-    diff_away_donation?: SortOrder
-    diff_home_shoot_all?: SortOrder
-    diff_away_shoot_all?: SortOrder
-    diff_home_shoot_in?: SortOrder
-    diff_away_shoot_in?: SortOrder
-    diff_home_shoot_out?: SortOrder
-    diff_away_shoot_out?: SortOrder
-    diff_home_block_shoot?: SortOrder
-    diff_away_block_shoot?: SortOrder
-    diff_home_big_chance?: SortOrder
-    diff_away_big_chance?: SortOrder
-    diff_home_corner?: SortOrder
-    diff_away_corner?: SortOrder
-    diff_home_box_shoot_in?: SortOrder
-    diff_away_box_shoot_in?: SortOrder
-    diff_home_box_shoot_out?: SortOrder
-    diff_away_box_shoot_out?: SortOrder
-    diff_home_goal_post?: SortOrder
-    diff_away_goal_post?: SortOrder
-    diff_home_goal_head?: SortOrder
-    diff_away_goal_head?: SortOrder
-    diff_home_keeper_save?: SortOrder
-    diff_away_keeper_save?: SortOrder
-    diff_home_free_kick?: SortOrder
-    diff_away_free_kick?: SortOrder
-    diff_home_offside?: SortOrder
-    diff_away_offside?: SortOrder
-    diff_home_foul?: SortOrder
-    diff_away_foul?: SortOrder
-    diff_home_yellow_card?: SortOrder
-    diff_away_yellow_card?: SortOrder
-    diff_home_red_card?: SortOrder
-    diff_away_red_card?: SortOrder
-    diff_home_slow_in?: SortOrder
-    diff_away_slow_in?: SortOrder
-    diff_home_box_touch?: SortOrder
-    diff_away_box_touch?: SortOrder
-    diff_home_pass_count?: SortOrder
-    diff_away_pass_count?: SortOrder
-    diff_home_final_third_pass_count?: SortOrder
-    diff_away_final_third_pass_count?: SortOrder
-    diff_home_cross_count?: SortOrder
-    diff_away_cross_count?: SortOrder
-    diff_home_tackle_count?: SortOrder
-    diff_away_tackle_count?: SortOrder
-    diff_home_clear_count?: SortOrder
-    diff_away_clear_count?: SortOrder
-    diff_home_intercept_count?: SortOrder
-    diff_away_intercept_count?: SortOrder
-    home_play_style?: SortOrder
-    away_play_style?: SortOrder
-    register_id?: SortOrder
-    register_time?: SortOrder
-    update_id?: SortOrder
-    update_time?: SortOrder
-  }
-
-  export type scoring_playstyle_past_dataMinOrderByAggregateInput = {
-    id?: SortOrder
-    data_category?: SortOrder
-    home_team_name?: SortOrder
-    away_team_name?: SortOrder
-    diff_home_score?: SortOrder
-    diff_away_score?: SortOrder
-    diff_home_donation?: SortOrder
-    diff_away_donation?: SortOrder
-    diff_home_shoot_all?: SortOrder
-    diff_away_shoot_all?: SortOrder
-    diff_home_shoot_in?: SortOrder
-    diff_away_shoot_in?: SortOrder
-    diff_home_shoot_out?: SortOrder
-    diff_away_shoot_out?: SortOrder
-    diff_home_block_shoot?: SortOrder
-    diff_away_block_shoot?: SortOrder
-    diff_home_big_chance?: SortOrder
-    diff_away_big_chance?: SortOrder
-    diff_home_corner?: SortOrder
-    diff_away_corner?: SortOrder
-    diff_home_box_shoot_in?: SortOrder
-    diff_away_box_shoot_in?: SortOrder
-    diff_home_box_shoot_out?: SortOrder
-    diff_away_box_shoot_out?: SortOrder
-    diff_home_goal_post?: SortOrder
-    diff_away_goal_post?: SortOrder
-    diff_home_goal_head?: SortOrder
-    diff_away_goal_head?: SortOrder
-    diff_home_keeper_save?: SortOrder
-    diff_away_keeper_save?: SortOrder
-    diff_home_free_kick?: SortOrder
-    diff_away_free_kick?: SortOrder
-    diff_home_offside?: SortOrder
-    diff_away_offside?: SortOrder
-    diff_home_foul?: SortOrder
-    diff_away_foul?: SortOrder
-    diff_home_yellow_card?: SortOrder
-    diff_away_yellow_card?: SortOrder
-    diff_home_red_card?: SortOrder
-    diff_away_red_card?: SortOrder
-    diff_home_slow_in?: SortOrder
-    diff_away_slow_in?: SortOrder
-    diff_home_box_touch?: SortOrder
-    diff_away_box_touch?: SortOrder
-    diff_home_pass_count?: SortOrder
-    diff_away_pass_count?: SortOrder
-    diff_home_final_third_pass_count?: SortOrder
-    diff_away_final_third_pass_count?: SortOrder
-    diff_home_cross_count?: SortOrder
-    diff_away_cross_count?: SortOrder
-    diff_home_tackle_count?: SortOrder
-    diff_away_tackle_count?: SortOrder
-    diff_home_clear_count?: SortOrder
-    diff_away_clear_count?: SortOrder
-    diff_home_intercept_count?: SortOrder
-    diff_away_intercept_count?: SortOrder
-    home_play_style?: SortOrder
-    away_play_style?: SortOrder
-    register_id?: SortOrder
-    register_time?: SortOrder
-    update_id?: SortOrder
-    update_time?: SortOrder
-  }
-
-  export type scoring_playstyle_past_dataSumOrderByAggregateInput = {
-    id?: SortOrder
-  }
-
   export type stat_encryptionCountOrderByAggregateInput = {
     id?: SortOrder
     country?: SortOrder
@@ -92752,6 +87969,16 @@ export namespace Prisma {
     away_1st_half_score_ratio?: SortOrder
     away_2nd_half_score_ratio?: SortOrder
     away_clean_sheet?: SortOrder
+    home_1st_half_lost?: SortOrder
+    home_2nd_half_lost?: SortOrder
+    home_sum_lost?: SortOrder
+    home_1st_half_lost_ratio?: SortOrder
+    home_2nd_half_lost_ratio?: SortOrder
+    away_1st_half_lost?: SortOrder
+    away_2nd_half_lost?: SortOrder
+    away_sum_lost?: SortOrder
+    away_1st_half_lost_ratio?: SortOrder
+    away_2nd_half_lost_ratio?: SortOrder
     fail_to_score_game_count?: SortOrder
     consecutive_win_disp?: SortOrder
     consecutive_lose_disp?: SortOrder
@@ -92833,6 +88060,16 @@ export namespace Prisma {
     away_1st_half_score_ratio?: SortOrder
     away_2nd_half_score_ratio?: SortOrder
     away_clean_sheet?: SortOrder
+    home_1st_half_lost?: SortOrder
+    home_2nd_half_lost?: SortOrder
+    home_sum_lost?: SortOrder
+    home_1st_half_lost_ratio?: SortOrder
+    home_2nd_half_lost_ratio?: SortOrder
+    away_1st_half_lost?: SortOrder
+    away_2nd_half_lost?: SortOrder
+    away_sum_lost?: SortOrder
+    away_1st_half_lost_ratio?: SortOrder
+    away_2nd_half_lost_ratio?: SortOrder
     fail_to_score_game_count?: SortOrder
     consecutive_win_disp?: SortOrder
     consecutive_lose_disp?: SortOrder
@@ -92910,6 +88147,16 @@ export namespace Prisma {
     away_1st_half_score_ratio?: SortOrder
     away_2nd_half_score_ratio?: SortOrder
     away_clean_sheet?: SortOrder
+    home_1st_half_lost?: SortOrder
+    home_2nd_half_lost?: SortOrder
+    home_sum_lost?: SortOrder
+    home_1st_half_lost_ratio?: SortOrder
+    home_2nd_half_lost_ratio?: SortOrder
+    away_1st_half_lost?: SortOrder
+    away_2nd_half_lost?: SortOrder
+    away_sum_lost?: SortOrder
+    away_1st_half_lost_ratio?: SortOrder
+    away_2nd_half_lost_ratio?: SortOrder
     fail_to_score_game_count?: SortOrder
     consecutive_win_disp?: SortOrder
     consecutive_lose_disp?: SortOrder
@@ -93056,6 +88303,7 @@ export namespace Prisma {
     weather?: SortOrder
     temperature?: SortOrder
     humid?: SortOrder
+    logic_flg?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -93156,6 +88404,7 @@ export namespace Prisma {
     weather?: SortOrder
     temperature?: SortOrder
     humid?: SortOrder
+    logic_flg?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -93252,6 +88501,7 @@ export namespace Prisma {
     weather?: SortOrder
     temperature?: SortOrder
     humid?: SortOrder
+    logic_flg?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder

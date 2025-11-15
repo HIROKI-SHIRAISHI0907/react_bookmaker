@@ -16,17 +16,23 @@ export type SurfaceSnapshot = {
   first_half_score: number | null;
   second_half_score: number | null;
 
-  // ▼ 新規: 役割で home/away を自動切替して返す
-  first_goal_count?: number | null; // 先制回数
-  win_behind_count?: number | null; // 逆転勝利数
-  lose_behind_count?: number | null; // 逆転敗北数
-  win_count_role?: number | null; // （home or away の）勝利数
-  lose_count_role?: number | null; // （home or away の）敗北数
+  // 役割依存の集計（既存）
+  first_goal_count?: number | null;
+  win_behind_count?: number | null;
+  lose_behind_count?: number | null;
+  win_count_role?: number | null;
+  lose_count_role?: number | null;
 
-  // 役割に依存しないカウント（そのまま）
+  // 役割非依存（既存）
   fail_to_score_game_count?: number | null;
 
-  // バッジ表示は現状通り
+  // ▼ 追加：メインデータ（バックエンドが camelCase で返す想定）
+  homeWinCount?: number | null;
+  homeLoseCount?: number | null;
+  awayWinCount?: number | null;
+  awayLoseCount?: number | null;
+
+  // バッジ（既存）
   consecutive_win_disp?: string | null;
   consecutive_lose_disp?: string | null;
   unbeaten_streak_disp?: string | null;
@@ -34,6 +40,7 @@ export type SurfaceSnapshot = {
   first_week_game_win_disp?: string | null;
   mid_week_game_win_disp?: string | null;
   last_week_game_win_disp?: string | null;
+  first_win_disp?: string | null;
   lose_streak_disp?: string | null;
   promote_disp?: string | null;
   descend_disp?: string | null;
@@ -56,12 +63,25 @@ export type ScheduleOverviewResponse = {
   surfaces: SurfaceSnapshot[];
 };
 
-export async function fetchScheduleOverview(country: string, league: string, seq: number, opts?: { home?: string; away?: string }): Promise<ScheduleOverviewResponse> {
+// ★ 追加: API が「値なし」で返すケース用
+export type ScheduleOverviewNoData = { message: string };
+
+// ★ 追加: 実際の API 返却は OK or NoData の Union
+export type ScheduleOverviewApi = ScheduleOverviewResponse | ScheduleOverviewNoData;
+
+export async function fetchScheduleOverview(country: string, league: string, seq: number, opts?: { home?: string; away?: string }): Promise<ScheduleOverviewApi> {
   const url = new URL(`/api/scheduled-overview/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(String(seq))}`, window.location.origin);
   if (opts?.home) url.searchParams.set("home", opts.home);
   if (opts?.away) url.searchParams.set("away", opts.away);
 
   const res = await fetch(url.toString(), { headers: { Accept: "application/json" } });
   if (!res.ok) throw new Error(`Failed to fetch schedule overview (${res.status})`);
-  return (await res.json()) as ScheduleOverviewResponse;
+
+  const json = await res.json();
+
+  // ★ runtime ガード: surfaces が配列なら OK、そうでなければ {message} 扱いに正規化
+  if (json && Array.isArray(json.surfaces)) {
+    return json as ScheduleOverviewResponse;
+  }
+  return { message: String(json?.message ?? "no surface_overview snapshot for given team(s)") };
 }

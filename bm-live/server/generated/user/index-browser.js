@@ -120,7 +120,7 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
-exports.Prisma.UserScalarFieldEnum = {
+exports.Prisma.UsersScalarFieldEnum = {
   userid: 'userid',
   email: 'email',
   passwordHash: 'passwordHash',
@@ -129,11 +129,12 @@ exports.Prisma.UserScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.FavoriteScalarFieldEnum = {
+exports.Prisma.FavoritesScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   country: 'country',
   league: 'league',
+  team: 'team',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -155,8 +156,8 @@ exports.Prisma.NullsOrder = {
 
 
 exports.Prisma.ModelName = {
-  User: 'User',
-  Favorite: 'Favorite'
+  users: 'users',
+  favorites: 'favorites'
 };
 
 /**

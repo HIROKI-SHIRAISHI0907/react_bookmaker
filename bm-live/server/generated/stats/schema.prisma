@@ -22,46 +22,6 @@ model average_statistics_csv_tmp_data {
   update_time   DateTime? @db.Timestamptz(0)
 }
 
-model average_statistics_team_detail_data {
-  id                          Int       @id
-  situation                   String?   @db.Text
-  team                        String?   @db.Text
-  opposite_team               String?   @db.Text
-  ha                          String?   @db.VarChar(1)
-  country                     String?   @db.Text
-  league                      String?   @db.Text
-  exp_stat                    String?   @db.Text
-  donation_stat               String?   @db.Text
-  shoot_all_stat              String?   @db.Text
-  shoot_in_stat               String?   @db.Text
-  shoot_out_stat              String?   @db.Text
-  block_shoot_stat            String?   @db.Text
-  big_chance_stat             String?   @db.Text
-  corner_stat                 String?   @db.Text
-  box_shoot_in_stat           String?   @db.Text
-  box_shoot_out_stat          String?   @db.Text
-  goal_post_stat              String?   @db.Text
-  goal_head_stat              String?   @db.Text
-  keeper_save_stat            String?   @db.Text
-  free_kick_stat              String?   @db.Text
-  offside_stat                String?   @db.Text
-  foul_stat                   String?   @db.Text
-  yellow_card_stat            String?   @db.Text
-  red_card_stat               String?   @db.Text
-  slow_in_stat                String?   @db.Text
-  box_touch_stat              String?   @db.Text
-  pass_count_stat             String?   @db.Text
-  final_third_pass_count_stat String?   @db.Text
-  cross_count_stat            String?   @db.Text
-  tackle_count_stat           String?   @db.Text
-  clear_count_stat            String?   @db.Text
-  intercept_count_stat        String?   @db.Text
-  register_id                 String?   @db.VarChar(100)
-  register_time               DateTime? @db.Timestamptz(0)
-  update_id                   String?   @db.VarChar(100)
-  update_time                 DateTime? @db.Timestamptz(0)
-}
-
 model calc_correlation {
   id                                                Int       @id @default(autoincrement())
   file                                              String?   @db.Text
@@ -406,6 +366,8 @@ model data {
   game_id                                String?   @db.Text
   match_id                               String?   @db.Text
   time_sort_seconds                      String?   @db.Text
+  add_manual_flg                         String?   @db.VarChar(1)
+  logic_flg                              String?   @default("0") @db.VarChar(1)
   register_id                            String?   @db.VarChar(100)
   register_time                          DateTime? @db.Timestamptz(0)
   update_id                              String?   @db.VarChar(100)
@@ -987,71 +949,6 @@ model score_based_feature_stats_history {
   update_time                      DateTime? @db.Timestamptz(0)
 }
 
-model scoring_playstyle_past_data {
-  id                               Int      @id
-  data_category                    String?  @db.Text
-  home_team_name                   String?  @db.Text
-  away_team_name                   String?  @db.Text
-  diff_home_score                  String?  @db.Text
-  diff_away_score                  String?  @db.Text
-  diff_home_donation               String?  @db.Text
-  diff_away_donation               String?  @db.Text
-  diff_home_shoot_all              String?  @db.Text
-  diff_away_shoot_all              String?  @db.Text
-  diff_home_shoot_in               String?  @db.Text
-  diff_away_shoot_in               String?  @db.Text
-  diff_home_shoot_out              String?  @db.Text
-  diff_away_shoot_out              String?  @db.Text
-  diff_home_block_shoot            String?  @db.Text
-  diff_away_block_shoot            String?  @db.Text
-  diff_home_big_chance             String?  @db.Text
-  diff_away_big_chance             String?  @db.Text
-  diff_home_corner                 String?  @db.Text
-  diff_away_corner                 String?  @db.Text
-  diff_home_box_shoot_in           String?  @db.Text
-  diff_away_box_shoot_in           String?  @db.Text
-  diff_home_box_shoot_out          String?  @db.Text
-  diff_away_box_shoot_out          String?  @db.Text
-  diff_home_goal_post              String?  @db.Text
-  diff_away_goal_post              String?  @db.Text
-  diff_home_goal_head              String?  @db.Text
-  diff_away_goal_head              String?  @db.Text
-  diff_home_keeper_save            String?  @db.Text
-  diff_away_keeper_save            String?  @db.Text
-  diff_home_free_kick              String?  @db.Text
-  diff_away_free_kick              String?  @db.Text
-  diff_home_offside                String?  @db.Text
-  diff_away_offside                String?  @db.Text
-  diff_home_foul                   String?  @db.Text
-  diff_away_foul                   String?  @db.Text
-  diff_home_yellow_card            String?  @db.Text
-  diff_away_yellow_card            String?  @db.Text
-  diff_home_red_card               String?  @db.Text
-  diff_away_red_card               String?  @db.Text
-  diff_home_slow_in                String?  @db.Text
-  diff_away_slow_in                String?  @db.Text
-  diff_home_box_touch              String?  @db.Text
-  diff_away_box_touch              String?  @db.Text
-  diff_home_pass_count             String?  @db.Text
-  diff_away_pass_count             String?  @db.Text
-  diff_home_final_third_pass_count String?  @db.Text
-  diff_away_final_third_pass_count String?  @db.Text
-  diff_home_cross_count            String?  @db.Text
-  diff_away_cross_count            String?  @db.Text
-  diff_home_tackle_count           String?  @db.Text
-  diff_away_tackle_count           String?  @db.Text
-  diff_home_clear_count            String?  @db.Text
-  diff_away_clear_count            String?  @db.Text
-  diff_home_intercept_count        String?  @db.Text
-  diff_away_intercept_count        String?  @db.Text
-  home_play_style                  String?  @db.Text
-  away_play_style                  String?  @db.Text
-  register_id                      String   @db.VarChar(100)
-  register_time                    DateTime @db.Timestamptz(0)
-  update_id                        String   @db.VarChar(100)
-  update_time                      DateTime @db.Timestamptz(0)
-}
-
 model stat_encryption {
   id                                                BigInt   @id @default(autoincrement())
   country                                           String?  @db.Text
@@ -1163,6 +1060,16 @@ model surface_overview {
   away_1st_half_score_ratio    String?  @db.Text
   away_2nd_half_score_ratio    String?  @db.Text
   away_clean_sheet             String?  @db.Text
+  home_1st_half_lost           String?  @db.Text
+  home_2nd_half_lost           String?  @db.Text
+  home_sum_lost                String?  @db.Text
+  home_1st_half_lost_ratio     String?  @db.Text
+  home_2nd_half_lost_ratio     String?  @db.Text
+  away_1st_half_lost           String?  @db.Text
+  away_2nd_half_lost           String?  @db.Text
+  away_sum_lost                String?  @db.Text
+  away_1st_half_lost_ratio     String?  @db.Text
+  away_2nd_half_lost_ratio     String?  @db.Text
   fail_to_score_game_count     String?  @db.Text
   consecutive_win_disp         String?  @db.Text
   consecutive_lose_disp        String?  @db.Text
@@ -1202,11 +1109,11 @@ model surface_overview {
   away_lose_behind_0vs2_count  String?  @db.Text
   away_win_behind_other_count  String?  @db.Text
   away_lose_behind_other_count String?  @db.Text
-  away_adversity_disp          String?  @db.VarChar(64)
-  promote_disp                 String?  @db.VarChar(64)
-  descend_disp                 String?  @db.VarChar(64)
-  first_win_disp               String?  @db.VarChar(64)
-  lose_streak_disp             String?  @db.VarChar(64)
+  away_adversity_disp          String?  @db.Text
+  promote_disp                 String?  @db.Text
+  descend_disp                 String?  @db.Text
+  first_win_disp               String?  @db.Text
+  lose_streak_disp             String?  @db.Text
   round_conc                   String?  @db.Text
   logic_flg                    String?  @default("0") @db.VarChar(1)
   register_id                  String   @db.VarChar(100)
@@ -1308,6 +1215,7 @@ model team_match_final_stats {
   weather                                       String?   @db.Text
   temperature                                   String?   @db.Text
   humid                                         String?   @db.Text
+  logic_flg                                     String?   @default("0") @db.VarChar(1)
   register_id                                   String?   @db.VarChar(100)
   register_time                                 DateTime? @db.Timestamptz(0)
   update_id                                     String?   @db.VarChar(100)

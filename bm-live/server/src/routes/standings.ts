@@ -27,10 +27,12 @@ standingsRouter.get("/:country/:league", async (req, res) => {
     SUM(COALESCE(NULLIF(BTRIM(o.lose), '')::int, 0))   AS lose,
     SUM(COALESCE(NULLIF(BTRIM(o.draw), '')::int, 0))   AS draw,
     SUM(COALESCE(NULLIF(BTRIM(o.winning_points), '')::int, 0)) AS points,
+    -- 総得点（ホーム+アウェイ）
     SUM(COALESCE(NULLIF(BTRIM(o.home_sum_score), '')::int, 0)
-      + COALESCE(NULLIF(BTRIM(o.away_sum_score), '')::int, 0)) AS goals_for,
-    SUM(COALESCE(NULLIF(BTRIM(o.away_sum_score), '')::int, 0)
-      + COALESCE(NULLIF(BTRIM(o.home_sum_score), '')::int, 0)) AS goals_against
+        + COALESCE(NULLIF(BTRIM(o.away_sum_score), '')::int, 0)) AS goals_for,
+    -- 総失点（ホーム+アウェイ）
+    SUM(COALESCE(NULLIF(BTRIM(o.home_sum_lost), '')::int, 0)
+        + COALESCE(NULLIF(BTRIM(o.away_sum_lost), '')::int, 0)) AS goals_against
   FROM public.surface_overview o
   WHERE o.country = $1
     AND o.league  = $2
@@ -53,7 +55,7 @@ with_meta AS (
 ranked AS (
   SELECT
     ROW_NUMBER() OVER (
-      ORDER BY points DESC, win DESC, goal_diff DESC, lose ASC, team ASC
+      ORDER BY points DESC, goal_diff DESC, win DESC, lose ASC, team ASC
     ) AS position,
     *
   FROM with_meta
@@ -67,9 +69,12 @@ SELECT
   r.draw AS "draw",
   r.lose AS "lose",
   r.points AS "winningPoints",
-  r.goal_diff AS "goalDiff"
+  CASE
+    WHEN r.goal_diff >= 0 THEN CONCAT('+', r.goal_diff::text)
+    ELSE r.goal_diff::text
+  END AS "goalDiff"
 FROM ranked r
-ORDER BY r.position ASC;
+ORDER BY r.points DESC, r.goal_diff DESC;
       `,
       country,
       league
@@ -87,6 +92,7 @@ ORDER BY r.position ASC;
         draw: Number(r.draw ?? 0),
         lose: Number(r.lose ?? 0),
         winningPoints: Number(r.winningPoints ?? 0),
+        goalDiff: Number(r.goalDiff ?? 0),
       })),
     };
 

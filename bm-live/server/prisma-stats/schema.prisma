@@ -1039,11 +1039,11 @@ model surface_overview {
   id                           Int      @id @default(autoincrement())
   country                      String   @db.Text
   league                       String   @db.Text
-  game_year                    String?  @db.Text
-  game_month                   String?  @db.Text
+  game_year                    String?  @db.Int
+  game_month                   String?  @db.Int
   team                         String   @db.Text
   games                        String?  @db.Text
-  rank                         String?  @db.Text
+  rank                         String?  @db.Int
   win                          String?  @db.Text
   lose                         String?  @db.Text
   draw                         String?  @db.Text
@@ -1070,7 +1070,6 @@ model surface_overview {
   away_sum_lost                String?  @db.Text
   away_1st_half_lost_ratio     String?  @db.Text
   away_2nd_half_lost_ratio     String?  @db.Text
-  away_clean_sheet             String?  @db.Text
   fail_to_score_game_count     String?  @db.Text
   consecutive_win_disp         String?  @db.Text
   consecutive_lose_disp        String?  @db.Text
@@ -1728,6 +1727,19 @@ model past_data_history {
   home_intercept_count_stat        String?   @db.Text
   away_intercept_count_stat        String?   @db.Text
   logic_flg                        String?   @default("0") @db.VarChar(1)
+  register_id                      String?   @db.VarChar(100)
+  register_time                    DateTime? @db.Timestamptz(0)
+  update_id                        String?   @db.VarChar(100)
+  update_time                      DateTime? @db.Timestamptz(0)
+}
+
+model rank_history {
+  id                               Int      @id @default(autoincrement())
+  country                          String   @db.Text
+  league                           String   @db.Text
+  match                            Int      @db.Int
+  team                             String   @db.Text
+  rank                             Int      @db.Int
   register_id                      String?   @db.VarChar(100)
   register_time                    DateTime? @db.Timestamptz(0)
   update_id                        String?   @db.VarChar(100)

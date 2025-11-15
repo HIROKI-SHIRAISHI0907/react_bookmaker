@@ -19,7 +19,7 @@ model users {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  favorites Favorite[]
+  favorites favorites[]
 }
 
 model favorites {
@@ -31,7 +31,7 @@ model favorites {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [userid], onDelete: Cascade)
+  user users @relation(fields: [userId], references: [userid], onDelete: Cascade)
 
   @@unique([userId, country, league], map: "uk_user_country_league")
   @@index([userId], map: "idx_fav_user")
