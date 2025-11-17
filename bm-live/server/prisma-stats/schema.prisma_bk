@@ -1745,3 +1745,15 @@ model rank_history {
   update_id                        String?   @db.VarChar(100)
   update_time                      DateTime? @db.Timestamptz(0)
 }
+
+model team_color_master {
+  id                               Int      @id @default(autoincrement())
+  country                          String   @db.Text
+  league                           String   @db.Text                          
+  team                             String   @db.Text
+  team_color_hex                   String?   @db.VarChar(7)
+  register_id                      String?   @db.VarChar(100)
+  register_time                    DateTime? @db.Timestamptz(0)
+  update_id                        String?   @db.VarChar(100)
+  update_time                      DateTime? @db.Timestamptz(0)
+}

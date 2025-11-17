@@ -20,12 +20,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.16.3
- * Query Engine version: bb420e667c1820a8c05a38023385f6cc7ef8e83a
+ * Prisma Client JS version: 6.16.2
+ * Query Engine version: 1c57fdcd7e44b29b9313256c76699e91c3ac3c43
  */
 Prisma.prismaVersion = {
-  client: "6.16.3",
-  engine: "bb420e667c1820a8c05a38023385f6cc7ef8e83a"
+  client: "6.16.2",
+  engine: "1c57fdcd7e44b29b9313256c76699e91c3ac3c43"
 }
 
 Prisma.PrismaClientKnownRequestError = () => {
@@ -1817,6 +1817,19 @@ exports.Prisma.Past_data_historyScalarFieldEnum = {
   update_time: 'update_time'
 };
 
+exports.Prisma.Rank_historyScalarFieldEnum = {
+  id: 'id',
+  country: 'country',
+  league: 'league',
+  match: 'match',
+  team: 'team',
+  rank: 'rank',
+  register_id: 'register_id',
+  register_time: 'register_time',
+  update_id: 'update_id',
+  update_time: 'update_time'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1871,7 +1884,8 @@ exports.Prisma.ModelName = {
   within_data_45minutes_home_scored: 'within_data_45minutes_home_scored',
   country_league_visibility: 'country_league_visibility',
   user_visibility_option: 'user_visibility_option',
-  past_data_history: 'past_data_history'
+  past_data_history: 'past_data_history',
+  rank_history: 'rank_history'
 };
 
 /**

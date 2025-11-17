@@ -203,6 +203,11 @@ export type user_visibility_option = $Result.DefaultSelection<Prisma.$user_visib
  * 
  */
 export type past_data_history = $Result.DefaultSelection<Prisma.$past_data_historyPayload>
+/**
+ * Model rank_history
+ * 
+ */
+export type rank_history = $Result.DefaultSelection<Prisma.$rank_historyPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -701,6 +706,16 @@ export class PrismaClient<
     * ```
     */
   get past_data_history(): Prisma.past_data_historyDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.rank_history`: Exposes CRUD operations for the **rank_history** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Rank_histories
+    * const rank_histories = await prisma.rank_history.findMany()
+    * ```
+    */
+  get rank_history(): Prisma.rank_historyDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -759,8 +774,8 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 6.16.3
-   * Query Engine version: bb420e667c1820a8c05a38023385f6cc7ef8e83a
+   * Prisma Client JS version: 6.16.2
+   * Query Engine version: 1c57fdcd7e44b29b9313256c76699e91c3ac3c43
    */
   export type PrismaVersion = {
     client: string
@@ -1178,7 +1193,8 @@ export namespace Prisma {
     within_data_45minutes_home_scored: 'within_data_45minutes_home_scored',
     country_league_visibility: 'country_league_visibility',
     user_visibility_option: 'user_visibility_option',
-    past_data_history: 'past_data_history'
+    past_data_history: 'past_data_history',
+    rank_history: 'rank_history'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1197,7 +1213,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "average_statistics_csv_tmp_data" | "calc_correlation" | "calc_correlation_ranking" | "condition_result_data" | "country_league_master" | "country_league_season_master" | "country_league_summary" | "data" | "each_team_score_based_feature_stats" | "each_team_score_based_feature_stats_history" | "future_master" | "league_score_time_band_stats" | "league_score_time_band_stats_split_score" | "match_classification_result" | "match_classification_result_count" | "no_goal_match_stats" | "score_based_feature_stats" | "score_based_feature_stats_history" | "stat_encryption" | "stat_size_finalize_master" | "surface_overview" | "team_match_final_stats" | "team_member_master" | "team_monthly_score_summary" | "team_time_segment_shooting_stat" | "within_data" | "within_data_20minutes_away_all_league" | "within_data_20minutes_away_scored" | "within_data_20minutes_home_all_league" | "within_data_20minutes_home_scored" | "within_data_20minutes_same_scored" | "within_data_45minutes_away_all_league" | "within_data_45minutes_away_scored" | "within_data_45minutes_home_all_league" | "within_data_45minutes_home_scored" | "country_league_visibility" | "user_visibility_option" | "past_data_history"
+      modelProps: "average_statistics_csv_tmp_data" | "calc_correlation" | "calc_correlation_ranking" | "condition_result_data" | "country_league_master" | "country_league_season_master" | "country_league_summary" | "data" | "each_team_score_based_feature_stats" | "each_team_score_based_feature_stats_history" | "future_master" | "league_score_time_band_stats" | "league_score_time_band_stats_split_score" | "match_classification_result" | "match_classification_result_count" | "no_goal_match_stats" | "score_based_feature_stats" | "score_based_feature_stats_history" | "stat_encryption" | "stat_size_finalize_master" | "surface_overview" | "team_match_final_stats" | "team_member_master" | "team_monthly_score_summary" | "team_time_segment_shooting_stat" | "within_data" | "within_data_20minutes_away_all_league" | "within_data_20minutes_away_scored" | "within_data_20minutes_home_all_league" | "within_data_20minutes_home_scored" | "within_data_20minutes_same_scored" | "within_data_45minutes_away_all_league" | "within_data_45minutes_away_scored" | "within_data_45minutes_home_all_league" | "within_data_45minutes_home_scored" | "country_league_visibility" | "user_visibility_option" | "past_data_history" | "rank_history"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -4013,6 +4029,80 @@ export namespace Prisma {
           }
         }
       }
+      rank_history: {
+        payload: Prisma.$rank_historyPayload<ExtArgs>
+        fields: Prisma.rank_historyFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.rank_historyFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$rank_historyPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.rank_historyFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$rank_historyPayload>
+          }
+          findFirst: {
+            args: Prisma.rank_historyFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$rank_historyPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.rank_historyFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$rank_historyPayload>
+          }
+          findMany: {
+            args: Prisma.rank_historyFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$rank_historyPayload>[]
+          }
+          create: {
+            args: Prisma.rank_historyCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$rank_historyPayload>
+          }
+          createMany: {
+            args: Prisma.rank_historyCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.rank_historyCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$rank_historyPayload>[]
+          }
+          delete: {
+            args: Prisma.rank_historyDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$rank_historyPayload>
+          }
+          update: {
+            args: Prisma.rank_historyUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$rank_historyPayload>
+          }
+          deleteMany: {
+            args: Prisma.rank_historyDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.rank_historyUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.rank_historyUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$rank_historyPayload>[]
+          }
+          upsert: {
+            args: Prisma.rank_historyUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$rank_historyPayload>
+          }
+          aggregate: {
+            args: Prisma.Rank_historyAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateRank_history>
+          }
+          groupBy: {
+            args: Prisma.rank_historyGroupByArgs<ExtArgs>
+            result: $Utils.Optional<Rank_historyGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.rank_historyCountArgs<ExtArgs>
+            result: $Utils.Optional<Rank_historyCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -4147,6 +4237,7 @@ export namespace Prisma {
     country_league_visibility?: country_league_visibilityOmit
     user_visibility_option?: user_visibility_optionOmit
     past_data_history?: past_data_historyOmit
+    rank_history?: rank_historyOmit
   }
 
   /* Types for Logging */
@@ -36130,21 +36221,27 @@ export namespace Prisma {
 
   export type Surface_overviewAvgAggregateOutputType = {
     id: number | null
+    game_year: number | null
+    game_month: number | null
+    rank: number | null
   }
 
   export type Surface_overviewSumAggregateOutputType = {
     id: number | null
+    game_year: number | null
+    game_month: number | null
+    rank: number | null
   }
 
   export type Surface_overviewMinAggregateOutputType = {
     id: number | null
     country: string | null
     league: string | null
-    game_year: string | null
-    game_month: string | null
+    game_year: number | null
+    game_month: number | null
     team: string | null
     games: string | null
-    rank: string | null
+    rank: number | null
     win: string | null
     lose: string | null
     draw: string | null
@@ -36227,11 +36324,11 @@ export namespace Prisma {
     id: number | null
     country: string | null
     league: string | null
-    game_year: string | null
-    game_month: string | null
+    game_year: number | null
+    game_month: number | null
     team: string | null
     games: string | null
-    rank: string | null
+    rank: number | null
     win: string | null
     lose: string | null
     draw: string | null
@@ -36401,10 +36498,16 @@ export namespace Prisma {
 
   export type Surface_overviewAvgAggregateInputType = {
     id?: true
+    game_year?: true
+    game_month?: true
+    rank?: true
   }
 
   export type Surface_overviewSumAggregateInputType = {
     id?: true
+    game_year?: true
+    game_month?: true
+    rank?: true
   }
 
   export type Surface_overviewMinAggregateInputType = {
@@ -36759,11 +36862,11 @@ export namespace Prisma {
     id: number
     country: string
     league: string
-    game_year: string | null
-    game_month: string | null
+    game_year: number
+    game_month: number
     team: string
     games: string | null
-    rank: string | null
+    rank: number
     win: string | null
     lose: string | null
     draw: string | null
@@ -37218,11 +37321,11 @@ export namespace Prisma {
       id: number
       country: string
       league: string
-      game_year: string | null
-      game_month: string | null
+      game_year: number
+      game_month: number
       team: string
       games: string | null
-      rank: string | null
+      rank: number
       win: string | null
       lose: string | null
       draw: string | null
@@ -37725,11 +37828,11 @@ export namespace Prisma {
     readonly id: FieldRef<"surface_overview", 'Int'>
     readonly country: FieldRef<"surface_overview", 'String'>
     readonly league: FieldRef<"surface_overview", 'String'>
-    readonly game_year: FieldRef<"surface_overview", 'String'>
-    readonly game_month: FieldRef<"surface_overview", 'String'>
+    readonly game_year: FieldRef<"surface_overview", 'Int'>
+    readonly game_month: FieldRef<"surface_overview", 'Int'>
     readonly team: FieldRef<"surface_overview", 'String'>
     readonly games: FieldRef<"surface_overview", 'String'>
-    readonly rank: FieldRef<"surface_overview", 'String'>
+    readonly rank: FieldRef<"surface_overview", 'Int'>
     readonly win: FieldRef<"surface_overview", 'String'>
     readonly lose: FieldRef<"surface_overview", 'String'>
     readonly draw: FieldRef<"surface_overview", 'String'>
@@ -61738,6 +61841,1108 @@ export namespace Prisma {
 
 
   /**
+   * Model rank_history
+   */
+
+  export type AggregateRank_history = {
+    _count: Rank_historyCountAggregateOutputType | null
+    _avg: Rank_historyAvgAggregateOutputType | null
+    _sum: Rank_historySumAggregateOutputType | null
+    _min: Rank_historyMinAggregateOutputType | null
+    _max: Rank_historyMaxAggregateOutputType | null
+  }
+
+  export type Rank_historyAvgAggregateOutputType = {
+    id: number | null
+    match: number | null
+    rank: number | null
+  }
+
+  export type Rank_historySumAggregateOutputType = {
+    id: number | null
+    match: number | null
+    rank: number | null
+  }
+
+  export type Rank_historyMinAggregateOutputType = {
+    id: number | null
+    country: string | null
+    league: string | null
+    match: number | null
+    team: string | null
+    rank: number | null
+    register_id: string | null
+    register_time: Date | null
+    update_id: string | null
+    update_time: Date | null
+  }
+
+  export type Rank_historyMaxAggregateOutputType = {
+    id: number | null
+    country: string | null
+    league: string | null
+    match: number | null
+    team: string | null
+    rank: number | null
+    register_id: string | null
+    register_time: Date | null
+    update_id: string | null
+    update_time: Date | null
+  }
+
+  export type Rank_historyCountAggregateOutputType = {
+    id: number
+    country: number
+    league: number
+    match: number
+    team: number
+    rank: number
+    register_id: number
+    register_time: number
+    update_id: number
+    update_time: number
+    _all: number
+  }
+
+
+  export type Rank_historyAvgAggregateInputType = {
+    id?: true
+    match?: true
+    rank?: true
+  }
+
+  export type Rank_historySumAggregateInputType = {
+    id?: true
+    match?: true
+    rank?: true
+  }
+
+  export type Rank_historyMinAggregateInputType = {
+    id?: true
+    country?: true
+    league?: true
+    match?: true
+    team?: true
+    rank?: true
+    register_id?: true
+    register_time?: true
+    update_id?: true
+    update_time?: true
+  }
+
+  export type Rank_historyMaxAggregateInputType = {
+    id?: true
+    country?: true
+    league?: true
+    match?: true
+    team?: true
+    rank?: true
+    register_id?: true
+    register_time?: true
+    update_id?: true
+    update_time?: true
+  }
+
+  export type Rank_historyCountAggregateInputType = {
+    id?: true
+    country?: true
+    league?: true
+    match?: true
+    team?: true
+    rank?: true
+    register_id?: true
+    register_time?: true
+    update_id?: true
+    update_time?: true
+    _all?: true
+  }
+
+  export type Rank_historyAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which rank_history to aggregate.
+     */
+    where?: rank_historyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of rank_histories to fetch.
+     */
+    orderBy?: rank_historyOrderByWithRelationInput | rank_historyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: rank_historyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` rank_histories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` rank_histories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned rank_histories
+    **/
+    _count?: true | Rank_historyCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: Rank_historyAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: Rank_historySumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: Rank_historyMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: Rank_historyMaxAggregateInputType
+  }
+
+  export type GetRank_historyAggregateType<T extends Rank_historyAggregateArgs> = {
+        [P in keyof T & keyof AggregateRank_history]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateRank_history[P]>
+      : GetScalarType<T[P], AggregateRank_history[P]>
+  }
+
+
+
+
+  export type rank_historyGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: rank_historyWhereInput
+    orderBy?: rank_historyOrderByWithAggregationInput | rank_historyOrderByWithAggregationInput[]
+    by: Rank_historyScalarFieldEnum[] | Rank_historyScalarFieldEnum
+    having?: rank_historyScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: Rank_historyCountAggregateInputType | true
+    _avg?: Rank_historyAvgAggregateInputType
+    _sum?: Rank_historySumAggregateInputType
+    _min?: Rank_historyMinAggregateInputType
+    _max?: Rank_historyMaxAggregateInputType
+  }
+
+  export type Rank_historyGroupByOutputType = {
+    id: number
+    country: string
+    league: string
+    match: number
+    team: string
+    rank: number
+    register_id: string | null
+    register_time: Date | null
+    update_id: string | null
+    update_time: Date | null
+    _count: Rank_historyCountAggregateOutputType | null
+    _avg: Rank_historyAvgAggregateOutputType | null
+    _sum: Rank_historySumAggregateOutputType | null
+    _min: Rank_historyMinAggregateOutputType | null
+    _max: Rank_historyMaxAggregateOutputType | null
+  }
+
+  type GetRank_historyGroupByPayload<T extends rank_historyGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<Rank_historyGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof Rank_historyGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], Rank_historyGroupByOutputType[P]>
+            : GetScalarType<T[P], Rank_historyGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type rank_historySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    country?: boolean
+    league?: boolean
+    match?: boolean
+    team?: boolean
+    rank?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
+  }, ExtArgs["result"]["rank_history"]>
+
+  export type rank_historySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    country?: boolean
+    league?: boolean
+    match?: boolean
+    team?: boolean
+    rank?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
+  }, ExtArgs["result"]["rank_history"]>
+
+  export type rank_historySelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    country?: boolean
+    league?: boolean
+    match?: boolean
+    team?: boolean
+    rank?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
+  }, ExtArgs["result"]["rank_history"]>
+
+  export type rank_historySelectScalar = {
+    id?: boolean
+    country?: boolean
+    league?: boolean
+    match?: boolean
+    team?: boolean
+    rank?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
+  }
+
+  export type rank_historyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "country" | "league" | "match" | "team" | "rank" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["rank_history"]>
+
+  export type $rank_historyPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "rank_history"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      country: string
+      league: string
+      match: number
+      team: string
+      rank: number
+      register_id: string | null
+      register_time: Date | null
+      update_id: string | null
+      update_time: Date | null
+    }, ExtArgs["result"]["rank_history"]>
+    composites: {}
+  }
+
+  type rank_historyGetPayload<S extends boolean | null | undefined | rank_historyDefaultArgs> = $Result.GetResult<Prisma.$rank_historyPayload, S>
+
+  type rank_historyCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<rank_historyFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: Rank_historyCountAggregateInputType | true
+    }
+
+  export interface rank_historyDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['rank_history'], meta: { name: 'rank_history' } }
+    /**
+     * Find zero or one Rank_history that matches the filter.
+     * @param {rank_historyFindUniqueArgs} args - Arguments to find a Rank_history
+     * @example
+     * // Get one Rank_history
+     * const rank_history = await prisma.rank_history.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends rank_historyFindUniqueArgs>(args: SelectSubset<T, rank_historyFindUniqueArgs<ExtArgs>>): Prisma__rank_historyClient<$Result.GetResult<Prisma.$rank_historyPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Rank_history that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {rank_historyFindUniqueOrThrowArgs} args - Arguments to find a Rank_history
+     * @example
+     * // Get one Rank_history
+     * const rank_history = await prisma.rank_history.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends rank_historyFindUniqueOrThrowArgs>(args: SelectSubset<T, rank_historyFindUniqueOrThrowArgs<ExtArgs>>): Prisma__rank_historyClient<$Result.GetResult<Prisma.$rank_historyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Rank_history that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {rank_historyFindFirstArgs} args - Arguments to find a Rank_history
+     * @example
+     * // Get one Rank_history
+     * const rank_history = await prisma.rank_history.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends rank_historyFindFirstArgs>(args?: SelectSubset<T, rank_historyFindFirstArgs<ExtArgs>>): Prisma__rank_historyClient<$Result.GetResult<Prisma.$rank_historyPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Rank_history that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {rank_historyFindFirstOrThrowArgs} args - Arguments to find a Rank_history
+     * @example
+     * // Get one Rank_history
+     * const rank_history = await prisma.rank_history.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends rank_historyFindFirstOrThrowArgs>(args?: SelectSubset<T, rank_historyFindFirstOrThrowArgs<ExtArgs>>): Prisma__rank_historyClient<$Result.GetResult<Prisma.$rank_historyPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Rank_histories that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {rank_historyFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Rank_histories
+     * const rank_histories = await prisma.rank_history.findMany()
+     * 
+     * // Get first 10 Rank_histories
+     * const rank_histories = await prisma.rank_history.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const rank_historyWithIdOnly = await prisma.rank_history.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends rank_historyFindManyArgs>(args?: SelectSubset<T, rank_historyFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$rank_historyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Rank_history.
+     * @param {rank_historyCreateArgs} args - Arguments to create a Rank_history.
+     * @example
+     * // Create one Rank_history
+     * const Rank_history = await prisma.rank_history.create({
+     *   data: {
+     *     // ... data to create a Rank_history
+     *   }
+     * })
+     * 
+     */
+    create<T extends rank_historyCreateArgs>(args: SelectSubset<T, rank_historyCreateArgs<ExtArgs>>): Prisma__rank_historyClient<$Result.GetResult<Prisma.$rank_historyPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Rank_histories.
+     * @param {rank_historyCreateManyArgs} args - Arguments to create many Rank_histories.
+     * @example
+     * // Create many Rank_histories
+     * const rank_history = await prisma.rank_history.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends rank_historyCreateManyArgs>(args?: SelectSubset<T, rank_historyCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Rank_histories and returns the data saved in the database.
+     * @param {rank_historyCreateManyAndReturnArgs} args - Arguments to create many Rank_histories.
+     * @example
+     * // Create many Rank_histories
+     * const rank_history = await prisma.rank_history.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Rank_histories and only return the `id`
+     * const rank_historyWithIdOnly = await prisma.rank_history.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends rank_historyCreateManyAndReturnArgs>(args?: SelectSubset<T, rank_historyCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$rank_historyPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Rank_history.
+     * @param {rank_historyDeleteArgs} args - Arguments to delete one Rank_history.
+     * @example
+     * // Delete one Rank_history
+     * const Rank_history = await prisma.rank_history.delete({
+     *   where: {
+     *     // ... filter to delete one Rank_history
+     *   }
+     * })
+     * 
+     */
+    delete<T extends rank_historyDeleteArgs>(args: SelectSubset<T, rank_historyDeleteArgs<ExtArgs>>): Prisma__rank_historyClient<$Result.GetResult<Prisma.$rank_historyPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Rank_history.
+     * @param {rank_historyUpdateArgs} args - Arguments to update one Rank_history.
+     * @example
+     * // Update one Rank_history
+     * const rank_history = await prisma.rank_history.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends rank_historyUpdateArgs>(args: SelectSubset<T, rank_historyUpdateArgs<ExtArgs>>): Prisma__rank_historyClient<$Result.GetResult<Prisma.$rank_historyPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Rank_histories.
+     * @param {rank_historyDeleteManyArgs} args - Arguments to filter Rank_histories to delete.
+     * @example
+     * // Delete a few Rank_histories
+     * const { count } = await prisma.rank_history.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends rank_historyDeleteManyArgs>(args?: SelectSubset<T, rank_historyDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Rank_histories.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {rank_historyUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Rank_histories
+     * const rank_history = await prisma.rank_history.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends rank_historyUpdateManyArgs>(args: SelectSubset<T, rank_historyUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Rank_histories and returns the data updated in the database.
+     * @param {rank_historyUpdateManyAndReturnArgs} args - Arguments to update many Rank_histories.
+     * @example
+     * // Update many Rank_histories
+     * const rank_history = await prisma.rank_history.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Rank_histories and only return the `id`
+     * const rank_historyWithIdOnly = await prisma.rank_history.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends rank_historyUpdateManyAndReturnArgs>(args: SelectSubset<T, rank_historyUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$rank_historyPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Rank_history.
+     * @param {rank_historyUpsertArgs} args - Arguments to update or create a Rank_history.
+     * @example
+     * // Update or create a Rank_history
+     * const rank_history = await prisma.rank_history.upsert({
+     *   create: {
+     *     // ... data to create a Rank_history
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Rank_history we want to update
+     *   }
+     * })
+     */
+    upsert<T extends rank_historyUpsertArgs>(args: SelectSubset<T, rank_historyUpsertArgs<ExtArgs>>): Prisma__rank_historyClient<$Result.GetResult<Prisma.$rank_historyPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Rank_histories.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {rank_historyCountArgs} args - Arguments to filter Rank_histories to count.
+     * @example
+     * // Count the number of Rank_histories
+     * const count = await prisma.rank_history.count({
+     *   where: {
+     *     // ... the filter for the Rank_histories we want to count
+     *   }
+     * })
+    **/
+    count<T extends rank_historyCountArgs>(
+      args?: Subset<T, rank_historyCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], Rank_historyCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Rank_history.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {Rank_historyAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends Rank_historyAggregateArgs>(args: Subset<T, Rank_historyAggregateArgs>): Prisma.PrismaPromise<GetRank_historyAggregateType<T>>
+
+    /**
+     * Group by Rank_history.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {rank_historyGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends rank_historyGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: rank_historyGroupByArgs['orderBy'] }
+        : { orderBy?: rank_historyGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, rank_historyGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetRank_historyGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the rank_history model
+   */
+  readonly fields: rank_historyFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for rank_history.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__rank_historyClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the rank_history model
+   */
+  interface rank_historyFieldRefs {
+    readonly id: FieldRef<"rank_history", 'Int'>
+    readonly country: FieldRef<"rank_history", 'String'>
+    readonly league: FieldRef<"rank_history", 'String'>
+    readonly match: FieldRef<"rank_history", 'Int'>
+    readonly team: FieldRef<"rank_history", 'String'>
+    readonly rank: FieldRef<"rank_history", 'Int'>
+    readonly register_id: FieldRef<"rank_history", 'String'>
+    readonly register_time: FieldRef<"rank_history", 'DateTime'>
+    readonly update_id: FieldRef<"rank_history", 'String'>
+    readonly update_time: FieldRef<"rank_history", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * rank_history findUnique
+   */
+  export type rank_historyFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the rank_history
+     */
+    select?: rank_historySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the rank_history
+     */
+    omit?: rank_historyOmit<ExtArgs> | null
+    /**
+     * Filter, which rank_history to fetch.
+     */
+    where: rank_historyWhereUniqueInput
+  }
+
+  /**
+   * rank_history findUniqueOrThrow
+   */
+  export type rank_historyFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the rank_history
+     */
+    select?: rank_historySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the rank_history
+     */
+    omit?: rank_historyOmit<ExtArgs> | null
+    /**
+     * Filter, which rank_history to fetch.
+     */
+    where: rank_historyWhereUniqueInput
+  }
+
+  /**
+   * rank_history findFirst
+   */
+  export type rank_historyFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the rank_history
+     */
+    select?: rank_historySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the rank_history
+     */
+    omit?: rank_historyOmit<ExtArgs> | null
+    /**
+     * Filter, which rank_history to fetch.
+     */
+    where?: rank_historyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of rank_histories to fetch.
+     */
+    orderBy?: rank_historyOrderByWithRelationInput | rank_historyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for rank_histories.
+     */
+    cursor?: rank_historyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` rank_histories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` rank_histories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of rank_histories.
+     */
+    distinct?: Rank_historyScalarFieldEnum | Rank_historyScalarFieldEnum[]
+  }
+
+  /**
+   * rank_history findFirstOrThrow
+   */
+  export type rank_historyFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the rank_history
+     */
+    select?: rank_historySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the rank_history
+     */
+    omit?: rank_historyOmit<ExtArgs> | null
+    /**
+     * Filter, which rank_history to fetch.
+     */
+    where?: rank_historyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of rank_histories to fetch.
+     */
+    orderBy?: rank_historyOrderByWithRelationInput | rank_historyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for rank_histories.
+     */
+    cursor?: rank_historyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` rank_histories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` rank_histories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of rank_histories.
+     */
+    distinct?: Rank_historyScalarFieldEnum | Rank_historyScalarFieldEnum[]
+  }
+
+  /**
+   * rank_history findMany
+   */
+  export type rank_historyFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the rank_history
+     */
+    select?: rank_historySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the rank_history
+     */
+    omit?: rank_historyOmit<ExtArgs> | null
+    /**
+     * Filter, which rank_histories to fetch.
+     */
+    where?: rank_historyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of rank_histories to fetch.
+     */
+    orderBy?: rank_historyOrderByWithRelationInput | rank_historyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing rank_histories.
+     */
+    cursor?: rank_historyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` rank_histories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` rank_histories.
+     */
+    skip?: number
+    distinct?: Rank_historyScalarFieldEnum | Rank_historyScalarFieldEnum[]
+  }
+
+  /**
+   * rank_history create
+   */
+  export type rank_historyCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the rank_history
+     */
+    select?: rank_historySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the rank_history
+     */
+    omit?: rank_historyOmit<ExtArgs> | null
+    /**
+     * The data needed to create a rank_history.
+     */
+    data: XOR<rank_historyCreateInput, rank_historyUncheckedCreateInput>
+  }
+
+  /**
+   * rank_history createMany
+   */
+  export type rank_historyCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many rank_histories.
+     */
+    data: rank_historyCreateManyInput | rank_historyCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * rank_history createManyAndReturn
+   */
+  export type rank_historyCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the rank_history
+     */
+    select?: rank_historySelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the rank_history
+     */
+    omit?: rank_historyOmit<ExtArgs> | null
+    /**
+     * The data used to create many rank_histories.
+     */
+    data: rank_historyCreateManyInput | rank_historyCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * rank_history update
+   */
+  export type rank_historyUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the rank_history
+     */
+    select?: rank_historySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the rank_history
+     */
+    omit?: rank_historyOmit<ExtArgs> | null
+    /**
+     * The data needed to update a rank_history.
+     */
+    data: XOR<rank_historyUpdateInput, rank_historyUncheckedUpdateInput>
+    /**
+     * Choose, which rank_history to update.
+     */
+    where: rank_historyWhereUniqueInput
+  }
+
+  /**
+   * rank_history updateMany
+   */
+  export type rank_historyUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update rank_histories.
+     */
+    data: XOR<rank_historyUpdateManyMutationInput, rank_historyUncheckedUpdateManyInput>
+    /**
+     * Filter which rank_histories to update
+     */
+    where?: rank_historyWhereInput
+    /**
+     * Limit how many rank_histories to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * rank_history updateManyAndReturn
+   */
+  export type rank_historyUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the rank_history
+     */
+    select?: rank_historySelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the rank_history
+     */
+    omit?: rank_historyOmit<ExtArgs> | null
+    /**
+     * The data used to update rank_histories.
+     */
+    data: XOR<rank_historyUpdateManyMutationInput, rank_historyUncheckedUpdateManyInput>
+    /**
+     * Filter which rank_histories to update
+     */
+    where?: rank_historyWhereInput
+    /**
+     * Limit how many rank_histories to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * rank_history upsert
+   */
+  export type rank_historyUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the rank_history
+     */
+    select?: rank_historySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the rank_history
+     */
+    omit?: rank_historyOmit<ExtArgs> | null
+    /**
+     * The filter to search for the rank_history to update in case it exists.
+     */
+    where: rank_historyWhereUniqueInput
+    /**
+     * In case the rank_history found by the `where` argument doesn't exist, create a new rank_history with this data.
+     */
+    create: XOR<rank_historyCreateInput, rank_historyUncheckedCreateInput>
+    /**
+     * In case the rank_history was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<rank_historyUpdateInput, rank_historyUncheckedUpdateInput>
+  }
+
+  /**
+   * rank_history delete
+   */
+  export type rank_historyDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the rank_history
+     */
+    select?: rank_historySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the rank_history
+     */
+    omit?: rank_historyOmit<ExtArgs> | null
+    /**
+     * Filter which rank_history to delete.
+     */
+    where: rank_historyWhereUniqueInput
+  }
+
+  /**
+   * rank_history deleteMany
+   */
+  export type rank_historyDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which rank_histories to delete
+     */
+    where?: rank_historyWhereInput
+    /**
+     * Limit how many rank_histories to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * rank_history without action
+   */
+  export type rank_historyDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the rank_history
+     */
+    select?: rank_historySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the rank_history
+     */
+    omit?: rank_historyOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -63560,6 +64765,22 @@ export namespace Prisma {
   };
 
   export type Past_data_historyScalarFieldEnum = (typeof Past_data_historyScalarFieldEnum)[keyof typeof Past_data_historyScalarFieldEnum]
+
+
+  export const Rank_historyScalarFieldEnum: {
+    id: 'id',
+    country: 'country',
+    league: 'league',
+    match: 'match',
+    team: 'team',
+    rank: 'rank',
+    register_id: 'register_id',
+    register_time: 'register_time',
+    update_id: 'update_id',
+    update_time: 'update_time'
+  };
+
+  export type Rank_historyScalarFieldEnum = (typeof Rank_historyScalarFieldEnum)[keyof typeof Rank_historyScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -69074,11 +70295,11 @@ export namespace Prisma {
     id?: IntFilter<"surface_overview"> | number
     country?: StringFilter<"surface_overview"> | string
     league?: StringFilter<"surface_overview"> | string
-    game_year?: StringNullableFilter<"surface_overview"> | string | null
-    game_month?: StringNullableFilter<"surface_overview"> | string | null
+    game_year?: IntFilter<"surface_overview"> | number
+    game_month?: IntFilter<"surface_overview"> | number
     team?: StringFilter<"surface_overview"> | string
     games?: StringNullableFilter<"surface_overview"> | string | null
-    rank?: StringNullableFilter<"surface_overview"> | string | null
+    rank?: IntFilter<"surface_overview"> | number
     win?: StringNullableFilter<"surface_overview"> | string | null
     lose?: StringNullableFilter<"surface_overview"> | string | null
     draw?: StringNullableFilter<"surface_overview"> | string | null
@@ -69161,11 +70382,11 @@ export namespace Prisma {
     id?: SortOrder
     country?: SortOrder
     league?: SortOrder
-    game_year?: SortOrderInput | SortOrder
-    game_month?: SortOrderInput | SortOrder
+    game_year?: SortOrder
+    game_month?: SortOrder
     team?: SortOrder
     games?: SortOrderInput | SortOrder
-    rank?: SortOrderInput | SortOrder
+    rank?: SortOrder
     win?: SortOrderInput | SortOrder
     lose?: SortOrderInput | SortOrder
     draw?: SortOrderInput | SortOrder
@@ -69252,11 +70473,11 @@ export namespace Prisma {
     NOT?: surface_overviewWhereInput | surface_overviewWhereInput[]
     country?: StringFilter<"surface_overview"> | string
     league?: StringFilter<"surface_overview"> | string
-    game_year?: StringNullableFilter<"surface_overview"> | string | null
-    game_month?: StringNullableFilter<"surface_overview"> | string | null
+    game_year?: IntFilter<"surface_overview"> | number
+    game_month?: IntFilter<"surface_overview"> | number
     team?: StringFilter<"surface_overview"> | string
     games?: StringNullableFilter<"surface_overview"> | string | null
-    rank?: StringNullableFilter<"surface_overview"> | string | null
+    rank?: IntFilter<"surface_overview"> | number
     win?: StringNullableFilter<"surface_overview"> | string | null
     lose?: StringNullableFilter<"surface_overview"> | string | null
     draw?: StringNullableFilter<"surface_overview"> | string | null
@@ -69339,11 +70560,11 @@ export namespace Prisma {
     id?: SortOrder
     country?: SortOrder
     league?: SortOrder
-    game_year?: SortOrderInput | SortOrder
-    game_month?: SortOrderInput | SortOrder
+    game_year?: SortOrder
+    game_month?: SortOrder
     team?: SortOrder
     games?: SortOrderInput | SortOrder
-    rank?: SortOrderInput | SortOrder
+    rank?: SortOrder
     win?: SortOrderInput | SortOrder
     lose?: SortOrderInput | SortOrder
     draw?: SortOrderInput | SortOrder
@@ -69434,11 +70655,11 @@ export namespace Prisma {
     id?: IntWithAggregatesFilter<"surface_overview"> | number
     country?: StringWithAggregatesFilter<"surface_overview"> | string
     league?: StringWithAggregatesFilter<"surface_overview"> | string
-    game_year?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
-    game_month?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    game_year?: IntWithAggregatesFilter<"surface_overview"> | number
+    game_month?: IntWithAggregatesFilter<"surface_overview"> | number
     team?: StringWithAggregatesFilter<"surface_overview"> | string
     games?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
-    rank?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
+    rank?: IntWithAggregatesFilter<"surface_overview"> | number
     win?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
     lose?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
     draw?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
@@ -72717,6 +73938,85 @@ export namespace Prisma {
     register_time?: DateTimeNullableWithAggregatesFilter<"past_data_history"> | Date | string | null
     update_id?: StringNullableWithAggregatesFilter<"past_data_history"> | string | null
     update_time?: DateTimeNullableWithAggregatesFilter<"past_data_history"> | Date | string | null
+  }
+
+  export type rank_historyWhereInput = {
+    AND?: rank_historyWhereInput | rank_historyWhereInput[]
+    OR?: rank_historyWhereInput[]
+    NOT?: rank_historyWhereInput | rank_historyWhereInput[]
+    id?: IntFilter<"rank_history"> | number
+    country?: StringFilter<"rank_history"> | string
+    league?: StringFilter<"rank_history"> | string
+    match?: IntFilter<"rank_history"> | number
+    team?: StringFilter<"rank_history"> | string
+    rank?: IntFilter<"rank_history"> | number
+    register_id?: StringNullableFilter<"rank_history"> | string | null
+    register_time?: DateTimeNullableFilter<"rank_history"> | Date | string | null
+    update_id?: StringNullableFilter<"rank_history"> | string | null
+    update_time?: DateTimeNullableFilter<"rank_history"> | Date | string | null
+  }
+
+  export type rank_historyOrderByWithRelationInput = {
+    id?: SortOrder
+    country?: SortOrder
+    league?: SortOrder
+    match?: SortOrder
+    team?: SortOrder
+    rank?: SortOrder
+    register_id?: SortOrderInput | SortOrder
+    register_time?: SortOrderInput | SortOrder
+    update_id?: SortOrderInput | SortOrder
+    update_time?: SortOrderInput | SortOrder
+  }
+
+  export type rank_historyWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    AND?: rank_historyWhereInput | rank_historyWhereInput[]
+    OR?: rank_historyWhereInput[]
+    NOT?: rank_historyWhereInput | rank_historyWhereInput[]
+    country?: StringFilter<"rank_history"> | string
+    league?: StringFilter<"rank_history"> | string
+    match?: IntFilter<"rank_history"> | number
+    team?: StringFilter<"rank_history"> | string
+    rank?: IntFilter<"rank_history"> | number
+    register_id?: StringNullableFilter<"rank_history"> | string | null
+    register_time?: DateTimeNullableFilter<"rank_history"> | Date | string | null
+    update_id?: StringNullableFilter<"rank_history"> | string | null
+    update_time?: DateTimeNullableFilter<"rank_history"> | Date | string | null
+  }, "id">
+
+  export type rank_historyOrderByWithAggregationInput = {
+    id?: SortOrder
+    country?: SortOrder
+    league?: SortOrder
+    match?: SortOrder
+    team?: SortOrder
+    rank?: SortOrder
+    register_id?: SortOrderInput | SortOrder
+    register_time?: SortOrderInput | SortOrder
+    update_id?: SortOrderInput | SortOrder
+    update_time?: SortOrderInput | SortOrder
+    _count?: rank_historyCountOrderByAggregateInput
+    _avg?: rank_historyAvgOrderByAggregateInput
+    _max?: rank_historyMaxOrderByAggregateInput
+    _min?: rank_historyMinOrderByAggregateInput
+    _sum?: rank_historySumOrderByAggregateInput
+  }
+
+  export type rank_historyScalarWhereWithAggregatesInput = {
+    AND?: rank_historyScalarWhereWithAggregatesInput | rank_historyScalarWhereWithAggregatesInput[]
+    OR?: rank_historyScalarWhereWithAggregatesInput[]
+    NOT?: rank_historyScalarWhereWithAggregatesInput | rank_historyScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"rank_history"> | number
+    country?: StringWithAggregatesFilter<"rank_history"> | string
+    league?: StringWithAggregatesFilter<"rank_history"> | string
+    match?: IntWithAggregatesFilter<"rank_history"> | number
+    team?: StringWithAggregatesFilter<"rank_history"> | string
+    rank?: IntWithAggregatesFilter<"rank_history"> | number
+    register_id?: StringNullableWithAggregatesFilter<"rank_history"> | string | null
+    register_time?: DateTimeNullableWithAggregatesFilter<"rank_history"> | Date | string | null
+    update_id?: StringNullableWithAggregatesFilter<"rank_history"> | string | null
+    update_time?: DateTimeNullableWithAggregatesFilter<"rank_history"> | Date | string | null
   }
 
   export type average_statistics_csv_tmp_dataCreateInput = {
@@ -79812,11 +81112,11 @@ export namespace Prisma {
   export type surface_overviewCreateInput = {
     country: string
     league: string
-    game_year?: string | null
-    game_month?: string | null
+    game_year: number
+    game_month: number
     team: string
     games?: string | null
-    rank?: string | null
+    rank: number
     win?: string | null
     lose?: string | null
     draw?: string | null
@@ -79899,11 +81199,11 @@ export namespace Prisma {
     id?: number
     country: string
     league: string
-    game_year?: string | null
-    game_month?: string | null
+    game_year: number
+    game_month: number
     team: string
     games?: string | null
-    rank?: string | null
+    rank: number
     win?: string | null
     lose?: string | null
     draw?: string | null
@@ -79985,11 +81285,11 @@ export namespace Prisma {
   export type surface_overviewUpdateInput = {
     country?: StringFieldUpdateOperationsInput | string
     league?: StringFieldUpdateOperationsInput | string
-    game_year?: NullableStringFieldUpdateOperationsInput | string | null
-    game_month?: NullableStringFieldUpdateOperationsInput | string | null
+    game_year?: IntFieldUpdateOperationsInput | number
+    game_month?: IntFieldUpdateOperationsInput | number
     team?: StringFieldUpdateOperationsInput | string
     games?: NullableStringFieldUpdateOperationsInput | string | null
-    rank?: NullableStringFieldUpdateOperationsInput | string | null
+    rank?: IntFieldUpdateOperationsInput | number
     win?: NullableStringFieldUpdateOperationsInput | string | null
     lose?: NullableStringFieldUpdateOperationsInput | string | null
     draw?: NullableStringFieldUpdateOperationsInput | string | null
@@ -80072,11 +81372,11 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     country?: StringFieldUpdateOperationsInput | string
     league?: StringFieldUpdateOperationsInput | string
-    game_year?: NullableStringFieldUpdateOperationsInput | string | null
-    game_month?: NullableStringFieldUpdateOperationsInput | string | null
+    game_year?: IntFieldUpdateOperationsInput | number
+    game_month?: IntFieldUpdateOperationsInput | number
     team?: StringFieldUpdateOperationsInput | string
     games?: NullableStringFieldUpdateOperationsInput | string | null
-    rank?: NullableStringFieldUpdateOperationsInput | string | null
+    rank?: IntFieldUpdateOperationsInput | number
     win?: NullableStringFieldUpdateOperationsInput | string | null
     lose?: NullableStringFieldUpdateOperationsInput | string | null
     draw?: NullableStringFieldUpdateOperationsInput | string | null
@@ -80159,11 +81459,11 @@ export namespace Prisma {
     id?: number
     country: string
     league: string
-    game_year?: string | null
-    game_month?: string | null
+    game_year: number
+    game_month: number
     team: string
     games?: string | null
-    rank?: string | null
+    rank: number
     win?: string | null
     lose?: string | null
     draw?: string | null
@@ -80245,11 +81545,11 @@ export namespace Prisma {
   export type surface_overviewUpdateManyMutationInput = {
     country?: StringFieldUpdateOperationsInput | string
     league?: StringFieldUpdateOperationsInput | string
-    game_year?: NullableStringFieldUpdateOperationsInput | string | null
-    game_month?: NullableStringFieldUpdateOperationsInput | string | null
+    game_year?: IntFieldUpdateOperationsInput | number
+    game_month?: IntFieldUpdateOperationsInput | number
     team?: StringFieldUpdateOperationsInput | string
     games?: NullableStringFieldUpdateOperationsInput | string | null
-    rank?: NullableStringFieldUpdateOperationsInput | string | null
+    rank?: IntFieldUpdateOperationsInput | number
     win?: NullableStringFieldUpdateOperationsInput | string | null
     lose?: NullableStringFieldUpdateOperationsInput | string | null
     draw?: NullableStringFieldUpdateOperationsInput | string | null
@@ -80332,11 +81632,11 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     country?: StringFieldUpdateOperationsInput | string
     league?: StringFieldUpdateOperationsInput | string
-    game_year?: NullableStringFieldUpdateOperationsInput | string | null
-    game_month?: NullableStringFieldUpdateOperationsInput | string | null
+    game_year?: IntFieldUpdateOperationsInput | number
+    game_month?: IntFieldUpdateOperationsInput | number
     team?: StringFieldUpdateOperationsInput | string
     games?: NullableStringFieldUpdateOperationsInput | string | null
-    rank?: NullableStringFieldUpdateOperationsInput | string | null
+    rank?: IntFieldUpdateOperationsInput | number
     win?: NullableStringFieldUpdateOperationsInput | string | null
     lose?: NullableStringFieldUpdateOperationsInput | string | null
     draw?: NullableStringFieldUpdateOperationsInput | string | null
@@ -84502,6 +85802,94 @@ export namespace Prisma {
     update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type rank_historyCreateInput = {
+    country: string
+    league: string
+    match: number
+    team: string
+    rank: number
+    register_id?: string | null
+    register_time?: Date | string | null
+    update_id?: string | null
+    update_time?: Date | string | null
+  }
+
+  export type rank_historyUncheckedCreateInput = {
+    id?: number
+    country: string
+    league: string
+    match: number
+    team: string
+    rank: number
+    register_id?: string | null
+    register_time?: Date | string | null
+    update_id?: string | null
+    update_time?: Date | string | null
+  }
+
+  export type rank_historyUpdateInput = {
+    country?: StringFieldUpdateOperationsInput | string
+    league?: StringFieldUpdateOperationsInput | string
+    match?: IntFieldUpdateOperationsInput | number
+    team?: StringFieldUpdateOperationsInput | string
+    rank?: IntFieldUpdateOperationsInput | number
+    register_id?: NullableStringFieldUpdateOperationsInput | string | null
+    register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    update_id?: NullableStringFieldUpdateOperationsInput | string | null
+    update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type rank_historyUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    country?: StringFieldUpdateOperationsInput | string
+    league?: StringFieldUpdateOperationsInput | string
+    match?: IntFieldUpdateOperationsInput | number
+    team?: StringFieldUpdateOperationsInput | string
+    rank?: IntFieldUpdateOperationsInput | number
+    register_id?: NullableStringFieldUpdateOperationsInput | string | null
+    register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    update_id?: NullableStringFieldUpdateOperationsInput | string | null
+    update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type rank_historyCreateManyInput = {
+    id?: number
+    country: string
+    league: string
+    match: number
+    team: string
+    rank: number
+    register_id?: string | null
+    register_time?: Date | string | null
+    update_id?: string | null
+    update_time?: Date | string | null
+  }
+
+  export type rank_historyUpdateManyMutationInput = {
+    country?: StringFieldUpdateOperationsInput | string
+    league?: StringFieldUpdateOperationsInput | string
+    match?: IntFieldUpdateOperationsInput | number
+    team?: StringFieldUpdateOperationsInput | string
+    rank?: IntFieldUpdateOperationsInput | number
+    register_id?: NullableStringFieldUpdateOperationsInput | string | null
+    register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    update_id?: NullableStringFieldUpdateOperationsInput | string | null
+    update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type rank_historyUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    country?: StringFieldUpdateOperationsInput | string
+    league?: StringFieldUpdateOperationsInput | string
+    match?: IntFieldUpdateOperationsInput | number
+    team?: StringFieldUpdateOperationsInput | string
+    rank?: IntFieldUpdateOperationsInput | number
+    register_id?: NullableStringFieldUpdateOperationsInput | string | null
+    register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    update_id?: NullableStringFieldUpdateOperationsInput | string | null
+    update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
   export type IntFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -87940,8 +89328,8 @@ export namespace Prisma {
     country: string
     league: string
     team: string
-    game_year: string
-    game_month: string
+    game_year: number
+    game_month: number
   }
 
   export type surface_overviewCountOrderByAggregateInput = {
@@ -88033,6 +89421,9 @@ export namespace Prisma {
 
   export type surface_overviewAvgOrderByAggregateInput = {
     id?: SortOrder
+    game_year?: SortOrder
+    game_month?: SortOrder
+    rank?: SortOrder
   }
 
   export type surface_overviewMaxOrderByAggregateInput = {
@@ -88211,6 +89602,9 @@ export namespace Prisma {
 
   export type surface_overviewSumOrderByAggregateInput = {
     id?: SortOrder
+    game_year?: SortOrder
+    game_month?: SortOrder
+    rank?: SortOrder
   }
 
   export type team_match_final_statsCountOrderByAggregateInput = {
@@ -90195,6 +91589,57 @@ export namespace Prisma {
 
   export type past_data_historySumOrderByAggregateInput = {
     id?: SortOrder
+  }
+
+  export type rank_historyCountOrderByAggregateInput = {
+    id?: SortOrder
+    country?: SortOrder
+    league?: SortOrder
+    match?: SortOrder
+    team?: SortOrder
+    rank?: SortOrder
+    register_id?: SortOrder
+    register_time?: SortOrder
+    update_id?: SortOrder
+    update_time?: SortOrder
+  }
+
+  export type rank_historyAvgOrderByAggregateInput = {
+    id?: SortOrder
+    match?: SortOrder
+    rank?: SortOrder
+  }
+
+  export type rank_historyMaxOrderByAggregateInput = {
+    id?: SortOrder
+    country?: SortOrder
+    league?: SortOrder
+    match?: SortOrder
+    team?: SortOrder
+    rank?: SortOrder
+    register_id?: SortOrder
+    register_time?: SortOrder
+    update_id?: SortOrder
+    update_time?: SortOrder
+  }
+
+  export type rank_historyMinOrderByAggregateInput = {
+    id?: SortOrder
+    country?: SortOrder
+    league?: SortOrder
+    match?: SortOrder
+    team?: SortOrder
+    rank?: SortOrder
+    register_id?: SortOrder
+    register_time?: SortOrder
+    update_id?: SortOrder
+    update_time?: SortOrder
+  }
+
+  export type rank_historySumOrderByAggregateInput = {
+    id?: SortOrder
+    match?: SortOrder
+    rank?: SortOrder
   }
 
   export type IntFieldUpdateOperationsInput = {

@@ -9,6 +9,7 @@ import { fetchTeamFeatureStats, type TeamStatsResponse } from "../../api/eachsta
 import { fetchFutureMatches, type FutureMatch } from "../../api/upcomings";
 import { fetchTeamGames, type GameMatch } from "../../api/games";
 import { fetchTeamPlayers, type Player } from "../../api/players";
+import { fetchRankHistory, type RankHistoryResponse } from "../../api/rankHistory";
 
 import AppHeader from "../../components/layout/AppHeader";
 import CorrelationPanel from "../../components/correlation/CorrelationPanel";
@@ -111,6 +112,29 @@ export default function TeamDetail() {
     enabled: !!countryLabel && !!leagueLabel && !!teamSlug,
     staleTime: 60_000,
   });
+
+  // 順位変動
+  const rankHistoryQ = useQuery<RankHistoryResponse>({
+    queryKey: ["rank-history", countryLabel, leagueLabel],
+    queryFn: () => fetchRankHistory(countryLabel, leagueLabel),
+    enabled: !!countryLabel && !!leagueLabel,
+    staleTime: 60_000,
+  });
+
+  const rankHistoryForTeam = useMemo(() => {
+    if (!rankHistoryQ.data || !detailQ.data) return [];
+
+    const teamName = detailQ.data.name;
+
+    return rankHistoryQ.data.items
+      .filter((x) => x.team === teamName)
+      .sort((a, b) => a.match - b.match)
+      .map((x) => ({
+        match: x.match,
+        rank: x.rank,
+        label: `${x.match}節`,
+      }));
+  }, [rankHistoryQ.data, detailQ.data]);
 
   // 単系列メトリクスの選択肢（合算）
   const SINGLE_OPTIONS = {
@@ -245,6 +269,7 @@ export default function TeamDetail() {
             <TabsTrigger value="matches">試合</TabsTrigger>
             <TabsTrigger value="players">選手</TabsTrigger>
             <TabsTrigger value="overview">月次サマリ</TabsTrigger>
+            <TabsTrigger value="rank-history">順位推移</TabsTrigger>
           </TabsList>
 
           {/* ---- 統計タブ ---- */}
@@ -616,6 +641,34 @@ export default function TeamDetail() {
                       <Bar dataKey="draw" name="分" />
                       <Bar dataKey="lose" name="負" />
                     </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </section>
+          </TabsContent>
+
+          {/* ---- 順位推移タブ ---- */}
+          <TabsContent value="rank-history" className="space-y-6">
+            <section className="rounded-xl border bg-card p-4 shadow-sm">
+              <h3 className="mb-3 text-base font-semibold">順位変動（節ごと）</h3>
+
+              {rankHistoryQ.isLoading ? (
+                <Skeleton className="h-40 w-full" />
+              ) : rankHistoryQ.isError ? (
+                <div className="text-muted-foreground text-sm">順位履歴の取得に失敗しました。</div>
+              ) : !rankHistoryForTeam || rankHistoryForTeam.length === 0 ? (
+                <div className="text-muted-foreground text-sm">表示するデータがありません。</div>
+              ) : (
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={rankHistoryForTeam}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="label" />
+                      <YAxis allowDecimals={false} reversed /> {/* 1位が一番上 */}
+                      <Tooltip />
+                      <Legend />
+                      <Line type="monotone" dataKey="rank" name="順位" dot />
+                    </LineChart>
                   </ResponsiveContainer>
                 </div>
               )}

@@ -1039,11 +1039,11 @@ model surface_overview {
   id                           Int      @id @default(autoincrement())
   country                      String   @db.Text
   league                       String   @db.Text
-  game_year                    String?  @db.Text
-  game_month                   String?  @db.Text
+  game_year                    Int      @db.Integer
+  game_month                   Int      @db.Integer
   team                         String   @db.Text
   games                        String?  @db.Text
-  rank                         String?  @db.Text
+  rank                         Int      @db.Integer
   win                          String?  @db.Text
   lose                         String?  @db.Text
   draw                         String?  @db.Text
@@ -1731,4 +1731,17 @@ model past_data_history {
   register_time                    DateTime? @db.Timestamptz(0)
   update_id                        String?   @db.VarChar(100)
   update_time                      DateTime? @db.Timestamptz(0)
+}
+
+model rank_history {
+  id            Int       @id @default(autoincrement())
+  country       String    @db.Text
+  league        String    @db.Text
+  match         Int       @db.Integer
+  team          String    @db.Text
+  rank          Int       @db.Integer
+  register_id   String?   @db.VarChar(100)
+  register_time DateTime? @db.Timestamptz(0)
+  update_id     String?   @db.VarChar(100)
+  update_time   DateTime? @db.Timestamptz(0)
 }
