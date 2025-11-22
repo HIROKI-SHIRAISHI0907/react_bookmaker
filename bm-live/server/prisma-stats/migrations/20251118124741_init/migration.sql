@@ -1086,7 +1086,6 @@ CREATE TABLE "public"."surface_overview" (
     "game_month" INTEGER NOT NULL,
     "team" TEXT NOT NULL,
     "games" TEXT,
-    "rank" INTEGER NOT NULL,
     "win" TEXT,
     "lose" TEXT,
     "draw" TEXT,
@@ -1823,6 +1822,21 @@ CREATE TABLE "public"."rank_history" (
     "update_time" TIMESTAMPTZ(0),
 
     CONSTRAINT "rank_history_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."team_color_master" (
+    "id" SERIAL NOT NULL,
+    "country" TEXT NOT NULL,
+    "league" TEXT NOT NULL,
+    "team" TEXT NOT NULL,
+    "team_color_hex" VARCHAR(7),
+    "register_id" VARCHAR(100),
+    "register_time" TIMESTAMPTZ(0),
+    "update_id" VARCHAR(100),
+    "update_time" TIMESTAMPTZ(0),
+
+    CONSTRAINT "team_color_master_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex

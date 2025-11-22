@@ -208,6 +208,11 @@ export type past_data_history = $Result.DefaultSelection<Prisma.$past_data_histo
  * 
  */
 export type rank_history = $Result.DefaultSelection<Prisma.$rank_historyPayload>
+/**
+ * Model team_color_master
+ * 
+ */
+export type team_color_master = $Result.DefaultSelection<Prisma.$team_color_masterPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -716,6 +721,16 @@ export class PrismaClient<
     * ```
     */
   get rank_history(): Prisma.rank_historyDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.team_color_master`: Exposes CRUD operations for the **team_color_master** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Team_color_masters
+    * const team_color_masters = await prisma.team_color_master.findMany()
+    * ```
+    */
+  get team_color_master(): Prisma.team_color_masterDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1194,7 +1209,8 @@ export namespace Prisma {
     country_league_visibility: 'country_league_visibility',
     user_visibility_option: 'user_visibility_option',
     past_data_history: 'past_data_history',
-    rank_history: 'rank_history'
+    rank_history: 'rank_history',
+    team_color_master: 'team_color_master'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1213,7 +1229,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "average_statistics_csv_tmp_data" | "calc_correlation" | "calc_correlation_ranking" | "condition_result_data" | "country_league_master" | "country_league_season_master" | "country_league_summary" | "data" | "each_team_score_based_feature_stats" | "each_team_score_based_feature_stats_history" | "future_master" | "league_score_time_band_stats" | "league_score_time_band_stats_split_score" | "match_classification_result" | "match_classification_result_count" | "no_goal_match_stats" | "score_based_feature_stats" | "score_based_feature_stats_history" | "stat_encryption" | "stat_size_finalize_master" | "surface_overview" | "team_match_final_stats" | "team_member_master" | "team_monthly_score_summary" | "team_time_segment_shooting_stat" | "within_data" | "within_data_20minutes_away_all_league" | "within_data_20minutes_away_scored" | "within_data_20minutes_home_all_league" | "within_data_20minutes_home_scored" | "within_data_20minutes_same_scored" | "within_data_45minutes_away_all_league" | "within_data_45minutes_away_scored" | "within_data_45minutes_home_all_league" | "within_data_45minutes_home_scored" | "country_league_visibility" | "user_visibility_option" | "past_data_history" | "rank_history"
+      modelProps: "average_statistics_csv_tmp_data" | "calc_correlation" | "calc_correlation_ranking" | "condition_result_data" | "country_league_master" | "country_league_season_master" | "country_league_summary" | "data" | "each_team_score_based_feature_stats" | "each_team_score_based_feature_stats_history" | "future_master" | "league_score_time_band_stats" | "league_score_time_band_stats_split_score" | "match_classification_result" | "match_classification_result_count" | "no_goal_match_stats" | "score_based_feature_stats" | "score_based_feature_stats_history" | "stat_encryption" | "stat_size_finalize_master" | "surface_overview" | "team_match_final_stats" | "team_member_master" | "team_monthly_score_summary" | "team_time_segment_shooting_stat" | "within_data" | "within_data_20minutes_away_all_league" | "within_data_20minutes_away_scored" | "within_data_20minutes_home_all_league" | "within_data_20minutes_home_scored" | "within_data_20minutes_same_scored" | "within_data_45minutes_away_all_league" | "within_data_45minutes_away_scored" | "within_data_45minutes_home_all_league" | "within_data_45minutes_home_scored" | "country_league_visibility" | "user_visibility_option" | "past_data_history" | "rank_history" | "team_color_master"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -4103,6 +4119,80 @@ export namespace Prisma {
           }
         }
       }
+      team_color_master: {
+        payload: Prisma.$team_color_masterPayload<ExtArgs>
+        fields: Prisma.team_color_masterFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.team_color_masterFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$team_color_masterPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.team_color_masterFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$team_color_masterPayload>
+          }
+          findFirst: {
+            args: Prisma.team_color_masterFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$team_color_masterPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.team_color_masterFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$team_color_masterPayload>
+          }
+          findMany: {
+            args: Prisma.team_color_masterFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$team_color_masterPayload>[]
+          }
+          create: {
+            args: Prisma.team_color_masterCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$team_color_masterPayload>
+          }
+          createMany: {
+            args: Prisma.team_color_masterCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.team_color_masterCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$team_color_masterPayload>[]
+          }
+          delete: {
+            args: Prisma.team_color_masterDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$team_color_masterPayload>
+          }
+          update: {
+            args: Prisma.team_color_masterUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$team_color_masterPayload>
+          }
+          deleteMany: {
+            args: Prisma.team_color_masterDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.team_color_masterUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.team_color_masterUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$team_color_masterPayload>[]
+          }
+          upsert: {
+            args: Prisma.team_color_masterUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$team_color_masterPayload>
+          }
+          aggregate: {
+            args: Prisma.Team_color_masterAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateTeam_color_master>
+          }
+          groupBy: {
+            args: Prisma.team_color_masterGroupByArgs<ExtArgs>
+            result: $Utils.Optional<Team_color_masterGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.team_color_masterCountArgs<ExtArgs>
+            result: $Utils.Optional<Team_color_masterCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -4238,6 +4328,7 @@ export namespace Prisma {
     user_visibility_option?: user_visibility_optionOmit
     past_data_history?: past_data_historyOmit
     rank_history?: rank_historyOmit
+    team_color_master?: team_color_masterOmit
   }
 
   /* Types for Logging */
@@ -36223,14 +36314,12 @@ export namespace Prisma {
     id: number | null
     game_year: number | null
     game_month: number | null
-    rank: number | null
   }
 
   export type Surface_overviewSumAggregateOutputType = {
     id: number | null
     game_year: number | null
     game_month: number | null
-    rank: number | null
   }
 
   export type Surface_overviewMinAggregateOutputType = {
@@ -36241,7 +36330,6 @@ export namespace Prisma {
     game_month: number | null
     team: string | null
     games: string | null
-    rank: number | null
     win: string | null
     lose: string | null
     draw: string | null
@@ -36328,7 +36416,6 @@ export namespace Prisma {
     game_month: number | null
     team: string | null
     games: string | null
-    rank: number | null
     win: string | null
     lose: string | null
     draw: string | null
@@ -36415,7 +36502,6 @@ export namespace Prisma {
     game_month: number
     team: number
     games: number
-    rank: number
     win: number
     lose: number
     draw: number
@@ -36500,14 +36586,12 @@ export namespace Prisma {
     id?: true
     game_year?: true
     game_month?: true
-    rank?: true
   }
 
   export type Surface_overviewSumAggregateInputType = {
     id?: true
     game_year?: true
     game_month?: true
-    rank?: true
   }
 
   export type Surface_overviewMinAggregateInputType = {
@@ -36518,7 +36602,6 @@ export namespace Prisma {
     game_month?: true
     team?: true
     games?: true
-    rank?: true
     win?: true
     lose?: true
     draw?: true
@@ -36605,7 +36688,6 @@ export namespace Prisma {
     game_month?: true
     team?: true
     games?: true
-    rank?: true
     win?: true
     lose?: true
     draw?: true
@@ -36692,7 +36774,6 @@ export namespace Prisma {
     game_month?: true
     team?: true
     games?: true
-    rank?: true
     win?: true
     lose?: true
     draw?: true
@@ -36866,7 +36947,6 @@ export namespace Prisma {
     game_month: number
     team: string
     games: string | null
-    rank: number
     win: string | null
     lose: string | null
     draw: string | null
@@ -36972,7 +37052,6 @@ export namespace Prisma {
     game_month?: boolean
     team?: boolean
     games?: boolean
-    rank?: boolean
     win?: boolean
     lose?: boolean
     draw?: boolean
@@ -37059,7 +37138,6 @@ export namespace Prisma {
     game_month?: boolean
     team?: boolean
     games?: boolean
-    rank?: boolean
     win?: boolean
     lose?: boolean
     draw?: boolean
@@ -37146,7 +37224,6 @@ export namespace Prisma {
     game_month?: boolean
     team?: boolean
     games?: boolean
-    rank?: boolean
     win?: boolean
     lose?: boolean
     draw?: boolean
@@ -37233,7 +37310,6 @@ export namespace Prisma {
     game_month?: boolean
     team?: boolean
     games?: boolean
-    rank?: boolean
     win?: boolean
     lose?: boolean
     draw?: boolean
@@ -37312,7 +37388,7 @@ export namespace Prisma {
     update_time?: boolean
   }
 
-  export type surface_overviewOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "country" | "league" | "game_year" | "game_month" | "team" | "games" | "rank" | "win" | "lose" | "draw" | "winning_points" | "home_1st_half_score" | "home_2nd_half_score" | "home_sum_score" | "home_1st_half_score_ratio" | "home_2nd_half_score_ratio" | "home_clean_sheet" | "away_1st_half_score" | "away_2nd_half_score" | "away_sum_score" | "away_1st_half_score_ratio" | "away_2nd_half_score_ratio" | "away_clean_sheet" | "home_1st_half_lost" | "home_2nd_half_lost" | "home_sum_lost" | "home_1st_half_lost_ratio" | "home_2nd_half_lost_ratio" | "away_1st_half_lost" | "away_2nd_half_lost" | "away_sum_lost" | "away_1st_half_lost_ratio" | "away_2nd_half_lost_ratio" | "fail_to_score_game_count" | "consecutive_win_disp" | "consecutive_lose_disp" | "unbeaten_streak_count" | "unbeaten_streak_disp" | "consecutive_score_count" | "consecutive_score_count_disp" | "first_week_game_win_count" | "first_week_game_lost_count" | "first_week_game_win_disp" | "mid_week_game_win_count" | "mid_week_game_lost_count" | "mid_week_game_win_disp" | "last_week_game_win_count" | "last_week_game_lost_count" | "last_week_game_win_disp" | "home_win_count" | "home_lose_count" | "home_first_goal_count" | "home_win_behind_count" | "home_lose_behind_count" | "home_win_behind_0vs1_count" | "home_lose_behind_1vs0_count" | "home_win_behind_0vs2_count" | "home_lose_behind_2vs0_count" | "home_win_behind_other_count" | "home_lose_behind_other_count" | "home_adversity_disp" | "away_win_count" | "away_lose_count" | "away_first_goal_count" | "away_win_behind_count" | "away_lose_behind_count" | "away_win_behind_1vs0_count" | "away_lose_behind_0vs1_count" | "away_win_behind_2vs0_count" | "away_lose_behind_0vs2_count" | "away_win_behind_other_count" | "away_lose_behind_other_count" | "away_adversity_disp" | "promote_disp" | "descend_disp" | "first_win_disp" | "lose_streak_disp" | "round_conc" | "logic_flg" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["surface_overview"]>
+  export type surface_overviewOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "country" | "league" | "game_year" | "game_month" | "team" | "games" | "win" | "lose" | "draw" | "winning_points" | "home_1st_half_score" | "home_2nd_half_score" | "home_sum_score" | "home_1st_half_score_ratio" | "home_2nd_half_score_ratio" | "home_clean_sheet" | "away_1st_half_score" | "away_2nd_half_score" | "away_sum_score" | "away_1st_half_score_ratio" | "away_2nd_half_score_ratio" | "away_clean_sheet" | "home_1st_half_lost" | "home_2nd_half_lost" | "home_sum_lost" | "home_1st_half_lost_ratio" | "home_2nd_half_lost_ratio" | "away_1st_half_lost" | "away_2nd_half_lost" | "away_sum_lost" | "away_1st_half_lost_ratio" | "away_2nd_half_lost_ratio" | "fail_to_score_game_count" | "consecutive_win_disp" | "consecutive_lose_disp" | "unbeaten_streak_count" | "unbeaten_streak_disp" | "consecutive_score_count" | "consecutive_score_count_disp" | "first_week_game_win_count" | "first_week_game_lost_count" | "first_week_game_win_disp" | "mid_week_game_win_count" | "mid_week_game_lost_count" | "mid_week_game_win_disp" | "last_week_game_win_count" | "last_week_game_lost_count" | "last_week_game_win_disp" | "home_win_count" | "home_lose_count" | "home_first_goal_count" | "home_win_behind_count" | "home_lose_behind_count" | "home_win_behind_0vs1_count" | "home_lose_behind_1vs0_count" | "home_win_behind_0vs2_count" | "home_lose_behind_2vs0_count" | "home_win_behind_other_count" | "home_lose_behind_other_count" | "home_adversity_disp" | "away_win_count" | "away_lose_count" | "away_first_goal_count" | "away_win_behind_count" | "away_lose_behind_count" | "away_win_behind_1vs0_count" | "away_lose_behind_0vs1_count" | "away_win_behind_2vs0_count" | "away_lose_behind_0vs2_count" | "away_win_behind_other_count" | "away_lose_behind_other_count" | "away_adversity_disp" | "promote_disp" | "descend_disp" | "first_win_disp" | "lose_streak_disp" | "round_conc" | "logic_flg" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["surface_overview"]>
 
   export type $surface_overviewPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "surface_overview"
@@ -37325,7 +37401,6 @@ export namespace Prisma {
       game_month: number
       team: string
       games: string | null
-      rank: number
       win: string | null
       lose: string | null
       draw: string | null
@@ -37832,7 +37907,6 @@ export namespace Prisma {
     readonly game_month: FieldRef<"surface_overview", 'Int'>
     readonly team: FieldRef<"surface_overview", 'String'>
     readonly games: FieldRef<"surface_overview", 'String'>
-    readonly rank: FieldRef<"surface_overview", 'Int'>
     readonly win: FieldRef<"surface_overview", 'String'>
     readonly lose: FieldRef<"surface_overview", 'String'>
     readonly draw: FieldRef<"surface_overview", 'String'>
@@ -62943,6 +63017,1087 @@ export namespace Prisma {
 
 
   /**
+   * Model team_color_master
+   */
+
+  export type AggregateTeam_color_master = {
+    _count: Team_color_masterCountAggregateOutputType | null
+    _avg: Team_color_masterAvgAggregateOutputType | null
+    _sum: Team_color_masterSumAggregateOutputType | null
+    _min: Team_color_masterMinAggregateOutputType | null
+    _max: Team_color_masterMaxAggregateOutputType | null
+  }
+
+  export type Team_color_masterAvgAggregateOutputType = {
+    id: number | null
+  }
+
+  export type Team_color_masterSumAggregateOutputType = {
+    id: number | null
+  }
+
+  export type Team_color_masterMinAggregateOutputType = {
+    id: number | null
+    country: string | null
+    league: string | null
+    team: string | null
+    team_color_hex: string | null
+    register_id: string | null
+    register_time: Date | null
+    update_id: string | null
+    update_time: Date | null
+  }
+
+  export type Team_color_masterMaxAggregateOutputType = {
+    id: number | null
+    country: string | null
+    league: string | null
+    team: string | null
+    team_color_hex: string | null
+    register_id: string | null
+    register_time: Date | null
+    update_id: string | null
+    update_time: Date | null
+  }
+
+  export type Team_color_masterCountAggregateOutputType = {
+    id: number
+    country: number
+    league: number
+    team: number
+    team_color_hex: number
+    register_id: number
+    register_time: number
+    update_id: number
+    update_time: number
+    _all: number
+  }
+
+
+  export type Team_color_masterAvgAggregateInputType = {
+    id?: true
+  }
+
+  export type Team_color_masterSumAggregateInputType = {
+    id?: true
+  }
+
+  export type Team_color_masterMinAggregateInputType = {
+    id?: true
+    country?: true
+    league?: true
+    team?: true
+    team_color_hex?: true
+    register_id?: true
+    register_time?: true
+    update_id?: true
+    update_time?: true
+  }
+
+  export type Team_color_masterMaxAggregateInputType = {
+    id?: true
+    country?: true
+    league?: true
+    team?: true
+    team_color_hex?: true
+    register_id?: true
+    register_time?: true
+    update_id?: true
+    update_time?: true
+  }
+
+  export type Team_color_masterCountAggregateInputType = {
+    id?: true
+    country?: true
+    league?: true
+    team?: true
+    team_color_hex?: true
+    register_id?: true
+    register_time?: true
+    update_id?: true
+    update_time?: true
+    _all?: true
+  }
+
+  export type Team_color_masterAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which team_color_master to aggregate.
+     */
+    where?: team_color_masterWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of team_color_masters to fetch.
+     */
+    orderBy?: team_color_masterOrderByWithRelationInput | team_color_masterOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: team_color_masterWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` team_color_masters from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` team_color_masters.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned team_color_masters
+    **/
+    _count?: true | Team_color_masterCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: Team_color_masterAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: Team_color_masterSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: Team_color_masterMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: Team_color_masterMaxAggregateInputType
+  }
+
+  export type GetTeam_color_masterAggregateType<T extends Team_color_masterAggregateArgs> = {
+        [P in keyof T & keyof AggregateTeam_color_master]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateTeam_color_master[P]>
+      : GetScalarType<T[P], AggregateTeam_color_master[P]>
+  }
+
+
+
+
+  export type team_color_masterGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: team_color_masterWhereInput
+    orderBy?: team_color_masterOrderByWithAggregationInput | team_color_masterOrderByWithAggregationInput[]
+    by: Team_color_masterScalarFieldEnum[] | Team_color_masterScalarFieldEnum
+    having?: team_color_masterScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: Team_color_masterCountAggregateInputType | true
+    _avg?: Team_color_masterAvgAggregateInputType
+    _sum?: Team_color_masterSumAggregateInputType
+    _min?: Team_color_masterMinAggregateInputType
+    _max?: Team_color_masterMaxAggregateInputType
+  }
+
+  export type Team_color_masterGroupByOutputType = {
+    id: number
+    country: string
+    league: string
+    team: string
+    team_color_hex: string | null
+    register_id: string | null
+    register_time: Date | null
+    update_id: string | null
+    update_time: Date | null
+    _count: Team_color_masterCountAggregateOutputType | null
+    _avg: Team_color_masterAvgAggregateOutputType | null
+    _sum: Team_color_masterSumAggregateOutputType | null
+    _min: Team_color_masterMinAggregateOutputType | null
+    _max: Team_color_masterMaxAggregateOutputType | null
+  }
+
+  type GetTeam_color_masterGroupByPayload<T extends team_color_masterGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<Team_color_masterGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof Team_color_masterGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], Team_color_masterGroupByOutputType[P]>
+            : GetScalarType<T[P], Team_color_masterGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type team_color_masterSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    country?: boolean
+    league?: boolean
+    team?: boolean
+    team_color_hex?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
+  }, ExtArgs["result"]["team_color_master"]>
+
+  export type team_color_masterSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    country?: boolean
+    league?: boolean
+    team?: boolean
+    team_color_hex?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
+  }, ExtArgs["result"]["team_color_master"]>
+
+  export type team_color_masterSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    country?: boolean
+    league?: boolean
+    team?: boolean
+    team_color_hex?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
+  }, ExtArgs["result"]["team_color_master"]>
+
+  export type team_color_masterSelectScalar = {
+    id?: boolean
+    country?: boolean
+    league?: boolean
+    team?: boolean
+    team_color_hex?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
+  }
+
+  export type team_color_masterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "country" | "league" | "team" | "team_color_hex" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["team_color_master"]>
+
+  export type $team_color_masterPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "team_color_master"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      country: string
+      league: string
+      team: string
+      team_color_hex: string | null
+      register_id: string | null
+      register_time: Date | null
+      update_id: string | null
+      update_time: Date | null
+    }, ExtArgs["result"]["team_color_master"]>
+    composites: {}
+  }
+
+  type team_color_masterGetPayload<S extends boolean | null | undefined | team_color_masterDefaultArgs> = $Result.GetResult<Prisma.$team_color_masterPayload, S>
+
+  type team_color_masterCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<team_color_masterFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: Team_color_masterCountAggregateInputType | true
+    }
+
+  export interface team_color_masterDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['team_color_master'], meta: { name: 'team_color_master' } }
+    /**
+     * Find zero or one Team_color_master that matches the filter.
+     * @param {team_color_masterFindUniqueArgs} args - Arguments to find a Team_color_master
+     * @example
+     * // Get one Team_color_master
+     * const team_color_master = await prisma.team_color_master.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends team_color_masterFindUniqueArgs>(args: SelectSubset<T, team_color_masterFindUniqueArgs<ExtArgs>>): Prisma__team_color_masterClient<$Result.GetResult<Prisma.$team_color_masterPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Team_color_master that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {team_color_masterFindUniqueOrThrowArgs} args - Arguments to find a Team_color_master
+     * @example
+     * // Get one Team_color_master
+     * const team_color_master = await prisma.team_color_master.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends team_color_masterFindUniqueOrThrowArgs>(args: SelectSubset<T, team_color_masterFindUniqueOrThrowArgs<ExtArgs>>): Prisma__team_color_masterClient<$Result.GetResult<Prisma.$team_color_masterPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Team_color_master that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {team_color_masterFindFirstArgs} args - Arguments to find a Team_color_master
+     * @example
+     * // Get one Team_color_master
+     * const team_color_master = await prisma.team_color_master.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends team_color_masterFindFirstArgs>(args?: SelectSubset<T, team_color_masterFindFirstArgs<ExtArgs>>): Prisma__team_color_masterClient<$Result.GetResult<Prisma.$team_color_masterPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Team_color_master that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {team_color_masterFindFirstOrThrowArgs} args - Arguments to find a Team_color_master
+     * @example
+     * // Get one Team_color_master
+     * const team_color_master = await prisma.team_color_master.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends team_color_masterFindFirstOrThrowArgs>(args?: SelectSubset<T, team_color_masterFindFirstOrThrowArgs<ExtArgs>>): Prisma__team_color_masterClient<$Result.GetResult<Prisma.$team_color_masterPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Team_color_masters that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {team_color_masterFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Team_color_masters
+     * const team_color_masters = await prisma.team_color_master.findMany()
+     * 
+     * // Get first 10 Team_color_masters
+     * const team_color_masters = await prisma.team_color_master.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const team_color_masterWithIdOnly = await prisma.team_color_master.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends team_color_masterFindManyArgs>(args?: SelectSubset<T, team_color_masterFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$team_color_masterPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Team_color_master.
+     * @param {team_color_masterCreateArgs} args - Arguments to create a Team_color_master.
+     * @example
+     * // Create one Team_color_master
+     * const Team_color_master = await prisma.team_color_master.create({
+     *   data: {
+     *     // ... data to create a Team_color_master
+     *   }
+     * })
+     * 
+     */
+    create<T extends team_color_masterCreateArgs>(args: SelectSubset<T, team_color_masterCreateArgs<ExtArgs>>): Prisma__team_color_masterClient<$Result.GetResult<Prisma.$team_color_masterPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Team_color_masters.
+     * @param {team_color_masterCreateManyArgs} args - Arguments to create many Team_color_masters.
+     * @example
+     * // Create many Team_color_masters
+     * const team_color_master = await prisma.team_color_master.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends team_color_masterCreateManyArgs>(args?: SelectSubset<T, team_color_masterCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Team_color_masters and returns the data saved in the database.
+     * @param {team_color_masterCreateManyAndReturnArgs} args - Arguments to create many Team_color_masters.
+     * @example
+     * // Create many Team_color_masters
+     * const team_color_master = await prisma.team_color_master.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Team_color_masters and only return the `id`
+     * const team_color_masterWithIdOnly = await prisma.team_color_master.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends team_color_masterCreateManyAndReturnArgs>(args?: SelectSubset<T, team_color_masterCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$team_color_masterPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Team_color_master.
+     * @param {team_color_masterDeleteArgs} args - Arguments to delete one Team_color_master.
+     * @example
+     * // Delete one Team_color_master
+     * const Team_color_master = await prisma.team_color_master.delete({
+     *   where: {
+     *     // ... filter to delete one Team_color_master
+     *   }
+     * })
+     * 
+     */
+    delete<T extends team_color_masterDeleteArgs>(args: SelectSubset<T, team_color_masterDeleteArgs<ExtArgs>>): Prisma__team_color_masterClient<$Result.GetResult<Prisma.$team_color_masterPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Team_color_master.
+     * @param {team_color_masterUpdateArgs} args - Arguments to update one Team_color_master.
+     * @example
+     * // Update one Team_color_master
+     * const team_color_master = await prisma.team_color_master.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends team_color_masterUpdateArgs>(args: SelectSubset<T, team_color_masterUpdateArgs<ExtArgs>>): Prisma__team_color_masterClient<$Result.GetResult<Prisma.$team_color_masterPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Team_color_masters.
+     * @param {team_color_masterDeleteManyArgs} args - Arguments to filter Team_color_masters to delete.
+     * @example
+     * // Delete a few Team_color_masters
+     * const { count } = await prisma.team_color_master.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends team_color_masterDeleteManyArgs>(args?: SelectSubset<T, team_color_masterDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Team_color_masters.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {team_color_masterUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Team_color_masters
+     * const team_color_master = await prisma.team_color_master.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends team_color_masterUpdateManyArgs>(args: SelectSubset<T, team_color_masterUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Team_color_masters and returns the data updated in the database.
+     * @param {team_color_masterUpdateManyAndReturnArgs} args - Arguments to update many Team_color_masters.
+     * @example
+     * // Update many Team_color_masters
+     * const team_color_master = await prisma.team_color_master.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Team_color_masters and only return the `id`
+     * const team_color_masterWithIdOnly = await prisma.team_color_master.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends team_color_masterUpdateManyAndReturnArgs>(args: SelectSubset<T, team_color_masterUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$team_color_masterPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Team_color_master.
+     * @param {team_color_masterUpsertArgs} args - Arguments to update or create a Team_color_master.
+     * @example
+     * // Update or create a Team_color_master
+     * const team_color_master = await prisma.team_color_master.upsert({
+     *   create: {
+     *     // ... data to create a Team_color_master
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Team_color_master we want to update
+     *   }
+     * })
+     */
+    upsert<T extends team_color_masterUpsertArgs>(args: SelectSubset<T, team_color_masterUpsertArgs<ExtArgs>>): Prisma__team_color_masterClient<$Result.GetResult<Prisma.$team_color_masterPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Team_color_masters.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {team_color_masterCountArgs} args - Arguments to filter Team_color_masters to count.
+     * @example
+     * // Count the number of Team_color_masters
+     * const count = await prisma.team_color_master.count({
+     *   where: {
+     *     // ... the filter for the Team_color_masters we want to count
+     *   }
+     * })
+    **/
+    count<T extends team_color_masterCountArgs>(
+      args?: Subset<T, team_color_masterCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], Team_color_masterCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Team_color_master.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {Team_color_masterAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends Team_color_masterAggregateArgs>(args: Subset<T, Team_color_masterAggregateArgs>): Prisma.PrismaPromise<GetTeam_color_masterAggregateType<T>>
+
+    /**
+     * Group by Team_color_master.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {team_color_masterGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends team_color_masterGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: team_color_masterGroupByArgs['orderBy'] }
+        : { orderBy?: team_color_masterGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, team_color_masterGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTeam_color_masterGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the team_color_master model
+   */
+  readonly fields: team_color_masterFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for team_color_master.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__team_color_masterClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the team_color_master model
+   */
+  interface team_color_masterFieldRefs {
+    readonly id: FieldRef<"team_color_master", 'Int'>
+    readonly country: FieldRef<"team_color_master", 'String'>
+    readonly league: FieldRef<"team_color_master", 'String'>
+    readonly team: FieldRef<"team_color_master", 'String'>
+    readonly team_color_hex: FieldRef<"team_color_master", 'String'>
+    readonly register_id: FieldRef<"team_color_master", 'String'>
+    readonly register_time: FieldRef<"team_color_master", 'DateTime'>
+    readonly update_id: FieldRef<"team_color_master", 'String'>
+    readonly update_time: FieldRef<"team_color_master", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * team_color_master findUnique
+   */
+  export type team_color_masterFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the team_color_master
+     */
+    select?: team_color_masterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the team_color_master
+     */
+    omit?: team_color_masterOmit<ExtArgs> | null
+    /**
+     * Filter, which team_color_master to fetch.
+     */
+    where: team_color_masterWhereUniqueInput
+  }
+
+  /**
+   * team_color_master findUniqueOrThrow
+   */
+  export type team_color_masterFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the team_color_master
+     */
+    select?: team_color_masterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the team_color_master
+     */
+    omit?: team_color_masterOmit<ExtArgs> | null
+    /**
+     * Filter, which team_color_master to fetch.
+     */
+    where: team_color_masterWhereUniqueInput
+  }
+
+  /**
+   * team_color_master findFirst
+   */
+  export type team_color_masterFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the team_color_master
+     */
+    select?: team_color_masterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the team_color_master
+     */
+    omit?: team_color_masterOmit<ExtArgs> | null
+    /**
+     * Filter, which team_color_master to fetch.
+     */
+    where?: team_color_masterWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of team_color_masters to fetch.
+     */
+    orderBy?: team_color_masterOrderByWithRelationInput | team_color_masterOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for team_color_masters.
+     */
+    cursor?: team_color_masterWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` team_color_masters from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` team_color_masters.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of team_color_masters.
+     */
+    distinct?: Team_color_masterScalarFieldEnum | Team_color_masterScalarFieldEnum[]
+  }
+
+  /**
+   * team_color_master findFirstOrThrow
+   */
+  export type team_color_masterFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the team_color_master
+     */
+    select?: team_color_masterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the team_color_master
+     */
+    omit?: team_color_masterOmit<ExtArgs> | null
+    /**
+     * Filter, which team_color_master to fetch.
+     */
+    where?: team_color_masterWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of team_color_masters to fetch.
+     */
+    orderBy?: team_color_masterOrderByWithRelationInput | team_color_masterOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for team_color_masters.
+     */
+    cursor?: team_color_masterWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` team_color_masters from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` team_color_masters.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of team_color_masters.
+     */
+    distinct?: Team_color_masterScalarFieldEnum | Team_color_masterScalarFieldEnum[]
+  }
+
+  /**
+   * team_color_master findMany
+   */
+  export type team_color_masterFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the team_color_master
+     */
+    select?: team_color_masterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the team_color_master
+     */
+    omit?: team_color_masterOmit<ExtArgs> | null
+    /**
+     * Filter, which team_color_masters to fetch.
+     */
+    where?: team_color_masterWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of team_color_masters to fetch.
+     */
+    orderBy?: team_color_masterOrderByWithRelationInput | team_color_masterOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing team_color_masters.
+     */
+    cursor?: team_color_masterWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` team_color_masters from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` team_color_masters.
+     */
+    skip?: number
+    distinct?: Team_color_masterScalarFieldEnum | Team_color_masterScalarFieldEnum[]
+  }
+
+  /**
+   * team_color_master create
+   */
+  export type team_color_masterCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the team_color_master
+     */
+    select?: team_color_masterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the team_color_master
+     */
+    omit?: team_color_masterOmit<ExtArgs> | null
+    /**
+     * The data needed to create a team_color_master.
+     */
+    data: XOR<team_color_masterCreateInput, team_color_masterUncheckedCreateInput>
+  }
+
+  /**
+   * team_color_master createMany
+   */
+  export type team_color_masterCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many team_color_masters.
+     */
+    data: team_color_masterCreateManyInput | team_color_masterCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * team_color_master createManyAndReturn
+   */
+  export type team_color_masterCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the team_color_master
+     */
+    select?: team_color_masterSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the team_color_master
+     */
+    omit?: team_color_masterOmit<ExtArgs> | null
+    /**
+     * The data used to create many team_color_masters.
+     */
+    data: team_color_masterCreateManyInput | team_color_masterCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * team_color_master update
+   */
+  export type team_color_masterUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the team_color_master
+     */
+    select?: team_color_masterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the team_color_master
+     */
+    omit?: team_color_masterOmit<ExtArgs> | null
+    /**
+     * The data needed to update a team_color_master.
+     */
+    data: XOR<team_color_masterUpdateInput, team_color_masterUncheckedUpdateInput>
+    /**
+     * Choose, which team_color_master to update.
+     */
+    where: team_color_masterWhereUniqueInput
+  }
+
+  /**
+   * team_color_master updateMany
+   */
+  export type team_color_masterUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update team_color_masters.
+     */
+    data: XOR<team_color_masterUpdateManyMutationInput, team_color_masterUncheckedUpdateManyInput>
+    /**
+     * Filter which team_color_masters to update
+     */
+    where?: team_color_masterWhereInput
+    /**
+     * Limit how many team_color_masters to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * team_color_master updateManyAndReturn
+   */
+  export type team_color_masterUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the team_color_master
+     */
+    select?: team_color_masterSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the team_color_master
+     */
+    omit?: team_color_masterOmit<ExtArgs> | null
+    /**
+     * The data used to update team_color_masters.
+     */
+    data: XOR<team_color_masterUpdateManyMutationInput, team_color_masterUncheckedUpdateManyInput>
+    /**
+     * Filter which team_color_masters to update
+     */
+    where?: team_color_masterWhereInput
+    /**
+     * Limit how many team_color_masters to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * team_color_master upsert
+   */
+  export type team_color_masterUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the team_color_master
+     */
+    select?: team_color_masterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the team_color_master
+     */
+    omit?: team_color_masterOmit<ExtArgs> | null
+    /**
+     * The filter to search for the team_color_master to update in case it exists.
+     */
+    where: team_color_masterWhereUniqueInput
+    /**
+     * In case the team_color_master found by the `where` argument doesn't exist, create a new team_color_master with this data.
+     */
+    create: XOR<team_color_masterCreateInput, team_color_masterUncheckedCreateInput>
+    /**
+     * In case the team_color_master was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<team_color_masterUpdateInput, team_color_masterUncheckedUpdateInput>
+  }
+
+  /**
+   * team_color_master delete
+   */
+  export type team_color_masterDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the team_color_master
+     */
+    select?: team_color_masterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the team_color_master
+     */
+    omit?: team_color_masterOmit<ExtArgs> | null
+    /**
+     * Filter which team_color_master to delete.
+     */
+    where: team_color_masterWhereUniqueInput
+  }
+
+  /**
+   * team_color_master deleteMany
+   */
+  export type team_color_masterDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which team_color_masters to delete
+     */
+    where?: team_color_masterWhereInput
+    /**
+     * Limit how many team_color_masters to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * team_color_master without action
+   */
+  export type team_color_masterDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the team_color_master
+     */
+    select?: team_color_masterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the team_color_master
+     */
+    omit?: team_color_masterOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -64043,7 +65198,6 @@ export namespace Prisma {
     game_month: 'game_month',
     team: 'team',
     games: 'games',
-    rank: 'rank',
     win: 'win',
     lose: 'lose',
     draw: 'draw',
@@ -64781,6 +65935,21 @@ export namespace Prisma {
   };
 
   export type Rank_historyScalarFieldEnum = (typeof Rank_historyScalarFieldEnum)[keyof typeof Rank_historyScalarFieldEnum]
+
+
+  export const Team_color_masterScalarFieldEnum: {
+    id: 'id',
+    country: 'country',
+    league: 'league',
+    team: 'team',
+    team_color_hex: 'team_color_hex',
+    register_id: 'register_id',
+    register_time: 'register_time',
+    update_id: 'update_id',
+    update_time: 'update_time'
+  };
+
+  export type Team_color_masterScalarFieldEnum = (typeof Team_color_masterScalarFieldEnum)[keyof typeof Team_color_masterScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -70299,7 +71468,6 @@ export namespace Prisma {
     game_month?: IntFilter<"surface_overview"> | number
     team?: StringFilter<"surface_overview"> | string
     games?: StringNullableFilter<"surface_overview"> | string | null
-    rank?: IntFilter<"surface_overview"> | number
     win?: StringNullableFilter<"surface_overview"> | string | null
     lose?: StringNullableFilter<"surface_overview"> | string | null
     draw?: StringNullableFilter<"surface_overview"> | string | null
@@ -70386,7 +71554,6 @@ export namespace Prisma {
     game_month?: SortOrder
     team?: SortOrder
     games?: SortOrderInput | SortOrder
-    rank?: SortOrder
     win?: SortOrderInput | SortOrder
     lose?: SortOrderInput | SortOrder
     draw?: SortOrderInput | SortOrder
@@ -70477,7 +71644,6 @@ export namespace Prisma {
     game_month?: IntFilter<"surface_overview"> | number
     team?: StringFilter<"surface_overview"> | string
     games?: StringNullableFilter<"surface_overview"> | string | null
-    rank?: IntFilter<"surface_overview"> | number
     win?: StringNullableFilter<"surface_overview"> | string | null
     lose?: StringNullableFilter<"surface_overview"> | string | null
     draw?: StringNullableFilter<"surface_overview"> | string | null
@@ -70564,7 +71730,6 @@ export namespace Prisma {
     game_month?: SortOrder
     team?: SortOrder
     games?: SortOrderInput | SortOrder
-    rank?: SortOrder
     win?: SortOrderInput | SortOrder
     lose?: SortOrderInput | SortOrder
     draw?: SortOrderInput | SortOrder
@@ -70659,7 +71824,6 @@ export namespace Prisma {
     game_month?: IntWithAggregatesFilter<"surface_overview"> | number
     team?: StringWithAggregatesFilter<"surface_overview"> | string
     games?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
-    rank?: IntWithAggregatesFilter<"surface_overview"> | number
     win?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
     lose?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
     draw?: StringNullableWithAggregatesFilter<"surface_overview"> | string | null
@@ -74017,6 +75181,80 @@ export namespace Prisma {
     register_time?: DateTimeNullableWithAggregatesFilter<"rank_history"> | Date | string | null
     update_id?: StringNullableWithAggregatesFilter<"rank_history"> | string | null
     update_time?: DateTimeNullableWithAggregatesFilter<"rank_history"> | Date | string | null
+  }
+
+  export type team_color_masterWhereInput = {
+    AND?: team_color_masterWhereInput | team_color_masterWhereInput[]
+    OR?: team_color_masterWhereInput[]
+    NOT?: team_color_masterWhereInput | team_color_masterWhereInput[]
+    id?: IntFilter<"team_color_master"> | number
+    country?: StringFilter<"team_color_master"> | string
+    league?: StringFilter<"team_color_master"> | string
+    team?: StringFilter<"team_color_master"> | string
+    team_color_hex?: StringNullableFilter<"team_color_master"> | string | null
+    register_id?: StringNullableFilter<"team_color_master"> | string | null
+    register_time?: DateTimeNullableFilter<"team_color_master"> | Date | string | null
+    update_id?: StringNullableFilter<"team_color_master"> | string | null
+    update_time?: DateTimeNullableFilter<"team_color_master"> | Date | string | null
+  }
+
+  export type team_color_masterOrderByWithRelationInput = {
+    id?: SortOrder
+    country?: SortOrder
+    league?: SortOrder
+    team?: SortOrder
+    team_color_hex?: SortOrderInput | SortOrder
+    register_id?: SortOrderInput | SortOrder
+    register_time?: SortOrderInput | SortOrder
+    update_id?: SortOrderInput | SortOrder
+    update_time?: SortOrderInput | SortOrder
+  }
+
+  export type team_color_masterWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    AND?: team_color_masterWhereInput | team_color_masterWhereInput[]
+    OR?: team_color_masterWhereInput[]
+    NOT?: team_color_masterWhereInput | team_color_masterWhereInput[]
+    country?: StringFilter<"team_color_master"> | string
+    league?: StringFilter<"team_color_master"> | string
+    team?: StringFilter<"team_color_master"> | string
+    team_color_hex?: StringNullableFilter<"team_color_master"> | string | null
+    register_id?: StringNullableFilter<"team_color_master"> | string | null
+    register_time?: DateTimeNullableFilter<"team_color_master"> | Date | string | null
+    update_id?: StringNullableFilter<"team_color_master"> | string | null
+    update_time?: DateTimeNullableFilter<"team_color_master"> | Date | string | null
+  }, "id">
+
+  export type team_color_masterOrderByWithAggregationInput = {
+    id?: SortOrder
+    country?: SortOrder
+    league?: SortOrder
+    team?: SortOrder
+    team_color_hex?: SortOrderInput | SortOrder
+    register_id?: SortOrderInput | SortOrder
+    register_time?: SortOrderInput | SortOrder
+    update_id?: SortOrderInput | SortOrder
+    update_time?: SortOrderInput | SortOrder
+    _count?: team_color_masterCountOrderByAggregateInput
+    _avg?: team_color_masterAvgOrderByAggregateInput
+    _max?: team_color_masterMaxOrderByAggregateInput
+    _min?: team_color_masterMinOrderByAggregateInput
+    _sum?: team_color_masterSumOrderByAggregateInput
+  }
+
+  export type team_color_masterScalarWhereWithAggregatesInput = {
+    AND?: team_color_masterScalarWhereWithAggregatesInput | team_color_masterScalarWhereWithAggregatesInput[]
+    OR?: team_color_masterScalarWhereWithAggregatesInput[]
+    NOT?: team_color_masterScalarWhereWithAggregatesInput | team_color_masterScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"team_color_master"> | number
+    country?: StringWithAggregatesFilter<"team_color_master"> | string
+    league?: StringWithAggregatesFilter<"team_color_master"> | string
+    team?: StringWithAggregatesFilter<"team_color_master"> | string
+    team_color_hex?: StringNullableWithAggregatesFilter<"team_color_master"> | string | null
+    register_id?: StringNullableWithAggregatesFilter<"team_color_master"> | string | null
+    register_time?: DateTimeNullableWithAggregatesFilter<"team_color_master"> | Date | string | null
+    update_id?: StringNullableWithAggregatesFilter<"team_color_master"> | string | null
+    update_time?: DateTimeNullableWithAggregatesFilter<"team_color_master"> | Date | string | null
   }
 
   export type average_statistics_csv_tmp_dataCreateInput = {
@@ -81116,7 +82354,6 @@ export namespace Prisma {
     game_month: number
     team: string
     games?: string | null
-    rank: number
     win?: string | null
     lose?: string | null
     draw?: string | null
@@ -81203,7 +82440,6 @@ export namespace Prisma {
     game_month: number
     team: string
     games?: string | null
-    rank: number
     win?: string | null
     lose?: string | null
     draw?: string | null
@@ -81289,7 +82525,6 @@ export namespace Prisma {
     game_month?: IntFieldUpdateOperationsInput | number
     team?: StringFieldUpdateOperationsInput | string
     games?: NullableStringFieldUpdateOperationsInput | string | null
-    rank?: IntFieldUpdateOperationsInput | number
     win?: NullableStringFieldUpdateOperationsInput | string | null
     lose?: NullableStringFieldUpdateOperationsInput | string | null
     draw?: NullableStringFieldUpdateOperationsInput | string | null
@@ -81376,7 +82611,6 @@ export namespace Prisma {
     game_month?: IntFieldUpdateOperationsInput | number
     team?: StringFieldUpdateOperationsInput | string
     games?: NullableStringFieldUpdateOperationsInput | string | null
-    rank?: IntFieldUpdateOperationsInput | number
     win?: NullableStringFieldUpdateOperationsInput | string | null
     lose?: NullableStringFieldUpdateOperationsInput | string | null
     draw?: NullableStringFieldUpdateOperationsInput | string | null
@@ -81463,7 +82697,6 @@ export namespace Prisma {
     game_month: number
     team: string
     games?: string | null
-    rank: number
     win?: string | null
     lose?: string | null
     draw?: string | null
@@ -81549,7 +82782,6 @@ export namespace Prisma {
     game_month?: IntFieldUpdateOperationsInput | number
     team?: StringFieldUpdateOperationsInput | string
     games?: NullableStringFieldUpdateOperationsInput | string | null
-    rank?: IntFieldUpdateOperationsInput | number
     win?: NullableStringFieldUpdateOperationsInput | string | null
     lose?: NullableStringFieldUpdateOperationsInput | string | null
     draw?: NullableStringFieldUpdateOperationsInput | string | null
@@ -81636,7 +82868,6 @@ export namespace Prisma {
     game_month?: IntFieldUpdateOperationsInput | number
     team?: StringFieldUpdateOperationsInput | string
     games?: NullableStringFieldUpdateOperationsInput | string | null
-    rank?: IntFieldUpdateOperationsInput | number
     win?: NullableStringFieldUpdateOperationsInput | string | null
     lose?: NullableStringFieldUpdateOperationsInput | string | null
     draw?: NullableStringFieldUpdateOperationsInput | string | null
@@ -85890,6 +87121,87 @@ export namespace Prisma {
     update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type team_color_masterCreateInput = {
+    country: string
+    league: string
+    team: string
+    team_color_hex?: string | null
+    register_id?: string | null
+    register_time?: Date | string | null
+    update_id?: string | null
+    update_time?: Date | string | null
+  }
+
+  export type team_color_masterUncheckedCreateInput = {
+    id?: number
+    country: string
+    league: string
+    team: string
+    team_color_hex?: string | null
+    register_id?: string | null
+    register_time?: Date | string | null
+    update_id?: string | null
+    update_time?: Date | string | null
+  }
+
+  export type team_color_masterUpdateInput = {
+    country?: StringFieldUpdateOperationsInput | string
+    league?: StringFieldUpdateOperationsInput | string
+    team?: StringFieldUpdateOperationsInput | string
+    team_color_hex?: NullableStringFieldUpdateOperationsInput | string | null
+    register_id?: NullableStringFieldUpdateOperationsInput | string | null
+    register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    update_id?: NullableStringFieldUpdateOperationsInput | string | null
+    update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type team_color_masterUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    country?: StringFieldUpdateOperationsInput | string
+    league?: StringFieldUpdateOperationsInput | string
+    team?: StringFieldUpdateOperationsInput | string
+    team_color_hex?: NullableStringFieldUpdateOperationsInput | string | null
+    register_id?: NullableStringFieldUpdateOperationsInput | string | null
+    register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    update_id?: NullableStringFieldUpdateOperationsInput | string | null
+    update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type team_color_masterCreateManyInput = {
+    id?: number
+    country: string
+    league: string
+    team: string
+    team_color_hex?: string | null
+    register_id?: string | null
+    register_time?: Date | string | null
+    update_id?: string | null
+    update_time?: Date | string | null
+  }
+
+  export type team_color_masterUpdateManyMutationInput = {
+    country?: StringFieldUpdateOperationsInput | string
+    league?: StringFieldUpdateOperationsInput | string
+    team?: StringFieldUpdateOperationsInput | string
+    team_color_hex?: NullableStringFieldUpdateOperationsInput | string | null
+    register_id?: NullableStringFieldUpdateOperationsInput | string | null
+    register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    update_id?: NullableStringFieldUpdateOperationsInput | string | null
+    update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type team_color_masterUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    country?: StringFieldUpdateOperationsInput | string
+    league?: StringFieldUpdateOperationsInput | string
+    team?: StringFieldUpdateOperationsInput | string
+    team_color_hex?: NullableStringFieldUpdateOperationsInput | string | null
+    register_id?: NullableStringFieldUpdateOperationsInput | string | null
+    register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    update_id?: NullableStringFieldUpdateOperationsInput | string | null
+    update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
   export type IntFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -89340,7 +90652,6 @@ export namespace Prisma {
     game_month?: SortOrder
     team?: SortOrder
     games?: SortOrder
-    rank?: SortOrder
     win?: SortOrder
     lose?: SortOrder
     draw?: SortOrder
@@ -89423,7 +90734,6 @@ export namespace Prisma {
     id?: SortOrder
     game_year?: SortOrder
     game_month?: SortOrder
-    rank?: SortOrder
   }
 
   export type surface_overviewMaxOrderByAggregateInput = {
@@ -89434,7 +90744,6 @@ export namespace Prisma {
     game_month?: SortOrder
     team?: SortOrder
     games?: SortOrder
-    rank?: SortOrder
     win?: SortOrder
     lose?: SortOrder
     draw?: SortOrder
@@ -89521,7 +90830,6 @@ export namespace Prisma {
     game_month?: SortOrder
     team?: SortOrder
     games?: SortOrder
-    rank?: SortOrder
     win?: SortOrder
     lose?: SortOrder
     draw?: SortOrder
@@ -89604,7 +90912,6 @@ export namespace Prisma {
     id?: SortOrder
     game_year?: SortOrder
     game_month?: SortOrder
-    rank?: SortOrder
   }
 
   export type team_match_final_statsCountOrderByAggregateInput = {
@@ -91640,6 +92947,50 @@ export namespace Prisma {
     id?: SortOrder
     match?: SortOrder
     rank?: SortOrder
+  }
+
+  export type team_color_masterCountOrderByAggregateInput = {
+    id?: SortOrder
+    country?: SortOrder
+    league?: SortOrder
+    team?: SortOrder
+    team_color_hex?: SortOrder
+    register_id?: SortOrder
+    register_time?: SortOrder
+    update_id?: SortOrder
+    update_time?: SortOrder
+  }
+
+  export type team_color_masterAvgOrderByAggregateInput = {
+    id?: SortOrder
+  }
+
+  export type team_color_masterMaxOrderByAggregateInput = {
+    id?: SortOrder
+    country?: SortOrder
+    league?: SortOrder
+    team?: SortOrder
+    team_color_hex?: SortOrder
+    register_id?: SortOrder
+    register_time?: SortOrder
+    update_id?: SortOrder
+    update_time?: SortOrder
+  }
+
+  export type team_color_masterMinOrderByAggregateInput = {
+    id?: SortOrder
+    country?: SortOrder
+    league?: SortOrder
+    team?: SortOrder
+    team_color_hex?: SortOrder
+    register_id?: SortOrder
+    register_time?: SortOrder
+    update_id?: SortOrder
+    update_time?: SortOrder
+  }
+
+  export type team_color_masterSumOrderByAggregateInput = {
+    id?: SortOrder
   }
 
   export type IntFieldUpdateOperationsInput = {

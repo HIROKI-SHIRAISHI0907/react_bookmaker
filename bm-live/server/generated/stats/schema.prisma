@@ -1043,7 +1043,6 @@ model surface_overview {
   game_month                   Int      @db.Integer
   team                         String   @db.Text
   games                        String?  @db.Text
-  rank                         Int      @db.Integer
   win                          String?  @db.Text
   lose                         String?  @db.Text
   draw                         String?  @db.Text
@@ -1744,4 +1743,16 @@ model rank_history {
   register_time DateTime? @db.Timestamptz(0)
   update_id     String?   @db.VarChar(100)
   update_time   DateTime? @db.Timestamptz(0)
+}
+
+model team_color_master {
+  id             Int       @id @default(autoincrement())
+  country        String    @db.Text
+  league         String    @db.Text
+  team           String    @db.Text
+  team_color_hex String?   @db.VarChar(7)
+  register_id    String?   @db.VarChar(100)
+  register_time  DateTime? @db.Timestamptz(0)
+  update_id      String?   @db.VarChar(100)
+  update_time    DateTime? @db.Timestamptz(0)
 }

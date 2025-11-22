@@ -1147,7 +1147,6 @@ exports.Prisma.Surface_overviewScalarFieldEnum = {
   game_month: 'game_month',
   team: 'team',
   games: 'games',
-  rank: 'rank',
   win: 'win',
   lose: 'lose',
   draw: 'draw',
@@ -1830,6 +1829,18 @@ exports.Prisma.Rank_historyScalarFieldEnum = {
   update_time: 'update_time'
 };
 
+exports.Prisma.Team_color_masterScalarFieldEnum = {
+  id: 'id',
+  country: 'country',
+  league: 'league',
+  team: 'team',
+  team_color_hex: 'team_color_hex',
+  register_id: 'register_id',
+  register_time: 'register_time',
+  update_id: 'update_id',
+  update_time: 'update_time'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1885,7 +1896,8 @@ exports.Prisma.ModelName = {
   country_league_visibility: 'country_league_visibility',
   user_visibility_option: 'user_visibility_option',
   past_data_history: 'past_data_history',
-  rank_history: 'rank_history'
+  rank_history: 'rank_history',
+  team_color_master: 'team_color_master'
 };
 
 /**
