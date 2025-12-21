@@ -10,20 +10,6 @@ datasource db {
   url      = env("MASTER_DATABASE_URL")
 }
 
-model stat_size_finalize_master {
-  id            Int      @id @default(autoincrement())
-  option_num    String   @default("0") @db.VarChar(1)
-  options       String   @db.Text
-  flg           String   @default("0") @db.VarChar(1)
-  register_id   String   @db.VarChar(100)
-  register_time DateTime @db.Timestamptz(0)
-  update_id     String   @db.VarChar(100)
-  update_time   DateTime @db.Timestamptz(0)
-
-  country_league_visibilities country_league_visibility[]
-  user_visibility_options     user_visibility_option[]
-}
-
 model team_member_master {
   id                     Int      @default(autoincrement())
   country                String?  @db.Text

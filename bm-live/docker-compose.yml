@@ -59,7 +59,7 @@ services:
       - ./server:/srv
       - /srv/node_modules
     ports:
-      - "8080:8080"
+      - "18080:8080"
     env_file: ./server/.env
     command: ["/bin/sh", "-lc", "/srv/start.sh"] #改行コードの関係でstart.shを呼び出して修正
 

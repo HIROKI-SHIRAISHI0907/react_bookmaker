@@ -5,8 +5,16 @@ set -euo pipefail
 # ===== 設定 =====
 SERVICE_NAME="db"
 DB_USER="postgres"
-DB_NAME="soccer_bm"
+
+# デフォルト（master 側）
+DB_NAME_MASTER="soccer_bm_master"
+
+# data テーブル用
+DB_NAME_DATA="soccer_bm"
+
+# ★ スキーマ名（ここを public に修正）
 SCHEMA="public"
+
 DUMPDIR="/Users/shiraishitoshio/dumps/soccer_bm_dumps"
 FILE_PREFIX="soccer_bm_"
 FILE_SUFFIX=".csv"
@@ -29,15 +37,31 @@ dc() {
   fi
 }
 
+# テーブルごとに使うDBを振り分け
+get_db_name() {
+  local t="$1"
+  if [[ "$t" == "data" ]]; then
+    echo "$DB_NAME_DATA"
+  else
+    echo "$DB_NAME_MASTER"
+  fi
+}
+
+# DB名を引数に取る psql ラッパ
 compose_psql() {
-  dc exec -T "$SERVICE_NAME" psql -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 -c "$1"
+  local dbname="$1"
+  local sql="$2"
+  dc exec -T "$SERVICE_NAME" \
+    psql -U "$DB_USER" -d "$dbname" -v ON_ERROR_STOP=1 -c "$sql"
 }
 
 # ===== FORCE_NULL 対象列検出 =====
 get_force_null_cols() {
   local t="$1"
+  local dbname; dbname="$(get_db_name "$t")"
+
   dc exec -T "$SERVICE_NAME" \
-    psql -U "$DB_USER" -d "$DB_NAME" -At -v ON_ERROR_STOP=1 -c "
+    psql -U "$DB_USER" -d "$dbname" -At -v ON_ERROR_STOP=1 -c "
       SELECT COALESCE(string_agg('\"' || column_name || '\"', ',' ORDER BY ordinal_position),'')
       FROM information_schema.columns
       WHERE table_schema='${SCHEMA}'
@@ -59,8 +83,10 @@ build_copy_opts() {
 # ===== シーケンス同期 =====
 sync_seq_auto() {
   local t="$1"
-  echo "🔧 Syncing sequences for ${SCHEMA}.${t}"
-  compose_psql "
+  local dbname; dbname="$(get_db_name "$t")"
+
+  echo "🔧 Syncing sequences for ${dbname}:${SCHEMA}.${t}"
+  compose_psql "$dbname" "
     DO \$\$
     DECLARE
       tname text := '${t}';
@@ -80,9 +106,22 @@ sync_seq_auto() {
       LOOP
         SELECT pg_get_serial_sequence(format('%I.%I', sch, tname), col) INTO seqreg;
         IF seqreg IS NOT NULL THEN
-          sqltext := format(
-            'SELECT setval(%L, COALESCE((SELECT MAX(%I) FROM %I.%I),0), true)',
-            seqreg::text, col, sch, tname
+          sqltext := format(\$fmt\$
+            DO \$do\$
+            DECLARE v_max bigint;
+            BEGIN
+              SELECT MAX(%I) INTO v_max FROM %I.%I;
+              IF v_max IS NULL THEN
+                PERFORM setval(%L, 1, false);
+              ELSE
+                PERFORM setval(%L, v_max, true);
+              END IF;
+            END
+            \$do\$;
+          \$fmt\$,
+            col, sch, tname,
+            seqreg::text,
+            seqreg::text
           );
           EXECUTE sqltext;
           RETURN;
@@ -100,9 +139,22 @@ sync_seq_auto() {
       IF col IS NOT NULL THEN
         SELECT pg_get_serial_sequence(format('%I.%I', sch, tname), col) INTO seqreg;
         IF seqreg IS NOT NULL THEN
-          sqltext := format(
-            'SELECT setval(%L, COALESCE((SELECT MAX(%I) FROM %I.%I),0), true)',
-            seqreg::text, col, sch, tname
+          sqltext := format(\$fmt\$
+            DO \$do\$
+            DECLARE v_max bigint;
+            BEGIN
+              SELECT MAX(%I) INTO v_max FROM %I.%I;
+              IF v_max IS NULL THEN
+                PERFORM setval(%L, 1, false);
+              ELSE
+                PERFORM setval(%L, v_max, true);
+              END IF;
+            END
+            \$do\$;
+          \$fmt\$,
+            col, sch, tname,
+            seqreg::text,
+            seqreg::text
           );
           EXECUTE sqltext;
         END IF;
@@ -116,12 +168,13 @@ sync_seq_auto() {
 # ===== CSV Export =====
 export_table() {
   local t="$1"
+  local dbname; dbname="$(get_db_name "$t")"
   local outfile="${DUMPDIR}/${FILE_PREFIX}${t}${FILE_SUFFIX}"
 
-  echo "🔼 Export ${SCHEMA}.${t} -> ${outfile}"
+  echo "🔼 Export ${dbname}:${SCHEMA}.${t} -> ${outfile}"
   dc exec -T "$SERVICE_NAME" \
-    psql -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 \
-      -c "\copy (SELECT * FROM ${SCHEMA}.\"${t}\") TO STDOUT WITH (FORMAT csv, HEADER true, ENCODING 'UTF8')" \
+    psql -U "$DB_USER" -d "$dbname" -v ON_ERROR_STOP=1 \
+      -c "\copy (SELECT * FROM \"${SCHEMA}\".\"${t}\") TO STDOUT WITH (FORMAT csv, HEADER true, ENCODING 'UTF8')" \
     > "$outfile"
 
   # data テーブルだけ zip 化
@@ -144,6 +197,7 @@ export_core() {
 # ===== CSV Import =====
 import_table() {
   local t="$1"
+  local dbname; dbname="$(get_db_name "$t")"
   local infile="${DUMPDIR}/${FILE_PREFIX}${t}${FILE_SUFFIX}"
   local zipfile="${infile}${ZIP_EXT}"
 
@@ -157,22 +211,22 @@ import_table() {
     return 0
   fi
 
-  echo "🔽 Import ${infile} -> ${SCHEMA}.${t}"
+  echo "🔽 Import ${infile} -> ${dbname}:${SCHEMA}.${t}"
   local opts; opts="$(build_copy_opts "$t")"
-  dc exec -T "$SERVICE_NAME" psql -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 \
-    -c "\copy ${SCHEMA}.\"${t}\" FROM STDIN WITH ${opts}" < "$infile"
+  dc exec -T "$SERVICE_NAME" \
+    psql -U "$DB_USER" -d "$dbname" -v ON_ERROR_STOP=1 \
+      -c "\copy \"${SCHEMA}\".\"${t}\" FROM STDIN WITH ${opts}" < "$infile"
 
   sync_seq_auto "$t"
 }
 
 truncate_core() {
-  local joined=""
+  echo "🧹 TRUNCATE core tables (DBごとに実行)"
   for t in "${TABLES_CORE[@]}"; do
-    [[ -n "$joined" ]] && joined+=","
-    joined+="\"${SCHEMA}\".\"${t}\""
+    local dbname; dbname="$(get_db_name "$t")"
+    echo "  - ${dbname}:${SCHEMA}.${t}"
+    compose_psql "$dbname" "TRUNCATE \"${SCHEMA}\".\"${t}\" RESTART IDENTITY CASCADE;"
   done
-  echo "🧹 TRUNCATE ${joined} RESTART IDENTITY CASCADE"
-  compose_psql "TRUNCATE ${joined} RESTART IDENTITY CASCADE;"
 }
 
 reset_import_core() {
@@ -191,14 +245,14 @@ Usage:
   $(basename "$0") reset-import-core  # 5テーブル(TRUNCATE→CSVインポート→シーケンス同期)
 
 対象テーブル:
-  - country_league_master
-  - country_league_season_master
-  - team_member_master
-  - future_master
-  - data
+  - country_league_master        (DB: ${DB_NAME_MASTER}, schema: ${SCHEMA})
+  - country_league_season_master (DB: ${DB_NAME_MASTER}, schema: ${SCHEMA})
+  - team_member_master           (DB: ${DB_NAME_MASTER}, schema: ${SCHEMA})
+  - future_master                (DB: ${DB_NAME_MASTER}, schema: ${SCHEMA})
+  - data                         (DB: ${DB_NAME_DATA},   schema: ${SCHEMA})
 
 Notes:
-  - data は seq をCSV側で採番済み。通常のCOPYで取込。
+  - data は ${DB_NAME_DATA} に存在。
   - 各テーブル取込後に自動でシーケンスを MAX(id/seq) に同期。
   - timestamp/date列は自動で FORCE_NULL を付与。
 EOF
@@ -206,7 +260,7 @@ EOF
 
 cmd="${1:-}"; shift || true
 case "$cmd" in
-  export-core) export_core ;;
-  reset-import-core) reset_import_core ;;
-  *) usage ;;
+  export-core)        export_core ;;
+  reset-import-core)  reset_import_core ;;
+  *)                  usage ;;
 esac

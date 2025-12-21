@@ -1,0 +1,110 @@
+// server/prisma-master/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/master"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("MASTER_DATABASE_URL")
+}
+
+model team_member_master {
+  id                     Int      @default(autoincrement())
+  country                String?  @db.Text
+  league                 String?  @db.Text
+  team                   String   @db.Text
+  score                  String?  @db.Text
+  loan_belong            String?  @db.Text
+  jersey                 String   @db.Text
+  member                 String   @db.Text
+  face_pic_path          String   @db.Text
+  belong_list            String?  @db.Text
+  height                 String?  @db.Text
+  weight                 String?  @db.Text
+  position               String?  @db.Text
+  birth                  String?  @db.Text
+  age                    String?  @db.Text
+  market_value           String?  @db.Text
+  injury                 String?  @db.Text
+  versus_team_score_data String?  @db.Text
+  retire_flg             String?  @db.Char(1)
+  deadline               String?  @db.Char(1)
+  deadline_contract_date String?  @db.Text
+  latest_info_date       String?  @db.Text
+  upd_stamp              String?  @db.Text
+  register_id            String   @db.VarChar(100)
+  register_time          DateTime @db.Timestamptz(0)
+  update_id              String   @db.VarChar(100)
+  update_time            DateTime @db.Timestamptz(0)
+
+  @@id([id, team, jersey, member, face_pic_path])
+}
+
+model country_league_master {
+  id            Int      @id @default(autoincrement())
+  country       String   @db.Text
+  league        String   @db.Text
+  team          String   @db.Text
+  link          String   @db.Text
+  register_id   String   @db.VarChar(100)
+  register_time DateTime @db.Timestamptz(0)
+  update_id     String   @db.VarChar(100)
+  update_time   DateTime @db.Timestamptz(0)
+}
+
+model country_league_season_master {
+  id                Int       @id @default(autoincrement())
+  country           String    @db.Text
+  league            String    @db.Text
+  start_season_date DateTime? @db.Timestamptz(0)
+  end_season_date   DateTime? @db.Timestamptz(0)
+  round             String?   @db.VarChar(2)
+  path              String?   @db.Text
+  icon              String?   @db.Text
+  valid_flg         String    @default("0") @db.VarChar(1)
+  register_id       String?   @db.VarChar(100)
+  register_time     DateTime? @db.Timestamptz(0)
+  update_id         String?   @db.VarChar(100)
+  update_time       DateTime? @db.Timestamptz(0)
+}
+
+model team_color_master {
+  id             Int       @id @default(autoincrement())
+  country        String    @db.Text
+  league         String    @db.Text
+  team           String    @db.Text
+  team_color_hex String?   @db.VarChar(7)
+  register_id    String?   @db.VarChar(100)
+  register_time  DateTime? @db.Timestamptz(0)
+  update_id      String?   @db.VarChar(100)
+  update_time    DateTime? @db.Timestamptz(0)
+}
+
+model future_master {
+  seq                     BigInt    @id @default(autoincrement())
+  game_team_category      String    @db.Text
+  future_time             DateTime  @db.Timestamptz(0)
+  home_rank               String?   @db.Text
+  away_rank               String?   @db.Text
+  home_team_name          String?   @db.Text
+  away_team_name          String?   @db.Text
+  home_max_getting_scorer String?   @db.Text
+  away_max_getting_scorer String?   @db.Text
+  home_team_home_score    String?   @db.Text
+  home_team_home_lost     String?   @db.Text
+  away_team_home_score    String?   @db.Text
+  away_team_home_lost     String?   @db.Text
+  home_team_away_score    String?   @db.Text
+  home_team_away_lost     String?   @db.Text
+  away_team_away_score    String?   @db.Text
+  away_team_away_lost     String?   @db.Text
+  game_link               String?   @db.Text
+  data_time               DateTime? @db.Timestamptz(0)
+  start_flg               String    @default("0") @db.VarChar(1)
+  register_id             String?   @db.Text
+  register_time           DateTime? @db.Timestamptz(0)
+  update_id               String?   @db.Text
+  update_time             DateTime? @db.Timestamptz(0)
+}

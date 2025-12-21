@@ -218,33 +218,6 @@ model condition_result_data {
   update_time                       DateTime @db.Timestamptz(0)
 }
 
-model country_league_master {
-  id            Int      @id @default(autoincrement())
-  country       String   @db.Text
-  league        String   @db.Text
-  team          String   @db.Text
-  link          String   @db.Text
-  register_id   String   @db.VarChar(100)
-  register_time DateTime @db.Timestamptz(0)
-  update_id     String   @db.VarChar(100)
-  update_time   DateTime @db.Timestamptz(0)
-}
-
-model country_league_season_master {
-  id                Int       @id @default(autoincrement())
-  country           String    @db.Text
-  league            String    @db.Text
-  start_season_date DateTime? @db.Timestamptz(0)
-  end_season_date   DateTime? @db.Timestamptz(0)
-  round             String?   @db.VarChar(2)
-  path              String?   @db.Text
-  disp_valid_flg    String    @default("0") @db.VarChar(1)
-  register_id       String?   @db.VarChar(100)
-  register_time     DateTime? @db.Timestamptz(0)
-  update_id         String?   @db.VarChar(100)
-  update_time       DateTime? @db.Timestamptz(0)
-}
-
 model country_league_summary {
   id            Int      @id @default(autoincrement())
   country       String   @db.Text
@@ -518,33 +491,6 @@ model each_team_score_based_feature_stats_history {
   register_time                    DateTime? @db.Timestamptz(0)
   update_id                        String?   @db.VarChar(100)
   update_time                      DateTime? @db.Timestamptz(0)
-}
-
-model future_master {
-  seq                     BigInt    @id @default(autoincrement())
-  game_team_category      String    @db.Text
-  future_time             DateTime  @db.Timestamptz(0)
-  home_rank               String?   @db.Text
-  away_rank               String?   @db.Text
-  home_team_name          String?   @db.Text
-  away_team_name          String?   @db.Text
-  home_max_getting_scorer String?   @db.Text
-  away_max_getting_scorer String?   @db.Text
-  home_team_home_score    String?   @db.Text
-  home_team_home_lost     String?   @db.Text
-  away_team_home_score    String?   @db.Text
-  away_team_home_lost     String?   @db.Text
-  home_team_away_score    String?   @db.Text
-  home_team_away_lost     String?   @db.Text
-  away_team_away_score    String?   @db.Text
-  away_team_away_lost     String?   @db.Text
-  game_link               String?   @db.Text
-  data_time               DateTime? @db.Timestamptz(0)
-  start_flg               String    @default("0") @db.VarChar(1)
-  register_id             String?   @db.Text
-  register_time           DateTime? @db.Timestamptz(0)
-  update_id               String?   @db.Text
-  update_time             DateTime? @db.Timestamptz(0)
 }
 
 model league_score_time_band_stats {
@@ -1021,20 +967,6 @@ model stat_encryption {
   update_time                                       DateTime @db.Timestamptz(0)
 }
 
-model stat_size_finalize_master {
-  id            Int      @id @default(autoincrement())
-  option_num    String   @default("0") @db.VarChar(1)
-  options       String   @db.Text
-  flg           String   @default("0") @db.VarChar(1)
-  register_id   String   @db.VarChar(100)
-  register_time DateTime @db.Timestamptz(0)
-  update_id     String   @db.VarChar(100)
-  update_time   DateTime @db.Timestamptz(0)
-
-  country_league_visibilities country_league_visibility[]
-  user_visibility_options     user_visibility_option[]
-}
-
 model surface_overview {
   id                           Int      @id @default(autoincrement())
   country                      String   @db.Text
@@ -1219,38 +1151,6 @@ model team_match_final_stats {
   register_time                                 DateTime? @db.Timestamptz(0)
   update_id                                     String?   @db.VarChar(100)
   update_time                                   DateTime? @db.Timestamptz(0)
-}
-
-model team_member_master {
-  id                     Int      @default(autoincrement())
-  country                String?  @db.Text
-  league                 String?  @db.Text
-  team                   String   @db.Text
-  score                  String?  @db.Text
-  loan_belong            String?  @db.Text
-  jersey                 String   @db.Text
-  member                 String   @db.Text
-  face_pic_path          String   @db.Text
-  belong_list            String?  @db.Text
-  height                 String?  @db.Text
-  weight                 String?  @db.Text
-  position               String?  @db.Text
-  birth                  String?  @db.Text
-  age                    String?  @db.Text
-  market_value           String?  @db.Text
-  injury                 String?  @db.Text
-  versus_team_score_data String?  @db.Text
-  retire_flg             String?  @db.Char(1)
-  deadline               String?  @db.Char(1)
-  deadline_contract_date String?  @db.Text
-  latest_info_date       String?  @db.Text
-  upd_stamp              String?  @db.Text
-  register_id            String   @db.VarChar(100)
-  register_time          DateTime @db.Timestamptz(0)
-  update_id              String   @db.VarChar(100)
-  update_time            DateTime @db.Timestamptz(0)
-
-  @@id([id, team, jersey, member, face_pic_path])
 }
 
 model team_monthly_score_summary {
@@ -1621,44 +1521,6 @@ model within_data_45minutes_home_scored {
   update_time   DateTime? @db.Timestamptz(0)
 }
 
-model country_league_visibility {
-  id            Int       @id @default(autoincrement())
-  country       String    @db.VarChar(128)
-  league        String?   @db.VarChar(128)
-  visible       Boolean   @default(true)
-  priority      Int       @default(0)
-  reason        String?   @db.Text
-  effectiveFrom DateTime? @db.Timestamptz(0)
-  effectiveTo   DateTime? @db.Timestamptz(0)
-
-  optionId Int?
-  option   stat_size_finalize_master? @relation(fields: [optionId], references: [id], onDelete: Cascade)
-
-  register_id   String?   @db.VarChar(100)
-  register_time DateTime? @db.Timestamptz(0)
-  update_id     String?   @db.VarChar(100)
-  update_time   DateTime? @db.Timestamptz(0)
-
-  @@unique([country, league, optionId], map: "uk_web_visibility_scoped")
-  @@index([country, league], map: "idx_web_visibility_lookup")
-  @@index([visible], map: "idx_web_visibility_flag")
-  @@index([optionId], map: "idx_web_visibility_option")
-}
-
-model user_visibility_option {
-  id        Int      @id @default(autoincrement())
-  userId    String   @db.VarChar(64) // ユーザーDBのIDを文字列で格納（FKは張らない）
-  optionId  Int
-  createdAt DateTime @default(now())
-
-  // stat_size_finalize_master への多対一
-  option stat_size_finalize_master @relation(fields: [optionId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, optionId], map: "uk_user_option")
-  @@index([userId], map: "idx_user_option_user")
-  @@index([optionId], map: "idx_user_option_option")
-}
-
 model past_data_history {
   id                               Int       @id @default(autoincrement())
   situation                        String?   @db.Text
@@ -1743,16 +1605,4 @@ model rank_history {
   register_time DateTime? @db.Timestamptz(0)
   update_id     String?   @db.VarChar(100)
   update_time   DateTime? @db.Timestamptz(0)
-}
-
-model team_color_master {
-  id             Int       @id @default(autoincrement())
-  country        String    @db.Text
-  league         String    @db.Text
-  team           String    @db.Text
-  team_color_hex String?   @db.VarChar(7)
-  register_id    String?   @db.VarChar(100)
-  register_time  DateTime? @db.Timestamptz(0)
-  update_id      String?   @db.VarChar(100)
-  update_time    DateTime? @db.Timestamptz(0)
 }

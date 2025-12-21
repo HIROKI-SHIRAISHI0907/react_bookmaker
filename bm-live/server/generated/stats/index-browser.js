@@ -329,33 +329,6 @@ exports.Prisma.Condition_result_dataScalarFieldEnum = {
   update_time: 'update_time'
 };
 
-exports.Prisma.Country_league_masterScalarFieldEnum = {
-  id: 'id',
-  country: 'country',
-  league: 'league',
-  team: 'team',
-  link: 'link',
-  register_id: 'register_id',
-  register_time: 'register_time',
-  update_id: 'update_id',
-  update_time: 'update_time'
-};
-
-exports.Prisma.Country_league_season_masterScalarFieldEnum = {
-  id: 'id',
-  country: 'country',
-  league: 'league',
-  start_season_date: 'start_season_date',
-  end_season_date: 'end_season_date',
-  round: 'round',
-  path: 'path',
-  disp_valid_flg: 'disp_valid_flg',
-  register_id: 'register_id',
-  register_time: 'register_time',
-  update_id: 'update_id',
-  update_time: 'update_time'
-};
-
 exports.Prisma.Country_league_summaryScalarFieldEnum = {
   id: 'id',
   country: 'country',
@@ -621,33 +594,6 @@ exports.Prisma.Each_team_score_based_feature_stats_historyScalarFieldEnum = {
   home_intercept_count_stat: 'home_intercept_count_stat',
   away_intercept_count_stat: 'away_intercept_count_stat',
   logic_flg: 'logic_flg',
-  register_id: 'register_id',
-  register_time: 'register_time',
-  update_id: 'update_id',
-  update_time: 'update_time'
-};
-
-exports.Prisma.Future_masterScalarFieldEnum = {
-  seq: 'seq',
-  game_team_category: 'game_team_category',
-  future_time: 'future_time',
-  home_rank: 'home_rank',
-  away_rank: 'away_rank',
-  home_team_name: 'home_team_name',
-  away_team_name: 'away_team_name',
-  home_max_getting_scorer: 'home_max_getting_scorer',
-  away_max_getting_scorer: 'away_max_getting_scorer',
-  home_team_home_score: 'home_team_home_score',
-  home_team_home_lost: 'home_team_home_lost',
-  away_team_home_score: 'away_team_home_score',
-  away_team_home_lost: 'away_team_home_lost',
-  home_team_away_score: 'home_team_away_score',
-  home_team_away_lost: 'home_team_away_lost',
-  away_team_away_score: 'away_team_away_score',
-  away_team_away_lost: 'away_team_away_lost',
-  game_link: 'game_link',
-  data_time: 'data_time',
-  start_flg: 'start_flg',
   register_id: 'register_id',
   register_time: 'register_time',
   update_id: 'update_id',
@@ -1128,17 +1074,6 @@ exports.Prisma.Stat_encryptionScalarFieldEnum = {
   update_time: 'update_time'
 };
 
-exports.Prisma.Stat_size_finalize_masterScalarFieldEnum = {
-  id: 'id',
-  option_num: 'option_num',
-  options: 'options',
-  flg: 'flg',
-  register_id: 'register_id',
-  register_time: 'register_time',
-  update_id: 'update_id',
-  update_time: 'update_time'
-};
-
 exports.Prisma.Surface_overviewScalarFieldEnum = {
   id: 'id',
   country: 'country',
@@ -1316,36 +1251,6 @@ exports.Prisma.Team_match_final_statsScalarFieldEnum = {
   temperature: 'temperature',
   humid: 'humid',
   logic_flg: 'logic_flg',
-  register_id: 'register_id',
-  register_time: 'register_time',
-  update_id: 'update_id',
-  update_time: 'update_time'
-};
-
-exports.Prisma.Team_member_masterScalarFieldEnum = {
-  id: 'id',
-  country: 'country',
-  league: 'league',
-  team: 'team',
-  score: 'score',
-  loan_belong: 'loan_belong',
-  jersey: 'jersey',
-  member: 'member',
-  face_pic_path: 'face_pic_path',
-  belong_list: 'belong_list',
-  height: 'height',
-  weight: 'weight',
-  position: 'position',
-  birth: 'birth',
-  age: 'age',
-  market_value: 'market_value',
-  injury: 'injury',
-  versus_team_score_data: 'versus_team_score_data',
-  retire_flg: 'retire_flg',
-  deadline: 'deadline',
-  deadline_contract_date: 'deadline_contract_date',
-  latest_info_date: 'latest_info_date',
-  upd_stamp: 'upd_stamp',
   register_id: 'register_id',
   register_time: 'register_time',
   update_id: 'update_id',
@@ -1720,29 +1625,6 @@ exports.Prisma.Within_data_45minutes_home_scoredScalarFieldEnum = {
   update_time: 'update_time'
 };
 
-exports.Prisma.Country_league_visibilityScalarFieldEnum = {
-  id: 'id',
-  country: 'country',
-  league: 'league',
-  visible: 'visible',
-  priority: 'priority',
-  reason: 'reason',
-  effectiveFrom: 'effectiveFrom',
-  effectiveTo: 'effectiveTo',
-  optionId: 'optionId',
-  register_id: 'register_id',
-  register_time: 'register_time',
-  update_id: 'update_id',
-  update_time: 'update_time'
-};
-
-exports.Prisma.User_visibility_optionScalarFieldEnum = {
-  id: 'id',
-  userId: 'userId',
-  optionId: 'optionId',
-  createdAt: 'createdAt'
-};
-
 exports.Prisma.Past_data_historyScalarFieldEnum = {
   id: 'id',
   situation: 'situation',
@@ -1829,18 +1711,6 @@ exports.Prisma.Rank_historyScalarFieldEnum = {
   update_time: 'update_time'
 };
 
-exports.Prisma.Team_color_masterScalarFieldEnum = {
-  id: 'id',
-  country: 'country',
-  league: 'league',
-  team: 'team',
-  team_color_hex: 'team_color_hex',
-  register_id: 'register_id',
-  register_time: 'register_time',
-  update_id: 'update_id',
-  update_time: 'update_time'
-};
-
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1862,13 +1732,10 @@ exports.Prisma.ModelName = {
   calc_correlation: 'calc_correlation',
   calc_correlation_ranking: 'calc_correlation_ranking',
   condition_result_data: 'condition_result_data',
-  country_league_master: 'country_league_master',
-  country_league_season_master: 'country_league_season_master',
   country_league_summary: 'country_league_summary',
   data: 'data',
   each_team_score_based_feature_stats: 'each_team_score_based_feature_stats',
   each_team_score_based_feature_stats_history: 'each_team_score_based_feature_stats_history',
-  future_master: 'future_master',
   league_score_time_band_stats: 'league_score_time_band_stats',
   league_score_time_band_stats_split_score: 'league_score_time_band_stats_split_score',
   match_classification_result: 'match_classification_result',
@@ -1877,10 +1744,8 @@ exports.Prisma.ModelName = {
   score_based_feature_stats: 'score_based_feature_stats',
   score_based_feature_stats_history: 'score_based_feature_stats_history',
   stat_encryption: 'stat_encryption',
-  stat_size_finalize_master: 'stat_size_finalize_master',
   surface_overview: 'surface_overview',
   team_match_final_stats: 'team_match_final_stats',
-  team_member_master: 'team_member_master',
   team_monthly_score_summary: 'team_monthly_score_summary',
   team_time_segment_shooting_stat: 'team_time_segment_shooting_stat',
   within_data: 'within_data',
@@ -1893,11 +1758,8 @@ exports.Prisma.ModelName = {
   within_data_45minutes_away_scored: 'within_data_45minutes_away_scored',
   within_data_45minutes_home_all_league: 'within_data_45minutes_home_all_league',
   within_data_45minutes_home_scored: 'within_data_45minutes_home_scored',
-  country_league_visibility: 'country_league_visibility',
-  user_visibility_option: 'user_visibility_option',
   past_data_history: 'past_data_history',
-  rank_history: 'rank_history',
-  team_color_master: 'team_color_master'
+  rank_history: 'rank_history'
 };
 
 /**

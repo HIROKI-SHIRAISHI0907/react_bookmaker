@@ -139,6 +139,17 @@ exports.Prisma.FavoritesScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.Stat_size_finalize_masterScalarFieldEnum = {
+  id: 'id',
+  option_num: 'option_num',
+  options: 'options',
+  flg: 'flg',
+  register_id: 'register_id',
+  register_time: 'register_time',
+  update_id: 'update_id',
+  update_time: 'update_time'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -157,7 +168,8 @@ exports.Prisma.NullsOrder = {
 
 exports.Prisma.ModelName = {
   users: 'users',
-  favorites: 'favorites'
+  favorites: 'favorites',
+  stat_size_finalize_master: 'stat_size_finalize_master'
 };
 
 /**

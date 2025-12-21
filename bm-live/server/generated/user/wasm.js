@@ -111,6 +111,17 @@ exports.Prisma.FavoritesScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.Stat_size_finalize_masterScalarFieldEnum = {
+  id: 'id',
+  option_num: 'option_num',
+  options: 'options',
+  flg: 'flg',
+  register_id: 'register_id',
+  register_time: 'register_time',
+  update_id: 'update_id',
+  update_time: 'update_time'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -129,7 +140,8 @@ exports.Prisma.NullsOrder = {
 
 exports.Prisma.ModelName = {
   users: 'users',
-  favorites: 'favorites'
+  favorites: 'favorites',
+  stat_size_finalize_master: 'stat_size_finalize_master'
 };
 /**
  * Create the Client
@@ -178,13 +190,13 @@ const config = {
       }
     }
   },
-  "inlineSchema": "// server/prisma-user/schema.prisma\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/user\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"USER_DATABASE_URL\")\n}\n\n// 既存テーブルに合わせて PascalCase に\nmodel users {\n  userid       String   @id @default(uuid())\n  email        String   @unique\n  passwordHash String\n  name         String?\n  createdAt    DateTime @default(now())\n  updatedAt    DateTime @updatedAt\n\n  favorites favorites[]\n}\n\nmodel favorites {\n  id        BigInt   @id @default(autoincrement())\n  userId    String\n  country   String   @db.VarChar(100)\n  league    String   @db.VarChar(100)\n  team      String   @db.VarChar(100)\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  user users @relation(fields: [userId], references: [userid], onDelete: Cascade)\n\n  @@unique([userId, country, league], map: \"uk_user_country_league\")\n  @@index([userId], map: \"idx_fav_user\")\n  @@index([country, league, team], map: \"idx_fav_country_league\")\n}\n",
-  "inlineSchemaHash": "5e26437243bbcc8d9f707c85fa8949a160044f5c0a7c044f3a97eb66dd98ddfd",
+  "inlineSchema": "// server/prisma-user/schema.prisma\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/user\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"USER_DATABASE_URL\")\n}\n\n// 既存テーブルに合わせて PascalCase に\nmodel users {\n  userid       String   @id @default(uuid())\n  email        String   @unique\n  passwordHash String\n  name         String?\n  createdAt    DateTime @default(now())\n  updatedAt    DateTime @updatedAt\n\n  favorites favorites[]\n}\n\nmodel favorites {\n  id        BigInt   @id @default(autoincrement())\n  userId    String\n  country   String   @db.VarChar(100)\n  league    String   @db.VarChar(100)\n  team      String   @db.VarChar(100)\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  user users @relation(fields: [userId], references: [userid], onDelete: Cascade)\n\n  @@unique([userId, country, league], map: \"uk_user_country_league\")\n  @@index([userId], map: \"idx_fav_user\")\n  @@index([country, league, team], map: \"idx_fav_country_league\")\n}\n\nmodel stat_size_finalize_master {\n  id            Int      @id @default(autoincrement())\n  option_num    String   @default(\"0\") @db.VarChar(1)\n  options       String   @db.Text\n  flg           String   @default(\"0\") @db.VarChar(1)\n  register_id   String   @db.VarChar(100)\n  register_time DateTime @db.Timestamptz(0)\n  update_id     String   @db.VarChar(100)\n  update_time   DateTime @db.Timestamptz(0)\n}\n",
+  "inlineSchemaHash": "abadb0a8a91bc30bf2c682cf06ded88f4b37d43afecb5928ffc46398a1ab3076",
   "copyEngine": true
 }
 config.dirname = '/'
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"users\":{\"fields\":[{\"name\":\"userid\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"passwordHash\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"favorites\",\"kind\":\"object\",\"type\":\"favorites\",\"relationName\":\"favoritesTousers\"}],\"dbName\":null},\"favorites\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"country\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"league\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"team\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"users\",\"relationName\":\"favoritesTousers\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"users\":{\"fields\":[{\"name\":\"userid\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"passwordHash\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"favorites\",\"kind\":\"object\",\"type\":\"favorites\",\"relationName\":\"favoritesTousers\"}],\"dbName\":null},\"favorites\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"country\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"league\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"team\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"users\",\"relationName\":\"favoritesTousers\"}],\"dbName\":null},\"stat_size_finalize_master\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"option_num\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"options\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"flg\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"register_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"register_time\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"update_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"update_time\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.engineWasm = {
   getRuntime: async () => require('./query_engine_bg.js'),
