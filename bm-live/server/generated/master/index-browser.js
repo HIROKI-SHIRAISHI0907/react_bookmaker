@@ -166,6 +166,7 @@ exports.Prisma.Country_league_season_masterScalarFieldEnum = {
   id: 'id',
   country: 'country',
   league: 'league',
+  season_year: 'season_year',
   start_season_date: 'start_season_date',
   end_season_date: 'end_season_date',
   round: 'round',

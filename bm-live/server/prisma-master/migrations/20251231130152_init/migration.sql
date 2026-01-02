@@ -28,7 +28,7 @@ CREATE TABLE "public"."team_member_master" (
     "update_id" VARCHAR(100) NOT NULL,
     "update_time" TIMESTAMPTZ(0) NOT NULL,
 
-    CONSTRAINT "team_member_master_pkey" PRIMARY KEY ("id","team","jersey","member","face_pic_path")
+    CONSTRAINT "team_member_master_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -51,6 +51,7 @@ CREATE TABLE "public"."country_league_season_master" (
     "id" SERIAL NOT NULL,
     "country" TEXT NOT NULL,
     "league" TEXT NOT NULL,
+    "season_year" TEXT NOT NULL,
     "start_season_date" TIMESTAMPTZ(0),
     "end_season_date" TIMESTAMPTZ(0),
     "round" VARCHAR(2),
@@ -109,3 +110,6 @@ CREATE TABLE "public"."future_master" (
 
     CONSTRAINT "future_master_pkey" PRIMARY KEY ("seq")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "team_member_master_team_jersey_member_face_pic_path_key" ON "public"."team_member_master"("team", "jersey", "member", "face_pic_path");

@@ -3644,6 +3644,7 @@ export namespace Prisma {
     id: number | null
     country: string | null
     league: string | null
+    season_year: string | null
     start_season_date: Date | null
     end_season_date: Date | null
     round: string | null
@@ -3660,6 +3661,7 @@ export namespace Prisma {
     id: number | null
     country: string | null
     league: string | null
+    season_year: string | null
     start_season_date: Date | null
     end_season_date: Date | null
     round: string | null
@@ -3676,6 +3678,7 @@ export namespace Prisma {
     id: number
     country: number
     league: number
+    season_year: number
     start_season_date: number
     end_season_date: number
     round: number
@@ -3702,6 +3705,7 @@ export namespace Prisma {
     id?: true
     country?: true
     league?: true
+    season_year?: true
     start_season_date?: true
     end_season_date?: true
     round?: true
@@ -3718,6 +3722,7 @@ export namespace Prisma {
     id?: true
     country?: true
     league?: true
+    season_year?: true
     start_season_date?: true
     end_season_date?: true
     round?: true
@@ -3734,6 +3739,7 @@ export namespace Prisma {
     id?: true
     country?: true
     league?: true
+    season_year?: true
     start_season_date?: true
     end_season_date?: true
     round?: true
@@ -3837,6 +3843,7 @@ export namespace Prisma {
     id: number
     country: string
     league: string
+    season_year: string
     start_season_date: Date | null
     end_season_date: Date | null
     round: string | null
@@ -3872,6 +3879,7 @@ export namespace Prisma {
     id?: boolean
     country?: boolean
     league?: boolean
+    season_year?: boolean
     start_season_date?: boolean
     end_season_date?: boolean
     round?: boolean
@@ -3888,6 +3896,7 @@ export namespace Prisma {
     id?: boolean
     country?: boolean
     league?: boolean
+    season_year?: boolean
     start_season_date?: boolean
     end_season_date?: boolean
     round?: boolean
@@ -3904,6 +3913,7 @@ export namespace Prisma {
     id?: boolean
     country?: boolean
     league?: boolean
+    season_year?: boolean
     start_season_date?: boolean
     end_season_date?: boolean
     round?: boolean
@@ -3920,6 +3930,7 @@ export namespace Prisma {
     id?: boolean
     country?: boolean
     league?: boolean
+    season_year?: boolean
     start_season_date?: boolean
     end_season_date?: boolean
     round?: boolean
@@ -3932,7 +3943,7 @@ export namespace Prisma {
     update_time?: boolean
   }
 
-  export type country_league_season_masterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "country" | "league" | "start_season_date" | "end_season_date" | "round" | "path" | "icon" | "valid_flg" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["country_league_season_master"]>
+  export type country_league_season_masterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "country" | "league" | "season_year" | "start_season_date" | "end_season_date" | "round" | "path" | "icon" | "valid_flg" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["country_league_season_master"]>
 
   export type $country_league_season_masterPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "country_league_season_master"
@@ -3941,6 +3952,7 @@ export namespace Prisma {
       id: number
       country: string
       league: string
+      season_year: string
       start_season_date: Date | null
       end_season_date: Date | null
       round: string | null
@@ -4377,6 +4389,7 @@ export namespace Prisma {
     readonly id: FieldRef<"country_league_season_master", 'Int'>
     readonly country: FieldRef<"country_league_season_master", 'String'>
     readonly league: FieldRef<"country_league_season_master", 'String'>
+    readonly season_year: FieldRef<"country_league_season_master", 'String'>
     readonly start_season_date: FieldRef<"country_league_season_master", 'DateTime'>
     readonly end_season_date: FieldRef<"country_league_season_master", 'DateTime'>
     readonly round: FieldRef<"country_league_season_master", 'String'>
@@ -7176,6 +7189,7 @@ export namespace Prisma {
     id: 'id',
     country: 'country',
     league: 'league',
+    season_year: 'season_year',
     start_season_date: 'start_season_date',
     end_season_date: 'end_season_date',
     round: 'round',
@@ -7402,11 +7416,11 @@ export namespace Prisma {
   }
 
   export type team_member_masterWhereUniqueInput = Prisma.AtLeast<{
-    id_team_jersey_member_face_pic_path?: team_member_masterIdTeamJerseyMemberFace_pic_pathCompoundUniqueInput
+    id?: number
+    team_jersey_member_face_pic_path?: team_member_masterTeamJerseyMemberFace_pic_pathCompoundUniqueInput
     AND?: team_member_masterWhereInput | team_member_masterWhereInput[]
     OR?: team_member_masterWhereInput[]
     NOT?: team_member_masterWhereInput | team_member_masterWhereInput[]
-    id?: IntFilter<"team_member_master"> | number
     country?: StringNullableFilter<"team_member_master"> | string | null
     league?: StringNullableFilter<"team_member_master"> | string | null
     team?: StringFilter<"team_member_master"> | string
@@ -7433,7 +7447,7 @@ export namespace Prisma {
     register_time?: DateTimeFilter<"team_member_master"> | Date | string
     update_id?: StringFilter<"team_member_master"> | string
     update_time?: DateTimeFilter<"team_member_master"> | Date | string
-  }, "id_team_jersey_member_face_pic_path">
+  }, "id" | "team_jersey_member_face_pic_path">
 
   export type team_member_masterOrderByWithAggregationInput = {
     id?: SortOrder
@@ -7584,6 +7598,7 @@ export namespace Prisma {
     id?: IntFilter<"country_league_season_master"> | number
     country?: StringFilter<"country_league_season_master"> | string
     league?: StringFilter<"country_league_season_master"> | string
+    season_year?: StringFilter<"country_league_season_master"> | string
     start_season_date?: DateTimeNullableFilter<"country_league_season_master"> | Date | string | null
     end_season_date?: DateTimeNullableFilter<"country_league_season_master"> | Date | string | null
     round?: StringNullableFilter<"country_league_season_master"> | string | null
@@ -7600,6 +7615,7 @@ export namespace Prisma {
     id?: SortOrder
     country?: SortOrder
     league?: SortOrder
+    season_year?: SortOrder
     start_season_date?: SortOrderInput | SortOrder
     end_season_date?: SortOrderInput | SortOrder
     round?: SortOrderInput | SortOrder
@@ -7619,6 +7635,7 @@ export namespace Prisma {
     NOT?: country_league_season_masterWhereInput | country_league_season_masterWhereInput[]
     country?: StringFilter<"country_league_season_master"> | string
     league?: StringFilter<"country_league_season_master"> | string
+    season_year?: StringFilter<"country_league_season_master"> | string
     start_season_date?: DateTimeNullableFilter<"country_league_season_master"> | Date | string | null
     end_season_date?: DateTimeNullableFilter<"country_league_season_master"> | Date | string | null
     round?: StringNullableFilter<"country_league_season_master"> | string | null
@@ -7635,6 +7652,7 @@ export namespace Prisma {
     id?: SortOrder
     country?: SortOrder
     league?: SortOrder
+    season_year?: SortOrder
     start_season_date?: SortOrderInput | SortOrder
     end_season_date?: SortOrderInput | SortOrder
     round?: SortOrderInput | SortOrder
@@ -7659,6 +7677,7 @@ export namespace Prisma {
     id?: IntWithAggregatesFilter<"country_league_season_master"> | number
     country?: StringWithAggregatesFilter<"country_league_season_master"> | string
     league?: StringWithAggregatesFilter<"country_league_season_master"> | string
+    season_year?: StringWithAggregatesFilter<"country_league_season_master"> | string
     start_season_date?: DateTimeNullableWithAggregatesFilter<"country_league_season_master"> | Date | string | null
     end_season_date?: DateTimeNullableWithAggregatesFilter<"country_league_season_master"> | Date | string | null
     round?: StringNullableWithAggregatesFilter<"country_league_season_master"> | string | null
@@ -7895,7 +7914,6 @@ export namespace Prisma {
   }
 
   export type team_member_masterCreateInput = {
-    id?: number
     country?: string | null
     league?: string | null
     team: string
@@ -7955,7 +7973,6 @@ export namespace Prisma {
   }
 
   export type team_member_masterUpdateInput = {
-    id?: IntFieldUpdateOperationsInput | number
     country?: NullableStringFieldUpdateOperationsInput | string | null
     league?: NullableStringFieldUpdateOperationsInput | string | null
     team?: StringFieldUpdateOperationsInput | string
@@ -8045,7 +8062,6 @@ export namespace Prisma {
   }
 
   export type team_member_masterUpdateManyMutationInput = {
-    id?: IntFieldUpdateOperationsInput | number
     country?: NullableStringFieldUpdateOperationsInput | string | null
     league?: NullableStringFieldUpdateOperationsInput | string | null
     team?: StringFieldUpdateOperationsInput | string
@@ -8188,6 +8204,7 @@ export namespace Prisma {
   export type country_league_season_masterCreateInput = {
     country: string
     league: string
+    season_year: string
     start_season_date?: Date | string | null
     end_season_date?: Date | string | null
     round?: string | null
@@ -8204,6 +8221,7 @@ export namespace Prisma {
     id?: number
     country: string
     league: string
+    season_year: string
     start_season_date?: Date | string | null
     end_season_date?: Date | string | null
     round?: string | null
@@ -8219,6 +8237,7 @@ export namespace Prisma {
   export type country_league_season_masterUpdateInput = {
     country?: StringFieldUpdateOperationsInput | string
     league?: StringFieldUpdateOperationsInput | string
+    season_year?: StringFieldUpdateOperationsInput | string
     start_season_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     end_season_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     round?: NullableStringFieldUpdateOperationsInput | string | null
@@ -8235,6 +8254,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     country?: StringFieldUpdateOperationsInput | string
     league?: StringFieldUpdateOperationsInput | string
+    season_year?: StringFieldUpdateOperationsInput | string
     start_season_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     end_season_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     round?: NullableStringFieldUpdateOperationsInput | string | null
@@ -8251,6 +8271,7 @@ export namespace Prisma {
     id?: number
     country: string
     league: string
+    season_year: string
     start_season_date?: Date | string | null
     end_season_date?: Date | string | null
     round?: string | null
@@ -8266,6 +8287,7 @@ export namespace Prisma {
   export type country_league_season_masterUpdateManyMutationInput = {
     country?: StringFieldUpdateOperationsInput | string
     league?: StringFieldUpdateOperationsInput | string
+    season_year?: StringFieldUpdateOperationsInput | string
     start_season_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     end_season_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     round?: NullableStringFieldUpdateOperationsInput | string | null
@@ -8282,6 +8304,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     country?: StringFieldUpdateOperationsInput | string
     league?: StringFieldUpdateOperationsInput | string
+    season_year?: StringFieldUpdateOperationsInput | string
     start_season_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     end_season_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     round?: NullableStringFieldUpdateOperationsInput | string | null
@@ -8621,8 +8644,7 @@ export namespace Prisma {
     nulls?: NullsOrder
   }
 
-  export type team_member_masterIdTeamJerseyMemberFace_pic_pathCompoundUniqueInput = {
-    id: number
+  export type team_member_masterTeamJerseyMemberFace_pic_pathCompoundUniqueInput = {
     team: string
     jersey: string
     member: string
@@ -8852,6 +8874,7 @@ export namespace Prisma {
     id?: SortOrder
     country?: SortOrder
     league?: SortOrder
+    season_year?: SortOrder
     start_season_date?: SortOrder
     end_season_date?: SortOrder
     round?: SortOrder
@@ -8872,6 +8895,7 @@ export namespace Prisma {
     id?: SortOrder
     country?: SortOrder
     league?: SortOrder
+    season_year?: SortOrder
     start_season_date?: SortOrder
     end_season_date?: SortOrder
     round?: SortOrder
@@ -8888,6 +8912,7 @@ export namespace Prisma {
     id?: SortOrder
     country?: SortOrder
     league?: SortOrder
+    season_year?: SortOrder
     start_season_date?: SortOrder
     end_season_date?: SortOrder
     round?: SortOrder
@@ -9078,14 +9103,6 @@ export namespace Prisma {
     _max?: NestedBigIntFilter<$PrismaModel>
   }
 
-  export type IntFieldUpdateOperationsInput = {
-    set?: number
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-  }
-
   export type NullableStringFieldUpdateOperationsInput = {
     set?: string | null
   }
@@ -9096,6 +9113,14 @@ export namespace Prisma {
 
   export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string
+  }
+
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type NullableDateTimeFieldUpdateOperationsInput = {

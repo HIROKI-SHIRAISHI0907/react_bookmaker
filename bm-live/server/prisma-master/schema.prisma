@@ -11,7 +11,7 @@ datasource db {
 }
 
 model team_member_master {
-  id                     Int      @default(autoincrement())
+  id                     Int      @id @default(autoincrement())
   country                String?  @db.Text
   league                 String?  @db.Text
   team                   String   @db.Text
@@ -39,7 +39,7 @@ model team_member_master {
   update_id              String   @db.VarChar(100)
   update_time            DateTime @db.Timestamptz(0)
 
-  @@id([id, team, jersey, member, face_pic_path])
+  @@unique([team, jersey, member, face_pic_path])
 }
 
 model country_league_master {
@@ -58,6 +58,7 @@ model country_league_season_master {
   id                Int       @id @default(autoincrement())
   country           String    @db.Text
   league            String    @db.Text
+  season_year       String    @db.Text
   start_season_date DateTime? @db.Timestamptz(0)
   end_season_date   DateTime? @db.Timestamptz(0)
   round             String?   @db.VarChar(2)

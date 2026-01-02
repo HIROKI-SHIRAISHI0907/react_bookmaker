@@ -58,11 +58,13 @@ model country_league_season_master {
   id                Int       @id @default(autoincrement())
   country           String    @db.Text
   league            String    @db.Text
+  season_year       String    @db.Text
   start_season_date DateTime? @db.Timestamptz(0)
   end_season_date   DateTime? @db.Timestamptz(0)
   round             String?   @db.VarChar(2)
   path              String?   @db.Text
-  disp_valid_flg    String    @default("0") @db.VarChar(1)
+  icon              String?   @db.Text
+  valid_flg         String    @default("0") @db.VarChar(1)
   register_id       String?   @db.VarChar(100)
   register_time     DateTime? @db.Timestamptz(0)
   update_id         String?   @db.VarChar(100)
