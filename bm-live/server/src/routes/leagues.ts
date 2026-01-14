@@ -1,6 +1,6 @@
 // server/src/routes/leagues.ts
 import { Router } from "express";
-import { prismaStats } from "../db";
+import { prismaMaster } from "../db";
 
 const router = Router();
 export default router;
@@ -19,7 +19,7 @@ router.get("/__ping", (_req, res) => res.json({ ok: true }));
 // フラット一覧（必要なら残す）
 router.get("/", async (_req, res) => {
   try {
-    const rows = await prismaStats.$queryRaw<{ country: string; league: string; team_count: bigint }[]>`
+    const rows = await prismaMaster.$queryRaw<{ country: string; league: string; team_count: bigint }[]>`
       SELECT country, league, COUNT(*) AS team_count
       FROM country_league_master
       GROUP BY country, league
@@ -41,7 +41,7 @@ router.get("/", async (_req, res) => {
 // 国ごと→リーグ配列
 router.get("/grouped", async (_req, res) => {
   try {
-    const rows = await prismaStats.$queryRaw<{ country: string; league: string; team_count: bigint }[]>`
+    const rows = await prismaMaster.$queryRaw<{ country: string; league: string; team_count: bigint }[]>`
       SELECT country, league, COUNT(*) AS team_count
       FROM country_league_master
       GROUP BY country, league
@@ -79,7 +79,7 @@ router.get("/:country/:league", async (req, res) => {
       leagueParam,
     });
 
-    const rows = await prismaStats.$queryRaw<{ country: string; league: string; team: string; link: string }[]>`
+    const rows = await prismaMaster.$queryRaw<{ country: string; league: string; team: string; link: string }[]>`
       SELECT country, league, team, link
       FROM country_league_master
       WHERE country = ${countryParam} AND league = ${leagueParam}
@@ -123,7 +123,7 @@ router.get("/:country/:league/:team", async (req, res) => {
     const leagueParam = fromPath(req.params.league);
     const teamEnglish = req.params.team;
 
-    const rows = await prismaStats.$queryRaw<{ id: number; country: string; league: string; team: string; link: string }[]>`
+    const rows = await prismaMaster.$queryRaw<{ id: number; country: string; league: string; team: string; link: string }[]>`
       SELECT id, country, league, team, link
       FROM country_league_master
       WHERE country = ${countryParam}

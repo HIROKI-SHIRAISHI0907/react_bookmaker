@@ -669,8 +669,8 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 6.16.2
-   * Query Engine version: 1c57fdcd7e44b29b9313256c76699e91c3ac3c43
+   * Prisma Client JS version: 6.19.1
+   * Query Engine version: c2990dca591cba766e3b7ef5d9e8a84796e47ab7
    */
   export type PrismaVersion = {
     client: string
@@ -683,6 +683,7 @@ export namespace Prisma {
    */
 
 
+  export import Bytes = runtime.Bytes
   export import JsonObject = runtime.JsonObject
   export import JsonArray = runtime.JsonArray
   export import JsonValue = runtime.JsonValue
@@ -8933,7 +8934,7 @@ export namespace Prisma {
     alter_target_mail_fail: string | null
     no_result_count: string | null
     err_data: string | null
-    condition_data: Uint8Array | null
+    condition_data: Bytes | null
     hash: string | null
     register_id: string | null
     register_time: Date | null
@@ -8954,7 +8955,7 @@ export namespace Prisma {
     alter_target_mail_fail: string | null
     no_result_count: string | null
     err_data: string | null
-    condition_data: Uint8Array | null
+    condition_data: Bytes | null
     hash: string | null
     register_id: string | null
     register_time: Date | null
@@ -9156,7 +9157,7 @@ export namespace Prisma {
     alter_target_mail_fail: string | null
     no_result_count: string | null
     err_data: string | null
-    condition_data: Uint8Array
+    condition_data: Bytes
     hash: string | null
     register_id: string
     register_time: Date
@@ -9285,7 +9286,7 @@ export namespace Prisma {
       alter_target_mail_fail: string | null
       no_result_count: string | null
       err_data: string | null
-      condition_data: Uint8Array
+      condition_data: Prisma.Bytes
       hash: string | null
       register_id: string
       register_time: Date
@@ -56795,7 +56796,7 @@ export namespace Prisma {
     alter_target_mail_fail?: StringNullableFilter<"condition_result_data"> | string | null
     no_result_count?: StringNullableFilter<"condition_result_data"> | string | null
     err_data?: StringNullableFilter<"condition_result_data"> | string | null
-    condition_data?: BytesFilter<"condition_result_data"> | Uint8Array
+    condition_data?: BytesFilter<"condition_result_data"> | Bytes
     hash?: StringNullableFilter<"condition_result_data"> | string | null
     register_id?: StringFilter<"condition_result_data"> | string
     register_time?: DateTimeFilter<"condition_result_data"> | Date | string
@@ -56841,7 +56842,7 @@ export namespace Prisma {
     alter_target_mail_fail?: StringNullableFilter<"condition_result_data"> | string | null
     no_result_count?: StringNullableFilter<"condition_result_data"> | string | null
     err_data?: StringNullableFilter<"condition_result_data"> | string | null
-    condition_data?: BytesFilter<"condition_result_data"> | Uint8Array
+    condition_data?: BytesFilter<"condition_result_data"> | Bytes
     register_id?: StringFilter<"condition_result_data"> | string
     register_time?: DateTimeFilter<"condition_result_data"> | Date | string
     update_id?: StringFilter<"condition_result_data"> | string
@@ -56890,7 +56891,7 @@ export namespace Prisma {
     alter_target_mail_fail?: StringNullableWithAggregatesFilter<"condition_result_data"> | string | null
     no_result_count?: StringNullableWithAggregatesFilter<"condition_result_data"> | string | null
     err_data?: StringNullableWithAggregatesFilter<"condition_result_data"> | string | null
-    condition_data?: BytesWithAggregatesFilter<"condition_result_data"> | Uint8Array
+    condition_data?: BytesWithAggregatesFilter<"condition_result_data"> | Bytes
     hash?: StringNullableWithAggregatesFilter<"condition_result_data"> | string | null
     register_id?: StringWithAggregatesFilter<"condition_result_data"> | string
     register_time?: DateTimeWithAggregatesFilter<"condition_result_data"> | Date | string
@@ -65524,7 +65525,7 @@ export namespace Prisma {
     alter_target_mail_fail?: string | null
     no_result_count?: string | null
     err_data?: string | null
-    condition_data: Uint8Array
+    condition_data: Bytes
     hash?: string | null
     register_id: string
     register_time: Date | string
@@ -65545,7 +65546,7 @@ export namespace Prisma {
     alter_target_mail_fail?: string | null
     no_result_count?: string | null
     err_data?: string | null
-    condition_data: Uint8Array
+    condition_data: Bytes
     hash?: string | null
     register_id: string
     register_time: Date | string
@@ -65565,7 +65566,7 @@ export namespace Prisma {
     alter_target_mail_fail?: NullableStringFieldUpdateOperationsInput | string | null
     no_result_count?: NullableStringFieldUpdateOperationsInput | string | null
     err_data?: NullableStringFieldUpdateOperationsInput | string | null
-    condition_data?: BytesFieldUpdateOperationsInput | Uint8Array
+    condition_data?: BytesFieldUpdateOperationsInput | Bytes
     hash?: NullableStringFieldUpdateOperationsInput | string | null
     register_id?: StringFieldUpdateOperationsInput | string
     register_time?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -65586,7 +65587,7 @@ export namespace Prisma {
     alter_target_mail_fail?: NullableStringFieldUpdateOperationsInput | string | null
     no_result_count?: NullableStringFieldUpdateOperationsInput | string | null
     err_data?: NullableStringFieldUpdateOperationsInput | string | null
-    condition_data?: BytesFieldUpdateOperationsInput | Uint8Array
+    condition_data?: BytesFieldUpdateOperationsInput | Bytes
     hash?: NullableStringFieldUpdateOperationsInput | string | null
     register_id?: StringFieldUpdateOperationsInput | string
     register_time?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -65607,7 +65608,7 @@ export namespace Prisma {
     alter_target_mail_fail?: string | null
     no_result_count?: string | null
     err_data?: string | null
-    condition_data: Uint8Array
+    condition_data: Bytes
     hash?: string | null
     register_id: string
     register_time: Date | string
@@ -65627,7 +65628,7 @@ export namespace Prisma {
     alter_target_mail_fail?: NullableStringFieldUpdateOperationsInput | string | null
     no_result_count?: NullableStringFieldUpdateOperationsInput | string | null
     err_data?: NullableStringFieldUpdateOperationsInput | string | null
-    condition_data?: BytesFieldUpdateOperationsInput | Uint8Array
+    condition_data?: BytesFieldUpdateOperationsInput | Bytes
     hash?: NullableStringFieldUpdateOperationsInput | string | null
     register_id?: StringFieldUpdateOperationsInput | string
     register_time?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -65648,7 +65649,7 @@ export namespace Prisma {
     alter_target_mail_fail?: NullableStringFieldUpdateOperationsInput | string | null
     no_result_count?: NullableStringFieldUpdateOperationsInput | string | null
     err_data?: NullableStringFieldUpdateOperationsInput | string | null
-    condition_data?: BytesFieldUpdateOperationsInput | Uint8Array
+    condition_data?: BytesFieldUpdateOperationsInput | Bytes
     hash?: NullableStringFieldUpdateOperationsInput | string | null
     register_id?: StringFieldUpdateOperationsInput | string
     register_time?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -75928,10 +75929,10 @@ export namespace Prisma {
   }
 
   export type BytesFilter<$PrismaModel = never> = {
-    equals?: Uint8Array | BytesFieldRefInput<$PrismaModel>
-    in?: Uint8Array[] | ListBytesFieldRefInput<$PrismaModel>
-    notIn?: Uint8Array[] | ListBytesFieldRefInput<$PrismaModel>
-    not?: NestedBytesFilter<$PrismaModel> | Uint8Array
+    equals?: Bytes | BytesFieldRefInput<$PrismaModel>
+    in?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
+    notIn?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
+    not?: NestedBytesFilter<$PrismaModel> | Bytes
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -76032,10 +76033,10 @@ export namespace Prisma {
   }
 
   export type BytesWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Uint8Array | BytesFieldRefInput<$PrismaModel>
-    in?: Uint8Array[] | ListBytesFieldRefInput<$PrismaModel>
-    notIn?: Uint8Array[] | ListBytesFieldRefInput<$PrismaModel>
-    not?: NestedBytesWithAggregatesFilter<$PrismaModel> | Uint8Array
+    equals?: Bytes | BytesFieldRefInput<$PrismaModel>
+    in?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
+    notIn?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
+    not?: NestedBytesWithAggregatesFilter<$PrismaModel> | Bytes
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedBytesFilter<$PrismaModel>
     _max?: NestedBytesFilter<$PrismaModel>
@@ -80508,7 +80509,7 @@ export namespace Prisma {
   }
 
   export type BytesFieldUpdateOperationsInput = {
-    set?: Uint8Array
+    set?: Bytes
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -80633,10 +80634,10 @@ export namespace Prisma {
   }
 
   export type NestedBytesFilter<$PrismaModel = never> = {
-    equals?: Uint8Array | BytesFieldRefInput<$PrismaModel>
-    in?: Uint8Array[] | ListBytesFieldRefInput<$PrismaModel>
-    notIn?: Uint8Array[] | ListBytesFieldRefInput<$PrismaModel>
-    not?: NestedBytesFilter<$PrismaModel> | Uint8Array
+    equals?: Bytes | BytesFieldRefInput<$PrismaModel>
+    in?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
+    notIn?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
+    not?: NestedBytesFilter<$PrismaModel> | Bytes
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -80665,10 +80666,10 @@ export namespace Prisma {
   }
 
   export type NestedBytesWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Uint8Array | BytesFieldRefInput<$PrismaModel>
-    in?: Uint8Array[] | ListBytesFieldRefInput<$PrismaModel>
-    notIn?: Uint8Array[] | ListBytesFieldRefInput<$PrismaModel>
-    not?: NestedBytesWithAggregatesFilter<$PrismaModel> | Uint8Array
+    equals?: Bytes | BytesFieldRefInput<$PrismaModel>
+    in?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
+    notIn?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
+    not?: NestedBytesWithAggregatesFilter<$PrismaModel> | Bytes
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedBytesFilter<$PrismaModel>
     _max?: NestedBytesFilter<$PrismaModel>

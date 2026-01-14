@@ -9,6 +9,8 @@ process.env.PGOPTIONS = [
 // 生成先を server/generated/* にしたので相対パスで import
 import { PrismaClient as UserClient } from "../generated/user";
 import { PrismaClient as StatsClient } from "../generated/stats";
+import { PrismaClient as MasterClient } from "../generated/master";
 
 export const prismaUser = new UserClient(); // 書き込みもここ
 export const prismaStats = new StatsClient(); // 読み取り専用のつもりで使う
+export const prismaMaster = new MasterClient();

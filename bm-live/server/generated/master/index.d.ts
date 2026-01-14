@@ -38,6 +38,11 @@ export type team_color_master = $Result.DefaultSelection<Prisma.$team_color_mast
  * 
  */
 export type future_master = $Result.DefaultSelection<Prisma.$future_masterPayload>
+/**
+ * Model batch_job_exec
+ * 
+ */
+export type batch_job_exec = $Result.DefaultSelection<Prisma.$batch_job_execPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -206,6 +211,16 @@ export class PrismaClient<
     * ```
     */
   get future_master(): Prisma.future_masterDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.batch_job_exec`: Exposes CRUD operations for the **batch_job_exec** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Batch_job_execs
+    * const batch_job_execs = await prisma.batch_job_exec.findMany()
+    * ```
+    */
+  get batch_job_exec(): Prisma.batch_job_execDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -264,8 +279,8 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 6.16.2
-   * Query Engine version: 1c57fdcd7e44b29b9313256c76699e91c3ac3c43
+   * Prisma Client JS version: 6.19.1
+   * Query Engine version: c2990dca591cba766e3b7ef5d9e8a84796e47ab7
    */
   export type PrismaVersion = {
     client: string
@@ -278,6 +293,7 @@ export namespace Prisma {
    */
 
 
+  export import Bytes = runtime.Bytes
   export import JsonObject = runtime.JsonObject
   export import JsonArray = runtime.JsonArray
   export import JsonValue = runtime.JsonValue
@@ -650,7 +666,8 @@ export namespace Prisma {
     country_league_master: 'country_league_master',
     country_league_season_master: 'country_league_season_master',
     team_color_master: 'team_color_master',
-    future_master: 'future_master'
+    future_master: 'future_master',
+    batch_job_exec: 'batch_job_exec'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -669,7 +686,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "team_member_master" | "country_league_master" | "country_league_season_master" | "team_color_master" | "future_master"
+      modelProps: "team_member_master" | "country_league_master" | "country_league_season_master" | "team_color_master" | "future_master" | "batch_job_exec"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1043,6 +1060,80 @@ export namespace Prisma {
           }
         }
       }
+      batch_job_exec: {
+        payload: Prisma.$batch_job_execPayload<ExtArgs>
+        fields: Prisma.batch_job_execFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.batch_job_execFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$batch_job_execPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.batch_job_execFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$batch_job_execPayload>
+          }
+          findFirst: {
+            args: Prisma.batch_job_execFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$batch_job_execPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.batch_job_execFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$batch_job_execPayload>
+          }
+          findMany: {
+            args: Prisma.batch_job_execFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$batch_job_execPayload>[]
+          }
+          create: {
+            args: Prisma.batch_job_execCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$batch_job_execPayload>
+          }
+          createMany: {
+            args: Prisma.batch_job_execCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.batch_job_execCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$batch_job_execPayload>[]
+          }
+          delete: {
+            args: Prisma.batch_job_execDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$batch_job_execPayload>
+          }
+          update: {
+            args: Prisma.batch_job_execUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$batch_job_execPayload>
+          }
+          deleteMany: {
+            args: Prisma.batch_job_execDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.batch_job_execUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.batch_job_execUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$batch_job_execPayload>[]
+          }
+          upsert: {
+            args: Prisma.batch_job_execUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$batch_job_execPayload>
+          }
+          aggregate: {
+            args: Prisma.Batch_job_execAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateBatch_job_exec>
+          }
+          groupBy: {
+            args: Prisma.batch_job_execGroupByArgs<ExtArgs>
+            result: $Utils.Optional<Batch_job_execGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.batch_job_execCountArgs<ExtArgs>
+            result: $Utils.Optional<Batch_job_execCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1144,6 +1235,7 @@ export namespace Prisma {
     country_league_season_master?: country_league_season_masterOmit
     team_color_master?: team_color_masterOmit
     future_master?: future_masterOmit
+    batch_job_exec?: batch_job_execOmit
   }
 
   /* Types for Logging */
@@ -1268,6 +1360,7 @@ export namespace Prisma {
     deadline_contract_date: string | null
     latest_info_date: string | null
     upd_stamp: string | null
+    del_flg: string | null
     register_id: string | null
     register_time: Date | null
     update_id: string | null
@@ -1298,6 +1391,7 @@ export namespace Prisma {
     deadline_contract_date: string | null
     latest_info_date: string | null
     upd_stamp: string | null
+    del_flg: string | null
     register_id: string | null
     register_time: Date | null
     update_id: string | null
@@ -1328,6 +1422,7 @@ export namespace Prisma {
     deadline_contract_date: number
     latest_info_date: number
     upd_stamp: number
+    del_flg: number
     register_id: number
     register_time: number
     update_id: number
@@ -1368,6 +1463,7 @@ export namespace Prisma {
     deadline_contract_date?: true
     latest_info_date?: true
     upd_stamp?: true
+    del_flg?: true
     register_id?: true
     register_time?: true
     update_id?: true
@@ -1398,6 +1494,7 @@ export namespace Prisma {
     deadline_contract_date?: true
     latest_info_date?: true
     upd_stamp?: true
+    del_flg?: true
     register_id?: true
     register_time?: true
     update_id?: true
@@ -1428,6 +1525,7 @@ export namespace Prisma {
     deadline_contract_date?: true
     latest_info_date?: true
     upd_stamp?: true
+    del_flg?: true
     register_id?: true
     register_time?: true
     update_id?: true
@@ -1545,6 +1643,7 @@ export namespace Prisma {
     deadline_contract_date: string | null
     latest_info_date: string | null
     upd_stamp: string | null
+    del_flg: string
     register_id: string
     register_time: Date
     update_id: string
@@ -1594,6 +1693,7 @@ export namespace Prisma {
     deadline_contract_date?: boolean
     latest_info_date?: boolean
     upd_stamp?: boolean
+    del_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
@@ -1624,6 +1724,7 @@ export namespace Prisma {
     deadline_contract_date?: boolean
     latest_info_date?: boolean
     upd_stamp?: boolean
+    del_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
@@ -1654,6 +1755,7 @@ export namespace Prisma {
     deadline_contract_date?: boolean
     latest_info_date?: boolean
     upd_stamp?: boolean
+    del_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
@@ -1684,13 +1786,14 @@ export namespace Prisma {
     deadline_contract_date?: boolean
     latest_info_date?: boolean
     upd_stamp?: boolean
+    del_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
     update_time?: boolean
   }
 
-  export type team_member_masterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "country" | "league" | "team" | "score" | "loan_belong" | "jersey" | "member" | "face_pic_path" | "belong_list" | "height" | "weight" | "position" | "birth" | "age" | "market_value" | "injury" | "versus_team_score_data" | "retire_flg" | "deadline" | "deadline_contract_date" | "latest_info_date" | "upd_stamp" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["team_member_master"]>
+  export type team_member_masterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "country" | "league" | "team" | "score" | "loan_belong" | "jersey" | "member" | "face_pic_path" | "belong_list" | "height" | "weight" | "position" | "birth" | "age" | "market_value" | "injury" | "versus_team_score_data" | "retire_flg" | "deadline" | "deadline_contract_date" | "latest_info_date" | "upd_stamp" | "del_flg" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["team_member_master"]>
 
   export type $team_member_masterPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "team_member_master"
@@ -1719,6 +1822,7 @@ export namespace Prisma {
       deadline_contract_date: string | null
       latest_info_date: string | null
       upd_stamp: string | null
+      del_flg: string
       register_id: string
       register_time: Date
       update_id: string
@@ -2169,6 +2273,7 @@ export namespace Prisma {
     readonly deadline_contract_date: FieldRef<"team_member_master", 'String'>
     readonly latest_info_date: FieldRef<"team_member_master", 'String'>
     readonly upd_stamp: FieldRef<"team_member_master", 'String'>
+    readonly del_flg: FieldRef<"team_member_master", 'String'>
     readonly register_id: FieldRef<"team_member_master", 'String'>
     readonly register_time: FieldRef<"team_member_master", 'DateTime'>
     readonly update_id: FieldRef<"team_member_master", 'String'>
@@ -2565,6 +2670,7 @@ export namespace Prisma {
     league: string | null
     team: string | null
     link: string | null
+    del_flg: string | null
     register_id: string | null
     register_time: Date | null
     update_id: string | null
@@ -2577,6 +2683,7 @@ export namespace Prisma {
     league: string | null
     team: string | null
     link: string | null
+    del_flg: string | null
     register_id: string | null
     register_time: Date | null
     update_id: string | null
@@ -2589,6 +2696,7 @@ export namespace Prisma {
     league: number
     team: number
     link: number
+    del_flg: number
     register_id: number
     register_time: number
     update_id: number
@@ -2611,6 +2719,7 @@ export namespace Prisma {
     league?: true
     team?: true
     link?: true
+    del_flg?: true
     register_id?: true
     register_time?: true
     update_id?: true
@@ -2623,6 +2732,7 @@ export namespace Prisma {
     league?: true
     team?: true
     link?: true
+    del_flg?: true
     register_id?: true
     register_time?: true
     update_id?: true
@@ -2635,6 +2745,7 @@ export namespace Prisma {
     league?: true
     team?: true
     link?: true
+    del_flg?: true
     register_id?: true
     register_time?: true
     update_id?: true
@@ -2734,6 +2845,7 @@ export namespace Prisma {
     league: string
     team: string
     link: string
+    del_flg: string
     register_id: string
     register_time: Date
     update_id: string
@@ -2765,6 +2877,7 @@ export namespace Prisma {
     league?: boolean
     team?: boolean
     link?: boolean
+    del_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
@@ -2777,6 +2890,7 @@ export namespace Prisma {
     league?: boolean
     team?: boolean
     link?: boolean
+    del_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
@@ -2789,6 +2903,7 @@ export namespace Prisma {
     league?: boolean
     team?: boolean
     link?: boolean
+    del_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
@@ -2801,13 +2916,14 @@ export namespace Prisma {
     league?: boolean
     team?: boolean
     link?: boolean
+    del_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
     update_time?: boolean
   }
 
-  export type country_league_masterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "country" | "league" | "team" | "link" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["country_league_master"]>
+  export type country_league_masterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "country" | "league" | "team" | "link" | "del_flg" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["country_league_master"]>
 
   export type $country_league_masterPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "country_league_master"
@@ -2818,6 +2934,7 @@ export namespace Prisma {
       league: string
       team: string
       link: string
+      del_flg: string
       register_id: string
       register_time: Date
       update_id: string
@@ -3250,6 +3367,7 @@ export namespace Prisma {
     readonly league: FieldRef<"country_league_master", 'String'>
     readonly team: FieldRef<"country_league_master", 'String'>
     readonly link: FieldRef<"country_league_master", 'String'>
+    readonly del_flg: FieldRef<"country_league_master", 'String'>
     readonly register_id: FieldRef<"country_league_master", 'String'>
     readonly register_time: FieldRef<"country_league_master", 'DateTime'>
     readonly update_id: FieldRef<"country_league_master", 'String'>
@@ -3651,6 +3769,7 @@ export namespace Prisma {
     path: string | null
     icon: string | null
     valid_flg: string | null
+    del_flg: string | null
     register_id: string | null
     register_time: Date | null
     update_id: string | null
@@ -3668,6 +3787,7 @@ export namespace Prisma {
     path: string | null
     icon: string | null
     valid_flg: string | null
+    del_flg: string | null
     register_id: string | null
     register_time: Date | null
     update_id: string | null
@@ -3685,6 +3805,7 @@ export namespace Prisma {
     path: number
     icon: number
     valid_flg: number
+    del_flg: number
     register_id: number
     register_time: number
     update_id: number
@@ -3712,6 +3833,7 @@ export namespace Prisma {
     path?: true
     icon?: true
     valid_flg?: true
+    del_flg?: true
     register_id?: true
     register_time?: true
     update_id?: true
@@ -3729,6 +3851,7 @@ export namespace Prisma {
     path?: true
     icon?: true
     valid_flg?: true
+    del_flg?: true
     register_id?: true
     register_time?: true
     update_id?: true
@@ -3746,6 +3869,7 @@ export namespace Prisma {
     path?: true
     icon?: true
     valid_flg?: true
+    del_flg?: true
     register_id?: true
     register_time?: true
     update_id?: true
@@ -3850,6 +3974,7 @@ export namespace Prisma {
     path: string | null
     icon: string | null
     valid_flg: string
+    del_flg: string
     register_id: string | null
     register_time: Date | null
     update_id: string | null
@@ -3886,6 +4011,7 @@ export namespace Prisma {
     path?: boolean
     icon?: boolean
     valid_flg?: boolean
+    del_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
@@ -3903,6 +4029,7 @@ export namespace Prisma {
     path?: boolean
     icon?: boolean
     valid_flg?: boolean
+    del_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
@@ -3920,6 +4047,7 @@ export namespace Prisma {
     path?: boolean
     icon?: boolean
     valid_flg?: boolean
+    del_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
@@ -3937,13 +4065,14 @@ export namespace Prisma {
     path?: boolean
     icon?: boolean
     valid_flg?: boolean
+    del_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
     update_time?: boolean
   }
 
-  export type country_league_season_masterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "country" | "league" | "season_year" | "start_season_date" | "end_season_date" | "round" | "path" | "icon" | "valid_flg" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["country_league_season_master"]>
+  export type country_league_season_masterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "country" | "league" | "season_year" | "start_season_date" | "end_season_date" | "round" | "path" | "icon" | "valid_flg" | "del_flg" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["country_league_season_master"]>
 
   export type $country_league_season_masterPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "country_league_season_master"
@@ -3959,6 +4088,7 @@ export namespace Prisma {
       path: string | null
       icon: string | null
       valid_flg: string
+      del_flg: string
       register_id: string | null
       register_time: Date | null
       update_id: string | null
@@ -4396,6 +4526,7 @@ export namespace Prisma {
     readonly path: FieldRef<"country_league_season_master", 'String'>
     readonly icon: FieldRef<"country_league_season_master", 'String'>
     readonly valid_flg: FieldRef<"country_league_season_master", 'String'>
+    readonly del_flg: FieldRef<"country_league_season_master", 'String'>
     readonly register_id: FieldRef<"country_league_season_master", 'String'>
     readonly register_time: FieldRef<"country_league_season_master", 'DateTime'>
     readonly update_id: FieldRef<"country_league_season_master", 'String'>
@@ -7124,6 +7255,1027 @@ export namespace Prisma {
 
 
   /**
+   * Model batch_job_exec
+   */
+
+  export type AggregateBatch_job_exec = {
+    _count: Batch_job_execCountAggregateOutputType | null
+    _min: Batch_job_execMinAggregateOutputType | null
+    _max: Batch_job_execMaxAggregateOutputType | null
+  }
+
+  export type Batch_job_execMinAggregateOutputType = {
+    job_id: string | null
+    batch_cd: string | null
+    status: string | null
+    register_id: string | null
+    register_time: Date | null
+    update_id: string | null
+    update_time: Date | null
+  }
+
+  export type Batch_job_execMaxAggregateOutputType = {
+    job_id: string | null
+    batch_cd: string | null
+    status: string | null
+    register_id: string | null
+    register_time: Date | null
+    update_id: string | null
+    update_time: Date | null
+  }
+
+  export type Batch_job_execCountAggregateOutputType = {
+    job_id: number
+    batch_cd: number
+    status: number
+    register_id: number
+    register_time: number
+    update_id: number
+    update_time: number
+    _all: number
+  }
+
+
+  export type Batch_job_execMinAggregateInputType = {
+    job_id?: true
+    batch_cd?: true
+    status?: true
+    register_id?: true
+    register_time?: true
+    update_id?: true
+    update_time?: true
+  }
+
+  export type Batch_job_execMaxAggregateInputType = {
+    job_id?: true
+    batch_cd?: true
+    status?: true
+    register_id?: true
+    register_time?: true
+    update_id?: true
+    update_time?: true
+  }
+
+  export type Batch_job_execCountAggregateInputType = {
+    job_id?: true
+    batch_cd?: true
+    status?: true
+    register_id?: true
+    register_time?: true
+    update_id?: true
+    update_time?: true
+    _all?: true
+  }
+
+  export type Batch_job_execAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which batch_job_exec to aggregate.
+     */
+    where?: batch_job_execWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of batch_job_execs to fetch.
+     */
+    orderBy?: batch_job_execOrderByWithRelationInput | batch_job_execOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: batch_job_execWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` batch_job_execs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` batch_job_execs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned batch_job_execs
+    **/
+    _count?: true | Batch_job_execCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: Batch_job_execMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: Batch_job_execMaxAggregateInputType
+  }
+
+  export type GetBatch_job_execAggregateType<T extends Batch_job_execAggregateArgs> = {
+        [P in keyof T & keyof AggregateBatch_job_exec]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateBatch_job_exec[P]>
+      : GetScalarType<T[P], AggregateBatch_job_exec[P]>
+  }
+
+
+
+
+  export type batch_job_execGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: batch_job_execWhereInput
+    orderBy?: batch_job_execOrderByWithAggregationInput | batch_job_execOrderByWithAggregationInput[]
+    by: Batch_job_execScalarFieldEnum[] | Batch_job_execScalarFieldEnum
+    having?: batch_job_execScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: Batch_job_execCountAggregateInputType | true
+    _min?: Batch_job_execMinAggregateInputType
+    _max?: Batch_job_execMaxAggregateInputType
+  }
+
+  export type Batch_job_execGroupByOutputType = {
+    job_id: string
+    batch_cd: string
+    status: string
+    register_id: string | null
+    register_time: Date | null
+    update_id: string | null
+    update_time: Date | null
+    _count: Batch_job_execCountAggregateOutputType | null
+    _min: Batch_job_execMinAggregateOutputType | null
+    _max: Batch_job_execMaxAggregateOutputType | null
+  }
+
+  type GetBatch_job_execGroupByPayload<T extends batch_job_execGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<Batch_job_execGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof Batch_job_execGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], Batch_job_execGroupByOutputType[P]>
+            : GetScalarType<T[P], Batch_job_execGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type batch_job_execSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    job_id?: boolean
+    batch_cd?: boolean
+    status?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
+  }, ExtArgs["result"]["batch_job_exec"]>
+
+  export type batch_job_execSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    job_id?: boolean
+    batch_cd?: boolean
+    status?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
+  }, ExtArgs["result"]["batch_job_exec"]>
+
+  export type batch_job_execSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    job_id?: boolean
+    batch_cd?: boolean
+    status?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
+  }, ExtArgs["result"]["batch_job_exec"]>
+
+  export type batch_job_execSelectScalar = {
+    job_id?: boolean
+    batch_cd?: boolean
+    status?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
+  }
+
+  export type batch_job_execOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"job_id" | "batch_cd" | "status" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["batch_job_exec"]>
+
+  export type $batch_job_execPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "batch_job_exec"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      job_id: string
+      batch_cd: string
+      status: string
+      register_id: string | null
+      register_time: Date | null
+      update_id: string | null
+      update_time: Date | null
+    }, ExtArgs["result"]["batch_job_exec"]>
+    composites: {}
+  }
+
+  type batch_job_execGetPayload<S extends boolean | null | undefined | batch_job_execDefaultArgs> = $Result.GetResult<Prisma.$batch_job_execPayload, S>
+
+  type batch_job_execCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<batch_job_execFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: Batch_job_execCountAggregateInputType | true
+    }
+
+  export interface batch_job_execDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['batch_job_exec'], meta: { name: 'batch_job_exec' } }
+    /**
+     * Find zero or one Batch_job_exec that matches the filter.
+     * @param {batch_job_execFindUniqueArgs} args - Arguments to find a Batch_job_exec
+     * @example
+     * // Get one Batch_job_exec
+     * const batch_job_exec = await prisma.batch_job_exec.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends batch_job_execFindUniqueArgs>(args: SelectSubset<T, batch_job_execFindUniqueArgs<ExtArgs>>): Prisma__batch_job_execClient<$Result.GetResult<Prisma.$batch_job_execPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Batch_job_exec that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {batch_job_execFindUniqueOrThrowArgs} args - Arguments to find a Batch_job_exec
+     * @example
+     * // Get one Batch_job_exec
+     * const batch_job_exec = await prisma.batch_job_exec.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends batch_job_execFindUniqueOrThrowArgs>(args: SelectSubset<T, batch_job_execFindUniqueOrThrowArgs<ExtArgs>>): Prisma__batch_job_execClient<$Result.GetResult<Prisma.$batch_job_execPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Batch_job_exec that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {batch_job_execFindFirstArgs} args - Arguments to find a Batch_job_exec
+     * @example
+     * // Get one Batch_job_exec
+     * const batch_job_exec = await prisma.batch_job_exec.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends batch_job_execFindFirstArgs>(args?: SelectSubset<T, batch_job_execFindFirstArgs<ExtArgs>>): Prisma__batch_job_execClient<$Result.GetResult<Prisma.$batch_job_execPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Batch_job_exec that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {batch_job_execFindFirstOrThrowArgs} args - Arguments to find a Batch_job_exec
+     * @example
+     * // Get one Batch_job_exec
+     * const batch_job_exec = await prisma.batch_job_exec.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends batch_job_execFindFirstOrThrowArgs>(args?: SelectSubset<T, batch_job_execFindFirstOrThrowArgs<ExtArgs>>): Prisma__batch_job_execClient<$Result.GetResult<Prisma.$batch_job_execPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Batch_job_execs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {batch_job_execFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Batch_job_execs
+     * const batch_job_execs = await prisma.batch_job_exec.findMany()
+     * 
+     * // Get first 10 Batch_job_execs
+     * const batch_job_execs = await prisma.batch_job_exec.findMany({ take: 10 })
+     * 
+     * // Only select the `job_id`
+     * const batch_job_execWithJob_idOnly = await prisma.batch_job_exec.findMany({ select: { job_id: true } })
+     * 
+     */
+    findMany<T extends batch_job_execFindManyArgs>(args?: SelectSubset<T, batch_job_execFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$batch_job_execPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Batch_job_exec.
+     * @param {batch_job_execCreateArgs} args - Arguments to create a Batch_job_exec.
+     * @example
+     * // Create one Batch_job_exec
+     * const Batch_job_exec = await prisma.batch_job_exec.create({
+     *   data: {
+     *     // ... data to create a Batch_job_exec
+     *   }
+     * })
+     * 
+     */
+    create<T extends batch_job_execCreateArgs>(args: SelectSubset<T, batch_job_execCreateArgs<ExtArgs>>): Prisma__batch_job_execClient<$Result.GetResult<Prisma.$batch_job_execPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Batch_job_execs.
+     * @param {batch_job_execCreateManyArgs} args - Arguments to create many Batch_job_execs.
+     * @example
+     * // Create many Batch_job_execs
+     * const batch_job_exec = await prisma.batch_job_exec.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends batch_job_execCreateManyArgs>(args?: SelectSubset<T, batch_job_execCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Batch_job_execs and returns the data saved in the database.
+     * @param {batch_job_execCreateManyAndReturnArgs} args - Arguments to create many Batch_job_execs.
+     * @example
+     * // Create many Batch_job_execs
+     * const batch_job_exec = await prisma.batch_job_exec.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Batch_job_execs and only return the `job_id`
+     * const batch_job_execWithJob_idOnly = await prisma.batch_job_exec.createManyAndReturn({
+     *   select: { job_id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends batch_job_execCreateManyAndReturnArgs>(args?: SelectSubset<T, batch_job_execCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$batch_job_execPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Batch_job_exec.
+     * @param {batch_job_execDeleteArgs} args - Arguments to delete one Batch_job_exec.
+     * @example
+     * // Delete one Batch_job_exec
+     * const Batch_job_exec = await prisma.batch_job_exec.delete({
+     *   where: {
+     *     // ... filter to delete one Batch_job_exec
+     *   }
+     * })
+     * 
+     */
+    delete<T extends batch_job_execDeleteArgs>(args: SelectSubset<T, batch_job_execDeleteArgs<ExtArgs>>): Prisma__batch_job_execClient<$Result.GetResult<Prisma.$batch_job_execPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Batch_job_exec.
+     * @param {batch_job_execUpdateArgs} args - Arguments to update one Batch_job_exec.
+     * @example
+     * // Update one Batch_job_exec
+     * const batch_job_exec = await prisma.batch_job_exec.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends batch_job_execUpdateArgs>(args: SelectSubset<T, batch_job_execUpdateArgs<ExtArgs>>): Prisma__batch_job_execClient<$Result.GetResult<Prisma.$batch_job_execPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Batch_job_execs.
+     * @param {batch_job_execDeleteManyArgs} args - Arguments to filter Batch_job_execs to delete.
+     * @example
+     * // Delete a few Batch_job_execs
+     * const { count } = await prisma.batch_job_exec.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends batch_job_execDeleteManyArgs>(args?: SelectSubset<T, batch_job_execDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Batch_job_execs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {batch_job_execUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Batch_job_execs
+     * const batch_job_exec = await prisma.batch_job_exec.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends batch_job_execUpdateManyArgs>(args: SelectSubset<T, batch_job_execUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Batch_job_execs and returns the data updated in the database.
+     * @param {batch_job_execUpdateManyAndReturnArgs} args - Arguments to update many Batch_job_execs.
+     * @example
+     * // Update many Batch_job_execs
+     * const batch_job_exec = await prisma.batch_job_exec.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Batch_job_execs and only return the `job_id`
+     * const batch_job_execWithJob_idOnly = await prisma.batch_job_exec.updateManyAndReturn({
+     *   select: { job_id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends batch_job_execUpdateManyAndReturnArgs>(args: SelectSubset<T, batch_job_execUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$batch_job_execPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Batch_job_exec.
+     * @param {batch_job_execUpsertArgs} args - Arguments to update or create a Batch_job_exec.
+     * @example
+     * // Update or create a Batch_job_exec
+     * const batch_job_exec = await prisma.batch_job_exec.upsert({
+     *   create: {
+     *     // ... data to create a Batch_job_exec
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Batch_job_exec we want to update
+     *   }
+     * })
+     */
+    upsert<T extends batch_job_execUpsertArgs>(args: SelectSubset<T, batch_job_execUpsertArgs<ExtArgs>>): Prisma__batch_job_execClient<$Result.GetResult<Prisma.$batch_job_execPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Batch_job_execs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {batch_job_execCountArgs} args - Arguments to filter Batch_job_execs to count.
+     * @example
+     * // Count the number of Batch_job_execs
+     * const count = await prisma.batch_job_exec.count({
+     *   where: {
+     *     // ... the filter for the Batch_job_execs we want to count
+     *   }
+     * })
+    **/
+    count<T extends batch_job_execCountArgs>(
+      args?: Subset<T, batch_job_execCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], Batch_job_execCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Batch_job_exec.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {Batch_job_execAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends Batch_job_execAggregateArgs>(args: Subset<T, Batch_job_execAggregateArgs>): Prisma.PrismaPromise<GetBatch_job_execAggregateType<T>>
+
+    /**
+     * Group by Batch_job_exec.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {batch_job_execGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends batch_job_execGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: batch_job_execGroupByArgs['orderBy'] }
+        : { orderBy?: batch_job_execGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, batch_job_execGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetBatch_job_execGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the batch_job_exec model
+   */
+  readonly fields: batch_job_execFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for batch_job_exec.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__batch_job_execClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the batch_job_exec model
+   */
+  interface batch_job_execFieldRefs {
+    readonly job_id: FieldRef<"batch_job_exec", 'String'>
+    readonly batch_cd: FieldRef<"batch_job_exec", 'String'>
+    readonly status: FieldRef<"batch_job_exec", 'String'>
+    readonly register_id: FieldRef<"batch_job_exec", 'String'>
+    readonly register_time: FieldRef<"batch_job_exec", 'DateTime'>
+    readonly update_id: FieldRef<"batch_job_exec", 'String'>
+    readonly update_time: FieldRef<"batch_job_exec", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * batch_job_exec findUnique
+   */
+  export type batch_job_execFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the batch_job_exec
+     */
+    select?: batch_job_execSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the batch_job_exec
+     */
+    omit?: batch_job_execOmit<ExtArgs> | null
+    /**
+     * Filter, which batch_job_exec to fetch.
+     */
+    where: batch_job_execWhereUniqueInput
+  }
+
+  /**
+   * batch_job_exec findUniqueOrThrow
+   */
+  export type batch_job_execFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the batch_job_exec
+     */
+    select?: batch_job_execSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the batch_job_exec
+     */
+    omit?: batch_job_execOmit<ExtArgs> | null
+    /**
+     * Filter, which batch_job_exec to fetch.
+     */
+    where: batch_job_execWhereUniqueInput
+  }
+
+  /**
+   * batch_job_exec findFirst
+   */
+  export type batch_job_execFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the batch_job_exec
+     */
+    select?: batch_job_execSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the batch_job_exec
+     */
+    omit?: batch_job_execOmit<ExtArgs> | null
+    /**
+     * Filter, which batch_job_exec to fetch.
+     */
+    where?: batch_job_execWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of batch_job_execs to fetch.
+     */
+    orderBy?: batch_job_execOrderByWithRelationInput | batch_job_execOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for batch_job_execs.
+     */
+    cursor?: batch_job_execWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` batch_job_execs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` batch_job_execs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of batch_job_execs.
+     */
+    distinct?: Batch_job_execScalarFieldEnum | Batch_job_execScalarFieldEnum[]
+  }
+
+  /**
+   * batch_job_exec findFirstOrThrow
+   */
+  export type batch_job_execFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the batch_job_exec
+     */
+    select?: batch_job_execSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the batch_job_exec
+     */
+    omit?: batch_job_execOmit<ExtArgs> | null
+    /**
+     * Filter, which batch_job_exec to fetch.
+     */
+    where?: batch_job_execWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of batch_job_execs to fetch.
+     */
+    orderBy?: batch_job_execOrderByWithRelationInput | batch_job_execOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for batch_job_execs.
+     */
+    cursor?: batch_job_execWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` batch_job_execs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` batch_job_execs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of batch_job_execs.
+     */
+    distinct?: Batch_job_execScalarFieldEnum | Batch_job_execScalarFieldEnum[]
+  }
+
+  /**
+   * batch_job_exec findMany
+   */
+  export type batch_job_execFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the batch_job_exec
+     */
+    select?: batch_job_execSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the batch_job_exec
+     */
+    omit?: batch_job_execOmit<ExtArgs> | null
+    /**
+     * Filter, which batch_job_execs to fetch.
+     */
+    where?: batch_job_execWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of batch_job_execs to fetch.
+     */
+    orderBy?: batch_job_execOrderByWithRelationInput | batch_job_execOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing batch_job_execs.
+     */
+    cursor?: batch_job_execWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` batch_job_execs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` batch_job_execs.
+     */
+    skip?: number
+    distinct?: Batch_job_execScalarFieldEnum | Batch_job_execScalarFieldEnum[]
+  }
+
+  /**
+   * batch_job_exec create
+   */
+  export type batch_job_execCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the batch_job_exec
+     */
+    select?: batch_job_execSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the batch_job_exec
+     */
+    omit?: batch_job_execOmit<ExtArgs> | null
+    /**
+     * The data needed to create a batch_job_exec.
+     */
+    data: XOR<batch_job_execCreateInput, batch_job_execUncheckedCreateInput>
+  }
+
+  /**
+   * batch_job_exec createMany
+   */
+  export type batch_job_execCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many batch_job_execs.
+     */
+    data: batch_job_execCreateManyInput | batch_job_execCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * batch_job_exec createManyAndReturn
+   */
+  export type batch_job_execCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the batch_job_exec
+     */
+    select?: batch_job_execSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the batch_job_exec
+     */
+    omit?: batch_job_execOmit<ExtArgs> | null
+    /**
+     * The data used to create many batch_job_execs.
+     */
+    data: batch_job_execCreateManyInput | batch_job_execCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * batch_job_exec update
+   */
+  export type batch_job_execUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the batch_job_exec
+     */
+    select?: batch_job_execSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the batch_job_exec
+     */
+    omit?: batch_job_execOmit<ExtArgs> | null
+    /**
+     * The data needed to update a batch_job_exec.
+     */
+    data: XOR<batch_job_execUpdateInput, batch_job_execUncheckedUpdateInput>
+    /**
+     * Choose, which batch_job_exec to update.
+     */
+    where: batch_job_execWhereUniqueInput
+  }
+
+  /**
+   * batch_job_exec updateMany
+   */
+  export type batch_job_execUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update batch_job_execs.
+     */
+    data: XOR<batch_job_execUpdateManyMutationInput, batch_job_execUncheckedUpdateManyInput>
+    /**
+     * Filter which batch_job_execs to update
+     */
+    where?: batch_job_execWhereInput
+    /**
+     * Limit how many batch_job_execs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * batch_job_exec updateManyAndReturn
+   */
+  export type batch_job_execUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the batch_job_exec
+     */
+    select?: batch_job_execSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the batch_job_exec
+     */
+    omit?: batch_job_execOmit<ExtArgs> | null
+    /**
+     * The data used to update batch_job_execs.
+     */
+    data: XOR<batch_job_execUpdateManyMutationInput, batch_job_execUncheckedUpdateManyInput>
+    /**
+     * Filter which batch_job_execs to update
+     */
+    where?: batch_job_execWhereInput
+    /**
+     * Limit how many batch_job_execs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * batch_job_exec upsert
+   */
+  export type batch_job_execUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the batch_job_exec
+     */
+    select?: batch_job_execSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the batch_job_exec
+     */
+    omit?: batch_job_execOmit<ExtArgs> | null
+    /**
+     * The filter to search for the batch_job_exec to update in case it exists.
+     */
+    where: batch_job_execWhereUniqueInput
+    /**
+     * In case the batch_job_exec found by the `where` argument doesn't exist, create a new batch_job_exec with this data.
+     */
+    create: XOR<batch_job_execCreateInput, batch_job_execUncheckedCreateInput>
+    /**
+     * In case the batch_job_exec was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<batch_job_execUpdateInput, batch_job_execUncheckedUpdateInput>
+  }
+
+  /**
+   * batch_job_exec delete
+   */
+  export type batch_job_execDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the batch_job_exec
+     */
+    select?: batch_job_execSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the batch_job_exec
+     */
+    omit?: batch_job_execOmit<ExtArgs> | null
+    /**
+     * Filter which batch_job_exec to delete.
+     */
+    where: batch_job_execWhereUniqueInput
+  }
+
+  /**
+   * batch_job_exec deleteMany
+   */
+  export type batch_job_execDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which batch_job_execs to delete
+     */
+    where?: batch_job_execWhereInput
+    /**
+     * Limit how many batch_job_execs to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * batch_job_exec without action
+   */
+  export type batch_job_execDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the batch_job_exec
+     */
+    select?: batch_job_execSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the batch_job_exec
+     */
+    omit?: batch_job_execOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -7161,6 +8313,7 @@ export namespace Prisma {
     deadline_contract_date: 'deadline_contract_date',
     latest_info_date: 'latest_info_date',
     upd_stamp: 'upd_stamp',
+    del_flg: 'del_flg',
     register_id: 'register_id',
     register_time: 'register_time',
     update_id: 'update_id',
@@ -7176,6 +8329,7 @@ export namespace Prisma {
     league: 'league',
     team: 'team',
     link: 'link',
+    del_flg: 'del_flg',
     register_id: 'register_id',
     register_time: 'register_time',
     update_id: 'update_id',
@@ -7196,6 +8350,7 @@ export namespace Prisma {
     path: 'path',
     icon: 'icon',
     valid_flg: 'valid_flg',
+    del_flg: 'del_flg',
     register_id: 'register_id',
     register_time: 'register_time',
     update_id: 'update_id',
@@ -7248,6 +8403,19 @@ export namespace Prisma {
   };
 
   export type Future_masterScalarFieldEnum = (typeof Future_masterScalarFieldEnum)[keyof typeof Future_masterScalarFieldEnum]
+
+
+  export const Batch_job_execScalarFieldEnum: {
+    job_id: 'job_id',
+    batch_cd: 'batch_cd',
+    status: 'status',
+    register_id: 'register_id',
+    register_time: 'register_time',
+    update_id: 'update_id',
+    update_time: 'update_time'
+  };
+
+  export type Batch_job_execScalarFieldEnum = (typeof Batch_job_execScalarFieldEnum)[keyof typeof Batch_job_execScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -7379,6 +8547,7 @@ export namespace Prisma {
     deadline_contract_date?: StringNullableFilter<"team_member_master"> | string | null
     latest_info_date?: StringNullableFilter<"team_member_master"> | string | null
     upd_stamp?: StringNullableFilter<"team_member_master"> | string | null
+    del_flg?: StringFilter<"team_member_master"> | string
     register_id?: StringFilter<"team_member_master"> | string
     register_time?: DateTimeFilter<"team_member_master"> | Date | string
     update_id?: StringFilter<"team_member_master"> | string
@@ -7409,6 +8578,7 @@ export namespace Prisma {
     deadline_contract_date?: SortOrderInput | SortOrder
     latest_info_date?: SortOrderInput | SortOrder
     upd_stamp?: SortOrderInput | SortOrder
+    del_flg?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -7443,6 +8613,7 @@ export namespace Prisma {
     deadline_contract_date?: StringNullableFilter<"team_member_master"> | string | null
     latest_info_date?: StringNullableFilter<"team_member_master"> | string | null
     upd_stamp?: StringNullableFilter<"team_member_master"> | string | null
+    del_flg?: StringFilter<"team_member_master"> | string
     register_id?: StringFilter<"team_member_master"> | string
     register_time?: DateTimeFilter<"team_member_master"> | Date | string
     update_id?: StringFilter<"team_member_master"> | string
@@ -7473,6 +8644,7 @@ export namespace Prisma {
     deadline_contract_date?: SortOrderInput | SortOrder
     latest_info_date?: SortOrderInput | SortOrder
     upd_stamp?: SortOrderInput | SortOrder
+    del_flg?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -7511,6 +8683,7 @@ export namespace Prisma {
     deadline_contract_date?: StringNullableWithAggregatesFilter<"team_member_master"> | string | null
     latest_info_date?: StringNullableWithAggregatesFilter<"team_member_master"> | string | null
     upd_stamp?: StringNullableWithAggregatesFilter<"team_member_master"> | string | null
+    del_flg?: StringWithAggregatesFilter<"team_member_master"> | string
     register_id?: StringWithAggregatesFilter<"team_member_master"> | string
     register_time?: DateTimeWithAggregatesFilter<"team_member_master"> | Date | string
     update_id?: StringWithAggregatesFilter<"team_member_master"> | string
@@ -7526,6 +8699,7 @@ export namespace Prisma {
     league?: StringFilter<"country_league_master"> | string
     team?: StringFilter<"country_league_master"> | string
     link?: StringFilter<"country_league_master"> | string
+    del_flg?: StringFilter<"country_league_master"> | string
     register_id?: StringFilter<"country_league_master"> | string
     register_time?: DateTimeFilter<"country_league_master"> | Date | string
     update_id?: StringFilter<"country_league_master"> | string
@@ -7538,6 +8712,7 @@ export namespace Prisma {
     league?: SortOrder
     team?: SortOrder
     link?: SortOrder
+    del_flg?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -7553,6 +8728,7 @@ export namespace Prisma {
     league?: StringFilter<"country_league_master"> | string
     team?: StringFilter<"country_league_master"> | string
     link?: StringFilter<"country_league_master"> | string
+    del_flg?: StringFilter<"country_league_master"> | string
     register_id?: StringFilter<"country_league_master"> | string
     register_time?: DateTimeFilter<"country_league_master"> | Date | string
     update_id?: StringFilter<"country_league_master"> | string
@@ -7565,6 +8741,7 @@ export namespace Prisma {
     league?: SortOrder
     team?: SortOrder
     link?: SortOrder
+    del_flg?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -7585,6 +8762,7 @@ export namespace Prisma {
     league?: StringWithAggregatesFilter<"country_league_master"> | string
     team?: StringWithAggregatesFilter<"country_league_master"> | string
     link?: StringWithAggregatesFilter<"country_league_master"> | string
+    del_flg?: StringWithAggregatesFilter<"country_league_master"> | string
     register_id?: StringWithAggregatesFilter<"country_league_master"> | string
     register_time?: DateTimeWithAggregatesFilter<"country_league_master"> | Date | string
     update_id?: StringWithAggregatesFilter<"country_league_master"> | string
@@ -7605,6 +8783,7 @@ export namespace Prisma {
     path?: StringNullableFilter<"country_league_season_master"> | string | null
     icon?: StringNullableFilter<"country_league_season_master"> | string | null
     valid_flg?: StringFilter<"country_league_season_master"> | string
+    del_flg?: StringFilter<"country_league_season_master"> | string
     register_id?: StringNullableFilter<"country_league_season_master"> | string | null
     register_time?: DateTimeNullableFilter<"country_league_season_master"> | Date | string | null
     update_id?: StringNullableFilter<"country_league_season_master"> | string | null
@@ -7622,6 +8801,7 @@ export namespace Prisma {
     path?: SortOrderInput | SortOrder
     icon?: SortOrderInput | SortOrder
     valid_flg?: SortOrder
+    del_flg?: SortOrder
     register_id?: SortOrderInput | SortOrder
     register_time?: SortOrderInput | SortOrder
     update_id?: SortOrderInput | SortOrder
@@ -7642,6 +8822,7 @@ export namespace Prisma {
     path?: StringNullableFilter<"country_league_season_master"> | string | null
     icon?: StringNullableFilter<"country_league_season_master"> | string | null
     valid_flg?: StringFilter<"country_league_season_master"> | string
+    del_flg?: StringFilter<"country_league_season_master"> | string
     register_id?: StringNullableFilter<"country_league_season_master"> | string | null
     register_time?: DateTimeNullableFilter<"country_league_season_master"> | Date | string | null
     update_id?: StringNullableFilter<"country_league_season_master"> | string | null
@@ -7659,6 +8840,7 @@ export namespace Prisma {
     path?: SortOrderInput | SortOrder
     icon?: SortOrderInput | SortOrder
     valid_flg?: SortOrder
+    del_flg?: SortOrder
     register_id?: SortOrderInput | SortOrder
     register_time?: SortOrderInput | SortOrder
     update_id?: SortOrderInput | SortOrder
@@ -7684,6 +8866,7 @@ export namespace Prisma {
     path?: StringNullableWithAggregatesFilter<"country_league_season_master"> | string | null
     icon?: StringNullableWithAggregatesFilter<"country_league_season_master"> | string | null
     valid_flg?: StringWithAggregatesFilter<"country_league_season_master"> | string
+    del_flg?: StringWithAggregatesFilter<"country_league_season_master"> | string
     register_id?: StringNullableWithAggregatesFilter<"country_league_season_master"> | string | null
     register_time?: DateTimeNullableWithAggregatesFilter<"country_league_season_master"> | Date | string | null
     update_id?: StringNullableWithAggregatesFilter<"country_league_season_master"> | string | null
@@ -7913,6 +9096,68 @@ export namespace Prisma {
     update_time?: DateTimeNullableWithAggregatesFilter<"future_master"> | Date | string | null
   }
 
+  export type batch_job_execWhereInput = {
+    AND?: batch_job_execWhereInput | batch_job_execWhereInput[]
+    OR?: batch_job_execWhereInput[]
+    NOT?: batch_job_execWhereInput | batch_job_execWhereInput[]
+    job_id?: StringFilter<"batch_job_exec"> | string
+    batch_cd?: StringFilter<"batch_job_exec"> | string
+    status?: StringFilter<"batch_job_exec"> | string
+    register_id?: StringNullableFilter<"batch_job_exec"> | string | null
+    register_time?: DateTimeNullableFilter<"batch_job_exec"> | Date | string | null
+    update_id?: StringNullableFilter<"batch_job_exec"> | string | null
+    update_time?: DateTimeNullableFilter<"batch_job_exec"> | Date | string | null
+  }
+
+  export type batch_job_execOrderByWithRelationInput = {
+    job_id?: SortOrder
+    batch_cd?: SortOrder
+    status?: SortOrder
+    register_id?: SortOrderInput | SortOrder
+    register_time?: SortOrderInput | SortOrder
+    update_id?: SortOrderInput | SortOrder
+    update_time?: SortOrderInput | SortOrder
+  }
+
+  export type batch_job_execWhereUniqueInput = Prisma.AtLeast<{
+    job_id?: string
+    AND?: batch_job_execWhereInput | batch_job_execWhereInput[]
+    OR?: batch_job_execWhereInput[]
+    NOT?: batch_job_execWhereInput | batch_job_execWhereInput[]
+    batch_cd?: StringFilter<"batch_job_exec"> | string
+    status?: StringFilter<"batch_job_exec"> | string
+    register_id?: StringNullableFilter<"batch_job_exec"> | string | null
+    register_time?: DateTimeNullableFilter<"batch_job_exec"> | Date | string | null
+    update_id?: StringNullableFilter<"batch_job_exec"> | string | null
+    update_time?: DateTimeNullableFilter<"batch_job_exec"> | Date | string | null
+  }, "job_id">
+
+  export type batch_job_execOrderByWithAggregationInput = {
+    job_id?: SortOrder
+    batch_cd?: SortOrder
+    status?: SortOrder
+    register_id?: SortOrderInput | SortOrder
+    register_time?: SortOrderInput | SortOrder
+    update_id?: SortOrderInput | SortOrder
+    update_time?: SortOrderInput | SortOrder
+    _count?: batch_job_execCountOrderByAggregateInput
+    _max?: batch_job_execMaxOrderByAggregateInput
+    _min?: batch_job_execMinOrderByAggregateInput
+  }
+
+  export type batch_job_execScalarWhereWithAggregatesInput = {
+    AND?: batch_job_execScalarWhereWithAggregatesInput | batch_job_execScalarWhereWithAggregatesInput[]
+    OR?: batch_job_execScalarWhereWithAggregatesInput[]
+    NOT?: batch_job_execScalarWhereWithAggregatesInput | batch_job_execScalarWhereWithAggregatesInput[]
+    job_id?: StringWithAggregatesFilter<"batch_job_exec"> | string
+    batch_cd?: StringWithAggregatesFilter<"batch_job_exec"> | string
+    status?: StringWithAggregatesFilter<"batch_job_exec"> | string
+    register_id?: StringNullableWithAggregatesFilter<"batch_job_exec"> | string | null
+    register_time?: DateTimeNullableWithAggregatesFilter<"batch_job_exec"> | Date | string | null
+    update_id?: StringNullableWithAggregatesFilter<"batch_job_exec"> | string | null
+    update_time?: DateTimeNullableWithAggregatesFilter<"batch_job_exec"> | Date | string | null
+  }
+
   export type team_member_masterCreateInput = {
     country?: string | null
     league?: string | null
@@ -7936,6 +9181,7 @@ export namespace Prisma {
     deadline_contract_date?: string | null
     latest_info_date?: string | null
     upd_stamp?: string | null
+    del_flg?: string
     register_id: string
     register_time: Date | string
     update_id: string
@@ -7966,6 +9212,7 @@ export namespace Prisma {
     deadline_contract_date?: string | null
     latest_info_date?: string | null
     upd_stamp?: string | null
+    del_flg?: string
     register_id: string
     register_time: Date | string
     update_id: string
@@ -7995,6 +9242,7 @@ export namespace Prisma {
     deadline_contract_date?: NullableStringFieldUpdateOperationsInput | string | null
     latest_info_date?: NullableStringFieldUpdateOperationsInput | string | null
     upd_stamp?: NullableStringFieldUpdateOperationsInput | string | null
+    del_flg?: StringFieldUpdateOperationsInput | string
     register_id?: StringFieldUpdateOperationsInput | string
     register_time?: DateTimeFieldUpdateOperationsInput | Date | string
     update_id?: StringFieldUpdateOperationsInput | string
@@ -8025,6 +9273,7 @@ export namespace Prisma {
     deadline_contract_date?: NullableStringFieldUpdateOperationsInput | string | null
     latest_info_date?: NullableStringFieldUpdateOperationsInput | string | null
     upd_stamp?: NullableStringFieldUpdateOperationsInput | string | null
+    del_flg?: StringFieldUpdateOperationsInput | string
     register_id?: StringFieldUpdateOperationsInput | string
     register_time?: DateTimeFieldUpdateOperationsInput | Date | string
     update_id?: StringFieldUpdateOperationsInput | string
@@ -8055,6 +9304,7 @@ export namespace Prisma {
     deadline_contract_date?: string | null
     latest_info_date?: string | null
     upd_stamp?: string | null
+    del_flg?: string
     register_id: string
     register_time: Date | string
     update_id: string
@@ -8084,6 +9334,7 @@ export namespace Prisma {
     deadline_contract_date?: NullableStringFieldUpdateOperationsInput | string | null
     latest_info_date?: NullableStringFieldUpdateOperationsInput | string | null
     upd_stamp?: NullableStringFieldUpdateOperationsInput | string | null
+    del_flg?: StringFieldUpdateOperationsInput | string
     register_id?: StringFieldUpdateOperationsInput | string
     register_time?: DateTimeFieldUpdateOperationsInput | Date | string
     update_id?: StringFieldUpdateOperationsInput | string
@@ -8114,6 +9365,7 @@ export namespace Prisma {
     deadline_contract_date?: NullableStringFieldUpdateOperationsInput | string | null
     latest_info_date?: NullableStringFieldUpdateOperationsInput | string | null
     upd_stamp?: NullableStringFieldUpdateOperationsInput | string | null
+    del_flg?: StringFieldUpdateOperationsInput | string
     register_id?: StringFieldUpdateOperationsInput | string
     register_time?: DateTimeFieldUpdateOperationsInput | Date | string
     update_id?: StringFieldUpdateOperationsInput | string
@@ -8125,6 +9377,7 @@ export namespace Prisma {
     league: string
     team: string
     link: string
+    del_flg?: string
     register_id: string
     register_time: Date | string
     update_id: string
@@ -8137,6 +9390,7 @@ export namespace Prisma {
     league: string
     team: string
     link: string
+    del_flg?: string
     register_id: string
     register_time: Date | string
     update_id: string
@@ -8148,6 +9402,7 @@ export namespace Prisma {
     league?: StringFieldUpdateOperationsInput | string
     team?: StringFieldUpdateOperationsInput | string
     link?: StringFieldUpdateOperationsInput | string
+    del_flg?: StringFieldUpdateOperationsInput | string
     register_id?: StringFieldUpdateOperationsInput | string
     register_time?: DateTimeFieldUpdateOperationsInput | Date | string
     update_id?: StringFieldUpdateOperationsInput | string
@@ -8160,6 +9415,7 @@ export namespace Prisma {
     league?: StringFieldUpdateOperationsInput | string
     team?: StringFieldUpdateOperationsInput | string
     link?: StringFieldUpdateOperationsInput | string
+    del_flg?: StringFieldUpdateOperationsInput | string
     register_id?: StringFieldUpdateOperationsInput | string
     register_time?: DateTimeFieldUpdateOperationsInput | Date | string
     update_id?: StringFieldUpdateOperationsInput | string
@@ -8172,6 +9428,7 @@ export namespace Prisma {
     league: string
     team: string
     link: string
+    del_flg?: string
     register_id: string
     register_time: Date | string
     update_id: string
@@ -8183,6 +9440,7 @@ export namespace Prisma {
     league?: StringFieldUpdateOperationsInput | string
     team?: StringFieldUpdateOperationsInput | string
     link?: StringFieldUpdateOperationsInput | string
+    del_flg?: StringFieldUpdateOperationsInput | string
     register_id?: StringFieldUpdateOperationsInput | string
     register_time?: DateTimeFieldUpdateOperationsInput | Date | string
     update_id?: StringFieldUpdateOperationsInput | string
@@ -8195,6 +9453,7 @@ export namespace Prisma {
     league?: StringFieldUpdateOperationsInput | string
     team?: StringFieldUpdateOperationsInput | string
     link?: StringFieldUpdateOperationsInput | string
+    del_flg?: StringFieldUpdateOperationsInput | string
     register_id?: StringFieldUpdateOperationsInput | string
     register_time?: DateTimeFieldUpdateOperationsInput | Date | string
     update_id?: StringFieldUpdateOperationsInput | string
@@ -8211,6 +9470,7 @@ export namespace Prisma {
     path?: string | null
     icon?: string | null
     valid_flg?: string
+    del_flg?: string
     register_id?: string | null
     register_time?: Date | string | null
     update_id?: string | null
@@ -8228,6 +9488,7 @@ export namespace Prisma {
     path?: string | null
     icon?: string | null
     valid_flg?: string
+    del_flg?: string
     register_id?: string | null
     register_time?: Date | string | null
     update_id?: string | null
@@ -8244,6 +9505,7 @@ export namespace Prisma {
     path?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     valid_flg?: StringFieldUpdateOperationsInput | string
+    del_flg?: StringFieldUpdateOperationsInput | string
     register_id?: NullableStringFieldUpdateOperationsInput | string | null
     register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     update_id?: NullableStringFieldUpdateOperationsInput | string | null
@@ -8261,6 +9523,7 @@ export namespace Prisma {
     path?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     valid_flg?: StringFieldUpdateOperationsInput | string
+    del_flg?: StringFieldUpdateOperationsInput | string
     register_id?: NullableStringFieldUpdateOperationsInput | string | null
     register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     update_id?: NullableStringFieldUpdateOperationsInput | string | null
@@ -8278,6 +9541,7 @@ export namespace Prisma {
     path?: string | null
     icon?: string | null
     valid_flg?: string
+    del_flg?: string
     register_id?: string | null
     register_time?: Date | string | null
     update_id?: string | null
@@ -8294,6 +9558,7 @@ export namespace Prisma {
     path?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     valid_flg?: StringFieldUpdateOperationsInput | string
+    del_flg?: StringFieldUpdateOperationsInput | string
     register_id?: NullableStringFieldUpdateOperationsInput | string | null
     register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     update_id?: NullableStringFieldUpdateOperationsInput | string | null
@@ -8311,6 +9576,7 @@ export namespace Prisma {
     path?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     valid_flg?: StringFieldUpdateOperationsInput | string
+    del_flg?: StringFieldUpdateOperationsInput | string
     register_id?: NullableStringFieldUpdateOperationsInput | string | null
     register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     update_id?: NullableStringFieldUpdateOperationsInput | string | null
@@ -8587,6 +9853,76 @@ export namespace Prisma {
     update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type batch_job_execCreateInput = {
+    job_id: string
+    batch_cd: string
+    status: string
+    register_id?: string | null
+    register_time?: Date | string | null
+    update_id?: string | null
+    update_time?: Date | string | null
+  }
+
+  export type batch_job_execUncheckedCreateInput = {
+    job_id: string
+    batch_cd: string
+    status: string
+    register_id?: string | null
+    register_time?: Date | string | null
+    update_id?: string | null
+    update_time?: Date | string | null
+  }
+
+  export type batch_job_execUpdateInput = {
+    job_id?: StringFieldUpdateOperationsInput | string
+    batch_cd?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    register_id?: NullableStringFieldUpdateOperationsInput | string | null
+    register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    update_id?: NullableStringFieldUpdateOperationsInput | string | null
+    update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type batch_job_execUncheckedUpdateInput = {
+    job_id?: StringFieldUpdateOperationsInput | string
+    batch_cd?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    register_id?: NullableStringFieldUpdateOperationsInput | string | null
+    register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    update_id?: NullableStringFieldUpdateOperationsInput | string | null
+    update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type batch_job_execCreateManyInput = {
+    job_id: string
+    batch_cd: string
+    status: string
+    register_id?: string | null
+    register_time?: Date | string | null
+    update_id?: string | null
+    update_time?: Date | string | null
+  }
+
+  export type batch_job_execUpdateManyMutationInput = {
+    job_id?: StringFieldUpdateOperationsInput | string
+    batch_cd?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    register_id?: NullableStringFieldUpdateOperationsInput | string | null
+    register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    update_id?: NullableStringFieldUpdateOperationsInput | string | null
+    update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type batch_job_execUncheckedUpdateManyInput = {
+    job_id?: StringFieldUpdateOperationsInput | string
+    batch_cd?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    register_id?: NullableStringFieldUpdateOperationsInput | string | null
+    register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    update_id?: NullableStringFieldUpdateOperationsInput | string | null
+    update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
   export type IntFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -8675,6 +10011,7 @@ export namespace Prisma {
     deadline_contract_date?: SortOrder
     latest_info_date?: SortOrder
     upd_stamp?: SortOrder
+    del_flg?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -8709,6 +10046,7 @@ export namespace Prisma {
     deadline_contract_date?: SortOrder
     latest_info_date?: SortOrder
     upd_stamp?: SortOrder
+    del_flg?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -8739,6 +10077,7 @@ export namespace Prisma {
     deadline_contract_date?: SortOrder
     latest_info_date?: SortOrder
     upd_stamp?: SortOrder
+    del_flg?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -8821,6 +10160,7 @@ export namespace Prisma {
     league?: SortOrder
     team?: SortOrder
     link?: SortOrder
+    del_flg?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -8837,6 +10177,7 @@ export namespace Prisma {
     league?: SortOrder
     team?: SortOrder
     link?: SortOrder
+    del_flg?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -8849,6 +10190,7 @@ export namespace Prisma {
     league?: SortOrder
     team?: SortOrder
     link?: SortOrder
+    del_flg?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -8881,6 +10223,7 @@ export namespace Prisma {
     path?: SortOrder
     icon?: SortOrder
     valid_flg?: SortOrder
+    del_flg?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -8902,6 +10245,7 @@ export namespace Prisma {
     path?: SortOrder
     icon?: SortOrder
     valid_flg?: SortOrder
+    del_flg?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -8919,6 +10263,7 @@ export namespace Prisma {
     path?: SortOrder
     icon?: SortOrder
     valid_flg?: SortOrder
+    del_flg?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -9101,6 +10446,36 @@ export namespace Prisma {
     _sum?: NestedBigIntFilter<$PrismaModel>
     _min?: NestedBigIntFilter<$PrismaModel>
     _max?: NestedBigIntFilter<$PrismaModel>
+  }
+
+  export type batch_job_execCountOrderByAggregateInput = {
+    job_id?: SortOrder
+    batch_cd?: SortOrder
+    status?: SortOrder
+    register_id?: SortOrder
+    register_time?: SortOrder
+    update_id?: SortOrder
+    update_time?: SortOrder
+  }
+
+  export type batch_job_execMaxOrderByAggregateInput = {
+    job_id?: SortOrder
+    batch_cd?: SortOrder
+    status?: SortOrder
+    register_id?: SortOrder
+    register_time?: SortOrder
+    update_id?: SortOrder
+    update_time?: SortOrder
+  }
+
+  export type batch_job_execMinOrderByAggregateInput = {
+    job_id?: SortOrder
+    batch_cd?: SortOrder
+    status?: SortOrder
+    register_id?: SortOrder
+    register_time?: SortOrder
+    update_id?: SortOrder
+    update_time?: SortOrder
   }
 
   export type NullableStringFieldUpdateOperationsInput = {

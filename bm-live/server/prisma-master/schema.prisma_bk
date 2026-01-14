@@ -1,5 +1,3 @@
-// server/prisma-master/schema.prisma
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/master"
@@ -11,43 +9,45 @@ datasource db {
 }
 
 model team_member_master {
-  id                     Int      @default(autoincrement())
-  country                String?  @db.Text
-  league                 String?  @db.Text
-  team                   String   @db.Text
-  score                  String?  @db.Text
-  loan_belong            String?  @db.Text
-  jersey                 String   @db.Text
-  member                 String   @db.Text
-  face_pic_path          String   @db.Text
-  belong_list            String?  @db.Text
-  height                 String?  @db.Text
-  weight                 String?  @db.Text
-  position               String?  @db.Text
-  birth                  String?  @db.Text
-  age                    String?  @db.Text
-  market_value           String?  @db.Text
-  injury                 String?  @db.Text
-  versus_team_score_data String?  @db.Text
+  id                     Int      @id @default(autoincrement())
+  country                String?
+  league                 String?
+  team                   String
+  score                  String?
+  loan_belong            String?
+  jersey                 String
+  member                 String
+  face_pic_path          String
+  belong_list            String?
+  height                 String?
+  weight                 String?
+  position               String?
+  birth                  String?
+  age                    String?
+  market_value           String?
+  injury                 String?
+  versus_team_score_data String?
   retire_flg             String?  @db.Char(1)
   deadline               String?  @db.Char(1)
-  deadline_contract_date String?  @db.Text
-  latest_info_date       String?  @db.Text
-  upd_stamp              String?  @db.Text
+  deadline_contract_date String?
+  latest_info_date       String?
+  upd_stamp              String?
+  del_flg                String   @default("0") @db.VarChar(1)
   register_id            String   @db.VarChar(100)
   register_time          DateTime @db.Timestamptz(0)
   update_id              String   @db.VarChar(100)
   update_time            DateTime @db.Timestamptz(0)
 
-  @@id([id, team, jersey, member, face_pic_path])
+  @@unique([team, jersey, member, face_pic_path])
 }
 
 model country_league_master {
   id            Int      @id @default(autoincrement())
-  country       String   @db.Text
-  league        String   @db.Text
-  team          String   @db.Text
-  link          String   @db.Text
+  country       String
+  league        String
+  team          String
+  link          String
+  del_flg       String   @default("0") @db.VarChar(1)
   register_id   String   @db.VarChar(100)
   register_time DateTime @db.Timestamptz(0)
   update_id     String   @db.VarChar(100)
@@ -56,15 +56,16 @@ model country_league_master {
 
 model country_league_season_master {
   id                Int       @id @default(autoincrement())
-  country           String    @db.Text
-  league            String    @db.Text
-  season_year       String    @db.Text
+  country           String
+  league            String
+  season_year       String
   start_season_date DateTime? @db.Timestamptz(0)
   end_season_date   DateTime? @db.Timestamptz(0)
   round             String?   @db.VarChar(2)
-  path              String?   @db.Text
-  icon              String?   @db.Text
+  path              String?
+  icon              String?
   valid_flg         String    @default("0") @db.VarChar(1)
+  del_flg           String   @default("0") @db.VarChar(1)
   register_id       String?   @db.VarChar(100)
   register_time     DateTime? @db.Timestamptz(0)
   update_id         String?   @db.VarChar(100)
@@ -72,41 +73,50 @@ model country_league_season_master {
 }
 
 model team_color_master {
-  id                               Int      @id @default(autoincrement())
-  country                          String   @db.Text
-  league                           String   @db.Text                          
-  team                             String   @db.Text
-  team_color_hex                   String?   @db.VarChar(7)
+  id             Int       @id @default(autoincrement())
+  country        String
+  league         String
+  team           String
+  team_color_hex String?   @db.VarChar(7)
+  register_id    String?   @db.VarChar(100)
+  register_time  DateTime? @db.Timestamptz(0)
+  update_id      String?   @db.VarChar(100)
+  update_time    DateTime? @db.Timestamptz(0)
+}
+
+model future_master {
+  seq                     BigInt    @id @default(autoincrement())
+  game_team_category      String
+  future_time             DateTime  @db.Timestamptz(0)
+  home_rank               String?
+  away_rank               String?
+  home_team_name          String?
+  away_team_name          String?
+  home_max_getting_scorer String?
+  away_max_getting_scorer String?
+  home_team_home_score    String?
+  home_team_home_lost     String?
+  away_team_home_score    String?
+  away_team_home_lost     String?
+  home_team_away_score    String?
+  home_team_away_lost     String?
+  away_team_away_score    String?
+  away_team_away_lost     String?
+  game_link               String?
+  data_time               DateTime? @db.Timestamptz(0)
+  start_flg               String    @default("0") @db.VarChar(1)
+  register_id             String?
+  register_time           DateTime? @db.Timestamptz(0)
+  update_id               String?
+  update_time             DateTime? @db.Timestamptz(0)
+}
+
+model batch_job_exec {
+  job_id                           String   @id @db.Text
+  batch_cd                         String   @db.Text
+  status                           String   @db.Text                          
   register_id                      String?   @db.VarChar(100)
   register_time                    DateTime? @db.Timestamptz(0)
   update_id                        String?   @db.VarChar(100)
   update_time                      DateTime? @db.Timestamptz(0)
-}
-
-
-model future_master {
-  seq                     BigInt    @id @default(autoincrement())
-  game_team_category      String    @db.Text
-  future_time             DateTime  @db.Timestamptz(0)
-  home_rank               String?   @db.Text
-  away_rank               String?   @db.Text
-  home_team_name          String?   @db.Text
-  away_team_name          String?   @db.Text
-  home_max_getting_scorer String?   @db.Text
-  away_max_getting_scorer String?   @db.Text
-  home_team_home_score    String?   @db.Text
-  home_team_home_lost     String?   @db.Text
-  away_team_home_score    String?   @db.Text
-  away_team_home_lost     String?   @db.Text
-  home_team_away_score    String?   @db.Text
-  home_team_away_lost     String?   @db.Text
-  away_team_away_score    String?   @db.Text
-  away_team_away_lost     String?   @db.Text
-  game_link               String?   @db.Text
-  data_time               DateTime? @db.Timestamptz(0)
-  start_flg               String    @default("0") @db.VarChar(1)
-  register_id             String?   @db.Text
-  register_time           DateTime? @db.Timestamptz(0)
-  update_id               String?   @db.Text
-  update_time             DateTime? @db.Timestamptz(0)
 }

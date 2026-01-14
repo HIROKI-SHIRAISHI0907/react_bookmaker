@@ -13,11 +13,17 @@ npx prisma migrate deploy --schema=prisma-user/schema.prisma
 echo "[start.sh] prisma migrate deploy (stats)"
 npx prisma migrate deploy --schema=prisma-stats/schema.prisma
 
+echo "[start.sh] prisma migrate deploy (master)"
+npx prisma migrate deploy --schema=prisma-master/schema.prisma
+
 echo "[start.sh] prisma generate (user)"
 npx prisma generate --schema=prisma-user/schema.prisma
 
 echo "[start.sh] prisma generate (stats)"
 npx prisma generate --schema=prisma-stats/schema.prisma
+
+echo "[start.sh] prisma generate (master)"
+npx prisma generate --schema=prisma-master/schema.prisma
 
 echo "[start.sh] start dev server"
 exec npm run dev
