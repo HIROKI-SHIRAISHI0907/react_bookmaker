@@ -1007,8 +1007,10 @@ export namespace Prisma {
     email: string | null
     passwordHash: string | null
     name: string | null
-    createdAt: Date | null
-    updatedAt: Date | null
+    register_id: string | null
+    register_time: Date | null
+    update_id: string | null
+    update_time: Date | null
   }
 
   export type UsersMaxAggregateOutputType = {
@@ -1016,8 +1018,10 @@ export namespace Prisma {
     email: string | null
     passwordHash: string | null
     name: string | null
-    createdAt: Date | null
-    updatedAt: Date | null
+    register_id: string | null
+    register_time: Date | null
+    update_id: string | null
+    update_time: Date | null
   }
 
   export type UsersCountAggregateOutputType = {
@@ -1025,8 +1029,10 @@ export namespace Prisma {
     email: number
     passwordHash: number
     name: number
-    createdAt: number
-    updatedAt: number
+    register_id: number
+    register_time: number
+    update_id: number
+    update_time: number
     _all: number
   }
 
@@ -1044,8 +1050,10 @@ export namespace Prisma {
     email?: true
     passwordHash?: true
     name?: true
-    createdAt?: true
-    updatedAt?: true
+    register_id?: true
+    register_time?: true
+    update_id?: true
+    update_time?: true
   }
 
   export type UsersMaxAggregateInputType = {
@@ -1053,8 +1061,10 @@ export namespace Prisma {
     email?: true
     passwordHash?: true
     name?: true
-    createdAt?: true
-    updatedAt?: true
+    register_id?: true
+    register_time?: true
+    update_id?: true
+    update_time?: true
   }
 
   export type UsersCountAggregateInputType = {
@@ -1062,8 +1072,10 @@ export namespace Prisma {
     email?: true
     passwordHash?: true
     name?: true
-    createdAt?: true
-    updatedAt?: true
+    register_id?: true
+    register_time?: true
+    update_id?: true
+    update_time?: true
     _all?: true
   }
 
@@ -1158,8 +1170,10 @@ export namespace Prisma {
     email: string
     passwordHash: string
     name: string | null
-    createdAt: Date
-    updatedAt: Date
+    register_id: string
+    register_time: Date
+    update_id: string
+    update_time: Date
     _count: UsersCountAggregateOutputType | null
     _avg: UsersAvgAggregateOutputType | null
     _sum: UsersSumAggregateOutputType | null
@@ -1186,8 +1200,10 @@ export namespace Prisma {
     email?: boolean
     passwordHash?: boolean
     name?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
     favorites?: boolean | users$favoritesArgs<ExtArgs>
     _count?: boolean | UsersCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["users"]>
@@ -1197,8 +1213,10 @@ export namespace Prisma {
     email?: boolean
     passwordHash?: boolean
     name?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
   }, ExtArgs["result"]["users"]>
 
   export type usersSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -1206,8 +1224,10 @@ export namespace Prisma {
     email?: boolean
     passwordHash?: boolean
     name?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
   }, ExtArgs["result"]["users"]>
 
   export type usersSelectScalar = {
@@ -1215,11 +1235,13 @@ export namespace Prisma {
     email?: boolean
     passwordHash?: boolean
     name?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
   }
 
-  export type usersOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"userid" | "email" | "passwordHash" | "name" | "createdAt" | "updatedAt", ExtArgs["result"]["users"]>
+  export type usersOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"userid" | "email" | "passwordHash" | "name" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["users"]>
   export type usersInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     favorites?: boolean | users$favoritesArgs<ExtArgs>
     _count?: boolean | UsersCountOutputTypeDefaultArgs<ExtArgs>
@@ -1237,8 +1259,10 @@ export namespace Prisma {
       email: string
       passwordHash: string
       name: string | null
-      createdAt: Date
-      updatedAt: Date
+      register_id: string
+      register_time: Date
+      update_id: string
+      update_time: Date
     }, ExtArgs["result"]["users"]>
     composites: {}
   }
@@ -1667,8 +1691,10 @@ export namespace Prisma {
     readonly email: FieldRef<"users", 'String'>
     readonly passwordHash: FieldRef<"users", 'String'>
     readonly name: FieldRef<"users", 'String'>
-    readonly createdAt: FieldRef<"users", 'DateTime'>
-    readonly updatedAt: FieldRef<"users", 'DateTime'>
+    readonly register_id: FieldRef<"users", 'String'>
+    readonly register_time: FieldRef<"users", 'DateTime'>
+    readonly update_id: FieldRef<"users", 'String'>
+    readonly update_time: FieldRef<"users", 'DateTime'>
   }
     
 
@@ -2114,41 +2140,52 @@ export namespace Prisma {
   export type FavoritesAvgAggregateOutputType = {
     id: number | null
     userId: number | null
+    level: number | null
   }
 
   export type FavoritesSumAggregateOutputType = {
     id: bigint | null
     userId: bigint | null
+    level: number | null
   }
 
   export type FavoritesMinAggregateOutputType = {
     id: bigint | null
     userId: bigint | null
+    level: number | null
     country: string | null
     league: string | null
     team: string | null
-    createdAt: Date | null
-    updatedAt: Date | null
+    register_id: string | null
+    register_time: Date | null
+    update_id: string | null
+    update_time: Date | null
   }
 
   export type FavoritesMaxAggregateOutputType = {
     id: bigint | null
     userId: bigint | null
+    level: number | null
     country: string | null
     league: string | null
     team: string | null
-    createdAt: Date | null
-    updatedAt: Date | null
+    register_id: string | null
+    register_time: Date | null
+    update_id: string | null
+    update_time: Date | null
   }
 
   export type FavoritesCountAggregateOutputType = {
     id: number
     userId: number
+    level: number
     country: number
     league: number
     team: number
-    createdAt: number
-    updatedAt: number
+    register_id: number
+    register_time: number
+    update_id: number
+    update_time: number
     _all: number
   }
 
@@ -2156,41 +2193,52 @@ export namespace Prisma {
   export type FavoritesAvgAggregateInputType = {
     id?: true
     userId?: true
+    level?: true
   }
 
   export type FavoritesSumAggregateInputType = {
     id?: true
     userId?: true
+    level?: true
   }
 
   export type FavoritesMinAggregateInputType = {
     id?: true
     userId?: true
+    level?: true
     country?: true
     league?: true
     team?: true
-    createdAt?: true
-    updatedAt?: true
+    register_id?: true
+    register_time?: true
+    update_id?: true
+    update_time?: true
   }
 
   export type FavoritesMaxAggregateInputType = {
     id?: true
     userId?: true
+    level?: true
     country?: true
     league?: true
     team?: true
-    createdAt?: true
-    updatedAt?: true
+    register_id?: true
+    register_time?: true
+    update_id?: true
+    update_time?: true
   }
 
   export type FavoritesCountAggregateInputType = {
     id?: true
     userId?: true
+    level?: true
     country?: true
     league?: true
     team?: true
-    createdAt?: true
-    updatedAt?: true
+    register_id?: true
+    register_time?: true
+    update_id?: true
+    update_time?: true
     _all?: true
   }
 
@@ -2283,11 +2331,14 @@ export namespace Prisma {
   export type FavoritesGroupByOutputType = {
     id: bigint
     userId: bigint
+    level: number
     country: string
     league: string
     team: string
-    createdAt: Date
-    updatedAt: Date
+    register_id: string
+    register_time: Date
+    update_id: string
+    update_time: Date
     _count: FavoritesCountAggregateOutputType | null
     _avg: FavoritesAvgAggregateOutputType | null
     _sum: FavoritesSumAggregateOutputType | null
@@ -2312,47 +2363,59 @@ export namespace Prisma {
   export type favoritesSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
+    level?: boolean
     country?: boolean
     league?: boolean
     team?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
     user?: boolean | usersDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["favorites"]>
 
   export type favoritesSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
+    level?: boolean
     country?: boolean
     league?: boolean
     team?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
     user?: boolean | usersDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["favorites"]>
 
   export type favoritesSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
+    level?: boolean
     country?: boolean
     league?: boolean
     team?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
     user?: boolean | usersDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["favorites"]>
 
   export type favoritesSelectScalar = {
     id?: boolean
     userId?: boolean
+    level?: boolean
     country?: boolean
     league?: boolean
     team?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
   }
 
-  export type favoritesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "country" | "league" | "team" | "createdAt" | "updatedAt", ExtArgs["result"]["favorites"]>
+  export type favoritesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "level" | "country" | "league" | "team" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["favorites"]>
   export type favoritesInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | usersDefaultArgs<ExtArgs>
   }
@@ -2371,11 +2434,14 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: bigint
       userId: bigint
+      level: number
       country: string
       league: string
       team: string
-      createdAt: Date
-      updatedAt: Date
+      register_id: string
+      register_time: Date
+      update_id: string
+      update_time: Date
     }, ExtArgs["result"]["favorites"]>
     composites: {}
   }
@@ -2802,11 +2868,14 @@ export namespace Prisma {
   interface favoritesFieldRefs {
     readonly id: FieldRef<"favorites", 'BigInt'>
     readonly userId: FieldRef<"favorites", 'BigInt'>
+    readonly level: FieldRef<"favorites", 'Int'>
     readonly country: FieldRef<"favorites", 'String'>
     readonly league: FieldRef<"favorites", 'String'>
     readonly team: FieldRef<"favorites", 'String'>
-    readonly createdAt: FieldRef<"favorites", 'DateTime'>
-    readonly updatedAt: FieldRef<"favorites", 'DateTime'>
+    readonly register_id: FieldRef<"favorites", 'String'>
+    readonly register_time: FieldRef<"favorites", 'DateTime'>
+    readonly update_id: FieldRef<"favorites", 'String'>
+    readonly update_time: FieldRef<"favorites", 'DateTime'>
   }
     
 
@@ -3240,8 +3309,10 @@ export namespace Prisma {
     email: 'email',
     passwordHash: 'passwordHash',
     name: 'name',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    register_id: 'register_id',
+    register_time: 'register_time',
+    update_id: 'update_id',
+    update_time: 'update_time'
   };
 
   export type UsersScalarFieldEnum = (typeof UsersScalarFieldEnum)[keyof typeof UsersScalarFieldEnum]
@@ -3250,11 +3321,14 @@ export namespace Prisma {
   export const FavoritesScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
+    level: 'level',
     country: 'country',
     league: 'league',
     team: 'team',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    register_id: 'register_id',
+    register_time: 'register_time',
+    update_id: 'update_id',
+    update_time: 'update_time'
   };
 
   export type FavoritesScalarFieldEnum = (typeof FavoritesScalarFieldEnum)[keyof typeof FavoritesScalarFieldEnum]
@@ -3370,8 +3444,10 @@ export namespace Prisma {
     email?: StringFilter<"users"> | string
     passwordHash?: StringFilter<"users"> | string
     name?: StringNullableFilter<"users"> | string | null
-    createdAt?: DateTimeFilter<"users"> | Date | string
-    updatedAt?: DateTimeFilter<"users"> | Date | string
+    register_id?: StringFilter<"users"> | string
+    register_time?: DateTimeFilter<"users"> | Date | string
+    update_id?: StringFilter<"users"> | string
+    update_time?: DateTimeFilter<"users"> | Date | string
     favorites?: FavoritesListRelationFilter
   }
 
@@ -3380,8 +3456,10 @@ export namespace Prisma {
     email?: SortOrder
     passwordHash?: SortOrder
     name?: SortOrderInput | SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
+    register_id?: SortOrder
+    register_time?: SortOrder
+    update_id?: SortOrder
+    update_time?: SortOrder
     favorites?: favoritesOrderByRelationAggregateInput
   }
 
@@ -3393,8 +3471,10 @@ export namespace Prisma {
     NOT?: usersWhereInput | usersWhereInput[]
     passwordHash?: StringFilter<"users"> | string
     name?: StringNullableFilter<"users"> | string | null
-    createdAt?: DateTimeFilter<"users"> | Date | string
-    updatedAt?: DateTimeFilter<"users"> | Date | string
+    register_id?: StringFilter<"users"> | string
+    register_time?: DateTimeFilter<"users"> | Date | string
+    update_id?: StringFilter<"users"> | string
+    update_time?: DateTimeFilter<"users"> | Date | string
     favorites?: FavoritesListRelationFilter
   }, "userid" | "email">
 
@@ -3403,8 +3483,10 @@ export namespace Prisma {
     email?: SortOrder
     passwordHash?: SortOrder
     name?: SortOrderInput | SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
+    register_id?: SortOrder
+    register_time?: SortOrder
+    update_id?: SortOrder
+    update_time?: SortOrder
     _count?: usersCountOrderByAggregateInput
     _avg?: usersAvgOrderByAggregateInput
     _max?: usersMaxOrderByAggregateInput
@@ -3420,8 +3502,10 @@ export namespace Prisma {
     email?: StringWithAggregatesFilter<"users"> | string
     passwordHash?: StringWithAggregatesFilter<"users"> | string
     name?: StringNullableWithAggregatesFilter<"users"> | string | null
-    createdAt?: DateTimeWithAggregatesFilter<"users"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"users"> | Date | string
+    register_id?: StringWithAggregatesFilter<"users"> | string
+    register_time?: DateTimeWithAggregatesFilter<"users"> | Date | string
+    update_id?: StringWithAggregatesFilter<"users"> | string
+    update_time?: DateTimeWithAggregatesFilter<"users"> | Date | string
   }
 
   export type favoritesWhereInput = {
@@ -3430,48 +3514,60 @@ export namespace Prisma {
     NOT?: favoritesWhereInput | favoritesWhereInput[]
     id?: BigIntFilter<"favorites"> | bigint | number
     userId?: BigIntFilter<"favorites"> | bigint | number
+    level?: IntFilter<"favorites"> | number
     country?: StringFilter<"favorites"> | string
     league?: StringFilter<"favorites"> | string
     team?: StringFilter<"favorites"> | string
-    createdAt?: DateTimeFilter<"favorites"> | Date | string
-    updatedAt?: DateTimeFilter<"favorites"> | Date | string
+    register_id?: StringFilter<"favorites"> | string
+    register_time?: DateTimeFilter<"favorites"> | Date | string
+    update_id?: StringFilter<"favorites"> | string
+    update_time?: DateTimeFilter<"favorites"> | Date | string
     user?: XOR<UsersScalarRelationFilter, usersWhereInput>
   }
 
   export type favoritesOrderByWithRelationInput = {
     id?: SortOrder
     userId?: SortOrder
+    level?: SortOrder
     country?: SortOrder
     league?: SortOrder
     team?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
+    register_id?: SortOrder
+    register_time?: SortOrder
+    update_id?: SortOrder
+    update_time?: SortOrder
     user?: usersOrderByWithRelationInput
   }
 
   export type favoritesWhereUniqueInput = Prisma.AtLeast<{
     id?: bigint | number
-    userId_country_league?: favoritesUserIdCountryLeagueCompoundUniqueInput
+    userId_level_country_league_team?: favoritesUserIdLevelCountryLeagueTeamCompoundUniqueInput
     AND?: favoritesWhereInput | favoritesWhereInput[]
     OR?: favoritesWhereInput[]
     NOT?: favoritesWhereInput | favoritesWhereInput[]
     userId?: BigIntFilter<"favorites"> | bigint | number
+    level?: IntFilter<"favorites"> | number
     country?: StringFilter<"favorites"> | string
     league?: StringFilter<"favorites"> | string
     team?: StringFilter<"favorites"> | string
-    createdAt?: DateTimeFilter<"favorites"> | Date | string
-    updatedAt?: DateTimeFilter<"favorites"> | Date | string
+    register_id?: StringFilter<"favorites"> | string
+    register_time?: DateTimeFilter<"favorites"> | Date | string
+    update_id?: StringFilter<"favorites"> | string
+    update_time?: DateTimeFilter<"favorites"> | Date | string
     user?: XOR<UsersScalarRelationFilter, usersWhereInput>
-  }, "id" | "userId_country_league">
+  }, "id" | "userId_level_country_league_team">
 
   export type favoritesOrderByWithAggregationInput = {
     id?: SortOrder
     userId?: SortOrder
+    level?: SortOrder
     country?: SortOrder
     league?: SortOrder
     team?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
+    register_id?: SortOrder
+    register_time?: SortOrder
+    update_id?: SortOrder
+    update_time?: SortOrder
     _count?: favoritesCountOrderByAggregateInput
     _avg?: favoritesAvgOrderByAggregateInput
     _max?: favoritesMaxOrderByAggregateInput
@@ -3485,11 +3581,14 @@ export namespace Prisma {
     NOT?: favoritesScalarWhereWithAggregatesInput | favoritesScalarWhereWithAggregatesInput[]
     id?: BigIntWithAggregatesFilter<"favorites"> | bigint | number
     userId?: BigIntWithAggregatesFilter<"favorites"> | bigint | number
+    level?: IntWithAggregatesFilter<"favorites"> | number
     country?: StringWithAggregatesFilter<"favorites"> | string
     league?: StringWithAggregatesFilter<"favorites"> | string
     team?: StringWithAggregatesFilter<"favorites"> | string
-    createdAt?: DateTimeWithAggregatesFilter<"favorites"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"favorites"> | Date | string
+    register_id?: StringWithAggregatesFilter<"favorites"> | string
+    register_time?: DateTimeWithAggregatesFilter<"favorites"> | Date | string
+    update_id?: StringWithAggregatesFilter<"favorites"> | string
+    update_time?: DateTimeWithAggregatesFilter<"favorites"> | Date | string
   }
 
   export type usersCreateInput = {
@@ -3497,8 +3596,10 @@ export namespace Prisma {
     email: string
     passwordHash: string
     name?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
+    register_id: string
+    register_time: Date | string
+    update_id: string
+    update_time: Date | string
     favorites?: favoritesCreateNestedManyWithoutUserInput
   }
 
@@ -3507,8 +3608,10 @@ export namespace Prisma {
     email: string
     passwordHash: string
     name?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
+    register_id: string
+    register_time: Date | string
+    update_id: string
+    update_time: Date | string
     favorites?: favoritesUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -3517,8 +3620,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    register_id?: StringFieldUpdateOperationsInput | string
+    register_time?: DateTimeFieldUpdateOperationsInput | Date | string
+    update_id?: StringFieldUpdateOperationsInput | string
+    update_time?: DateTimeFieldUpdateOperationsInput | Date | string
     favorites?: favoritesUpdateManyWithoutUserNestedInput
   }
 
@@ -3527,8 +3632,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    register_id?: StringFieldUpdateOperationsInput | string
+    register_time?: DateTimeFieldUpdateOperationsInput | Date | string
+    update_id?: StringFieldUpdateOperationsInput | string
+    update_time?: DateTimeFieldUpdateOperationsInput | Date | string
     favorites?: favoritesUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -3537,8 +3644,10 @@ export namespace Prisma {
     email: string
     passwordHash: string
     name?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
+    register_id: string
+    register_time: Date | string
+    update_id: string
+    update_time: Date | string
   }
 
   export type usersUpdateManyMutationInput = {
@@ -3546,8 +3655,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    register_id?: StringFieldUpdateOperationsInput | string
+    register_time?: DateTimeFieldUpdateOperationsInput | Date | string
+    update_id?: StringFieldUpdateOperationsInput | string
+    update_time?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type usersUncheckedUpdateManyInput = {
@@ -3555,77 +3666,100 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    register_id?: StringFieldUpdateOperationsInput | string
+    register_time?: DateTimeFieldUpdateOperationsInput | Date | string
+    update_id?: StringFieldUpdateOperationsInput | string
+    update_time?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type favoritesCreateInput = {
     id?: bigint | number
+    level: number
     country: string
-    league: string
-    team: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
+    league?: string
+    team?: string
+    register_id: string
+    register_time: Date | string
+    update_id: string
+    update_time: Date | string
     user: usersCreateNestedOneWithoutFavoritesInput
   }
 
   export type favoritesUncheckedCreateInput = {
     id?: bigint | number
     userId: bigint | number
+    level: number
     country: string
-    league: string
-    team: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
+    league?: string
+    team?: string
+    register_id: string
+    register_time: Date | string
+    update_id: string
+    update_time: Date | string
   }
 
   export type favoritesUpdateInput = {
     id?: BigIntFieldUpdateOperationsInput | bigint | number
+    level?: IntFieldUpdateOperationsInput | number
     country?: StringFieldUpdateOperationsInput | string
     league?: StringFieldUpdateOperationsInput | string
     team?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    register_id?: StringFieldUpdateOperationsInput | string
+    register_time?: DateTimeFieldUpdateOperationsInput | Date | string
+    update_id?: StringFieldUpdateOperationsInput | string
+    update_time?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: usersUpdateOneRequiredWithoutFavoritesNestedInput
   }
 
   export type favoritesUncheckedUpdateInput = {
     id?: BigIntFieldUpdateOperationsInput | bigint | number
     userId?: BigIntFieldUpdateOperationsInput | bigint | number
+    level?: IntFieldUpdateOperationsInput | number
     country?: StringFieldUpdateOperationsInput | string
     league?: StringFieldUpdateOperationsInput | string
     team?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    register_id?: StringFieldUpdateOperationsInput | string
+    register_time?: DateTimeFieldUpdateOperationsInput | Date | string
+    update_id?: StringFieldUpdateOperationsInput | string
+    update_time?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type favoritesCreateManyInput = {
     id?: bigint | number
     userId: bigint | number
+    level: number
     country: string
-    league: string
-    team: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
+    league?: string
+    team?: string
+    register_id: string
+    register_time: Date | string
+    update_id: string
+    update_time: Date | string
   }
 
   export type favoritesUpdateManyMutationInput = {
     id?: BigIntFieldUpdateOperationsInput | bigint | number
+    level?: IntFieldUpdateOperationsInput | number
     country?: StringFieldUpdateOperationsInput | string
     league?: StringFieldUpdateOperationsInput | string
     team?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    register_id?: StringFieldUpdateOperationsInput | string
+    register_time?: DateTimeFieldUpdateOperationsInput | Date | string
+    update_id?: StringFieldUpdateOperationsInput | string
+    update_time?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type favoritesUncheckedUpdateManyInput = {
     id?: BigIntFieldUpdateOperationsInput | bigint | number
     userId?: BigIntFieldUpdateOperationsInput | bigint | number
+    level?: IntFieldUpdateOperationsInput | number
     country?: StringFieldUpdateOperationsInput | string
     league?: StringFieldUpdateOperationsInput | string
     team?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    register_id?: StringFieldUpdateOperationsInput | string
+    register_time?: DateTimeFieldUpdateOperationsInput | Date | string
+    update_id?: StringFieldUpdateOperationsInput | string
+    update_time?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type BigIntFilter<$PrismaModel = never> = {
@@ -3700,8 +3834,10 @@ export namespace Prisma {
     email?: SortOrder
     passwordHash?: SortOrder
     name?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
+    register_id?: SortOrder
+    register_time?: SortOrder
+    update_id?: SortOrder
+    update_time?: SortOrder
   }
 
   export type usersAvgOrderByAggregateInput = {
@@ -3713,8 +3849,10 @@ export namespace Prisma {
     email?: SortOrder
     passwordHash?: SortOrder
     name?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
+    register_id?: SortOrder
+    register_time?: SortOrder
+    update_id?: SortOrder
+    update_time?: SortOrder
   }
 
   export type usersMinOrderByAggregateInput = {
@@ -3722,8 +3860,10 @@ export namespace Prisma {
     email?: SortOrder
     passwordHash?: SortOrder
     name?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
+    register_id?: SortOrder
+    register_time?: SortOrder
+    update_id?: SortOrder
+    update_time?: SortOrder
   }
 
   export type usersSumOrderByAggregateInput = {
@@ -3796,55 +3936,95 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type IntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
+  }
+
   export type UsersScalarRelationFilter = {
     is?: usersWhereInput
     isNot?: usersWhereInput
   }
 
-  export type favoritesUserIdCountryLeagueCompoundUniqueInput = {
+  export type favoritesUserIdLevelCountryLeagueTeamCompoundUniqueInput = {
     userId: bigint | number
+    level: number
     country: string
     league: string
+    team: string
   }
 
   export type favoritesCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
+    level?: SortOrder
     country?: SortOrder
     league?: SortOrder
     team?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
+    register_id?: SortOrder
+    register_time?: SortOrder
+    update_id?: SortOrder
+    update_time?: SortOrder
   }
 
   export type favoritesAvgOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
+    level?: SortOrder
   }
 
   export type favoritesMaxOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
+    level?: SortOrder
     country?: SortOrder
     league?: SortOrder
     team?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
+    register_id?: SortOrder
+    register_time?: SortOrder
+    update_id?: SortOrder
+    update_time?: SortOrder
   }
 
   export type favoritesMinOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
+    level?: SortOrder
     country?: SortOrder
     league?: SortOrder
     team?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
+    register_id?: SortOrder
+    register_time?: SortOrder
+    update_id?: SortOrder
+    update_time?: SortOrder
   }
 
   export type favoritesSumOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
+    level?: SortOrder
+  }
+
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
   }
 
   export type favoritesCreateNestedManyWithoutUserInput = {
@@ -3913,6 +4093,14 @@ export namespace Prisma {
     create?: XOR<usersCreateWithoutFavoritesInput, usersUncheckedCreateWithoutFavoritesInput>
     connectOrCreate?: usersCreateOrConnectWithoutFavoritesInput
     connect?: usersWhereUniqueInput
+  }
+
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type usersUpdateOneRequiredWithoutFavoritesNestedInput = {
@@ -4070,22 +4258,44 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
   export type favoritesCreateWithoutUserInput = {
     id?: bigint | number
+    level: number
     country: string
-    league: string
-    team: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
+    league?: string
+    team?: string
+    register_id: string
+    register_time: Date | string
+    update_id: string
+    update_time: Date | string
   }
 
   export type favoritesUncheckedCreateWithoutUserInput = {
     id?: bigint | number
+    level: number
     country: string
-    league: string
-    team: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
+    league?: string
+    team?: string
+    register_id: string
+    register_time: Date | string
+    update_id: string
+    update_time: Date | string
   }
 
   export type favoritesCreateOrConnectWithoutUserInput = {
@@ -4120,11 +4330,14 @@ export namespace Prisma {
     NOT?: favoritesScalarWhereInput | favoritesScalarWhereInput[]
     id?: BigIntFilter<"favorites"> | bigint | number
     userId?: BigIntFilter<"favorites"> | bigint | number
+    level?: IntFilter<"favorites"> | number
     country?: StringFilter<"favorites"> | string
     league?: StringFilter<"favorites"> | string
     team?: StringFilter<"favorites"> | string
-    createdAt?: DateTimeFilter<"favorites"> | Date | string
-    updatedAt?: DateTimeFilter<"favorites"> | Date | string
+    register_id?: StringFilter<"favorites"> | string
+    register_time?: DateTimeFilter<"favorites"> | Date | string
+    update_id?: StringFilter<"favorites"> | string
+    update_time?: DateTimeFilter<"favorites"> | Date | string
   }
 
   export type usersCreateWithoutFavoritesInput = {
@@ -4132,8 +4345,10 @@ export namespace Prisma {
     email: string
     passwordHash: string
     name?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
+    register_id: string
+    register_time: Date | string
+    update_id: string
+    update_time: Date | string
   }
 
   export type usersUncheckedCreateWithoutFavoritesInput = {
@@ -4141,8 +4356,10 @@ export namespace Prisma {
     email: string
     passwordHash: string
     name?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
+    register_id: string
+    register_time: Date | string
+    update_id: string
+    update_time: Date | string
   }
 
   export type usersCreateOrConnectWithoutFavoritesInput = {
@@ -4166,8 +4383,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    register_id?: StringFieldUpdateOperationsInput | string
+    register_time?: DateTimeFieldUpdateOperationsInput | Date | string
+    update_id?: StringFieldUpdateOperationsInput | string
+    update_time?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type usersUncheckedUpdateWithoutFavoritesInput = {
@@ -4175,44 +4394,58 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    register_id?: StringFieldUpdateOperationsInput | string
+    register_time?: DateTimeFieldUpdateOperationsInput | Date | string
+    update_id?: StringFieldUpdateOperationsInput | string
+    update_time?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type favoritesCreateManyUserInput = {
     id?: bigint | number
+    level: number
     country: string
-    league: string
-    team: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
+    league?: string
+    team?: string
+    register_id: string
+    register_time: Date | string
+    update_id: string
+    update_time: Date | string
   }
 
   export type favoritesUpdateWithoutUserInput = {
     id?: BigIntFieldUpdateOperationsInput | bigint | number
+    level?: IntFieldUpdateOperationsInput | number
     country?: StringFieldUpdateOperationsInput | string
     league?: StringFieldUpdateOperationsInput | string
     team?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    register_id?: StringFieldUpdateOperationsInput | string
+    register_time?: DateTimeFieldUpdateOperationsInput | Date | string
+    update_id?: StringFieldUpdateOperationsInput | string
+    update_time?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type favoritesUncheckedUpdateWithoutUserInput = {
     id?: BigIntFieldUpdateOperationsInput | bigint | number
+    level?: IntFieldUpdateOperationsInput | number
     country?: StringFieldUpdateOperationsInput | string
     league?: StringFieldUpdateOperationsInput | string
     team?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    register_id?: StringFieldUpdateOperationsInput | string
+    register_time?: DateTimeFieldUpdateOperationsInput | Date | string
+    update_id?: StringFieldUpdateOperationsInput | string
+    update_time?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type favoritesUncheckedUpdateManyWithoutUserInput = {
     id?: BigIntFieldUpdateOperationsInput | bigint | number
+    level?: IntFieldUpdateOperationsInput | number
     country?: StringFieldUpdateOperationsInput | string
     league?: StringFieldUpdateOperationsInput | string
     team?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    register_id?: StringFieldUpdateOperationsInput | string
+    register_time?: DateTimeFieldUpdateOperationsInput | Date | string
+    update_id?: StringFieldUpdateOperationsInput | string
+    update_time?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 

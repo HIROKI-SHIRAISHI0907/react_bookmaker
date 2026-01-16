@@ -5014,6 +5014,7 @@ export namespace Prisma {
     league: string | null
     team: string | null
     team_color_hex: string | null
+    del_flg: string | null
     register_id: string | null
     register_time: Date | null
     update_id: string | null
@@ -5026,6 +5027,7 @@ export namespace Prisma {
     league: string | null
     team: string | null
     team_color_hex: string | null
+    del_flg: string | null
     register_id: string | null
     register_time: Date | null
     update_id: string | null
@@ -5038,6 +5040,7 @@ export namespace Prisma {
     league: number
     team: number
     team_color_hex: number
+    del_flg: number
     register_id: number
     register_time: number
     update_id: number
@@ -5060,6 +5063,7 @@ export namespace Prisma {
     league?: true
     team?: true
     team_color_hex?: true
+    del_flg?: true
     register_id?: true
     register_time?: true
     update_id?: true
@@ -5072,6 +5076,7 @@ export namespace Prisma {
     league?: true
     team?: true
     team_color_hex?: true
+    del_flg?: true
     register_id?: true
     register_time?: true
     update_id?: true
@@ -5084,6 +5089,7 @@ export namespace Prisma {
     league?: true
     team?: true
     team_color_hex?: true
+    del_flg?: true
     register_id?: true
     register_time?: true
     update_id?: true
@@ -5183,6 +5189,7 @@ export namespace Prisma {
     league: string
     team: string
     team_color_hex: string | null
+    del_flg: string
     register_id: string | null
     register_time: Date | null
     update_id: string | null
@@ -5214,6 +5221,7 @@ export namespace Prisma {
     league?: boolean
     team?: boolean
     team_color_hex?: boolean
+    del_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
@@ -5226,6 +5234,7 @@ export namespace Prisma {
     league?: boolean
     team?: boolean
     team_color_hex?: boolean
+    del_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
@@ -5238,6 +5247,7 @@ export namespace Prisma {
     league?: boolean
     team?: boolean
     team_color_hex?: boolean
+    del_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
@@ -5250,13 +5260,14 @@ export namespace Prisma {
     league?: boolean
     team?: boolean
     team_color_hex?: boolean
+    del_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
     update_time?: boolean
   }
 
-  export type team_color_masterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "country" | "league" | "team" | "team_color_hex" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["team_color_master"]>
+  export type team_color_masterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "country" | "league" | "team" | "team_color_hex" | "del_flg" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["team_color_master"]>
 
   export type $team_color_masterPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "team_color_master"
@@ -5267,6 +5278,7 @@ export namespace Prisma {
       league: string
       team: string
       team_color_hex: string | null
+      del_flg: string
       register_id: string | null
       register_time: Date | null
       update_id: string | null
@@ -5699,6 +5711,7 @@ export namespace Prisma {
     readonly league: FieldRef<"team_color_master", 'String'>
     readonly team: FieldRef<"team_color_master", 'String'>
     readonly team_color_hex: FieldRef<"team_color_master", 'String'>
+    readonly del_flg: FieldRef<"team_color_master", 'String'>
     readonly register_id: FieldRef<"team_color_master", 'String'>
     readonly register_time: FieldRef<"team_color_master", 'DateTime'>
     readonly update_id: FieldRef<"team_color_master", 'String'>
@@ -7369,7 +7382,7 @@ export namespace Prisma {
     id: number | null
     option_num: string | null
     options: string | null
-    flg: string | null
+    valid_flg: string | null
     register_id: string | null
     register_time: Date | null
     update_id: string | null
@@ -7380,7 +7393,7 @@ export namespace Prisma {
     id: number | null
     option_num: string | null
     options: string | null
-    flg: string | null
+    valid_flg: string | null
     register_id: string | null
     register_time: Date | null
     update_id: string | null
@@ -7391,7 +7404,7 @@ export namespace Prisma {
     id: number
     option_num: number
     options: number
-    flg: number
+    valid_flg: number
     register_id: number
     register_time: number
     update_id: number
@@ -7412,7 +7425,7 @@ export namespace Prisma {
     id?: true
     option_num?: true
     options?: true
-    flg?: true
+    valid_flg?: true
     register_id?: true
     register_time?: true
     update_id?: true
@@ -7423,7 +7436,7 @@ export namespace Prisma {
     id?: true
     option_num?: true
     options?: true
-    flg?: true
+    valid_flg?: true
     register_id?: true
     register_time?: true
     update_id?: true
@@ -7434,7 +7447,7 @@ export namespace Prisma {
     id?: true
     option_num?: true
     options?: true
-    flg?: true
+    valid_flg?: true
     register_id?: true
     register_time?: true
     update_id?: true
@@ -7532,7 +7545,7 @@ export namespace Prisma {
     id: number
     option_num: string
     options: string
-    flg: string
+    valid_flg: string
     register_id: string
     register_time: Date
     update_id: string
@@ -7562,7 +7575,7 @@ export namespace Prisma {
     id?: boolean
     option_num?: boolean
     options?: boolean
-    flg?: boolean
+    valid_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
@@ -7573,7 +7586,7 @@ export namespace Prisma {
     id?: boolean
     option_num?: boolean
     options?: boolean
-    flg?: boolean
+    valid_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
@@ -7584,7 +7597,7 @@ export namespace Prisma {
     id?: boolean
     option_num?: boolean
     options?: boolean
-    flg?: boolean
+    valid_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
@@ -7595,14 +7608,14 @@ export namespace Prisma {
     id?: boolean
     option_num?: boolean
     options?: boolean
-    flg?: boolean
+    valid_flg?: boolean
     register_id?: boolean
     register_time?: boolean
     update_id?: boolean
     update_time?: boolean
   }
 
-  export type stat_size_finalize_masterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "option_num" | "options" | "flg" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["stat_size_finalize_master"]>
+  export type stat_size_finalize_masterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "option_num" | "options" | "valid_flg" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["stat_size_finalize_master"]>
 
   export type $stat_size_finalize_masterPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "stat_size_finalize_master"
@@ -7611,7 +7624,7 @@ export namespace Prisma {
       id: number
       option_num: string
       options: string
-      flg: string
+      valid_flg: string
       register_id: string
       register_time: Date
       update_id: string
@@ -8042,7 +8055,7 @@ export namespace Prisma {
     readonly id: FieldRef<"stat_size_finalize_master", 'Int'>
     readonly option_num: FieldRef<"stat_size_finalize_master", 'String'>
     readonly options: FieldRef<"stat_size_finalize_master", 'String'>
-    readonly flg: FieldRef<"stat_size_finalize_master", 'String'>
+    readonly valid_flg: FieldRef<"stat_size_finalize_master", 'String'>
     readonly register_id: FieldRef<"stat_size_finalize_master", 'String'>
     readonly register_time: FieldRef<"stat_size_finalize_master", 'DateTime'>
     readonly update_id: FieldRef<"stat_size_finalize_master", 'String'>
@@ -9525,6 +9538,7 @@ export namespace Prisma {
     league: 'league',
     team: 'team',
     team_color_hex: 'team_color_hex',
+    del_flg: 'del_flg',
     register_id: 'register_id',
     register_time: 'register_time',
     update_id: 'update_id',
@@ -9568,7 +9582,7 @@ export namespace Prisma {
     id: 'id',
     option_num: 'option_num',
     options: 'options',
-    flg: 'flg',
+    valid_flg: 'valid_flg',
     register_id: 'register_id',
     register_time: 'register_time',
     update_id: 'update_id',
@@ -10055,6 +10069,7 @@ export namespace Prisma {
     league?: StringFilter<"team_color_master"> | string
     team?: StringFilter<"team_color_master"> | string
     team_color_hex?: StringNullableFilter<"team_color_master"> | string | null
+    del_flg?: StringFilter<"team_color_master"> | string
     register_id?: StringNullableFilter<"team_color_master"> | string | null
     register_time?: DateTimeNullableFilter<"team_color_master"> | Date | string | null
     update_id?: StringNullableFilter<"team_color_master"> | string | null
@@ -10067,6 +10082,7 @@ export namespace Prisma {
     league?: SortOrder
     team?: SortOrder
     team_color_hex?: SortOrderInput | SortOrder
+    del_flg?: SortOrder
     register_id?: SortOrderInput | SortOrder
     register_time?: SortOrderInput | SortOrder
     update_id?: SortOrderInput | SortOrder
@@ -10082,6 +10098,7 @@ export namespace Prisma {
     league?: StringFilter<"team_color_master"> | string
     team?: StringFilter<"team_color_master"> | string
     team_color_hex?: StringNullableFilter<"team_color_master"> | string | null
+    del_flg?: StringFilter<"team_color_master"> | string
     register_id?: StringNullableFilter<"team_color_master"> | string | null
     register_time?: DateTimeNullableFilter<"team_color_master"> | Date | string | null
     update_id?: StringNullableFilter<"team_color_master"> | string | null
@@ -10094,6 +10111,7 @@ export namespace Prisma {
     league?: SortOrder
     team?: SortOrder
     team_color_hex?: SortOrderInput | SortOrder
+    del_flg?: SortOrder
     register_id?: SortOrderInput | SortOrder
     register_time?: SortOrderInput | SortOrder
     update_id?: SortOrderInput | SortOrder
@@ -10114,6 +10132,7 @@ export namespace Prisma {
     league?: StringWithAggregatesFilter<"team_color_master"> | string
     team?: StringWithAggregatesFilter<"team_color_master"> | string
     team_color_hex?: StringNullableWithAggregatesFilter<"team_color_master"> | string | null
+    del_flg?: StringWithAggregatesFilter<"team_color_master"> | string
     register_id?: StringNullableWithAggregatesFilter<"team_color_master"> | string | null
     register_time?: DateTimeNullableWithAggregatesFilter<"team_color_master"> | Date | string | null
     update_id?: StringNullableWithAggregatesFilter<"team_color_master"> | string | null
@@ -10276,7 +10295,7 @@ export namespace Prisma {
     id?: IntFilter<"stat_size_finalize_master"> | number
     option_num?: StringFilter<"stat_size_finalize_master"> | string
     options?: StringFilter<"stat_size_finalize_master"> | string
-    flg?: StringFilter<"stat_size_finalize_master"> | string
+    valid_flg?: StringFilter<"stat_size_finalize_master"> | string
     register_id?: StringFilter<"stat_size_finalize_master"> | string
     register_time?: DateTimeFilter<"stat_size_finalize_master"> | Date | string
     update_id?: StringFilter<"stat_size_finalize_master"> | string
@@ -10287,7 +10306,7 @@ export namespace Prisma {
     id?: SortOrder
     option_num?: SortOrder
     options?: SortOrder
-    flg?: SortOrder
+    valid_flg?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -10301,7 +10320,7 @@ export namespace Prisma {
     NOT?: stat_size_finalize_masterWhereInput | stat_size_finalize_masterWhereInput[]
     option_num?: StringFilter<"stat_size_finalize_master"> | string
     options?: StringFilter<"stat_size_finalize_master"> | string
-    flg?: StringFilter<"stat_size_finalize_master"> | string
+    valid_flg?: StringFilter<"stat_size_finalize_master"> | string
     register_id?: StringFilter<"stat_size_finalize_master"> | string
     register_time?: DateTimeFilter<"stat_size_finalize_master"> | Date | string
     update_id?: StringFilter<"stat_size_finalize_master"> | string
@@ -10312,7 +10331,7 @@ export namespace Prisma {
     id?: SortOrder
     option_num?: SortOrder
     options?: SortOrder
-    flg?: SortOrder
+    valid_flg?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -10331,7 +10350,7 @@ export namespace Prisma {
     id?: IntWithAggregatesFilter<"stat_size_finalize_master"> | number
     option_num?: StringWithAggregatesFilter<"stat_size_finalize_master"> | string
     options?: StringWithAggregatesFilter<"stat_size_finalize_master"> | string
-    flg?: StringWithAggregatesFilter<"stat_size_finalize_master"> | string
+    valid_flg?: StringWithAggregatesFilter<"stat_size_finalize_master"> | string
     register_id?: StringWithAggregatesFilter<"stat_size_finalize_master"> | string
     register_time?: DateTimeWithAggregatesFilter<"stat_size_finalize_master"> | Date | string
     update_id?: StringWithAggregatesFilter<"stat_size_finalize_master"> | string
@@ -10830,6 +10849,7 @@ export namespace Prisma {
     league: string
     team: string
     team_color_hex?: string | null
+    del_flg?: string
     register_id?: string | null
     register_time?: Date | string | null
     update_id?: string | null
@@ -10842,6 +10862,7 @@ export namespace Prisma {
     league: string
     team: string
     team_color_hex?: string | null
+    del_flg?: string
     register_id?: string | null
     register_time?: Date | string | null
     update_id?: string | null
@@ -10853,6 +10874,7 @@ export namespace Prisma {
     league?: StringFieldUpdateOperationsInput | string
     team?: StringFieldUpdateOperationsInput | string
     team_color_hex?: NullableStringFieldUpdateOperationsInput | string | null
+    del_flg?: StringFieldUpdateOperationsInput | string
     register_id?: NullableStringFieldUpdateOperationsInput | string | null
     register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     update_id?: NullableStringFieldUpdateOperationsInput | string | null
@@ -10865,6 +10887,7 @@ export namespace Prisma {
     league?: StringFieldUpdateOperationsInput | string
     team?: StringFieldUpdateOperationsInput | string
     team_color_hex?: NullableStringFieldUpdateOperationsInput | string | null
+    del_flg?: StringFieldUpdateOperationsInput | string
     register_id?: NullableStringFieldUpdateOperationsInput | string | null
     register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     update_id?: NullableStringFieldUpdateOperationsInput | string | null
@@ -10877,6 +10900,7 @@ export namespace Prisma {
     league: string
     team: string
     team_color_hex?: string | null
+    del_flg?: string
     register_id?: string | null
     register_time?: Date | string | null
     update_id?: string | null
@@ -10888,6 +10912,7 @@ export namespace Prisma {
     league?: StringFieldUpdateOperationsInput | string
     team?: StringFieldUpdateOperationsInput | string
     team_color_hex?: NullableStringFieldUpdateOperationsInput | string | null
+    del_flg?: StringFieldUpdateOperationsInput | string
     register_id?: NullableStringFieldUpdateOperationsInput | string | null
     register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     update_id?: NullableStringFieldUpdateOperationsInput | string | null
@@ -10900,6 +10925,7 @@ export namespace Prisma {
     league?: StringFieldUpdateOperationsInput | string
     team?: StringFieldUpdateOperationsInput | string
     team_color_hex?: NullableStringFieldUpdateOperationsInput | string | null
+    del_flg?: StringFieldUpdateOperationsInput | string
     register_id?: NullableStringFieldUpdateOperationsInput | string | null
     register_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     update_id?: NullableStringFieldUpdateOperationsInput | string | null
@@ -11098,7 +11124,7 @@ export namespace Prisma {
   export type stat_size_finalize_masterCreateInput = {
     option_num?: string
     options: string
-    flg?: string
+    valid_flg?: string
     register_id: string
     register_time: Date | string
     update_id: string
@@ -11109,7 +11135,7 @@ export namespace Prisma {
     id?: number
     option_num?: string
     options: string
-    flg?: string
+    valid_flg?: string
     register_id: string
     register_time: Date | string
     update_id: string
@@ -11119,7 +11145,7 @@ export namespace Prisma {
   export type stat_size_finalize_masterUpdateInput = {
     option_num?: StringFieldUpdateOperationsInput | string
     options?: StringFieldUpdateOperationsInput | string
-    flg?: StringFieldUpdateOperationsInput | string
+    valid_flg?: StringFieldUpdateOperationsInput | string
     register_id?: StringFieldUpdateOperationsInput | string
     register_time?: DateTimeFieldUpdateOperationsInput | Date | string
     update_id?: StringFieldUpdateOperationsInput | string
@@ -11130,7 +11156,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     option_num?: StringFieldUpdateOperationsInput | string
     options?: StringFieldUpdateOperationsInput | string
-    flg?: StringFieldUpdateOperationsInput | string
+    valid_flg?: StringFieldUpdateOperationsInput | string
     register_id?: StringFieldUpdateOperationsInput | string
     register_time?: DateTimeFieldUpdateOperationsInput | Date | string
     update_id?: StringFieldUpdateOperationsInput | string
@@ -11141,7 +11167,7 @@ export namespace Prisma {
     id?: number
     option_num?: string
     options: string
-    flg?: string
+    valid_flg?: string
     register_id: string
     register_time: Date | string
     update_id: string
@@ -11151,7 +11177,7 @@ export namespace Prisma {
   export type stat_size_finalize_masterUpdateManyMutationInput = {
     option_num?: StringFieldUpdateOperationsInput | string
     options?: StringFieldUpdateOperationsInput | string
-    flg?: StringFieldUpdateOperationsInput | string
+    valid_flg?: StringFieldUpdateOperationsInput | string
     register_id?: StringFieldUpdateOperationsInput | string
     register_time?: DateTimeFieldUpdateOperationsInput | Date | string
     update_id?: StringFieldUpdateOperationsInput | string
@@ -11162,7 +11188,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     option_num?: StringFieldUpdateOperationsInput | string
     options?: StringFieldUpdateOperationsInput | string
-    flg?: StringFieldUpdateOperationsInput | string
+    valid_flg?: StringFieldUpdateOperationsInput | string
     register_id?: StringFieldUpdateOperationsInput | string
     register_time?: DateTimeFieldUpdateOperationsInput | Date | string
     update_id?: StringFieldUpdateOperationsInput | string
@@ -11610,6 +11636,7 @@ export namespace Prisma {
     league?: SortOrder
     team?: SortOrder
     team_color_hex?: SortOrder
+    del_flg?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -11626,6 +11653,7 @@ export namespace Prisma {
     league?: SortOrder
     team?: SortOrder
     team_color_hex?: SortOrder
+    del_flg?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -11638,6 +11666,7 @@ export namespace Prisma {
     league?: SortOrder
     team?: SortOrder
     team_color_hex?: SortOrder
+    del_flg?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -11768,7 +11797,7 @@ export namespace Prisma {
     id?: SortOrder
     option_num?: SortOrder
     options?: SortOrder
-    flg?: SortOrder
+    valid_flg?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -11783,7 +11812,7 @@ export namespace Prisma {
     id?: SortOrder
     option_num?: SortOrder
     options?: SortOrder
-    flg?: SortOrder
+    valid_flg?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder
@@ -11794,7 +11823,7 @@ export namespace Prisma {
     id?: SortOrder
     option_num?: SortOrder
     options?: SortOrder
-    flg?: SortOrder
+    valid_flg?: SortOrder
     register_id?: SortOrder
     register_time?: SortOrder
     update_id?: SortOrder

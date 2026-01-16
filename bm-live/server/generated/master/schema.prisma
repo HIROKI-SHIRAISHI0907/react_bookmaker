@@ -78,6 +78,7 @@ model team_color_master {
   league         String
   team           String
   team_color_hex String?   @db.VarChar(7)
+  del_flg        String    @default("0") @db.VarChar(1)
   register_id    String?   @db.VarChar(100)
   register_time  DateTime? @db.Timestamptz(0)
   update_id      String?   @db.VarChar(100)
@@ -115,7 +116,7 @@ model stat_size_finalize_master {
   id            Int      @id @default(autoincrement())
   option_num    String   @default("0") @db.VarChar(1)
   options       String   @db.Text
-  flg           String   @default("0") @db.VarChar(1)
+  valid_flg     String   @default("0") @db.VarChar(1)
   register_id   String   @db.VarChar(100)
   register_time DateTime @db.Timestamptz(0)
   update_id     String   @db.VarChar(100)

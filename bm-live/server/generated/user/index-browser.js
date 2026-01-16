@@ -126,18 +126,23 @@ exports.Prisma.UsersScalarFieldEnum = {
   email: 'email',
   passwordHash: 'passwordHash',
   name: 'name',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  register_id: 'register_id',
+  register_time: 'register_time',
+  update_id: 'update_id',
+  update_time: 'update_time'
 };
 
 exports.Prisma.FavoritesScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
+  level: 'level',
   country: 'country',
   league: 'league',
   team: 'team',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  register_id: 'register_id',
+  register_time: 'register_time',
+  update_id: 'update_id',
+  update_time: 'update_time'
 };
 
 exports.Prisma.SortOrder = {
