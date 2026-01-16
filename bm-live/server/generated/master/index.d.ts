@@ -39,6 +39,11 @@ export type team_color_master = $Result.DefaultSelection<Prisma.$team_color_mast
  */
 export type future_master = $Result.DefaultSelection<Prisma.$future_masterPayload>
 /**
+ * Model stat_size_finalize_master
+ * 
+ */
+export type stat_size_finalize_master = $Result.DefaultSelection<Prisma.$stat_size_finalize_masterPayload>
+/**
  * Model batch_job_exec
  * 
  */
@@ -211,6 +216,16 @@ export class PrismaClient<
     * ```
     */
   get future_master(): Prisma.future_masterDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.stat_size_finalize_master`: Exposes CRUD operations for the **stat_size_finalize_master** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Stat_size_finalize_masters
+    * const stat_size_finalize_masters = await prisma.stat_size_finalize_master.findMany()
+    * ```
+    */
+  get stat_size_finalize_master(): Prisma.stat_size_finalize_masterDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.batch_job_exec`: Exposes CRUD operations for the **batch_job_exec** model.
@@ -667,6 +682,7 @@ export namespace Prisma {
     country_league_season_master: 'country_league_season_master',
     team_color_master: 'team_color_master',
     future_master: 'future_master',
+    stat_size_finalize_master: 'stat_size_finalize_master',
     batch_job_exec: 'batch_job_exec'
   };
 
@@ -686,7 +702,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "team_member_master" | "country_league_master" | "country_league_season_master" | "team_color_master" | "future_master" | "batch_job_exec"
+      modelProps: "team_member_master" | "country_league_master" | "country_league_season_master" | "team_color_master" | "future_master" | "stat_size_finalize_master" | "batch_job_exec"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1060,6 +1076,80 @@ export namespace Prisma {
           }
         }
       }
+      stat_size_finalize_master: {
+        payload: Prisma.$stat_size_finalize_masterPayload<ExtArgs>
+        fields: Prisma.stat_size_finalize_masterFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.stat_size_finalize_masterFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$stat_size_finalize_masterPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.stat_size_finalize_masterFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$stat_size_finalize_masterPayload>
+          }
+          findFirst: {
+            args: Prisma.stat_size_finalize_masterFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$stat_size_finalize_masterPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.stat_size_finalize_masterFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$stat_size_finalize_masterPayload>
+          }
+          findMany: {
+            args: Prisma.stat_size_finalize_masterFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$stat_size_finalize_masterPayload>[]
+          }
+          create: {
+            args: Prisma.stat_size_finalize_masterCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$stat_size_finalize_masterPayload>
+          }
+          createMany: {
+            args: Prisma.stat_size_finalize_masterCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.stat_size_finalize_masterCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$stat_size_finalize_masterPayload>[]
+          }
+          delete: {
+            args: Prisma.stat_size_finalize_masterDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$stat_size_finalize_masterPayload>
+          }
+          update: {
+            args: Prisma.stat_size_finalize_masterUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$stat_size_finalize_masterPayload>
+          }
+          deleteMany: {
+            args: Prisma.stat_size_finalize_masterDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.stat_size_finalize_masterUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.stat_size_finalize_masterUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$stat_size_finalize_masterPayload>[]
+          }
+          upsert: {
+            args: Prisma.stat_size_finalize_masterUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$stat_size_finalize_masterPayload>
+          }
+          aggregate: {
+            args: Prisma.Stat_size_finalize_masterAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateStat_size_finalize_master>
+          }
+          groupBy: {
+            args: Prisma.stat_size_finalize_masterGroupByArgs<ExtArgs>
+            result: $Utils.Optional<Stat_size_finalize_masterGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.stat_size_finalize_masterCountArgs<ExtArgs>
+            result: $Utils.Optional<Stat_size_finalize_masterCountAggregateOutputType> | number
+          }
+        }
+      }
       batch_job_exec: {
         payload: Prisma.$batch_job_execPayload<ExtArgs>
         fields: Prisma.batch_job_execFieldRefs
@@ -1235,6 +1325,7 @@ export namespace Prisma {
     country_league_season_master?: country_league_season_masterOmit
     team_color_master?: team_color_masterOmit
     future_master?: future_masterOmit
+    stat_size_finalize_master?: stat_size_finalize_masterOmit
     batch_job_exec?: batch_job_execOmit
   }
 
@@ -7255,6 +7346,1074 @@ export namespace Prisma {
 
 
   /**
+   * Model stat_size_finalize_master
+   */
+
+  export type AggregateStat_size_finalize_master = {
+    _count: Stat_size_finalize_masterCountAggregateOutputType | null
+    _avg: Stat_size_finalize_masterAvgAggregateOutputType | null
+    _sum: Stat_size_finalize_masterSumAggregateOutputType | null
+    _min: Stat_size_finalize_masterMinAggregateOutputType | null
+    _max: Stat_size_finalize_masterMaxAggregateOutputType | null
+  }
+
+  export type Stat_size_finalize_masterAvgAggregateOutputType = {
+    id: number | null
+  }
+
+  export type Stat_size_finalize_masterSumAggregateOutputType = {
+    id: number | null
+  }
+
+  export type Stat_size_finalize_masterMinAggregateOutputType = {
+    id: number | null
+    option_num: string | null
+    options: string | null
+    flg: string | null
+    register_id: string | null
+    register_time: Date | null
+    update_id: string | null
+    update_time: Date | null
+  }
+
+  export type Stat_size_finalize_masterMaxAggregateOutputType = {
+    id: number | null
+    option_num: string | null
+    options: string | null
+    flg: string | null
+    register_id: string | null
+    register_time: Date | null
+    update_id: string | null
+    update_time: Date | null
+  }
+
+  export type Stat_size_finalize_masterCountAggregateOutputType = {
+    id: number
+    option_num: number
+    options: number
+    flg: number
+    register_id: number
+    register_time: number
+    update_id: number
+    update_time: number
+    _all: number
+  }
+
+
+  export type Stat_size_finalize_masterAvgAggregateInputType = {
+    id?: true
+  }
+
+  export type Stat_size_finalize_masterSumAggregateInputType = {
+    id?: true
+  }
+
+  export type Stat_size_finalize_masterMinAggregateInputType = {
+    id?: true
+    option_num?: true
+    options?: true
+    flg?: true
+    register_id?: true
+    register_time?: true
+    update_id?: true
+    update_time?: true
+  }
+
+  export type Stat_size_finalize_masterMaxAggregateInputType = {
+    id?: true
+    option_num?: true
+    options?: true
+    flg?: true
+    register_id?: true
+    register_time?: true
+    update_id?: true
+    update_time?: true
+  }
+
+  export type Stat_size_finalize_masterCountAggregateInputType = {
+    id?: true
+    option_num?: true
+    options?: true
+    flg?: true
+    register_id?: true
+    register_time?: true
+    update_id?: true
+    update_time?: true
+    _all?: true
+  }
+
+  export type Stat_size_finalize_masterAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which stat_size_finalize_master to aggregate.
+     */
+    where?: stat_size_finalize_masterWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of stat_size_finalize_masters to fetch.
+     */
+    orderBy?: stat_size_finalize_masterOrderByWithRelationInput | stat_size_finalize_masterOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: stat_size_finalize_masterWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` stat_size_finalize_masters from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` stat_size_finalize_masters.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned stat_size_finalize_masters
+    **/
+    _count?: true | Stat_size_finalize_masterCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: Stat_size_finalize_masterAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: Stat_size_finalize_masterSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: Stat_size_finalize_masterMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: Stat_size_finalize_masterMaxAggregateInputType
+  }
+
+  export type GetStat_size_finalize_masterAggregateType<T extends Stat_size_finalize_masterAggregateArgs> = {
+        [P in keyof T & keyof AggregateStat_size_finalize_master]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateStat_size_finalize_master[P]>
+      : GetScalarType<T[P], AggregateStat_size_finalize_master[P]>
+  }
+
+
+
+
+  export type stat_size_finalize_masterGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: stat_size_finalize_masterWhereInput
+    orderBy?: stat_size_finalize_masterOrderByWithAggregationInput | stat_size_finalize_masterOrderByWithAggregationInput[]
+    by: Stat_size_finalize_masterScalarFieldEnum[] | Stat_size_finalize_masterScalarFieldEnum
+    having?: stat_size_finalize_masterScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: Stat_size_finalize_masterCountAggregateInputType | true
+    _avg?: Stat_size_finalize_masterAvgAggregateInputType
+    _sum?: Stat_size_finalize_masterSumAggregateInputType
+    _min?: Stat_size_finalize_masterMinAggregateInputType
+    _max?: Stat_size_finalize_masterMaxAggregateInputType
+  }
+
+  export type Stat_size_finalize_masterGroupByOutputType = {
+    id: number
+    option_num: string
+    options: string
+    flg: string
+    register_id: string
+    register_time: Date
+    update_id: string
+    update_time: Date
+    _count: Stat_size_finalize_masterCountAggregateOutputType | null
+    _avg: Stat_size_finalize_masterAvgAggregateOutputType | null
+    _sum: Stat_size_finalize_masterSumAggregateOutputType | null
+    _min: Stat_size_finalize_masterMinAggregateOutputType | null
+    _max: Stat_size_finalize_masterMaxAggregateOutputType | null
+  }
+
+  type GetStat_size_finalize_masterGroupByPayload<T extends stat_size_finalize_masterGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<Stat_size_finalize_masterGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof Stat_size_finalize_masterGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], Stat_size_finalize_masterGroupByOutputType[P]>
+            : GetScalarType<T[P], Stat_size_finalize_masterGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type stat_size_finalize_masterSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    option_num?: boolean
+    options?: boolean
+    flg?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
+  }, ExtArgs["result"]["stat_size_finalize_master"]>
+
+  export type stat_size_finalize_masterSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    option_num?: boolean
+    options?: boolean
+    flg?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
+  }, ExtArgs["result"]["stat_size_finalize_master"]>
+
+  export type stat_size_finalize_masterSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    option_num?: boolean
+    options?: boolean
+    flg?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
+  }, ExtArgs["result"]["stat_size_finalize_master"]>
+
+  export type stat_size_finalize_masterSelectScalar = {
+    id?: boolean
+    option_num?: boolean
+    options?: boolean
+    flg?: boolean
+    register_id?: boolean
+    register_time?: boolean
+    update_id?: boolean
+    update_time?: boolean
+  }
+
+  export type stat_size_finalize_masterOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "option_num" | "options" | "flg" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["stat_size_finalize_master"]>
+
+  export type $stat_size_finalize_masterPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "stat_size_finalize_master"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      option_num: string
+      options: string
+      flg: string
+      register_id: string
+      register_time: Date
+      update_id: string
+      update_time: Date
+    }, ExtArgs["result"]["stat_size_finalize_master"]>
+    composites: {}
+  }
+
+  type stat_size_finalize_masterGetPayload<S extends boolean | null | undefined | stat_size_finalize_masterDefaultArgs> = $Result.GetResult<Prisma.$stat_size_finalize_masterPayload, S>
+
+  type stat_size_finalize_masterCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<stat_size_finalize_masterFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: Stat_size_finalize_masterCountAggregateInputType | true
+    }
+
+  export interface stat_size_finalize_masterDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['stat_size_finalize_master'], meta: { name: 'stat_size_finalize_master' } }
+    /**
+     * Find zero or one Stat_size_finalize_master that matches the filter.
+     * @param {stat_size_finalize_masterFindUniqueArgs} args - Arguments to find a Stat_size_finalize_master
+     * @example
+     * // Get one Stat_size_finalize_master
+     * const stat_size_finalize_master = await prisma.stat_size_finalize_master.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends stat_size_finalize_masterFindUniqueArgs>(args: SelectSubset<T, stat_size_finalize_masterFindUniqueArgs<ExtArgs>>): Prisma__stat_size_finalize_masterClient<$Result.GetResult<Prisma.$stat_size_finalize_masterPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Stat_size_finalize_master that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {stat_size_finalize_masterFindUniqueOrThrowArgs} args - Arguments to find a Stat_size_finalize_master
+     * @example
+     * // Get one Stat_size_finalize_master
+     * const stat_size_finalize_master = await prisma.stat_size_finalize_master.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends stat_size_finalize_masterFindUniqueOrThrowArgs>(args: SelectSubset<T, stat_size_finalize_masterFindUniqueOrThrowArgs<ExtArgs>>): Prisma__stat_size_finalize_masterClient<$Result.GetResult<Prisma.$stat_size_finalize_masterPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Stat_size_finalize_master that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {stat_size_finalize_masterFindFirstArgs} args - Arguments to find a Stat_size_finalize_master
+     * @example
+     * // Get one Stat_size_finalize_master
+     * const stat_size_finalize_master = await prisma.stat_size_finalize_master.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends stat_size_finalize_masterFindFirstArgs>(args?: SelectSubset<T, stat_size_finalize_masterFindFirstArgs<ExtArgs>>): Prisma__stat_size_finalize_masterClient<$Result.GetResult<Prisma.$stat_size_finalize_masterPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Stat_size_finalize_master that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {stat_size_finalize_masterFindFirstOrThrowArgs} args - Arguments to find a Stat_size_finalize_master
+     * @example
+     * // Get one Stat_size_finalize_master
+     * const stat_size_finalize_master = await prisma.stat_size_finalize_master.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends stat_size_finalize_masterFindFirstOrThrowArgs>(args?: SelectSubset<T, stat_size_finalize_masterFindFirstOrThrowArgs<ExtArgs>>): Prisma__stat_size_finalize_masterClient<$Result.GetResult<Prisma.$stat_size_finalize_masterPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Stat_size_finalize_masters that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {stat_size_finalize_masterFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Stat_size_finalize_masters
+     * const stat_size_finalize_masters = await prisma.stat_size_finalize_master.findMany()
+     * 
+     * // Get first 10 Stat_size_finalize_masters
+     * const stat_size_finalize_masters = await prisma.stat_size_finalize_master.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const stat_size_finalize_masterWithIdOnly = await prisma.stat_size_finalize_master.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends stat_size_finalize_masterFindManyArgs>(args?: SelectSubset<T, stat_size_finalize_masterFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$stat_size_finalize_masterPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Stat_size_finalize_master.
+     * @param {stat_size_finalize_masterCreateArgs} args - Arguments to create a Stat_size_finalize_master.
+     * @example
+     * // Create one Stat_size_finalize_master
+     * const Stat_size_finalize_master = await prisma.stat_size_finalize_master.create({
+     *   data: {
+     *     // ... data to create a Stat_size_finalize_master
+     *   }
+     * })
+     * 
+     */
+    create<T extends stat_size_finalize_masterCreateArgs>(args: SelectSubset<T, stat_size_finalize_masterCreateArgs<ExtArgs>>): Prisma__stat_size_finalize_masterClient<$Result.GetResult<Prisma.$stat_size_finalize_masterPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Stat_size_finalize_masters.
+     * @param {stat_size_finalize_masterCreateManyArgs} args - Arguments to create many Stat_size_finalize_masters.
+     * @example
+     * // Create many Stat_size_finalize_masters
+     * const stat_size_finalize_master = await prisma.stat_size_finalize_master.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends stat_size_finalize_masterCreateManyArgs>(args?: SelectSubset<T, stat_size_finalize_masterCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Stat_size_finalize_masters and returns the data saved in the database.
+     * @param {stat_size_finalize_masterCreateManyAndReturnArgs} args - Arguments to create many Stat_size_finalize_masters.
+     * @example
+     * // Create many Stat_size_finalize_masters
+     * const stat_size_finalize_master = await prisma.stat_size_finalize_master.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Stat_size_finalize_masters and only return the `id`
+     * const stat_size_finalize_masterWithIdOnly = await prisma.stat_size_finalize_master.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends stat_size_finalize_masterCreateManyAndReturnArgs>(args?: SelectSubset<T, stat_size_finalize_masterCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$stat_size_finalize_masterPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Stat_size_finalize_master.
+     * @param {stat_size_finalize_masterDeleteArgs} args - Arguments to delete one Stat_size_finalize_master.
+     * @example
+     * // Delete one Stat_size_finalize_master
+     * const Stat_size_finalize_master = await prisma.stat_size_finalize_master.delete({
+     *   where: {
+     *     // ... filter to delete one Stat_size_finalize_master
+     *   }
+     * })
+     * 
+     */
+    delete<T extends stat_size_finalize_masterDeleteArgs>(args: SelectSubset<T, stat_size_finalize_masterDeleteArgs<ExtArgs>>): Prisma__stat_size_finalize_masterClient<$Result.GetResult<Prisma.$stat_size_finalize_masterPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Stat_size_finalize_master.
+     * @param {stat_size_finalize_masterUpdateArgs} args - Arguments to update one Stat_size_finalize_master.
+     * @example
+     * // Update one Stat_size_finalize_master
+     * const stat_size_finalize_master = await prisma.stat_size_finalize_master.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends stat_size_finalize_masterUpdateArgs>(args: SelectSubset<T, stat_size_finalize_masterUpdateArgs<ExtArgs>>): Prisma__stat_size_finalize_masterClient<$Result.GetResult<Prisma.$stat_size_finalize_masterPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Stat_size_finalize_masters.
+     * @param {stat_size_finalize_masterDeleteManyArgs} args - Arguments to filter Stat_size_finalize_masters to delete.
+     * @example
+     * // Delete a few Stat_size_finalize_masters
+     * const { count } = await prisma.stat_size_finalize_master.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends stat_size_finalize_masterDeleteManyArgs>(args?: SelectSubset<T, stat_size_finalize_masterDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Stat_size_finalize_masters.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {stat_size_finalize_masterUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Stat_size_finalize_masters
+     * const stat_size_finalize_master = await prisma.stat_size_finalize_master.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends stat_size_finalize_masterUpdateManyArgs>(args: SelectSubset<T, stat_size_finalize_masterUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Stat_size_finalize_masters and returns the data updated in the database.
+     * @param {stat_size_finalize_masterUpdateManyAndReturnArgs} args - Arguments to update many Stat_size_finalize_masters.
+     * @example
+     * // Update many Stat_size_finalize_masters
+     * const stat_size_finalize_master = await prisma.stat_size_finalize_master.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Stat_size_finalize_masters and only return the `id`
+     * const stat_size_finalize_masterWithIdOnly = await prisma.stat_size_finalize_master.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends stat_size_finalize_masterUpdateManyAndReturnArgs>(args: SelectSubset<T, stat_size_finalize_masterUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$stat_size_finalize_masterPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Stat_size_finalize_master.
+     * @param {stat_size_finalize_masterUpsertArgs} args - Arguments to update or create a Stat_size_finalize_master.
+     * @example
+     * // Update or create a Stat_size_finalize_master
+     * const stat_size_finalize_master = await prisma.stat_size_finalize_master.upsert({
+     *   create: {
+     *     // ... data to create a Stat_size_finalize_master
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Stat_size_finalize_master we want to update
+     *   }
+     * })
+     */
+    upsert<T extends stat_size_finalize_masterUpsertArgs>(args: SelectSubset<T, stat_size_finalize_masterUpsertArgs<ExtArgs>>): Prisma__stat_size_finalize_masterClient<$Result.GetResult<Prisma.$stat_size_finalize_masterPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Stat_size_finalize_masters.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {stat_size_finalize_masterCountArgs} args - Arguments to filter Stat_size_finalize_masters to count.
+     * @example
+     * // Count the number of Stat_size_finalize_masters
+     * const count = await prisma.stat_size_finalize_master.count({
+     *   where: {
+     *     // ... the filter for the Stat_size_finalize_masters we want to count
+     *   }
+     * })
+    **/
+    count<T extends stat_size_finalize_masterCountArgs>(
+      args?: Subset<T, stat_size_finalize_masterCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], Stat_size_finalize_masterCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Stat_size_finalize_master.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {Stat_size_finalize_masterAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends Stat_size_finalize_masterAggregateArgs>(args: Subset<T, Stat_size_finalize_masterAggregateArgs>): Prisma.PrismaPromise<GetStat_size_finalize_masterAggregateType<T>>
+
+    /**
+     * Group by Stat_size_finalize_master.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {stat_size_finalize_masterGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends stat_size_finalize_masterGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: stat_size_finalize_masterGroupByArgs['orderBy'] }
+        : { orderBy?: stat_size_finalize_masterGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, stat_size_finalize_masterGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetStat_size_finalize_masterGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the stat_size_finalize_master model
+   */
+  readonly fields: stat_size_finalize_masterFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for stat_size_finalize_master.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__stat_size_finalize_masterClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the stat_size_finalize_master model
+   */
+  interface stat_size_finalize_masterFieldRefs {
+    readonly id: FieldRef<"stat_size_finalize_master", 'Int'>
+    readonly option_num: FieldRef<"stat_size_finalize_master", 'String'>
+    readonly options: FieldRef<"stat_size_finalize_master", 'String'>
+    readonly flg: FieldRef<"stat_size_finalize_master", 'String'>
+    readonly register_id: FieldRef<"stat_size_finalize_master", 'String'>
+    readonly register_time: FieldRef<"stat_size_finalize_master", 'DateTime'>
+    readonly update_id: FieldRef<"stat_size_finalize_master", 'String'>
+    readonly update_time: FieldRef<"stat_size_finalize_master", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * stat_size_finalize_master findUnique
+   */
+  export type stat_size_finalize_masterFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the stat_size_finalize_master
+     */
+    select?: stat_size_finalize_masterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the stat_size_finalize_master
+     */
+    omit?: stat_size_finalize_masterOmit<ExtArgs> | null
+    /**
+     * Filter, which stat_size_finalize_master to fetch.
+     */
+    where: stat_size_finalize_masterWhereUniqueInput
+  }
+
+  /**
+   * stat_size_finalize_master findUniqueOrThrow
+   */
+  export type stat_size_finalize_masterFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the stat_size_finalize_master
+     */
+    select?: stat_size_finalize_masterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the stat_size_finalize_master
+     */
+    omit?: stat_size_finalize_masterOmit<ExtArgs> | null
+    /**
+     * Filter, which stat_size_finalize_master to fetch.
+     */
+    where: stat_size_finalize_masterWhereUniqueInput
+  }
+
+  /**
+   * stat_size_finalize_master findFirst
+   */
+  export type stat_size_finalize_masterFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the stat_size_finalize_master
+     */
+    select?: stat_size_finalize_masterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the stat_size_finalize_master
+     */
+    omit?: stat_size_finalize_masterOmit<ExtArgs> | null
+    /**
+     * Filter, which stat_size_finalize_master to fetch.
+     */
+    where?: stat_size_finalize_masterWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of stat_size_finalize_masters to fetch.
+     */
+    orderBy?: stat_size_finalize_masterOrderByWithRelationInput | stat_size_finalize_masterOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for stat_size_finalize_masters.
+     */
+    cursor?: stat_size_finalize_masterWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` stat_size_finalize_masters from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` stat_size_finalize_masters.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of stat_size_finalize_masters.
+     */
+    distinct?: Stat_size_finalize_masterScalarFieldEnum | Stat_size_finalize_masterScalarFieldEnum[]
+  }
+
+  /**
+   * stat_size_finalize_master findFirstOrThrow
+   */
+  export type stat_size_finalize_masterFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the stat_size_finalize_master
+     */
+    select?: stat_size_finalize_masterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the stat_size_finalize_master
+     */
+    omit?: stat_size_finalize_masterOmit<ExtArgs> | null
+    /**
+     * Filter, which stat_size_finalize_master to fetch.
+     */
+    where?: stat_size_finalize_masterWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of stat_size_finalize_masters to fetch.
+     */
+    orderBy?: stat_size_finalize_masterOrderByWithRelationInput | stat_size_finalize_masterOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for stat_size_finalize_masters.
+     */
+    cursor?: stat_size_finalize_masterWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` stat_size_finalize_masters from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` stat_size_finalize_masters.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of stat_size_finalize_masters.
+     */
+    distinct?: Stat_size_finalize_masterScalarFieldEnum | Stat_size_finalize_masterScalarFieldEnum[]
+  }
+
+  /**
+   * stat_size_finalize_master findMany
+   */
+  export type stat_size_finalize_masterFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the stat_size_finalize_master
+     */
+    select?: stat_size_finalize_masterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the stat_size_finalize_master
+     */
+    omit?: stat_size_finalize_masterOmit<ExtArgs> | null
+    /**
+     * Filter, which stat_size_finalize_masters to fetch.
+     */
+    where?: stat_size_finalize_masterWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of stat_size_finalize_masters to fetch.
+     */
+    orderBy?: stat_size_finalize_masterOrderByWithRelationInput | stat_size_finalize_masterOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing stat_size_finalize_masters.
+     */
+    cursor?: stat_size_finalize_masterWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` stat_size_finalize_masters from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` stat_size_finalize_masters.
+     */
+    skip?: number
+    distinct?: Stat_size_finalize_masterScalarFieldEnum | Stat_size_finalize_masterScalarFieldEnum[]
+  }
+
+  /**
+   * stat_size_finalize_master create
+   */
+  export type stat_size_finalize_masterCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the stat_size_finalize_master
+     */
+    select?: stat_size_finalize_masterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the stat_size_finalize_master
+     */
+    omit?: stat_size_finalize_masterOmit<ExtArgs> | null
+    /**
+     * The data needed to create a stat_size_finalize_master.
+     */
+    data: XOR<stat_size_finalize_masterCreateInput, stat_size_finalize_masterUncheckedCreateInput>
+  }
+
+  /**
+   * stat_size_finalize_master createMany
+   */
+  export type stat_size_finalize_masterCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many stat_size_finalize_masters.
+     */
+    data: stat_size_finalize_masterCreateManyInput | stat_size_finalize_masterCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * stat_size_finalize_master createManyAndReturn
+   */
+  export type stat_size_finalize_masterCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the stat_size_finalize_master
+     */
+    select?: stat_size_finalize_masterSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the stat_size_finalize_master
+     */
+    omit?: stat_size_finalize_masterOmit<ExtArgs> | null
+    /**
+     * The data used to create many stat_size_finalize_masters.
+     */
+    data: stat_size_finalize_masterCreateManyInput | stat_size_finalize_masterCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * stat_size_finalize_master update
+   */
+  export type stat_size_finalize_masterUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the stat_size_finalize_master
+     */
+    select?: stat_size_finalize_masterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the stat_size_finalize_master
+     */
+    omit?: stat_size_finalize_masterOmit<ExtArgs> | null
+    /**
+     * The data needed to update a stat_size_finalize_master.
+     */
+    data: XOR<stat_size_finalize_masterUpdateInput, stat_size_finalize_masterUncheckedUpdateInput>
+    /**
+     * Choose, which stat_size_finalize_master to update.
+     */
+    where: stat_size_finalize_masterWhereUniqueInput
+  }
+
+  /**
+   * stat_size_finalize_master updateMany
+   */
+  export type stat_size_finalize_masterUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update stat_size_finalize_masters.
+     */
+    data: XOR<stat_size_finalize_masterUpdateManyMutationInput, stat_size_finalize_masterUncheckedUpdateManyInput>
+    /**
+     * Filter which stat_size_finalize_masters to update
+     */
+    where?: stat_size_finalize_masterWhereInput
+    /**
+     * Limit how many stat_size_finalize_masters to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * stat_size_finalize_master updateManyAndReturn
+   */
+  export type stat_size_finalize_masterUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the stat_size_finalize_master
+     */
+    select?: stat_size_finalize_masterSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the stat_size_finalize_master
+     */
+    omit?: stat_size_finalize_masterOmit<ExtArgs> | null
+    /**
+     * The data used to update stat_size_finalize_masters.
+     */
+    data: XOR<stat_size_finalize_masterUpdateManyMutationInput, stat_size_finalize_masterUncheckedUpdateManyInput>
+    /**
+     * Filter which stat_size_finalize_masters to update
+     */
+    where?: stat_size_finalize_masterWhereInput
+    /**
+     * Limit how many stat_size_finalize_masters to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * stat_size_finalize_master upsert
+   */
+  export type stat_size_finalize_masterUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the stat_size_finalize_master
+     */
+    select?: stat_size_finalize_masterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the stat_size_finalize_master
+     */
+    omit?: stat_size_finalize_masterOmit<ExtArgs> | null
+    /**
+     * The filter to search for the stat_size_finalize_master to update in case it exists.
+     */
+    where: stat_size_finalize_masterWhereUniqueInput
+    /**
+     * In case the stat_size_finalize_master found by the `where` argument doesn't exist, create a new stat_size_finalize_master with this data.
+     */
+    create: XOR<stat_size_finalize_masterCreateInput, stat_size_finalize_masterUncheckedCreateInput>
+    /**
+     * In case the stat_size_finalize_master was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<stat_size_finalize_masterUpdateInput, stat_size_finalize_masterUncheckedUpdateInput>
+  }
+
+  /**
+   * stat_size_finalize_master delete
+   */
+  export type stat_size_finalize_masterDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the stat_size_finalize_master
+     */
+    select?: stat_size_finalize_masterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the stat_size_finalize_master
+     */
+    omit?: stat_size_finalize_masterOmit<ExtArgs> | null
+    /**
+     * Filter which stat_size_finalize_master to delete.
+     */
+    where: stat_size_finalize_masterWhereUniqueInput
+  }
+
+  /**
+   * stat_size_finalize_master deleteMany
+   */
+  export type stat_size_finalize_masterDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which stat_size_finalize_masters to delete
+     */
+    where?: stat_size_finalize_masterWhereInput
+    /**
+     * Limit how many stat_size_finalize_masters to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * stat_size_finalize_master without action
+   */
+  export type stat_size_finalize_masterDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the stat_size_finalize_master
+     */
+    select?: stat_size_finalize_masterSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the stat_size_finalize_master
+     */
+    omit?: stat_size_finalize_masterOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Model batch_job_exec
    */
 
@@ -8405,6 +9564,20 @@ export namespace Prisma {
   export type Future_masterScalarFieldEnum = (typeof Future_masterScalarFieldEnum)[keyof typeof Future_masterScalarFieldEnum]
 
 
+  export const Stat_size_finalize_masterScalarFieldEnum: {
+    id: 'id',
+    option_num: 'option_num',
+    options: 'options',
+    flg: 'flg',
+    register_id: 'register_id',
+    register_time: 'register_time',
+    update_id: 'update_id',
+    update_time: 'update_time'
+  };
+
+  export type Stat_size_finalize_masterScalarFieldEnum = (typeof Stat_size_finalize_masterScalarFieldEnum)[keyof typeof Stat_size_finalize_masterScalarFieldEnum]
+
+
   export const Batch_job_execScalarFieldEnum: {
     job_id: 'job_id',
     batch_cd: 'batch_cd',
@@ -9094,6 +10267,75 @@ export namespace Prisma {
     register_time?: DateTimeNullableWithAggregatesFilter<"future_master"> | Date | string | null
     update_id?: StringNullableWithAggregatesFilter<"future_master"> | string | null
     update_time?: DateTimeNullableWithAggregatesFilter<"future_master"> | Date | string | null
+  }
+
+  export type stat_size_finalize_masterWhereInput = {
+    AND?: stat_size_finalize_masterWhereInput | stat_size_finalize_masterWhereInput[]
+    OR?: stat_size_finalize_masterWhereInput[]
+    NOT?: stat_size_finalize_masterWhereInput | stat_size_finalize_masterWhereInput[]
+    id?: IntFilter<"stat_size_finalize_master"> | number
+    option_num?: StringFilter<"stat_size_finalize_master"> | string
+    options?: StringFilter<"stat_size_finalize_master"> | string
+    flg?: StringFilter<"stat_size_finalize_master"> | string
+    register_id?: StringFilter<"stat_size_finalize_master"> | string
+    register_time?: DateTimeFilter<"stat_size_finalize_master"> | Date | string
+    update_id?: StringFilter<"stat_size_finalize_master"> | string
+    update_time?: DateTimeFilter<"stat_size_finalize_master"> | Date | string
+  }
+
+  export type stat_size_finalize_masterOrderByWithRelationInput = {
+    id?: SortOrder
+    option_num?: SortOrder
+    options?: SortOrder
+    flg?: SortOrder
+    register_id?: SortOrder
+    register_time?: SortOrder
+    update_id?: SortOrder
+    update_time?: SortOrder
+  }
+
+  export type stat_size_finalize_masterWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    AND?: stat_size_finalize_masterWhereInput | stat_size_finalize_masterWhereInput[]
+    OR?: stat_size_finalize_masterWhereInput[]
+    NOT?: stat_size_finalize_masterWhereInput | stat_size_finalize_masterWhereInput[]
+    option_num?: StringFilter<"stat_size_finalize_master"> | string
+    options?: StringFilter<"stat_size_finalize_master"> | string
+    flg?: StringFilter<"stat_size_finalize_master"> | string
+    register_id?: StringFilter<"stat_size_finalize_master"> | string
+    register_time?: DateTimeFilter<"stat_size_finalize_master"> | Date | string
+    update_id?: StringFilter<"stat_size_finalize_master"> | string
+    update_time?: DateTimeFilter<"stat_size_finalize_master"> | Date | string
+  }, "id">
+
+  export type stat_size_finalize_masterOrderByWithAggregationInput = {
+    id?: SortOrder
+    option_num?: SortOrder
+    options?: SortOrder
+    flg?: SortOrder
+    register_id?: SortOrder
+    register_time?: SortOrder
+    update_id?: SortOrder
+    update_time?: SortOrder
+    _count?: stat_size_finalize_masterCountOrderByAggregateInput
+    _avg?: stat_size_finalize_masterAvgOrderByAggregateInput
+    _max?: stat_size_finalize_masterMaxOrderByAggregateInput
+    _min?: stat_size_finalize_masterMinOrderByAggregateInput
+    _sum?: stat_size_finalize_masterSumOrderByAggregateInput
+  }
+
+  export type stat_size_finalize_masterScalarWhereWithAggregatesInput = {
+    AND?: stat_size_finalize_masterScalarWhereWithAggregatesInput | stat_size_finalize_masterScalarWhereWithAggregatesInput[]
+    OR?: stat_size_finalize_masterScalarWhereWithAggregatesInput[]
+    NOT?: stat_size_finalize_masterScalarWhereWithAggregatesInput | stat_size_finalize_masterScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"stat_size_finalize_master"> | number
+    option_num?: StringWithAggregatesFilter<"stat_size_finalize_master"> | string
+    options?: StringWithAggregatesFilter<"stat_size_finalize_master"> | string
+    flg?: StringWithAggregatesFilter<"stat_size_finalize_master"> | string
+    register_id?: StringWithAggregatesFilter<"stat_size_finalize_master"> | string
+    register_time?: DateTimeWithAggregatesFilter<"stat_size_finalize_master"> | Date | string
+    update_id?: StringWithAggregatesFilter<"stat_size_finalize_master"> | string
+    update_time?: DateTimeWithAggregatesFilter<"stat_size_finalize_master"> | Date | string
   }
 
   export type batch_job_execWhereInput = {
@@ -9853,6 +11095,80 @@ export namespace Prisma {
     update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type stat_size_finalize_masterCreateInput = {
+    option_num?: string
+    options: string
+    flg?: string
+    register_id: string
+    register_time: Date | string
+    update_id: string
+    update_time: Date | string
+  }
+
+  export type stat_size_finalize_masterUncheckedCreateInput = {
+    id?: number
+    option_num?: string
+    options: string
+    flg?: string
+    register_id: string
+    register_time: Date | string
+    update_id: string
+    update_time: Date | string
+  }
+
+  export type stat_size_finalize_masterUpdateInput = {
+    option_num?: StringFieldUpdateOperationsInput | string
+    options?: StringFieldUpdateOperationsInput | string
+    flg?: StringFieldUpdateOperationsInput | string
+    register_id?: StringFieldUpdateOperationsInput | string
+    register_time?: DateTimeFieldUpdateOperationsInput | Date | string
+    update_id?: StringFieldUpdateOperationsInput | string
+    update_time?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type stat_size_finalize_masterUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    option_num?: StringFieldUpdateOperationsInput | string
+    options?: StringFieldUpdateOperationsInput | string
+    flg?: StringFieldUpdateOperationsInput | string
+    register_id?: StringFieldUpdateOperationsInput | string
+    register_time?: DateTimeFieldUpdateOperationsInput | Date | string
+    update_id?: StringFieldUpdateOperationsInput | string
+    update_time?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type stat_size_finalize_masterCreateManyInput = {
+    id?: number
+    option_num?: string
+    options: string
+    flg?: string
+    register_id: string
+    register_time: Date | string
+    update_id: string
+    update_time: Date | string
+  }
+
+  export type stat_size_finalize_masterUpdateManyMutationInput = {
+    option_num?: StringFieldUpdateOperationsInput | string
+    options?: StringFieldUpdateOperationsInput | string
+    flg?: StringFieldUpdateOperationsInput | string
+    register_id?: StringFieldUpdateOperationsInput | string
+    register_time?: DateTimeFieldUpdateOperationsInput | Date | string
+    update_id?: StringFieldUpdateOperationsInput | string
+    update_time?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type stat_size_finalize_masterUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    option_num?: StringFieldUpdateOperationsInput | string
+    options?: StringFieldUpdateOperationsInput | string
+    flg?: StringFieldUpdateOperationsInput | string
+    register_id?: StringFieldUpdateOperationsInput | string
+    register_time?: DateTimeFieldUpdateOperationsInput | Date | string
+    update_id?: StringFieldUpdateOperationsInput | string
+    update_time?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type batch_job_execCreateInput = {
     job_id: string
     batch_cd: string
@@ -10446,6 +11762,47 @@ export namespace Prisma {
     _sum?: NestedBigIntFilter<$PrismaModel>
     _min?: NestedBigIntFilter<$PrismaModel>
     _max?: NestedBigIntFilter<$PrismaModel>
+  }
+
+  export type stat_size_finalize_masterCountOrderByAggregateInput = {
+    id?: SortOrder
+    option_num?: SortOrder
+    options?: SortOrder
+    flg?: SortOrder
+    register_id?: SortOrder
+    register_time?: SortOrder
+    update_id?: SortOrder
+    update_time?: SortOrder
+  }
+
+  export type stat_size_finalize_masterAvgOrderByAggregateInput = {
+    id?: SortOrder
+  }
+
+  export type stat_size_finalize_masterMaxOrderByAggregateInput = {
+    id?: SortOrder
+    option_num?: SortOrder
+    options?: SortOrder
+    flg?: SortOrder
+    register_id?: SortOrder
+    register_time?: SortOrder
+    update_id?: SortOrder
+    update_time?: SortOrder
+  }
+
+  export type stat_size_finalize_masterMinOrderByAggregateInput = {
+    id?: SortOrder
+    option_num?: SortOrder
+    options?: SortOrder
+    flg?: SortOrder
+    register_id?: SortOrder
+    register_time?: SortOrder
+    update_id?: SortOrder
+    update_time?: SortOrder
+  }
+
+  export type stat_size_finalize_masterSumOrderByAggregateInput = {
+    id?: SortOrder
   }
 
   export type batch_job_execCountOrderByAggregateInput = {

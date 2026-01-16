@@ -111,6 +111,17 @@ model future_master {
   update_time             DateTime? @db.Timestamptz(0)
 }
 
+model stat_size_finalize_master {
+  id            Int      @id @default(autoincrement())
+  option_num    String   @default("0") @db.VarChar(1)
+  options       String   @db.Text
+  flg           String   @default("0") @db.VarChar(1)
+  register_id   String   @db.VarChar(100)
+  register_time DateTime @db.Timestamptz(0)
+  update_id     String   @db.VarChar(100)
+  update_time   DateTime @db.Timestamptz(0)
+}
+
 model batch_job_exec {
   job_id                           String   @id @db.Text
   batch_cd                         String   @db.Text

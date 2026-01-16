@@ -222,6 +222,17 @@ exports.Prisma.Future_masterScalarFieldEnum = {
   update_time: 'update_time'
 };
 
+exports.Prisma.Stat_size_finalize_masterScalarFieldEnum = {
+  id: 'id',
+  option_num: 'option_num',
+  options: 'options',
+  flg: 'flg',
+  register_id: 'register_id',
+  register_time: 'register_time',
+  update_id: 'update_id',
+  update_time: 'update_time'
+};
+
 exports.Prisma.Batch_job_execScalarFieldEnum = {
   job_id: 'job_id',
   batch_cd: 'batch_cd',
@@ -254,6 +265,7 @@ exports.Prisma.ModelName = {
   country_league_season_master: 'country_league_season_master',
   team_color_master: 'team_color_master',
   future_master: 'future_master',
+  stat_size_finalize_master: 'stat_size_finalize_master',
   batch_job_exec: 'batch_job_exec'
 };
 
