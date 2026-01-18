@@ -94,7 +94,7 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 });
 
 exports.Prisma.UsersScalarFieldEnum = {
-  userid: 'userid',
+  user_id: 'user_id',
   email: 'email',
   passwordHash: 'passwordHash',
   name: 'name',
@@ -106,7 +106,7 @@ exports.Prisma.UsersScalarFieldEnum = {
 
 exports.Prisma.FavoritesScalarFieldEnum = {
   id: 'id',
-  userId: 'userId',
+  user_id: 'user_id',
   level: 'level',
   country: 'country',
   league: 'league',
@@ -184,13 +184,13 @@ const config = {
       }
     }
   },
-  "inlineSchema": "// server/prisma-user/schema.prisma\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/user\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"USER_DATABASE_URL\")\n}\n\nmodel users {\n  userid        BigInt   @id @default(autoincrement())\n  email         String   @unique\n  passwordHash  String\n  name          String?\n  register_id   String   @db.VarChar(100)\n  register_time DateTime @db.Timestamptz(0)\n  update_id     String   @db.VarChar(100)\n  update_time   DateTime @db.Timestamptz(0)\n\n  favorites favorites[]\n}\n\nmodel favorites {\n  id     BigInt @id @default(autoincrement())\n  userId BigInt\n\n  // 1: country, 2: league, 3: team\n  level Int @db.SmallInt\n\n  country String @db.VarChar(100)\n\n  // ★ NULLにせず \"\" を入れる（UNIQUEを効かせるため）\n  league String @default(\"\") @db.VarChar(100)\n  team   String @default(\"\") @db.VarChar(100)\n\n  register_id   String   @db.VarChar(100)\n  register_time DateTime @db.Timestamptz(0)\n  update_id     String   @db.VarChar(100)\n  update_time   DateTime @db.Timestamptz(0)\n\n  user users @relation(fields: [userId], references: [userid], onDelete: Cascade)\n\n  // 3階層すべてを一意に\n  @@unique([userId, level, country, league, team], map: \"uk_fav_scope\")\n  @@index([userId], map: \"idx_fav_user\")\n  @@index([userId, country], map: \"idx_fav_user_country\")\n  @@index([userId, country, league], map: \"idx_fav_user_country_league\")\n}\n",
-  "inlineSchemaHash": "5fddee2cd0fd0cf487f32b7a3a8ee07de98fa60e3688ede6559ece9b3f52043b",
+  "inlineSchema": "// server/prisma-user/schema.prisma\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/user\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"USER_DATABASE_URL\")\n}\n\nmodel users {\n  user_id       BigInt   @id @default(autoincrement())\n  email         String   @unique\n  passwordHash  String\n  name          String?\n  register_id   String   @db.VarChar(100)\n  register_time DateTime @db.Timestamptz(0)\n  update_id     String   @db.VarChar(100)\n  update_time   DateTime @db.Timestamptz(0)\n\n  favorites favorites[]\n}\n\nmodel favorites {\n  id      BigInt @id @default(autoincrement())\n  user_id BigInt\n\n  // 1: country, 2: league, 3: team\n  level Int @db.SmallInt\n\n  country String @db.VarChar(100)\n\n  // ★ NULLにせず \"\" を入れる（UNIQUEを効かせるため）\n  league String @default(\"\") @db.VarChar(100)\n  team   String @default(\"\") @db.VarChar(100)\n\n  register_id   String   @db.VarChar(100)\n  register_time DateTime @db.Timestamptz(0)\n  update_id     String   @db.VarChar(100)\n  update_time   DateTime @db.Timestamptz(0)\n\n  user users @relation(fields: [user_id], references: [user_id], onDelete: Cascade)\n\n  // 3階層すべてを一意に\n  @@unique([user_id, level, country, league, team], map: \"uk_fav_scope\")\n  @@index([user_id], map: \"idx_fav_user\")\n  @@index([user_id, country], map: \"idx_fav_user_country\")\n  @@index([user_id, country, league], map: \"idx_fav_user_country_league\")\n}\n",
+  "inlineSchemaHash": "94e415a9f10b0a2afda97446db9a3f4aff579d90169ed5a301162b769595835a",
   "copyEngine": true
 }
 config.dirname = '/'
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"users\":{\"fields\":[{\"name\":\"userid\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"passwordHash\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"register_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"register_time\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"update_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"update_time\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"favorites\",\"kind\":\"object\",\"type\":\"favorites\",\"relationName\":\"favoritesTousers\"}],\"dbName\":null},\"favorites\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"level\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"country\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"league\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"team\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"register_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"register_time\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"update_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"update_time\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"users\",\"relationName\":\"favoritesTousers\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"users\":{\"fields\":[{\"name\":\"user_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"passwordHash\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"register_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"register_time\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"update_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"update_time\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"favorites\",\"kind\":\"object\",\"type\":\"favorites\",\"relationName\":\"favoritesTousers\"}],\"dbName\":null},\"favorites\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"user_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"level\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"country\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"league\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"team\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"register_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"register_time\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"update_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"update_time\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"users\",\"relationName\":\"favoritesTousers\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.engineWasm = {
   getRuntime: async () => require('./query_engine_bg.js'),

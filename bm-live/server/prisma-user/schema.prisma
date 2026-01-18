@@ -11,7 +11,7 @@ datasource db {
 }
 
 model users {
-  userid        BigInt   @id @default(autoincrement())
+  user_id       BigInt   @id @default(autoincrement())
   email         String   @unique
   passwordHash  String
   name          String?
@@ -25,7 +25,7 @@ model users {
 
 model favorites {
   id            BigInt   @id @default(autoincrement())
-  userId        BigInt
+  user_id       BigInt
 
   // 1: country, 2: league, 3: team
   level         Int      @db.SmallInt
@@ -41,12 +41,12 @@ model favorites {
   update_id     String   @db.VarChar(100)
   update_time   DateTime @db.Timestamptz(0)
 
-  user users @relation(fields: [userId], references: [userid], onDelete: Cascade)
+  user users @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
 
   // 3階層すべてを一意に
-  @@unique([userId, level, country, league, team], map: "uk_fav_scope")
+  @@unique([user_id, level, country, league, team], map: "uk_fav_scope")
 
-  @@index([userId], map: "idx_fav_user")
-  @@index([userId, country], map: "idx_fav_user_country")
-  @@index([userId, country, league], map: "idx_fav_user_country_league")
+  @@index([user_id], map: "idx_fav_user")
+  @@index([user_id, country], map: "idx_fav_user_country")
+  @@index([user_id, country, league], map: "idx_fav_user_country_league")
 }

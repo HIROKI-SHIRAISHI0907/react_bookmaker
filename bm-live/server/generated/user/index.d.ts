@@ -995,15 +995,15 @@ export namespace Prisma {
   }
 
   export type UsersAvgAggregateOutputType = {
-    userid: number | null
+    user_id: number | null
   }
 
   export type UsersSumAggregateOutputType = {
-    userid: bigint | null
+    user_id: bigint | null
   }
 
   export type UsersMinAggregateOutputType = {
-    userid: bigint | null
+    user_id: bigint | null
     email: string | null
     passwordHash: string | null
     name: string | null
@@ -1014,7 +1014,7 @@ export namespace Prisma {
   }
 
   export type UsersMaxAggregateOutputType = {
-    userid: bigint | null
+    user_id: bigint | null
     email: string | null
     passwordHash: string | null
     name: string | null
@@ -1025,7 +1025,7 @@ export namespace Prisma {
   }
 
   export type UsersCountAggregateOutputType = {
-    userid: number
+    user_id: number
     email: number
     passwordHash: number
     name: number
@@ -1038,15 +1038,15 @@ export namespace Prisma {
 
 
   export type UsersAvgAggregateInputType = {
-    userid?: true
+    user_id?: true
   }
 
   export type UsersSumAggregateInputType = {
-    userid?: true
+    user_id?: true
   }
 
   export type UsersMinAggregateInputType = {
-    userid?: true
+    user_id?: true
     email?: true
     passwordHash?: true
     name?: true
@@ -1057,7 +1057,7 @@ export namespace Prisma {
   }
 
   export type UsersMaxAggregateInputType = {
-    userid?: true
+    user_id?: true
     email?: true
     passwordHash?: true
     name?: true
@@ -1068,7 +1068,7 @@ export namespace Prisma {
   }
 
   export type UsersCountAggregateInputType = {
-    userid?: true
+    user_id?: true
     email?: true
     passwordHash?: true
     name?: true
@@ -1166,7 +1166,7 @@ export namespace Prisma {
   }
 
   export type UsersGroupByOutputType = {
-    userid: bigint
+    user_id: bigint
     email: string
     passwordHash: string
     name: string | null
@@ -1196,7 +1196,7 @@ export namespace Prisma {
 
 
   export type usersSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    userid?: boolean
+    user_id?: boolean
     email?: boolean
     passwordHash?: boolean
     name?: boolean
@@ -1209,7 +1209,7 @@ export namespace Prisma {
   }, ExtArgs["result"]["users"]>
 
   export type usersSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    userid?: boolean
+    user_id?: boolean
     email?: boolean
     passwordHash?: boolean
     name?: boolean
@@ -1220,7 +1220,7 @@ export namespace Prisma {
   }, ExtArgs["result"]["users"]>
 
   export type usersSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    userid?: boolean
+    user_id?: boolean
     email?: boolean
     passwordHash?: boolean
     name?: boolean
@@ -1231,7 +1231,7 @@ export namespace Prisma {
   }, ExtArgs["result"]["users"]>
 
   export type usersSelectScalar = {
-    userid?: boolean
+    user_id?: boolean
     email?: boolean
     passwordHash?: boolean
     name?: boolean
@@ -1241,7 +1241,7 @@ export namespace Prisma {
     update_time?: boolean
   }
 
-  export type usersOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"userid" | "email" | "passwordHash" | "name" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["users"]>
+  export type usersOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"user_id" | "email" | "passwordHash" | "name" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["users"]>
   export type usersInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     favorites?: boolean | users$favoritesArgs<ExtArgs>
     _count?: boolean | UsersCountOutputTypeDefaultArgs<ExtArgs>
@@ -1255,7 +1255,7 @@ export namespace Prisma {
       favorites: Prisma.$favoritesPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
-      userid: bigint
+      user_id: bigint
       email: string
       passwordHash: string
       name: string | null
@@ -1346,8 +1346,8 @@ export namespace Prisma {
      * // Get first 10 Users
      * const users = await prisma.users.findMany({ take: 10 })
      * 
-     * // Only select the `userid`
-     * const usersWithUseridOnly = await prisma.users.findMany({ select: { userid: true } })
+     * // Only select the `user_id`
+     * const usersWithUser_idOnly = await prisma.users.findMany({ select: { user_id: true } })
      * 
      */
     findMany<T extends usersFindManyArgs>(args?: SelectSubset<T, usersFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$usersPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
@@ -1391,9 +1391,9 @@ export namespace Prisma {
      *   ]
      * })
      * 
-     * // Create many Users and only return the `userid`
-     * const usersWithUseridOnly = await prisma.users.createManyAndReturn({
-     *   select: { userid: true },
+     * // Create many Users and only return the `user_id`
+     * const usersWithUser_idOnly = await prisma.users.createManyAndReturn({
+     *   select: { user_id: true },
      *   data: [
      *     // ... provide data here
      *   ]
@@ -1482,9 +1482,9 @@ export namespace Prisma {
      *   ]
      * })
      * 
-     * // Update zero or more Users and only return the `userid`
-     * const usersWithUseridOnly = await prisma.users.updateManyAndReturn({
-     *   select: { userid: true },
+     * // Update zero or more Users and only return the `user_id`
+     * const usersWithUser_idOnly = await prisma.users.updateManyAndReturn({
+     *   select: { user_id: true },
      *   where: {
      *     // ... provide filter here
      *   },
@@ -1687,7 +1687,7 @@ export namespace Prisma {
    * Fields of the users model
    */
   interface usersFieldRefs {
-    readonly userid: FieldRef<"users", 'BigInt'>
+    readonly user_id: FieldRef<"users", 'BigInt'>
     readonly email: FieldRef<"users", 'String'>
     readonly passwordHash: FieldRef<"users", 'String'>
     readonly name: FieldRef<"users", 'String'>
@@ -2139,19 +2139,19 @@ export namespace Prisma {
 
   export type FavoritesAvgAggregateOutputType = {
     id: number | null
-    userId: number | null
+    user_id: number | null
     level: number | null
   }
 
   export type FavoritesSumAggregateOutputType = {
     id: bigint | null
-    userId: bigint | null
+    user_id: bigint | null
     level: number | null
   }
 
   export type FavoritesMinAggregateOutputType = {
     id: bigint | null
-    userId: bigint | null
+    user_id: bigint | null
     level: number | null
     country: string | null
     league: string | null
@@ -2164,7 +2164,7 @@ export namespace Prisma {
 
   export type FavoritesMaxAggregateOutputType = {
     id: bigint | null
-    userId: bigint | null
+    user_id: bigint | null
     level: number | null
     country: string | null
     league: string | null
@@ -2177,7 +2177,7 @@ export namespace Prisma {
 
   export type FavoritesCountAggregateOutputType = {
     id: number
-    userId: number
+    user_id: number
     level: number
     country: number
     league: number
@@ -2192,19 +2192,19 @@ export namespace Prisma {
 
   export type FavoritesAvgAggregateInputType = {
     id?: true
-    userId?: true
+    user_id?: true
     level?: true
   }
 
   export type FavoritesSumAggregateInputType = {
     id?: true
-    userId?: true
+    user_id?: true
     level?: true
   }
 
   export type FavoritesMinAggregateInputType = {
     id?: true
-    userId?: true
+    user_id?: true
     level?: true
     country?: true
     league?: true
@@ -2217,7 +2217,7 @@ export namespace Prisma {
 
   export type FavoritesMaxAggregateInputType = {
     id?: true
-    userId?: true
+    user_id?: true
     level?: true
     country?: true
     league?: true
@@ -2230,7 +2230,7 @@ export namespace Prisma {
 
   export type FavoritesCountAggregateInputType = {
     id?: true
-    userId?: true
+    user_id?: true
     level?: true
     country?: true
     league?: true
@@ -2330,7 +2330,7 @@ export namespace Prisma {
 
   export type FavoritesGroupByOutputType = {
     id: bigint
-    userId: bigint
+    user_id: bigint
     level: number
     country: string
     league: string
@@ -2362,7 +2362,7 @@ export namespace Prisma {
 
   export type favoritesSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    userId?: boolean
+    user_id?: boolean
     level?: boolean
     country?: boolean
     league?: boolean
@@ -2376,7 +2376,7 @@ export namespace Prisma {
 
   export type favoritesSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    userId?: boolean
+    user_id?: boolean
     level?: boolean
     country?: boolean
     league?: boolean
@@ -2390,7 +2390,7 @@ export namespace Prisma {
 
   export type favoritesSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    userId?: boolean
+    user_id?: boolean
     level?: boolean
     country?: boolean
     league?: boolean
@@ -2404,7 +2404,7 @@ export namespace Prisma {
 
   export type favoritesSelectScalar = {
     id?: boolean
-    userId?: boolean
+    user_id?: boolean
     level?: boolean
     country?: boolean
     league?: boolean
@@ -2415,7 +2415,7 @@ export namespace Prisma {
     update_time?: boolean
   }
 
-  export type favoritesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "level" | "country" | "league" | "team" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["favorites"]>
+  export type favoritesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "level" | "country" | "league" | "team" | "register_id" | "register_time" | "update_id" | "update_time", ExtArgs["result"]["favorites"]>
   export type favoritesInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | usersDefaultArgs<ExtArgs>
   }
@@ -2433,7 +2433,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: bigint
-      userId: bigint
+      user_id: bigint
       level: number
       country: string
       league: string
@@ -2867,7 +2867,7 @@ export namespace Prisma {
    */
   interface favoritesFieldRefs {
     readonly id: FieldRef<"favorites", 'BigInt'>
-    readonly userId: FieldRef<"favorites", 'BigInt'>
+    readonly user_id: FieldRef<"favorites", 'BigInt'>
     readonly level: FieldRef<"favorites", 'Int'>
     readonly country: FieldRef<"favorites", 'String'>
     readonly league: FieldRef<"favorites", 'String'>
@@ -3305,7 +3305,7 @@ export namespace Prisma {
 
 
   export const UsersScalarFieldEnum: {
-    userid: 'userid',
+    user_id: 'user_id',
     email: 'email',
     passwordHash: 'passwordHash',
     name: 'name',
@@ -3320,7 +3320,7 @@ export namespace Prisma {
 
   export const FavoritesScalarFieldEnum: {
     id: 'id',
-    userId: 'userId',
+    user_id: 'user_id',
     level: 'level',
     country: 'country',
     league: 'league',
@@ -3440,7 +3440,7 @@ export namespace Prisma {
     AND?: usersWhereInput | usersWhereInput[]
     OR?: usersWhereInput[]
     NOT?: usersWhereInput | usersWhereInput[]
-    userid?: BigIntFilter<"users"> | bigint | number
+    user_id?: BigIntFilter<"users"> | bigint | number
     email?: StringFilter<"users"> | string
     passwordHash?: StringFilter<"users"> | string
     name?: StringNullableFilter<"users"> | string | null
@@ -3452,7 +3452,7 @@ export namespace Prisma {
   }
 
   export type usersOrderByWithRelationInput = {
-    userid?: SortOrder
+    user_id?: SortOrder
     email?: SortOrder
     passwordHash?: SortOrder
     name?: SortOrderInput | SortOrder
@@ -3464,7 +3464,7 @@ export namespace Prisma {
   }
 
   export type usersWhereUniqueInput = Prisma.AtLeast<{
-    userid?: bigint | number
+    user_id?: bigint | number
     email?: string
     AND?: usersWhereInput | usersWhereInput[]
     OR?: usersWhereInput[]
@@ -3476,10 +3476,10 @@ export namespace Prisma {
     update_id?: StringFilter<"users"> | string
     update_time?: DateTimeFilter<"users"> | Date | string
     favorites?: FavoritesListRelationFilter
-  }, "userid" | "email">
+  }, "user_id" | "email">
 
   export type usersOrderByWithAggregationInput = {
-    userid?: SortOrder
+    user_id?: SortOrder
     email?: SortOrder
     passwordHash?: SortOrder
     name?: SortOrderInput | SortOrder
@@ -3498,7 +3498,7 @@ export namespace Prisma {
     AND?: usersScalarWhereWithAggregatesInput | usersScalarWhereWithAggregatesInput[]
     OR?: usersScalarWhereWithAggregatesInput[]
     NOT?: usersScalarWhereWithAggregatesInput | usersScalarWhereWithAggregatesInput[]
-    userid?: BigIntWithAggregatesFilter<"users"> | bigint | number
+    user_id?: BigIntWithAggregatesFilter<"users"> | bigint | number
     email?: StringWithAggregatesFilter<"users"> | string
     passwordHash?: StringWithAggregatesFilter<"users"> | string
     name?: StringNullableWithAggregatesFilter<"users"> | string | null
@@ -3513,7 +3513,7 @@ export namespace Prisma {
     OR?: favoritesWhereInput[]
     NOT?: favoritesWhereInput | favoritesWhereInput[]
     id?: BigIntFilter<"favorites"> | bigint | number
-    userId?: BigIntFilter<"favorites"> | bigint | number
+    user_id?: BigIntFilter<"favorites"> | bigint | number
     level?: IntFilter<"favorites"> | number
     country?: StringFilter<"favorites"> | string
     league?: StringFilter<"favorites"> | string
@@ -3527,7 +3527,7 @@ export namespace Prisma {
 
   export type favoritesOrderByWithRelationInput = {
     id?: SortOrder
-    userId?: SortOrder
+    user_id?: SortOrder
     level?: SortOrder
     country?: SortOrder
     league?: SortOrder
@@ -3541,11 +3541,11 @@ export namespace Prisma {
 
   export type favoritesWhereUniqueInput = Prisma.AtLeast<{
     id?: bigint | number
-    userId_level_country_league_team?: favoritesUserIdLevelCountryLeagueTeamCompoundUniqueInput
+    user_id_level_country_league_team?: favoritesUser_idLevelCountryLeagueTeamCompoundUniqueInput
     AND?: favoritesWhereInput | favoritesWhereInput[]
     OR?: favoritesWhereInput[]
     NOT?: favoritesWhereInput | favoritesWhereInput[]
-    userId?: BigIntFilter<"favorites"> | bigint | number
+    user_id?: BigIntFilter<"favorites"> | bigint | number
     level?: IntFilter<"favorites"> | number
     country?: StringFilter<"favorites"> | string
     league?: StringFilter<"favorites"> | string
@@ -3555,11 +3555,11 @@ export namespace Prisma {
     update_id?: StringFilter<"favorites"> | string
     update_time?: DateTimeFilter<"favorites"> | Date | string
     user?: XOR<UsersScalarRelationFilter, usersWhereInput>
-  }, "id" | "userId_level_country_league_team">
+  }, "id" | "user_id_level_country_league_team">
 
   export type favoritesOrderByWithAggregationInput = {
     id?: SortOrder
-    userId?: SortOrder
+    user_id?: SortOrder
     level?: SortOrder
     country?: SortOrder
     league?: SortOrder
@@ -3580,7 +3580,7 @@ export namespace Prisma {
     OR?: favoritesScalarWhereWithAggregatesInput[]
     NOT?: favoritesScalarWhereWithAggregatesInput | favoritesScalarWhereWithAggregatesInput[]
     id?: BigIntWithAggregatesFilter<"favorites"> | bigint | number
-    userId?: BigIntWithAggregatesFilter<"favorites"> | bigint | number
+    user_id?: BigIntWithAggregatesFilter<"favorites"> | bigint | number
     level?: IntWithAggregatesFilter<"favorites"> | number
     country?: StringWithAggregatesFilter<"favorites"> | string
     league?: StringWithAggregatesFilter<"favorites"> | string
@@ -3592,7 +3592,7 @@ export namespace Prisma {
   }
 
   export type usersCreateInput = {
-    userid?: bigint | number
+    user_id?: bigint | number
     email: string
     passwordHash: string
     name?: string | null
@@ -3604,7 +3604,7 @@ export namespace Prisma {
   }
 
   export type usersUncheckedCreateInput = {
-    userid?: bigint | number
+    user_id?: bigint | number
     email: string
     passwordHash: string
     name?: string | null
@@ -3616,7 +3616,7 @@ export namespace Prisma {
   }
 
   export type usersUpdateInput = {
-    userid?: BigIntFieldUpdateOperationsInput | bigint | number
+    user_id?: BigIntFieldUpdateOperationsInput | bigint | number
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
@@ -3628,7 +3628,7 @@ export namespace Prisma {
   }
 
   export type usersUncheckedUpdateInput = {
-    userid?: BigIntFieldUpdateOperationsInput | bigint | number
+    user_id?: BigIntFieldUpdateOperationsInput | bigint | number
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
@@ -3640,7 +3640,7 @@ export namespace Prisma {
   }
 
   export type usersCreateManyInput = {
-    userid?: bigint | number
+    user_id?: bigint | number
     email: string
     passwordHash: string
     name?: string | null
@@ -3651,7 +3651,7 @@ export namespace Prisma {
   }
 
   export type usersUpdateManyMutationInput = {
-    userid?: BigIntFieldUpdateOperationsInput | bigint | number
+    user_id?: BigIntFieldUpdateOperationsInput | bigint | number
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
@@ -3662,7 +3662,7 @@ export namespace Prisma {
   }
 
   export type usersUncheckedUpdateManyInput = {
-    userid?: BigIntFieldUpdateOperationsInput | bigint | number
+    user_id?: BigIntFieldUpdateOperationsInput | bigint | number
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
@@ -3687,7 +3687,7 @@ export namespace Prisma {
 
   export type favoritesUncheckedCreateInput = {
     id?: bigint | number
-    userId: bigint | number
+    user_id: bigint | number
     level: number
     country: string
     league?: string
@@ -3713,7 +3713,7 @@ export namespace Prisma {
 
   export type favoritesUncheckedUpdateInput = {
     id?: BigIntFieldUpdateOperationsInput | bigint | number
-    userId?: BigIntFieldUpdateOperationsInput | bigint | number
+    user_id?: BigIntFieldUpdateOperationsInput | bigint | number
     level?: IntFieldUpdateOperationsInput | number
     country?: StringFieldUpdateOperationsInput | string
     league?: StringFieldUpdateOperationsInput | string
@@ -3726,7 +3726,7 @@ export namespace Prisma {
 
   export type favoritesCreateManyInput = {
     id?: bigint | number
-    userId: bigint | number
+    user_id: bigint | number
     level: number
     country: string
     league?: string
@@ -3751,7 +3751,7 @@ export namespace Prisma {
 
   export type favoritesUncheckedUpdateManyInput = {
     id?: BigIntFieldUpdateOperationsInput | bigint | number
-    userId?: BigIntFieldUpdateOperationsInput | bigint | number
+    user_id?: BigIntFieldUpdateOperationsInput | bigint | number
     level?: IntFieldUpdateOperationsInput | number
     country?: StringFieldUpdateOperationsInput | string
     league?: StringFieldUpdateOperationsInput | string
@@ -3830,7 +3830,7 @@ export namespace Prisma {
   }
 
   export type usersCountOrderByAggregateInput = {
-    userid?: SortOrder
+    user_id?: SortOrder
     email?: SortOrder
     passwordHash?: SortOrder
     name?: SortOrder
@@ -3841,11 +3841,11 @@ export namespace Prisma {
   }
 
   export type usersAvgOrderByAggregateInput = {
-    userid?: SortOrder
+    user_id?: SortOrder
   }
 
   export type usersMaxOrderByAggregateInput = {
-    userid?: SortOrder
+    user_id?: SortOrder
     email?: SortOrder
     passwordHash?: SortOrder
     name?: SortOrder
@@ -3856,7 +3856,7 @@ export namespace Prisma {
   }
 
   export type usersMinOrderByAggregateInput = {
-    userid?: SortOrder
+    user_id?: SortOrder
     email?: SortOrder
     passwordHash?: SortOrder
     name?: SortOrder
@@ -3867,7 +3867,7 @@ export namespace Prisma {
   }
 
   export type usersSumOrderByAggregateInput = {
-    userid?: SortOrder
+    user_id?: SortOrder
   }
 
   export type BigIntWithAggregatesFilter<$PrismaModel = never> = {
@@ -3952,8 +3952,8 @@ export namespace Prisma {
     isNot?: usersWhereInput
   }
 
-  export type favoritesUserIdLevelCountryLeagueTeamCompoundUniqueInput = {
-    userId: bigint | number
+  export type favoritesUser_idLevelCountryLeagueTeamCompoundUniqueInput = {
+    user_id: bigint | number
     level: number
     country: string
     league: string
@@ -3962,7 +3962,7 @@ export namespace Prisma {
 
   export type favoritesCountOrderByAggregateInput = {
     id?: SortOrder
-    userId?: SortOrder
+    user_id?: SortOrder
     level?: SortOrder
     country?: SortOrder
     league?: SortOrder
@@ -3975,13 +3975,13 @@ export namespace Prisma {
 
   export type favoritesAvgOrderByAggregateInput = {
     id?: SortOrder
-    userId?: SortOrder
+    user_id?: SortOrder
     level?: SortOrder
   }
 
   export type favoritesMaxOrderByAggregateInput = {
     id?: SortOrder
-    userId?: SortOrder
+    user_id?: SortOrder
     level?: SortOrder
     country?: SortOrder
     league?: SortOrder
@@ -3994,7 +3994,7 @@ export namespace Prisma {
 
   export type favoritesMinOrderByAggregateInput = {
     id?: SortOrder
-    userId?: SortOrder
+    user_id?: SortOrder
     level?: SortOrder
     country?: SortOrder
     league?: SortOrder
@@ -4007,7 +4007,7 @@ export namespace Prisma {
 
   export type favoritesSumOrderByAggregateInput = {
     id?: SortOrder
-    userId?: SortOrder
+    user_id?: SortOrder
     level?: SortOrder
   }
 
@@ -4329,7 +4329,7 @@ export namespace Prisma {
     OR?: favoritesScalarWhereInput[]
     NOT?: favoritesScalarWhereInput | favoritesScalarWhereInput[]
     id?: BigIntFilter<"favorites"> | bigint | number
-    userId?: BigIntFilter<"favorites"> | bigint | number
+    user_id?: BigIntFilter<"favorites"> | bigint | number
     level?: IntFilter<"favorites"> | number
     country?: StringFilter<"favorites"> | string
     league?: StringFilter<"favorites"> | string
@@ -4341,7 +4341,7 @@ export namespace Prisma {
   }
 
   export type usersCreateWithoutFavoritesInput = {
-    userid?: bigint | number
+    user_id?: bigint | number
     email: string
     passwordHash: string
     name?: string | null
@@ -4352,7 +4352,7 @@ export namespace Prisma {
   }
 
   export type usersUncheckedCreateWithoutFavoritesInput = {
-    userid?: bigint | number
+    user_id?: bigint | number
     email: string
     passwordHash: string
     name?: string | null
@@ -4379,7 +4379,7 @@ export namespace Prisma {
   }
 
   export type usersUpdateWithoutFavoritesInput = {
-    userid?: BigIntFieldUpdateOperationsInput | bigint | number
+    user_id?: BigIntFieldUpdateOperationsInput | bigint | number
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
@@ -4390,7 +4390,7 @@ export namespace Prisma {
   }
 
   export type usersUncheckedUpdateWithoutFavoritesInput = {
-    userid?: BigIntFieldUpdateOperationsInput | bigint | number
+    user_id?: BigIntFieldUpdateOperationsInput | bigint | number
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null

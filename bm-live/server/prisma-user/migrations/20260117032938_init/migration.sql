@@ -1,6 +1,6 @@
 -- CreateTable
 CREATE TABLE "users" (
-    "userid" BIGSERIAL NOT NULL,
+    "user_id" BIGSERIAL NOT NULL,
     "email" TEXT NOT NULL,
     "passwordHash" TEXT NOT NULL,
     "name" TEXT,
@@ -9,13 +9,13 @@ CREATE TABLE "users" (
     "update_id" VARCHAR(100) NOT NULL,
     "update_time" TIMESTAMPTZ(0) NOT NULL,
 
-    CONSTRAINT "users_pkey" PRIMARY KEY ("userid")
+    CONSTRAINT "users_pkey" PRIMARY KEY ("user_id")
 );
 
 -- CreateTable
 CREATE TABLE "favorites" (
     "id" BIGSERIAL NOT NULL,
-    "userId" BIGINT NOT NULL,
+    "user_id" BIGINT NOT NULL,
     "level" SMALLINT NOT NULL,
     "country" VARCHAR(100) NOT NULL,
     "league" VARCHAR(100) NOT NULL DEFAULT '',
@@ -32,19 +32,20 @@ CREATE TABLE "favorites" (
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
-CREATE INDEX "idx_fav_user" ON "favorites"("userId");
+CREATE INDEX "idx_fav_user" ON "favorites"("user_id");
 
 -- CreateIndex
-CREATE INDEX "idx_fav_user_country" ON "favorites"("userId", "country");
+CREATE INDEX "idx_fav_user_country" ON "favorites"("user_id", "country");
 
 -- CreateIndex
-CREATE INDEX "idx_fav_user_country_league" ON "favorites"("userId", "country", "league");
+CREATE INDEX "idx_fav_user_country_league" ON "favorites"("user_id", "country", "league");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "uk_fav_scope" ON "favorites"("userId", "level", "country", "league", "team");
+CREATE UNIQUE INDEX "uk_fav_scope" ON "favorites"("user_id", "level", "country", "league", "team");
 
 -- AddForeignKey
-ALTER TABLE "favorites" ADD CONSTRAINT "favorites_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("userid") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "favorites" ADD CONSTRAINT "favorites_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE CASCADE ON UPDATE CASCADE;
+
 
 -- =========================
 -- (1) level整合性チェック
@@ -131,4 +132,3 @@ CREATE TRIGGER trg_favorites_cascade_delete
 AFTER DELETE ON favorites
 FOR EACH ROW
 EXECUTE FUNCTION favorites_cascade_delete();
-
