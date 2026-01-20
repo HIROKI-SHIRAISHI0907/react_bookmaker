@@ -1,4 +1,4 @@
-// frontend/src/api/correlations.ts
+// frontend/src/api/correlations.ts(SpringBoot bookmakers-web bm_w008)
 export type CorrelationItem = { metric: string; value: number };
 
 export type CorrelationsBySideScore = {
@@ -16,7 +16,7 @@ export type TeamCorrelationsPayload = {
 };
 
 export async function fetchTeamCorrelations(country: string, league: string, team: string, opponent?: string): Promise<TeamCorrelationsPayload> {
-  const base = `/api/leagues/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(team)}/correlations`;
+  const base = `/api/leagues/correlations/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(team)}`;
   const url = opponent ? `${base}?opponent=${encodeURIComponent(opponent)}` : base;
 
   const res = await fetch(url, { credentials: "include" });

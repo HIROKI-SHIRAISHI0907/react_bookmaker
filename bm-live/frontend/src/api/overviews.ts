@@ -1,4 +1,4 @@
-// src/api/overviews.ts
+// src/api/overviews.ts(SpringBoot bookmakers-web bm_w003)
 
 // ===== 月次サマリ（既存） =====
 export type MonthlyOverview = {
@@ -34,12 +34,12 @@ export async function fetchMonthlyOverview(country: string, league: string, team
 
 export type ScheduleMatch = {
   seq: number;
-  round_no: number | null;
-  future_time: string; // ISO
-  game_year: number;
-  game_month: number;
-  home_team: string;
-  away_team: string;
+  roundNo: number | null;
+  futureTime: string; // ISO
+  gameYear: number;
+  gameMonth: number;
+  homeTeam: string;
+  awayTeam: string;
   link?: string | null;
 };
 
@@ -49,23 +49,23 @@ export type SurfaceSnapshot = {
   win: number | null;
   draw: number | null;
   lose: number | null;
-  winning_points: number | null;
+  winningPoints: number | null;
   rank: number | null;
 
   // バッジなど（nullable想定）
-  consecutive_win_disp?: string | null;
-  consecutive_lose_disp?: string | null;
-  unbeaten_streak_disp?: string | null;
-  consecutive_score_count_disp?: string | null;
-  first_week_game_win_disp?: string | null;
-  mid_week_game_win_disp?: string | null;
-  last_week_game_win_disp?: string | null;
-  first_win_disp?: string | null;
-  lose_streak_disp?: string | null;
-  promote_disp?: string | null;
-  descend_disp?: string | null;
-  home_adversity_disp?: string | null;
-  away_adversity_disp?: string | null;
+  consecutiveWinDisp?: string | null;
+  consecutiveLoseDisp?: string | null;
+  unbeatenStreakDisp?: string | null;
+  consecutiveScoreCountDisp?: string | null;
+  firstWeekGameWinDisp?: string | null;
+  midWeekGameWinDisp?: string | null;
+  lastWeekGameWinDisp?: string | null;
+  firstWinDisp?: string | null;
+  loseStreakDisp?: string | null;
+  promoteDisp?: string | null;
+  descendDisp?: string | null;
+  homeAdversityDisp?: string | null;
+  awayAdversityDisp?: string | null;
 };
 
 export type ScheduleOverviewResponse = {

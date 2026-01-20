@@ -109,7 +109,7 @@ export default function GameDetail() {
                 </div>
 
                 <div className="text-xs text-muted-foreground flex items-center gap-2">
-                  {new Date(q.data.recorded_at).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}
+                  {new Date(q.data.recordedAt).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}
                   {/* LIVE 中は勝敗バッジの代わりに LIVE + 経過分表示（XX`） */}
                   {q.data.winner === "LIVE" && (
                     <span className="ml-2 inline-flex items-center gap-2">
@@ -181,16 +181,16 @@ function TeamStatCard({ title, side, data }: { title: string; side: "home" | "aw
         <Line k="xG" v={fmtNum(d.xg)} />
         <Line k="ポゼッション" v={fmtPct(d.possession)} />
         <Line k="シュート(総)" v={fmtNum(d.shots)} />
-        <Line k="枠内シュート" v={fmtNum(d.shots_on)} />
-        <Line k="枠外シュート" v={fmtNum(d.shots_off)} />
+        <Line k="枠内シュート" v={fmtNum(d.shotsOn)} />
+        <Line k="枠外シュート" v={fmtNum(d.shotsOff)} />
         <Line k="ブロック" v={fmtNum(d.blocks)} />
         <Line k="CK" v={fmtNum(d.corners)} />
-        <Line k="ビッグチャンス" v={fmtNum(d.big_chances)} />
+        <Line k="ビッグチャンス" v={fmtNum(d.bigChances)} />
         <Line k="セーブ" v={fmtNum(d.saves)} />
         <Line k="警告" v={fmtNum(d.yc)} />
         <Line k="退場" v={fmtNum(d.rc)} />
         <Line k="パス成功" v={d.passes ?? "-"} />
-        {d.long_passes && <Line k="ロングパス" v={d.long_passes} />}
+        {d.longPasses && <Line k="ロングパス" v={d.longPasses} />}
       </ul>
     </div>
   );

@@ -1,13 +1,13 @@
-// frontend/src/api/history.ts
+// frontend/src/api/history.ts(SpringBoot bookmakers-web bm_w002)
 export type PastMatch = {
   seq: number;
-  match_time: string; // ISO (終了時刻 or キックオフ時刻)
-  game_team_category: string;
-  home_team: string;
-  away_team: string;
-  home_score: number;
-  away_score: number;
-  round_no: number | null;
+  matchTime: string; // ISO (終了時刻 or キックオフ時刻)
+  gameTeamCategory: string;
+  homeTeam: string;
+  awayTeam: string;
+  homeScore: number;
+  awayScore: number;
+  roundNo: number | null;
   link: string | null;
 };
 
@@ -19,7 +19,7 @@ export async function fetchPastMatches(country: string, league: string, teamSlug
   const params = new URLSearchParams();
   if (q?.opponent) params.set("opponent", q.opponent);
 
-  const url = `/api/history/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(teamSlug)}${params.toString() ? `?${params}` : ""}`;
+  const url = `/api/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(teamSlug)}${params.toString() ? `?${params}` : ""}/history`;
   const res = await fetch(url, { credentials: "include" });
   if (!res.ok) {
     const text = await res.text().catch(() => "");

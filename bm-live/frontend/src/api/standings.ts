@@ -1,4 +1,4 @@
-// src/api/standings.ts
+// src/api/standings.ts(SpringBoot bookmakers-web bm_w006)
 export type StandingRow = {
   position: number;
   teamName: string; // 表示名（日本語）

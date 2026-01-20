@@ -1,4 +1,4 @@
-// frontend/src/api/historyDetails.ts
+// frontend/src/api/historyDetails.ts (SpringBoot bookmakers-web bm_w002)
 export type SideStats = {
   name?: string | null;
   score?: number | null;
@@ -7,33 +7,33 @@ export type SideStats = {
   manager?: string | null;
   formation?: string | null;
 
-  // 指標
+  // 指標（Spring: shotsOn, bigChances, longPasses など camelCase）
   xg?: number | null;
   possession?: number | null;
   shots?: number | null;
-  shots_on?: number | null;
-  shots_off?: number | null;
+  shotsOn?: number | null;
+  shotsOff?: number | null;
   blocks?: number | null;
   corners?: number | null;
-  big_chances?: number | null;
+  bigChances?: number | null;
   saves?: number | null;
   yc?: number | null;
   rc?: number | null;
 
-  // パス関連（%や分数表記が来ることがあるので string）
+  // パス関連
   passes?: string | null;
-  long_passes?: string | null;
+  longPasses?: string | null;
 };
 
 export type HistoryDetail = {
   competition?: string | null;
-  round_no?: number | null;
+  roundNo?: number | null;
 
-  // 記録時刻（終了時刻 or スナップショット最終）
-  recorded_at?: string | null;
+  // 記録時刻
+  recordedAt?: string | null;
 
-  // 勝者：HOME / AWAY / DRAW
-  winner?: "HOME" | "AWAY" | "DRAW" | null;
+  // 勝者：HOME / AWAY / DRAW /（将来LIVE等が混ざるなら追加）
+  winner?: "HOME" | "AWAY" | "DRAW" | string | null;
 
   link?: string | null;
 
@@ -49,18 +49,19 @@ export type HistoryDetail = {
 
 /**
  * 履歴詳細を取得
- * 期待パス（実装しているバックエンドに合わせる）:
- *   GET /api/history/:country/:league/:team/history/:seq
+ * GET /api/{country}/{league}/{team}/{seq}/history
+ * 返却: { detail: {...} }
  */
 export async function fetchHistoryDetail(country: string, league: string, teamSlug: string, seq: string): Promise<HistoryDetail> {
-  const url = `/api/history/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(teamSlug)}/history/${encodeURIComponent(seq)}`;
+  const url = `/api/${encodeURIComponent(country)}` + `/${encodeURIComponent(league)}` + `/${encodeURIComponent(teamSlug)}` + `/${encodeURIComponent(seq)}/history`;
 
-  const res = await fetch(url, { credentials: "include" });
+  const res = await fetch(url, { credentials: "include", headers: { Accept: "application/json" } });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     throw new Error(`history detail fetch failed: ${res.status} ${text}`);
   }
+
   const json = await res.json();
-  // サーバは { detail: {...} } or 直接 {...} のどちらか想定に対応
-  return (json.detail ?? json ?? {}) as HistoryDetail;
+  // サーバは { detail: {...} } 形式
+  return (json?.detail ?? null) as HistoryDetail;
 }

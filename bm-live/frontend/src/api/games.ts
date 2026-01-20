@@ -1,16 +1,16 @@
-// frontend/src/api/games.ts
+// frontend/src/api/games.ts(SpringBoot bookmakers-web bm_w005)
 export type GameMatch = {
   seq: number;
-  game_team_category: string;
-  future_time: string; // ISO
-  home_team: string;
-  away_team: string;
+  gameTeamCategory: string;
+  futureTime: string; // ISO
+  homeTeam: string;
+  awayTeam: string;
   link: string | null;
-  round_no: number | null;
-  latest_times: string | null; // public.data の最大 seq の times
-  latest_seq: number | null;
-  home_score?: number | null;
-  away_score?: number | null;
+  roundNo: number | null;
+  latestTimes: string | null; // public.data の最大 seq の times
+  latestSeq: number | null;
+  homeScore?: number | null;
+  awayScore?: number | null;
   status: "LIVE" | "FINISHED"; // latest_times が「終了済」を含むかで判定
 };
 

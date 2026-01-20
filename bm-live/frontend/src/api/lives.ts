@@ -1,22 +1,22 @@
-// src/api/lives.ts
+// src/api/lives.ts(SpringBoot bookmakers-web bm_w007)
 
 export type LiveMatch = {
   seq: number;
-  data_category: string;
+  dataCategory: string;
   times: string;
-  home_team_name: string;
-  away_team_name: string;
-  home_score: number | null;
-  away_score: number | null;
-  home_exp?: number | null;
-  away_exp?: number | null;
-  home_shoot_in?: number | null;
-  away_shoot_in?: number | null;
-  record_time?: string | null;
+  homeTeamName: string;
+  awayTeamName: string;
+  homeScore: number | null;
+  awayScore: number | null;
+  homeExp?: number | null;
+  awayExp?: number | null;
+  homeShootIn?: number | null;
+  awayShootIn?: number | null;
+  recordTime?: string | null;
   link?: string | null;
   // サーバーが付与する英語スラグ（country_league_master.link 由来）
-  home_slug?: string | null;
-  away_slug?: string | null;
+  homeSlug?: string | null;
+  awaySlug?: string | null;
 };
 
 function toIntOrNull(v: any): number | null {
@@ -37,21 +37,21 @@ function toFloatOrNull(v: any): number | null {
 function normalizeRow(r: any): LiveMatch {
   return {
     seq: Number(r.seq),
-    data_category: String(r.data_category ?? "").trim(),
+    dataCategory: String(r.data_category ?? "").trim(),
     times: String(r.times ?? "").trim(),
-    home_team_name: String(r.home_team_name ?? "").trim(),
-    away_team_name: String(r.away_team_name ?? "").trim(),
-    home_score: toIntOrNull(r.home_score),
-    away_score: toIntOrNull(r.away_score),
-    home_exp: toFloatOrNull(r.home_exp),
-    away_exp: toFloatOrNull(r.away_exp),
-    home_shoot_in: toIntOrNull(r.home_shoot_in),
-    away_shoot_in: toIntOrNull(r.away_shoot_in),
-    record_time: r.record_time ?? r.update_time ?? null,
+    homeTeamName: String(r.home_team_name ?? "").trim(),
+    awayTeamName: String(r.away_team_name ?? "").trim(),
+    homeScore: toIntOrNull(r.home_score),
+    awayScore: toIntOrNull(r.away_score),
+    homeExp: toFloatOrNull(r.home_exp),
+    awayExp: toFloatOrNull(r.away_exp),
+    homeShootIn: toIntOrNull(r.home_shoot_in),
+    awayShootIn: toIntOrNull(r.away_shoot_in),
+    recordTime: r.record_time ?? r.update_time ?? null,
     // サーバーが goal_time に URL を持ってくる実装だったため、念のため link に格納
     link: r.goal_time ?? null,
-    home_slug: r.home_slug ?? null,
-    away_slug: r.away_slug ?? null,
+    homeSlug: r.home_slug ?? null,
+    awaySlug: r.away_slug ?? null,
   };
 }
 
