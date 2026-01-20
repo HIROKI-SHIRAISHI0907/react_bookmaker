@@ -1,3 +1,4 @@
+// frontend/src/api/players.ts(SpringBoot bookmakers-web bm_w009)
 export type Player = {
   id: number;
   jersey: number | null;
