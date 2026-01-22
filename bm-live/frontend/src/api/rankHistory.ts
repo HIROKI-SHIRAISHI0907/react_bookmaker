@@ -1,4 +1,4 @@
-// frontend/src/api/rankHistory.ts
+// frontend/src/api/rankHistory.ts(SpringBoot bookmakers-web bm_w012)
 
 export type RankHistoryPoint = {
   /** ラウンド番号（節） */
@@ -17,7 +17,7 @@ export type RankHistoryResponse = {
  * チームのラウンドごとの順位変動データを取得する
  */
 export async function fetchRankHistory(country: string, league: string): Promise<RankHistoryResponse> {
-  const url = `/api/rank-history/${encodeURIComponent(country)}/${encodeURIComponent(league)}}`;
+  const url = `/api/rank-history/${encodeURIComponent(country)}/${encodeURIComponent(league)}`;
 
   const res = await fetch(url, { credentials: "include" });
   if (!res.ok) {

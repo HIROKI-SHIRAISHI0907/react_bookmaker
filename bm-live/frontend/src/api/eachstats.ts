@@ -1,4 +1,4 @@
-// src/api/eachstats.ts
+// frontend/src/api/eachstats.ts(SpringBoot bookmakers-web bm_w010)
 export type SideKey = "HOME" | "AWAY";
 export type ScoreKey = "1st" | "2nd" | "ALL" | string;
 
@@ -67,8 +67,8 @@ export function parsePackedStat(raw: string | null): Omit<StatPoint, "metric"> {
   const avgAt = nums[5] ?? null;
   const variance = nums[6] ?? null;
   const varianceAt = nums[7] ?? null;
-  const skewness = nums.length >= 2 ? nums[nums.length - 2] ?? null : null;
-  const kurtosis = nums.length >= 1 ? nums[nums.length - 1] ?? null : null;
+  const skewness = nums.length >= 2 ? (nums[nums.length - 2] ?? null) : null;
+  const kurtosis = nums.length >= 1 ? (nums[nums.length - 1] ?? null) : null;
   return { min, minAt, max, maxAt, avg, avgAt, variance, varianceAt, skewness, kurtosis };
 }
 

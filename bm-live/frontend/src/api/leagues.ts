@@ -1,4 +1,4 @@
-// src/api/leagues.ts(Dashboard.tsxのハンバーガーメニューに表示する記述とリンク)
+// src/api/leagues.ts(Dashboard.tsxのハンバーガーメニューに表示する記述とリンク)(SpringBoot bookmakers-web bm_w011)
 export type LeagueGrouped = {
   country: string;
   leagues: { name: string; team_count: number; path: string }[];
