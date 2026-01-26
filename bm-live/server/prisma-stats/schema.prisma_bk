@@ -1606,3 +1606,10 @@ model rank_history {
   update_id                        String?   @db.VarChar(100)
   update_time                      DateTime? @db.Timestamptz(0)
 }
+
+model csv_sequence {
+  id         Int @id
+  csv_number Int
+
+  @@map("csv_sequence")
+}
