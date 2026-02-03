@@ -1,0 +1,71 @@
+// src/api/lives.ts(SpringBoot bookmakers-web bm_w007)
+function toIntOrNull(v) {
+    if (v == null || v === "")
+        return null;
+    // 数字以外（マイナス含む）を除去して整数へ
+    const s = String(v).replace(/[^\d-]/g, "");
+    if (s === "")
+        return null;
+    return Number.parseInt(s, 10);
+}
+function toFloatOrNull(v) {
+    if (v == null || v === "")
+        return null;
+    const s = String(v).replace(/[^0-9.\-]/g, "");
+    if (s === "" || s === "." || s === "-" || s === "-.")
+        return null;
+    return Number(s);
+}
+function normalizeRow(r) {
+    return {
+        seq: Number(r.seq),
+        dataCategory: String(r.data_category ?? "").trim(),
+        times: String(r.times ?? "").trim(),
+        homeTeamName: String(r.home_team_name ?? "").trim(),
+        awayTeamName: String(r.away_team_name ?? "").trim(),
+        homeScore: toIntOrNull(r.home_score),
+        awayScore: toIntOrNull(r.away_score),
+        homeExp: toFloatOrNull(r.home_exp),
+        awayExp: toFloatOrNull(r.away_exp),
+        homeShootIn: toIntOrNull(r.home_shoot_in),
+        awayShootIn: toIntOrNull(r.away_shoot_in),
+        recordTime: r.record_time ?? r.update_time ?? null,
+        // サーバーが goal_time に URL を持ってくる実装だったため、念のため link に格納
+        link: r.goal_time ?? null,
+        homeSlug: r.home_slug ?? null,
+        awaySlug: r.away_slug ?? null,
+    };
+}
+/** “LIVE” 判定の最終フィルタ（サーバー側でも弾いているがフロントでも保険） */
+function isLiveRow(r) {
+    const t = String(r?.times ?? "").trim();
+    if (!t)
+        return false;
+    // 「終了」や FT を含むものは除外
+    const endWords = ["FT", "終了", "試合終了", "中止", "延期"];
+    if (endWords.some((w) => t.includes(w)))
+        return false;
+    // 基本は "MM:SS" / "MM'" / "MM+X'" 等を想定
+    return /(\d{1,3}:\d{2}|\d{1,3}'|\d{1,3}\+\d{1,2}')/.test(t) || /(前半|後半|ハーフタイム)/.test(t);
+}
+/** A) 国・リーグ指定で本日の LIVE を取得 */
+export async function fetchLiveMatchesByLeague(country, league) {
+    const url = `/api/live-matches?country=${encodeURIComponent(country)}&league=${encodeURIComponent(league)}`;
+    const res = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!res.ok) {
+        const txt = await res.text().catch(() => "");
+        throw new Error(`failed to fetch live matches (${res.status}) ${txt}`);
+    }
+    const json = await res.json();
+    return (Array.isArray(json) ? json : []).filter(isLiveRow).map(normalizeRow);
+}
+/** B) 本日（全カテゴリ＝国・リーグ横断）の LIVE を取得 */
+export async function fetchLiveMatchesTodayAll() {
+    const res = await fetch(`/api/live-matches`, { headers: { Accept: "application/json" } });
+    if (!res.ok) {
+        const txt = await res.text().catch(() => "");
+        throw new Error(`failed to fetch live matches (all) (${res.status}) ${txt}`);
+    }
+    const json = await res.json();
+    return (Array.isArray(json) ? json : []).filter(isLiveRow).map(normalizeRow);
+}

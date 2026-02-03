@@ -1,19 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import tsconfigPaths from "vite-tsconfig-paths";
 
-export default defineConfig(({ mode }) => ({
-  plugins: [react()],
-  server: {
-    host: "0.0.0.0",
-    port: 5173,
-    proxy:
-      mode === "development"
-        ? {
-            "/api": {
-              target: "http://server:8080",
-              changeOrigin: true,
-            },
-          }
-        : undefined,
-  },
-}));
+export default defineConfig({
+  plugins: [react(), tsconfigPaths()],
+});

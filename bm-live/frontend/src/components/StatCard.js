@@ -1,0 +1,8 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { Card } from "../components/ui/card";
+import { Progress } from "../components/ui/progress";
+export default function StatCard({ title, homeValue, awayValue, icon: Icon, unit = "", showProgress = true }) {
+    const total = homeValue + awayValue;
+    const homePercentage = total > 0 ? (homeValue / total) * 100 : 50;
+    return (_jsxs(Card, { className: "p-4 hover-elevate", "data-testid": `card-stat-${title.toLowerCase().replace(/\s/g, "-")}`, children: [_jsxs("div", { className: "flex items-center gap-2 mb-3", children: [_jsx(Icon, { className: "w-4 h-4 text-muted-foreground" }), _jsx("h3", { className: "text-sm font-semibold text-muted-foreground uppercase tracking-wide", children: title })] }), _jsxs("div", { className: "flex items-center justify-between mb-3", children: [_jsxs("span", { className: "text-2xl font-mono font-bold", "data-testid": `text-home-${title.toLowerCase().replace(/\s/g, "-")}`, children: [homeValue, unit] }), _jsxs("span", { className: "text-2xl font-mono font-bold", "data-testid": `text-away-${title.toLowerCase().replace(/\s/g, "-")}`, children: [awayValue, unit] })] }), showProgress && (_jsxs("div", { className: "space-y-2", children: [_jsx(Progress, { value: homePercentage, className: "h-2", "data-testid": `progress-${title.toLowerCase().replace(/\s/g, "-")}` }), _jsxs("div", { className: "flex justify-between text-xs text-muted-foreground", children: [_jsxs("span", { children: [Math.round(homePercentage), "%"] }), _jsxs("span", { children: [Math.round(100 - homePercentage), "%"] })] })] }))] }));
+}
