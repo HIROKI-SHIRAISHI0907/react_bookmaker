@@ -173,6 +173,11 @@ export type past_data_history = $Result.DefaultSelection<Prisma.$past_data_histo
  * 
  */
 export type rank_history = $Result.DefaultSelection<Prisma.$rank_historyPayload>
+/**
+ * Model csv_sequence
+ * 
+ */
+export type csv_sequence = $Result.DefaultSelection<Prisma.$csv_sequencePayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -611,6 +616,16 @@ export class PrismaClient<
     * ```
     */
   get rank_history(): Prisma.rank_historyDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.csv_sequence`: Exposes CRUD operations for the **csv_sequence** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Csv_sequences
+    * const csv_sequences = await prisma.csv_sequence.findMany()
+    * ```
+    */
+  get csv_sequence(): Prisma.csv_sequenceDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -669,8 +684,8 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 6.19.1
-   * Query Engine version: c2990dca591cba766e3b7ef5d9e8a84796e47ab7
+   * Prisma Client JS version: 6.16.2
+   * Query Engine version: 1c57fdcd7e44b29b9313256c76699e91c3ac3c43
    */
   export type PrismaVersion = {
     client: string
@@ -683,7 +698,6 @@ export namespace Prisma {
    */
 
 
-  export import Bytes = runtime.Bytes
   export import JsonObject = runtime.JsonObject
   export import JsonArray = runtime.JsonArray
   export import JsonValue = runtime.JsonValue
@@ -1083,7 +1097,8 @@ export namespace Prisma {
     within_data_45minutes_home_all_league: 'within_data_45minutes_home_all_league',
     within_data_45minutes_home_scored: 'within_data_45minutes_home_scored',
     past_data_history: 'past_data_history',
-    rank_history: 'rank_history'
+    rank_history: 'rank_history',
+    csv_sequence: 'csv_sequence'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1102,7 +1117,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "average_statistics_csv_tmp_data" | "calc_correlation" | "calc_correlation_ranking" | "condition_result_data" | "country_league_summary" | "data" | "each_team_score_based_feature_stats" | "each_team_score_based_feature_stats_history" | "league_score_time_band_stats" | "league_score_time_band_stats_split_score" | "match_classification_result" | "match_classification_result_count" | "no_goal_match_stats" | "score_based_feature_stats" | "score_based_feature_stats_history" | "stat_encryption" | "surface_overview" | "team_match_final_stats" | "team_monthly_score_summary" | "team_time_segment_shooting_stat" | "within_data" | "within_data_20minutes_away_all_league" | "within_data_20minutes_away_scored" | "within_data_20minutes_home_all_league" | "within_data_20minutes_home_scored" | "within_data_20minutes_same_scored" | "within_data_45minutes_away_all_league" | "within_data_45minutes_away_scored" | "within_data_45minutes_home_all_league" | "within_data_45minutes_home_scored" | "past_data_history" | "rank_history"
+      modelProps: "average_statistics_csv_tmp_data" | "calc_correlation" | "calc_correlation_ranking" | "condition_result_data" | "country_league_summary" | "data" | "each_team_score_based_feature_stats" | "each_team_score_based_feature_stats_history" | "league_score_time_band_stats" | "league_score_time_band_stats_split_score" | "match_classification_result" | "match_classification_result_count" | "no_goal_match_stats" | "score_based_feature_stats" | "score_based_feature_stats_history" | "stat_encryption" | "surface_overview" | "team_match_final_stats" | "team_monthly_score_summary" | "team_time_segment_shooting_stat" | "within_data" | "within_data_20minutes_away_all_league" | "within_data_20minutes_away_scored" | "within_data_20minutes_home_all_league" | "within_data_20minutes_home_scored" | "within_data_20minutes_same_scored" | "within_data_45minutes_away_all_league" | "within_data_45minutes_away_scored" | "within_data_45minutes_home_all_league" | "within_data_45minutes_home_scored" | "past_data_history" | "rank_history" | "csv_sequence"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3474,6 +3489,80 @@ export namespace Prisma {
           }
         }
       }
+      csv_sequence: {
+        payload: Prisma.$csv_sequencePayload<ExtArgs>
+        fields: Prisma.csv_sequenceFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.csv_sequenceFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$csv_sequencePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.csv_sequenceFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$csv_sequencePayload>
+          }
+          findFirst: {
+            args: Prisma.csv_sequenceFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$csv_sequencePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.csv_sequenceFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$csv_sequencePayload>
+          }
+          findMany: {
+            args: Prisma.csv_sequenceFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$csv_sequencePayload>[]
+          }
+          create: {
+            args: Prisma.csv_sequenceCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$csv_sequencePayload>
+          }
+          createMany: {
+            args: Prisma.csv_sequenceCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.csv_sequenceCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$csv_sequencePayload>[]
+          }
+          delete: {
+            args: Prisma.csv_sequenceDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$csv_sequencePayload>
+          }
+          update: {
+            args: Prisma.csv_sequenceUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$csv_sequencePayload>
+          }
+          deleteMany: {
+            args: Prisma.csv_sequenceDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.csv_sequenceUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.csv_sequenceUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$csv_sequencePayload>[]
+          }
+          upsert: {
+            args: Prisma.csv_sequenceUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$csv_sequencePayload>
+          }
+          aggregate: {
+            args: Prisma.Csv_sequenceAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateCsv_sequence>
+          }
+          groupBy: {
+            args: Prisma.csv_sequenceGroupByArgs<ExtArgs>
+            result: $Utils.Optional<Csv_sequenceGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.csv_sequenceCountArgs<ExtArgs>
+            result: $Utils.Optional<Csv_sequenceCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -3602,6 +3691,7 @@ export namespace Prisma {
     within_data_45minutes_home_scored?: within_data_45minutes_home_scoredOmit
     past_data_history?: past_data_historyOmit
     rank_history?: rank_historyOmit
+    csv_sequence?: csv_sequenceOmit
   }
 
   /* Types for Logging */
@@ -8934,7 +9024,7 @@ export namespace Prisma {
     alter_target_mail_fail: string | null
     no_result_count: string | null
     err_data: string | null
-    condition_data: Bytes | null
+    condition_data: Uint8Array | null
     hash: string | null
     register_id: string | null
     register_time: Date | null
@@ -8955,7 +9045,7 @@ export namespace Prisma {
     alter_target_mail_fail: string | null
     no_result_count: string | null
     err_data: string | null
-    condition_data: Bytes | null
+    condition_data: Uint8Array | null
     hash: string | null
     register_id: string | null
     register_time: Date | null
@@ -9157,7 +9247,7 @@ export namespace Prisma {
     alter_target_mail_fail: string | null
     no_result_count: string | null
     err_data: string | null
-    condition_data: Bytes
+    condition_data: Uint8Array
     hash: string | null
     register_id: string
     register_time: Date
@@ -9286,7 +9376,7 @@ export namespace Prisma {
       alter_target_mail_fail: string | null
       no_result_count: string | null
       err_data: string | null
-      condition_data: Prisma.Bytes
+      condition_data: Uint8Array
       hash: string | null
       register_id: string
       register_time: Date
@@ -53982,6 +54072,1000 @@ export namespace Prisma {
 
 
   /**
+   * Model csv_sequence
+   */
+
+  export type AggregateCsv_sequence = {
+    _count: Csv_sequenceCountAggregateOutputType | null
+    _avg: Csv_sequenceAvgAggregateOutputType | null
+    _sum: Csv_sequenceSumAggregateOutputType | null
+    _min: Csv_sequenceMinAggregateOutputType | null
+    _max: Csv_sequenceMaxAggregateOutputType | null
+  }
+
+  export type Csv_sequenceAvgAggregateOutputType = {
+    id: number | null
+    csv_number: number | null
+  }
+
+  export type Csv_sequenceSumAggregateOutputType = {
+    id: number | null
+    csv_number: number | null
+  }
+
+  export type Csv_sequenceMinAggregateOutputType = {
+    id: number | null
+    csv_number: number | null
+  }
+
+  export type Csv_sequenceMaxAggregateOutputType = {
+    id: number | null
+    csv_number: number | null
+  }
+
+  export type Csv_sequenceCountAggregateOutputType = {
+    id: number
+    csv_number: number
+    _all: number
+  }
+
+
+  export type Csv_sequenceAvgAggregateInputType = {
+    id?: true
+    csv_number?: true
+  }
+
+  export type Csv_sequenceSumAggregateInputType = {
+    id?: true
+    csv_number?: true
+  }
+
+  export type Csv_sequenceMinAggregateInputType = {
+    id?: true
+    csv_number?: true
+  }
+
+  export type Csv_sequenceMaxAggregateInputType = {
+    id?: true
+    csv_number?: true
+  }
+
+  export type Csv_sequenceCountAggregateInputType = {
+    id?: true
+    csv_number?: true
+    _all?: true
+  }
+
+  export type Csv_sequenceAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which csv_sequence to aggregate.
+     */
+    where?: csv_sequenceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of csv_sequences to fetch.
+     */
+    orderBy?: csv_sequenceOrderByWithRelationInput | csv_sequenceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: csv_sequenceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` csv_sequences from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` csv_sequences.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned csv_sequences
+    **/
+    _count?: true | Csv_sequenceCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: Csv_sequenceAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: Csv_sequenceSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: Csv_sequenceMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: Csv_sequenceMaxAggregateInputType
+  }
+
+  export type GetCsv_sequenceAggregateType<T extends Csv_sequenceAggregateArgs> = {
+        [P in keyof T & keyof AggregateCsv_sequence]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateCsv_sequence[P]>
+      : GetScalarType<T[P], AggregateCsv_sequence[P]>
+  }
+
+
+
+
+  export type csv_sequenceGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: csv_sequenceWhereInput
+    orderBy?: csv_sequenceOrderByWithAggregationInput | csv_sequenceOrderByWithAggregationInput[]
+    by: Csv_sequenceScalarFieldEnum[] | Csv_sequenceScalarFieldEnum
+    having?: csv_sequenceScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: Csv_sequenceCountAggregateInputType | true
+    _avg?: Csv_sequenceAvgAggregateInputType
+    _sum?: Csv_sequenceSumAggregateInputType
+    _min?: Csv_sequenceMinAggregateInputType
+    _max?: Csv_sequenceMaxAggregateInputType
+  }
+
+  export type Csv_sequenceGroupByOutputType = {
+    id: number
+    csv_number: number
+    _count: Csv_sequenceCountAggregateOutputType | null
+    _avg: Csv_sequenceAvgAggregateOutputType | null
+    _sum: Csv_sequenceSumAggregateOutputType | null
+    _min: Csv_sequenceMinAggregateOutputType | null
+    _max: Csv_sequenceMaxAggregateOutputType | null
+  }
+
+  type GetCsv_sequenceGroupByPayload<T extends csv_sequenceGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<Csv_sequenceGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof Csv_sequenceGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], Csv_sequenceGroupByOutputType[P]>
+            : GetScalarType<T[P], Csv_sequenceGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type csv_sequenceSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    csv_number?: boolean
+  }, ExtArgs["result"]["csv_sequence"]>
+
+  export type csv_sequenceSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    csv_number?: boolean
+  }, ExtArgs["result"]["csv_sequence"]>
+
+  export type csv_sequenceSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    csv_number?: boolean
+  }, ExtArgs["result"]["csv_sequence"]>
+
+  export type csv_sequenceSelectScalar = {
+    id?: boolean
+    csv_number?: boolean
+  }
+
+  export type csv_sequenceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "csv_number", ExtArgs["result"]["csv_sequence"]>
+
+  export type $csv_sequencePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "csv_sequence"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      csv_number: number
+    }, ExtArgs["result"]["csv_sequence"]>
+    composites: {}
+  }
+
+  type csv_sequenceGetPayload<S extends boolean | null | undefined | csv_sequenceDefaultArgs> = $Result.GetResult<Prisma.$csv_sequencePayload, S>
+
+  type csv_sequenceCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<csv_sequenceFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: Csv_sequenceCountAggregateInputType | true
+    }
+
+  export interface csv_sequenceDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['csv_sequence'], meta: { name: 'csv_sequence' } }
+    /**
+     * Find zero or one Csv_sequence that matches the filter.
+     * @param {csv_sequenceFindUniqueArgs} args - Arguments to find a Csv_sequence
+     * @example
+     * // Get one Csv_sequence
+     * const csv_sequence = await prisma.csv_sequence.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends csv_sequenceFindUniqueArgs>(args: SelectSubset<T, csv_sequenceFindUniqueArgs<ExtArgs>>): Prisma__csv_sequenceClient<$Result.GetResult<Prisma.$csv_sequencePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Csv_sequence that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {csv_sequenceFindUniqueOrThrowArgs} args - Arguments to find a Csv_sequence
+     * @example
+     * // Get one Csv_sequence
+     * const csv_sequence = await prisma.csv_sequence.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends csv_sequenceFindUniqueOrThrowArgs>(args: SelectSubset<T, csv_sequenceFindUniqueOrThrowArgs<ExtArgs>>): Prisma__csv_sequenceClient<$Result.GetResult<Prisma.$csv_sequencePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Csv_sequence that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {csv_sequenceFindFirstArgs} args - Arguments to find a Csv_sequence
+     * @example
+     * // Get one Csv_sequence
+     * const csv_sequence = await prisma.csv_sequence.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends csv_sequenceFindFirstArgs>(args?: SelectSubset<T, csv_sequenceFindFirstArgs<ExtArgs>>): Prisma__csv_sequenceClient<$Result.GetResult<Prisma.$csv_sequencePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Csv_sequence that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {csv_sequenceFindFirstOrThrowArgs} args - Arguments to find a Csv_sequence
+     * @example
+     * // Get one Csv_sequence
+     * const csv_sequence = await prisma.csv_sequence.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends csv_sequenceFindFirstOrThrowArgs>(args?: SelectSubset<T, csv_sequenceFindFirstOrThrowArgs<ExtArgs>>): Prisma__csv_sequenceClient<$Result.GetResult<Prisma.$csv_sequencePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Csv_sequences that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {csv_sequenceFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Csv_sequences
+     * const csv_sequences = await prisma.csv_sequence.findMany()
+     * 
+     * // Get first 10 Csv_sequences
+     * const csv_sequences = await prisma.csv_sequence.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const csv_sequenceWithIdOnly = await prisma.csv_sequence.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends csv_sequenceFindManyArgs>(args?: SelectSubset<T, csv_sequenceFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$csv_sequencePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Csv_sequence.
+     * @param {csv_sequenceCreateArgs} args - Arguments to create a Csv_sequence.
+     * @example
+     * // Create one Csv_sequence
+     * const Csv_sequence = await prisma.csv_sequence.create({
+     *   data: {
+     *     // ... data to create a Csv_sequence
+     *   }
+     * })
+     * 
+     */
+    create<T extends csv_sequenceCreateArgs>(args: SelectSubset<T, csv_sequenceCreateArgs<ExtArgs>>): Prisma__csv_sequenceClient<$Result.GetResult<Prisma.$csv_sequencePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Csv_sequences.
+     * @param {csv_sequenceCreateManyArgs} args - Arguments to create many Csv_sequences.
+     * @example
+     * // Create many Csv_sequences
+     * const csv_sequence = await prisma.csv_sequence.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends csv_sequenceCreateManyArgs>(args?: SelectSubset<T, csv_sequenceCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Csv_sequences and returns the data saved in the database.
+     * @param {csv_sequenceCreateManyAndReturnArgs} args - Arguments to create many Csv_sequences.
+     * @example
+     * // Create many Csv_sequences
+     * const csv_sequence = await prisma.csv_sequence.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Csv_sequences and only return the `id`
+     * const csv_sequenceWithIdOnly = await prisma.csv_sequence.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends csv_sequenceCreateManyAndReturnArgs>(args?: SelectSubset<T, csv_sequenceCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$csv_sequencePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Csv_sequence.
+     * @param {csv_sequenceDeleteArgs} args - Arguments to delete one Csv_sequence.
+     * @example
+     * // Delete one Csv_sequence
+     * const Csv_sequence = await prisma.csv_sequence.delete({
+     *   where: {
+     *     // ... filter to delete one Csv_sequence
+     *   }
+     * })
+     * 
+     */
+    delete<T extends csv_sequenceDeleteArgs>(args: SelectSubset<T, csv_sequenceDeleteArgs<ExtArgs>>): Prisma__csv_sequenceClient<$Result.GetResult<Prisma.$csv_sequencePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Csv_sequence.
+     * @param {csv_sequenceUpdateArgs} args - Arguments to update one Csv_sequence.
+     * @example
+     * // Update one Csv_sequence
+     * const csv_sequence = await prisma.csv_sequence.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends csv_sequenceUpdateArgs>(args: SelectSubset<T, csv_sequenceUpdateArgs<ExtArgs>>): Prisma__csv_sequenceClient<$Result.GetResult<Prisma.$csv_sequencePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Csv_sequences.
+     * @param {csv_sequenceDeleteManyArgs} args - Arguments to filter Csv_sequences to delete.
+     * @example
+     * // Delete a few Csv_sequences
+     * const { count } = await prisma.csv_sequence.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends csv_sequenceDeleteManyArgs>(args?: SelectSubset<T, csv_sequenceDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Csv_sequences.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {csv_sequenceUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Csv_sequences
+     * const csv_sequence = await prisma.csv_sequence.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends csv_sequenceUpdateManyArgs>(args: SelectSubset<T, csv_sequenceUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Csv_sequences and returns the data updated in the database.
+     * @param {csv_sequenceUpdateManyAndReturnArgs} args - Arguments to update many Csv_sequences.
+     * @example
+     * // Update many Csv_sequences
+     * const csv_sequence = await prisma.csv_sequence.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Csv_sequences and only return the `id`
+     * const csv_sequenceWithIdOnly = await prisma.csv_sequence.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends csv_sequenceUpdateManyAndReturnArgs>(args: SelectSubset<T, csv_sequenceUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$csv_sequencePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Csv_sequence.
+     * @param {csv_sequenceUpsertArgs} args - Arguments to update or create a Csv_sequence.
+     * @example
+     * // Update or create a Csv_sequence
+     * const csv_sequence = await prisma.csv_sequence.upsert({
+     *   create: {
+     *     // ... data to create a Csv_sequence
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Csv_sequence we want to update
+     *   }
+     * })
+     */
+    upsert<T extends csv_sequenceUpsertArgs>(args: SelectSubset<T, csv_sequenceUpsertArgs<ExtArgs>>): Prisma__csv_sequenceClient<$Result.GetResult<Prisma.$csv_sequencePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Csv_sequences.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {csv_sequenceCountArgs} args - Arguments to filter Csv_sequences to count.
+     * @example
+     * // Count the number of Csv_sequences
+     * const count = await prisma.csv_sequence.count({
+     *   where: {
+     *     // ... the filter for the Csv_sequences we want to count
+     *   }
+     * })
+    **/
+    count<T extends csv_sequenceCountArgs>(
+      args?: Subset<T, csv_sequenceCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], Csv_sequenceCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Csv_sequence.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {Csv_sequenceAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends Csv_sequenceAggregateArgs>(args: Subset<T, Csv_sequenceAggregateArgs>): Prisma.PrismaPromise<GetCsv_sequenceAggregateType<T>>
+
+    /**
+     * Group by Csv_sequence.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {csv_sequenceGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends csv_sequenceGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: csv_sequenceGroupByArgs['orderBy'] }
+        : { orderBy?: csv_sequenceGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, csv_sequenceGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetCsv_sequenceGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the csv_sequence model
+   */
+  readonly fields: csv_sequenceFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for csv_sequence.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__csv_sequenceClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the csv_sequence model
+   */
+  interface csv_sequenceFieldRefs {
+    readonly id: FieldRef<"csv_sequence", 'Int'>
+    readonly csv_number: FieldRef<"csv_sequence", 'Int'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * csv_sequence findUnique
+   */
+  export type csv_sequenceFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the csv_sequence
+     */
+    select?: csv_sequenceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the csv_sequence
+     */
+    omit?: csv_sequenceOmit<ExtArgs> | null
+    /**
+     * Filter, which csv_sequence to fetch.
+     */
+    where: csv_sequenceWhereUniqueInput
+  }
+
+  /**
+   * csv_sequence findUniqueOrThrow
+   */
+  export type csv_sequenceFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the csv_sequence
+     */
+    select?: csv_sequenceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the csv_sequence
+     */
+    omit?: csv_sequenceOmit<ExtArgs> | null
+    /**
+     * Filter, which csv_sequence to fetch.
+     */
+    where: csv_sequenceWhereUniqueInput
+  }
+
+  /**
+   * csv_sequence findFirst
+   */
+  export type csv_sequenceFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the csv_sequence
+     */
+    select?: csv_sequenceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the csv_sequence
+     */
+    omit?: csv_sequenceOmit<ExtArgs> | null
+    /**
+     * Filter, which csv_sequence to fetch.
+     */
+    where?: csv_sequenceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of csv_sequences to fetch.
+     */
+    orderBy?: csv_sequenceOrderByWithRelationInput | csv_sequenceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for csv_sequences.
+     */
+    cursor?: csv_sequenceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` csv_sequences from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` csv_sequences.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of csv_sequences.
+     */
+    distinct?: Csv_sequenceScalarFieldEnum | Csv_sequenceScalarFieldEnum[]
+  }
+
+  /**
+   * csv_sequence findFirstOrThrow
+   */
+  export type csv_sequenceFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the csv_sequence
+     */
+    select?: csv_sequenceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the csv_sequence
+     */
+    omit?: csv_sequenceOmit<ExtArgs> | null
+    /**
+     * Filter, which csv_sequence to fetch.
+     */
+    where?: csv_sequenceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of csv_sequences to fetch.
+     */
+    orderBy?: csv_sequenceOrderByWithRelationInput | csv_sequenceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for csv_sequences.
+     */
+    cursor?: csv_sequenceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` csv_sequences from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` csv_sequences.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of csv_sequences.
+     */
+    distinct?: Csv_sequenceScalarFieldEnum | Csv_sequenceScalarFieldEnum[]
+  }
+
+  /**
+   * csv_sequence findMany
+   */
+  export type csv_sequenceFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the csv_sequence
+     */
+    select?: csv_sequenceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the csv_sequence
+     */
+    omit?: csv_sequenceOmit<ExtArgs> | null
+    /**
+     * Filter, which csv_sequences to fetch.
+     */
+    where?: csv_sequenceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of csv_sequences to fetch.
+     */
+    orderBy?: csv_sequenceOrderByWithRelationInput | csv_sequenceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing csv_sequences.
+     */
+    cursor?: csv_sequenceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` csv_sequences from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` csv_sequences.
+     */
+    skip?: number
+    distinct?: Csv_sequenceScalarFieldEnum | Csv_sequenceScalarFieldEnum[]
+  }
+
+  /**
+   * csv_sequence create
+   */
+  export type csv_sequenceCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the csv_sequence
+     */
+    select?: csv_sequenceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the csv_sequence
+     */
+    omit?: csv_sequenceOmit<ExtArgs> | null
+    /**
+     * The data needed to create a csv_sequence.
+     */
+    data: XOR<csv_sequenceCreateInput, csv_sequenceUncheckedCreateInput>
+  }
+
+  /**
+   * csv_sequence createMany
+   */
+  export type csv_sequenceCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many csv_sequences.
+     */
+    data: csv_sequenceCreateManyInput | csv_sequenceCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * csv_sequence createManyAndReturn
+   */
+  export type csv_sequenceCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the csv_sequence
+     */
+    select?: csv_sequenceSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the csv_sequence
+     */
+    omit?: csv_sequenceOmit<ExtArgs> | null
+    /**
+     * The data used to create many csv_sequences.
+     */
+    data: csv_sequenceCreateManyInput | csv_sequenceCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * csv_sequence update
+   */
+  export type csv_sequenceUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the csv_sequence
+     */
+    select?: csv_sequenceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the csv_sequence
+     */
+    omit?: csv_sequenceOmit<ExtArgs> | null
+    /**
+     * The data needed to update a csv_sequence.
+     */
+    data: XOR<csv_sequenceUpdateInput, csv_sequenceUncheckedUpdateInput>
+    /**
+     * Choose, which csv_sequence to update.
+     */
+    where: csv_sequenceWhereUniqueInput
+  }
+
+  /**
+   * csv_sequence updateMany
+   */
+  export type csv_sequenceUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update csv_sequences.
+     */
+    data: XOR<csv_sequenceUpdateManyMutationInput, csv_sequenceUncheckedUpdateManyInput>
+    /**
+     * Filter which csv_sequences to update
+     */
+    where?: csv_sequenceWhereInput
+    /**
+     * Limit how many csv_sequences to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * csv_sequence updateManyAndReturn
+   */
+  export type csv_sequenceUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the csv_sequence
+     */
+    select?: csv_sequenceSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the csv_sequence
+     */
+    omit?: csv_sequenceOmit<ExtArgs> | null
+    /**
+     * The data used to update csv_sequences.
+     */
+    data: XOR<csv_sequenceUpdateManyMutationInput, csv_sequenceUncheckedUpdateManyInput>
+    /**
+     * Filter which csv_sequences to update
+     */
+    where?: csv_sequenceWhereInput
+    /**
+     * Limit how many csv_sequences to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * csv_sequence upsert
+   */
+  export type csv_sequenceUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the csv_sequence
+     */
+    select?: csv_sequenceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the csv_sequence
+     */
+    omit?: csv_sequenceOmit<ExtArgs> | null
+    /**
+     * The filter to search for the csv_sequence to update in case it exists.
+     */
+    where: csv_sequenceWhereUniqueInput
+    /**
+     * In case the csv_sequence found by the `where` argument doesn't exist, create a new csv_sequence with this data.
+     */
+    create: XOR<csv_sequenceCreateInput, csv_sequenceUncheckedCreateInput>
+    /**
+     * In case the csv_sequence was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<csv_sequenceUpdateInput, csv_sequenceUncheckedUpdateInput>
+  }
+
+  /**
+   * csv_sequence delete
+   */
+  export type csv_sequenceDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the csv_sequence
+     */
+    select?: csv_sequenceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the csv_sequence
+     */
+    omit?: csv_sequenceOmit<ExtArgs> | null
+    /**
+     * Filter which csv_sequence to delete.
+     */
+    where: csv_sequenceWhereUniqueInput
+  }
+
+  /**
+   * csv_sequence deleteMany
+   */
+  export type csv_sequenceDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which csv_sequences to delete
+     */
+    where?: csv_sequenceWhereInput
+    /**
+     * Limit how many csv_sequences to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * csv_sequence without action
+   */
+  export type csv_sequenceDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the csv_sequence
+     */
+    select?: csv_sequenceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the csv_sequence
+     */
+    omit?: csv_sequenceOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -55682,6 +56766,14 @@ export namespace Prisma {
   export type Rank_historyScalarFieldEnum = (typeof Rank_historyScalarFieldEnum)[keyof typeof Rank_historyScalarFieldEnum]
 
 
+  export const Csv_sequenceScalarFieldEnum: {
+    id: 'id',
+    csv_number: 'csv_number'
+  };
+
+  export type Csv_sequenceScalarFieldEnum = (typeof Csv_sequenceScalarFieldEnum)[keyof typeof Csv_sequenceScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -56796,7 +57888,7 @@ export namespace Prisma {
     alter_target_mail_fail?: StringNullableFilter<"condition_result_data"> | string | null
     no_result_count?: StringNullableFilter<"condition_result_data"> | string | null
     err_data?: StringNullableFilter<"condition_result_data"> | string | null
-    condition_data?: BytesFilter<"condition_result_data"> | Bytes
+    condition_data?: BytesFilter<"condition_result_data"> | Uint8Array
     hash?: StringNullableFilter<"condition_result_data"> | string | null
     register_id?: StringFilter<"condition_result_data"> | string
     register_time?: DateTimeFilter<"condition_result_data"> | Date | string
@@ -56842,7 +57934,7 @@ export namespace Prisma {
     alter_target_mail_fail?: StringNullableFilter<"condition_result_data"> | string | null
     no_result_count?: StringNullableFilter<"condition_result_data"> | string | null
     err_data?: StringNullableFilter<"condition_result_data"> | string | null
-    condition_data?: BytesFilter<"condition_result_data"> | Bytes
+    condition_data?: BytesFilter<"condition_result_data"> | Uint8Array
     register_id?: StringFilter<"condition_result_data"> | string
     register_time?: DateTimeFilter<"condition_result_data"> | Date | string
     update_id?: StringFilter<"condition_result_data"> | string
@@ -56891,7 +57983,7 @@ export namespace Prisma {
     alter_target_mail_fail?: StringNullableWithAggregatesFilter<"condition_result_data"> | string | null
     no_result_count?: StringNullableWithAggregatesFilter<"condition_result_data"> | string | null
     err_data?: StringNullableWithAggregatesFilter<"condition_result_data"> | string | null
-    condition_data?: BytesWithAggregatesFilter<"condition_result_data"> | Bytes
+    condition_data?: BytesWithAggregatesFilter<"condition_result_data"> | Uint8Array
     hash?: StringNullableWithAggregatesFilter<"condition_result_data"> | string | null
     register_id?: StringWithAggregatesFilter<"condition_result_data"> | string
     register_time?: DateTimeWithAggregatesFilter<"condition_result_data"> | Date | string
@@ -64203,6 +65295,45 @@ export namespace Prisma {
     update_time?: DateTimeNullableWithAggregatesFilter<"rank_history"> | Date | string | null
   }
 
+  export type csv_sequenceWhereInput = {
+    AND?: csv_sequenceWhereInput | csv_sequenceWhereInput[]
+    OR?: csv_sequenceWhereInput[]
+    NOT?: csv_sequenceWhereInput | csv_sequenceWhereInput[]
+    id?: IntFilter<"csv_sequence"> | number
+    csv_number?: IntFilter<"csv_sequence"> | number
+  }
+
+  export type csv_sequenceOrderByWithRelationInput = {
+    id?: SortOrder
+    csv_number?: SortOrder
+  }
+
+  export type csv_sequenceWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    AND?: csv_sequenceWhereInput | csv_sequenceWhereInput[]
+    OR?: csv_sequenceWhereInput[]
+    NOT?: csv_sequenceWhereInput | csv_sequenceWhereInput[]
+    csv_number?: IntFilter<"csv_sequence"> | number
+  }, "id">
+
+  export type csv_sequenceOrderByWithAggregationInput = {
+    id?: SortOrder
+    csv_number?: SortOrder
+    _count?: csv_sequenceCountOrderByAggregateInput
+    _avg?: csv_sequenceAvgOrderByAggregateInput
+    _max?: csv_sequenceMaxOrderByAggregateInput
+    _min?: csv_sequenceMinOrderByAggregateInput
+    _sum?: csv_sequenceSumOrderByAggregateInput
+  }
+
+  export type csv_sequenceScalarWhereWithAggregatesInput = {
+    AND?: csv_sequenceScalarWhereWithAggregatesInput | csv_sequenceScalarWhereWithAggregatesInput[]
+    OR?: csv_sequenceScalarWhereWithAggregatesInput[]
+    NOT?: csv_sequenceScalarWhereWithAggregatesInput | csv_sequenceScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"csv_sequence"> | number
+    csv_number?: IntWithAggregatesFilter<"csv_sequence"> | number
+  }
+
   export type average_statistics_csv_tmp_dataCreateInput = {
     id: number
     score?: string | null
@@ -65525,7 +66656,7 @@ export namespace Prisma {
     alter_target_mail_fail?: string | null
     no_result_count?: string | null
     err_data?: string | null
-    condition_data: Bytes
+    condition_data: Uint8Array
     hash?: string | null
     register_id: string
     register_time: Date | string
@@ -65546,7 +66677,7 @@ export namespace Prisma {
     alter_target_mail_fail?: string | null
     no_result_count?: string | null
     err_data?: string | null
-    condition_data: Bytes
+    condition_data: Uint8Array
     hash?: string | null
     register_id: string
     register_time: Date | string
@@ -65566,7 +66697,7 @@ export namespace Prisma {
     alter_target_mail_fail?: NullableStringFieldUpdateOperationsInput | string | null
     no_result_count?: NullableStringFieldUpdateOperationsInput | string | null
     err_data?: NullableStringFieldUpdateOperationsInput | string | null
-    condition_data?: BytesFieldUpdateOperationsInput | Bytes
+    condition_data?: BytesFieldUpdateOperationsInput | Uint8Array
     hash?: NullableStringFieldUpdateOperationsInput | string | null
     register_id?: StringFieldUpdateOperationsInput | string
     register_time?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -65587,7 +66718,7 @@ export namespace Prisma {
     alter_target_mail_fail?: NullableStringFieldUpdateOperationsInput | string | null
     no_result_count?: NullableStringFieldUpdateOperationsInput | string | null
     err_data?: NullableStringFieldUpdateOperationsInput | string | null
-    condition_data?: BytesFieldUpdateOperationsInput | Bytes
+    condition_data?: BytesFieldUpdateOperationsInput | Uint8Array
     hash?: NullableStringFieldUpdateOperationsInput | string | null
     register_id?: StringFieldUpdateOperationsInput | string
     register_time?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -65608,7 +66739,7 @@ export namespace Prisma {
     alter_target_mail_fail?: string | null
     no_result_count?: string | null
     err_data?: string | null
-    condition_data: Bytes
+    condition_data: Uint8Array
     hash?: string | null
     register_id: string
     register_time: Date | string
@@ -65628,7 +66759,7 @@ export namespace Prisma {
     alter_target_mail_fail?: NullableStringFieldUpdateOperationsInput | string | null
     no_result_count?: NullableStringFieldUpdateOperationsInput | string | null
     err_data?: NullableStringFieldUpdateOperationsInput | string | null
-    condition_data?: BytesFieldUpdateOperationsInput | Bytes
+    condition_data?: BytesFieldUpdateOperationsInput | Uint8Array
     hash?: NullableStringFieldUpdateOperationsInput | string | null
     register_id?: StringFieldUpdateOperationsInput | string
     register_time?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -65649,7 +66780,7 @@ export namespace Prisma {
     alter_target_mail_fail?: NullableStringFieldUpdateOperationsInput | string | null
     no_result_count?: NullableStringFieldUpdateOperationsInput | string | null
     err_data?: NullableStringFieldUpdateOperationsInput | string | null
-    condition_data?: BytesFieldUpdateOperationsInput | Bytes
+    condition_data?: BytesFieldUpdateOperationsInput | Uint8Array
     hash?: NullableStringFieldUpdateOperationsInput | string | null
     register_id?: StringFieldUpdateOperationsInput | string
     register_time?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -75250,6 +76381,41 @@ export namespace Prisma {
     update_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type csv_sequenceCreateInput = {
+    id: number
+    csv_number: number
+  }
+
+  export type csv_sequenceUncheckedCreateInput = {
+    id: number
+    csv_number: number
+  }
+
+  export type csv_sequenceUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    csv_number?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type csv_sequenceUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    csv_number?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type csv_sequenceCreateManyInput = {
+    id: number
+    csv_number: number
+  }
+
+  export type csv_sequenceUpdateManyMutationInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    csv_number?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type csv_sequenceUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    csv_number?: IntFieldUpdateOperationsInput | number
+  }
+
   export type IntFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -75929,10 +77095,10 @@ export namespace Prisma {
   }
 
   export type BytesFilter<$PrismaModel = never> = {
-    equals?: Bytes | BytesFieldRefInput<$PrismaModel>
-    in?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
-    notIn?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
-    not?: NestedBytesFilter<$PrismaModel> | Bytes
+    equals?: Uint8Array | BytesFieldRefInput<$PrismaModel>
+    in?: Uint8Array[] | ListBytesFieldRefInput<$PrismaModel>
+    notIn?: Uint8Array[] | ListBytesFieldRefInput<$PrismaModel>
+    not?: NestedBytesFilter<$PrismaModel> | Uint8Array
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -76033,10 +77199,10 @@ export namespace Prisma {
   }
 
   export type BytesWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Bytes | BytesFieldRefInput<$PrismaModel>
-    in?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
-    notIn?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
-    not?: NestedBytesWithAggregatesFilter<$PrismaModel> | Bytes
+    equals?: Uint8Array | BytesFieldRefInput<$PrismaModel>
+    in?: Uint8Array[] | ListBytesFieldRefInput<$PrismaModel>
+    notIn?: Uint8Array[] | ListBytesFieldRefInput<$PrismaModel>
+    not?: NestedBytesWithAggregatesFilter<$PrismaModel> | Uint8Array
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedBytesFilter<$PrismaModel>
     _max?: NestedBytesFilter<$PrismaModel>
@@ -80492,6 +81658,31 @@ export namespace Prisma {
     rank?: SortOrder
   }
 
+  export type csv_sequenceCountOrderByAggregateInput = {
+    id?: SortOrder
+    csv_number?: SortOrder
+  }
+
+  export type csv_sequenceAvgOrderByAggregateInput = {
+    id?: SortOrder
+    csv_number?: SortOrder
+  }
+
+  export type csv_sequenceMaxOrderByAggregateInput = {
+    id?: SortOrder
+    csv_number?: SortOrder
+  }
+
+  export type csv_sequenceMinOrderByAggregateInput = {
+    id?: SortOrder
+    csv_number?: SortOrder
+  }
+
+  export type csv_sequenceSumOrderByAggregateInput = {
+    id?: SortOrder
+    csv_number?: SortOrder
+  }
+
   export type IntFieldUpdateOperationsInput = {
     set?: number
     increment?: number
@@ -80509,7 +81700,7 @@ export namespace Prisma {
   }
 
   export type BytesFieldUpdateOperationsInput = {
-    set?: Bytes
+    set?: Uint8Array
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -80634,10 +81825,10 @@ export namespace Prisma {
   }
 
   export type NestedBytesFilter<$PrismaModel = never> = {
-    equals?: Bytes | BytesFieldRefInput<$PrismaModel>
-    in?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
-    notIn?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
-    not?: NestedBytesFilter<$PrismaModel> | Bytes
+    equals?: Uint8Array | BytesFieldRefInput<$PrismaModel>
+    in?: Uint8Array[] | ListBytesFieldRefInput<$PrismaModel>
+    notIn?: Uint8Array[] | ListBytesFieldRefInput<$PrismaModel>
+    not?: NestedBytesFilter<$PrismaModel> | Uint8Array
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -80666,10 +81857,10 @@ export namespace Prisma {
   }
 
   export type NestedBytesWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Bytes | BytesFieldRefInput<$PrismaModel>
-    in?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
-    notIn?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
-    not?: NestedBytesWithAggregatesFilter<$PrismaModel> | Bytes
+    equals?: Uint8Array | BytesFieldRefInput<$PrismaModel>
+    in?: Uint8Array[] | ListBytesFieldRefInput<$PrismaModel>
+    notIn?: Uint8Array[] | ListBytesFieldRefInput<$PrismaModel>
+    not?: NestedBytesWithAggregatesFilter<$PrismaModel> | Uint8Array
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedBytesFilter<$PrismaModel>
     _max?: NestedBytesFilter<$PrismaModel>
