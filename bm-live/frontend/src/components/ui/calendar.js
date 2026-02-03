@@ -28,8 +28,7 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }) {
             day_hidden: "invisible",
             ...classNames,
         }, components: {
-            IconLeft: ({ className, ...props }) => _jsx(ChevronLeft, { className: cn("h-4 w-4", className), ...props }),
-            IconRight: ({ className, ...props }) => _jsx(ChevronRight, { className: cn("h-4 w-4", className), ...props }),
+            Chevron: ({ orientation }) => (orientation === "left" ? _jsx(ChevronLeft, { className: cn("h-4 w-4") }) : _jsx(ChevronRight, { className: cn("h-4 w-4") })),
         }, ...props }));
 }
 Calendar.displayName = "Calendar";

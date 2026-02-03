@@ -20,6 +20,25 @@ import { ArrowLeft } from "lucide-react";
 import { fetchMonthlyOverview } from "../../api/overviews";
 // recharts
 import { ResponsiveContainer, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
+// GameMatch: roundNo / futureTime が無い前提なら、存在するキーに合わせて変更する
+const sortLive = (a, b) => {
+    // 例：開始時刻キーがあるならそれで
+    const ta = new Date(a.time ?? a.kickoffTime ?? 0).getTime();
+    const tb = new Date(b.time ?? b.kickoffTime ?? 0).getTime();
+    return ta - tb;
+};
+const sortFinished = (a, b) => {
+    const ta = new Date(a.time ?? a.kickoffTime ?? 0).getTime();
+    const tb = new Date(b.time ?? b.kickoffTime ?? 0).getTime();
+    return tb - ta; // 終了は新しい順など、好みで
+};
+const sortScheduled = (a, b) => {
+    const ra = a.roundNo ?? 0;
+    const rb = b.roundNo ?? 0;
+    if (ra !== rb)
+        return ra - rb;
+    return new Date(a.futureTime).getTime() - new Date(b.futureTime).getTime();
+};
 /** times -> “分”表記に統一（HT/第一ハーフ/前半/後半などは原文表示） */
 function formatTimesMinute(s) {
     if (!s)
@@ -190,14 +209,14 @@ export default function TeamDetail() {
         return new Date(a.future_time).getTime() - new Date(b.future_time).getTime();
     };
     // 当日・予定
-    const liveSorted = useMemo(() => (gameQ.data?.live ?? []).slice().sort(sortByRoundAndTime), [gameQ.data]);
-    const finishedSorted = useMemo(() => (gameQ.data?.finished ?? []).slice().sort(sortByRoundAndTime), [gameQ.data]);
+    const liveSorted = useMemo(() => (gameQ.data?.live ?? []).slice().sort(sortLive), [gameQ.data]);
+    const finishedSorted = useMemo(() => (gameQ.data?.finished ?? []).slice().sort(sortFinished), [gameQ.data]);
+    const scheduledSorted = useMemo(() => (futureQ.data ?? []).slice().sort(sortScheduled), [futureQ.data]);
     const hasLiveToday = liveSorted.length > 0;
     const hasFinishedToday = !hasLiveToday && finishedSorted.length > 0;
     const hasFuture = (futureQ.data?.length ?? 0) > 0;
     const todaysTitle = hasLiveToday ? "開催中" : hasFinishedToday ? "試合終了" : null;
     const todaysMatches = hasLiveToday ? liveSorted : hasFinishedToday ? finishedSorted : [];
-    const scheduledSorted = useMemo(() => (futureQ.data ?? []).slice().sort(sortByRoundAndTime), [futureQ.data]);
     // 戻るリンク/ヘッダ
     const toBack = `/${encodeURIComponent(countryLabel)}/${encodeURIComponent(leagueLabel)}`;
     const headerSubtitle = detailQ.data ? `${countryLabel} / ${leagueLabel} / ${detailQ.data.name}` : `${countryLabel} / ${leagueLabel}`;
