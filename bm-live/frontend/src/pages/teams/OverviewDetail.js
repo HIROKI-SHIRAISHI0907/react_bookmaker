@@ -19,55 +19,55 @@ function Badge({ icon, text, tone = "default" }) {
 function badgesFromSurface(s, opts) {
     const list = [];
     // 直近連勝表示（3連勝以上）
-    if (s.consecutive_win_disp) {
-        list.push(_jsx(Badge, { icon: _jsx(TrendingUp, { className: "w-3 h-3" }), text: s.consecutive_win_disp, tone: "good" }, "consecutive-win"));
+    if (s.consecutiveWinDisp) {
+        list.push(_jsx(Badge, { icon: _jsx(TrendingUp, { className: "w-3 h-3" }), text: s.consecutiveWinDisp, tone: "good" }, "consecutive-win"));
     }
     // 直近連敗表示（3連敗以上）
-    if (s.consecutive_lose_disp) {
-        list.push(_jsx(Badge, { icon: _jsx(TrendingDown, { className: "w-3 h-3" }), text: s.consecutive_lose_disp, tone: "bad" }, "consecutive-lose"));
+    if (s.consecutiveLoseDisp) {
+        list.push(_jsx(Badge, { icon: _jsx(TrendingDown, { className: "w-3 h-3" }), text: s.consecutiveLoseDisp, tone: "bad" }, "consecutive-lose"));
     }
     // 無敗記録表示（無敗が3回連続）
-    if (s.unbeaten_streak_disp) {
-        list.push(_jsx(Badge, { icon: _jsx(ShieldCheck, { className: "w-3 h-3" }), text: s.unbeaten_streak_disp }, "unbeaten"));
+    if (s.unbeatenStreakDisp) {
+        list.push(_jsx(Badge, { icon: _jsx(ShieldCheck, { className: "w-3 h-3" }), text: s.unbeatenStreakDisp }, "unbeaten"));
     }
     // 得点継続表示（3試合連続得点）
-    if (s.consecutive_score_count_disp) {
-        list.push(_jsx(Badge, { icon: _jsx(Flame, { className: "w-3 h-3" }), text: s.consecutive_score_count_disp, tone: "good" }, "scoring-streak"));
+    if (s.consecutiveScoreCountDisp) {
+        list.push(_jsx(Badge, { icon: _jsx(Flame, { className: "w-3 h-3" }), text: s.consecutiveScoreCountDisp, tone: "good" }, "scoring-streak"));
     }
     // 序盤好調（勝率7割以上）
-    if (s.first_week_game_win_disp) {
-        list.push(_jsx(Badge, { icon: _jsx(Rocket, { className: "w-3 h-3" }), text: s.first_week_game_win_disp, tone: "good" }, "first-week-hot"));
+    if (s.firstWeekGameWinDisp) {
+        list.push(_jsx(Badge, { icon: _jsx(Rocket, { className: "w-3 h-3" }), text: s.firstWeekGameWinDisp, tone: "good" }, "first-week-hot"));
     }
     // 中盤好調（勝率7割以上）
-    if (s.mid_week_game_win_disp) {
-        list.push(_jsx(Badge, { icon: _jsx(Activity, { className: "w-3 h-3" }), text: s.mid_week_game_win_disp, tone: "good" }, "mid-week-hot"));
+    if (s.midWeekGameWinDisp) {
+        list.push(_jsx(Badge, { icon: _jsx(Activity, { className: "w-3 h-3" }), text: s.midWeekGameWinDisp, tone: "good" }, "mid-week-hot"));
     }
     // 終盤好調（勝率7割以上）
-    if (s.last_week_game_win_disp) {
-        list.push(_jsx(Badge, { icon: _jsx(Flag, { className: "w-3 h-3" }), text: s.last_week_game_win_disp, tone: "good" }, "last-week-hot"));
+    if (s.lastWeekGameWinDisp) {
+        list.push(_jsx(Badge, { icon: _jsx(Flag, { className: "w-3 h-3" }), text: s.lastWeekGameWinDisp, tone: "good" }, "last-week-hot"));
     }
     // 初勝利表示（5試合以上未勝利→初勝利）
-    if (s.first_win_disp) {
-        list.push(_jsx(Badge, { icon: _jsx(Award, { className: "w-3 h-3" }), text: s.first_win_disp, tone: "good" }, "first-win"));
+    if (s.firstWinDisp) {
+        list.push(_jsx(Badge, { icon: _jsx(Award, { className: "w-3 h-3" }), text: s.firstWinDisp, tone: "good" }, "first-win"));
     }
     // 負けが混んだ時（4連敗以上）
-    if (s.lose_streak_disp) {
-        list.push(_jsx(Badge, { icon: _jsx(AlertTriangle, { className: "w-3 h-3" }), text: s.lose_streak_disp, tone: "bad" }, "lose-streak"));
+    if (s.loseStreakDisp) {
+        list.push(_jsx(Badge, { icon: _jsx(AlertTriangle, { className: "w-3 h-3" }), text: s.loseStreakDisp, tone: "bad" }, "lose-streak"));
     }
     // 昇格表示（昇格組）
-    if (s.promote_disp) {
-        list.push(_jsx(Badge, { icon: _jsx(ArrowUp, { className: "w-3 h-3" }), text: s.promote_disp, tone: "good" }, "promote"));
+    if (s.promoteDisp) {
+        list.push(_jsx(Badge, { icon: _jsx(ArrowUp, { className: "w-3 h-3" }), text: s.promoteDisp, tone: "good" }, "promote"));
     }
     // 降格表示（降格組）
-    if (s.descend_disp) {
-        list.push(_jsx(Badge, { icon: _jsx(ArrowDown, { className: "w-3 h-3" }), text: s.descend_disp, tone: "bad" }, "descend"));
+    if (s.descendDisp) {
+        list.push(_jsx(Badge, { icon: _jsx(ArrowDown, { className: "w-3 h-3" }), text: s.descendDisp, tone: "bad" }, "descend"));
     }
     // 逆境系（3割以上逆転勝利）※ホーム/アウェーで出し分け
-    if (opts?.isHome && s.home_adversity_disp) {
-        list.push(_jsx(Badge, { icon: _jsx(HomeIcon, { className: "w-3 h-3" }), text: s.home_adversity_disp, tone: "good" }, "home-adversity"));
+    if (opts?.isHome && s.homeAdversityDisp) {
+        list.push(_jsx(Badge, { icon: _jsx(HomeIcon, { className: "w-3 h-3" }), text: s.homeAdversityDisp, tone: "good" }, "home-adversity"));
     }
-    if (opts?.isAway && s.away_adversity_disp) {
-        list.push(_jsx(Badge, { icon: _jsx(Plane, { className: "w-3 h-3" }), text: s.away_adversity_disp, tone: "good" }, "away-adversity"));
+    if (opts?.isAway && s.awayAdversityDisp) {
+        list.push(_jsx(Badge, { icon: _jsx(Plane, { className: "w-3 h-3" }), text: s.awayAdversityDisp, tone: "good" }, "away-adversity"));
     }
     return list.length ? list : null;
 }
@@ -75,16 +75,16 @@ function badgesFromSurface(s, opts) {
 function StatsSummaryChart({ s }) {
     const toNum = (v) => (v == null ? null : Number.isFinite(Number(v)) ? Number(v) : null);
     const rows = [
-        { label: "合計得点", value: toNum(s.goals_for) },
-        { label: "クリーンシート", value: toNum(s.clean_sheets) },
-        { label: "前半得点", value: toNum(s.first_half_score) },
-        { label: "後半得点", value: toNum(s.second_half_score) },
-        { label: "先制回数", value: toNum(s.first_goal_count) },
-        { label: "逆転勝利数", value: toNum(s.win_behind_count) },
-        { label: "逆転敗北数", value: toNum(s.lose_behind_count) },
-        { label: "該当側勝利数", value: toNum(s.win_count_role) },
-        { label: "該当側敗北数", value: toNum(s.lose_count_role) },
-        { label: "無得点試合数", value: toNum(s.fail_to_score_game_count) },
+        { label: "合計得点", value: toNum(s.goalsFor) },
+        { label: "クリーンシート", value: toNum(s.cleanSheets) },
+        { label: "前半得点", value: toNum(s.firstHalfScore) },
+        { label: "後半得点", value: toNum(s.secondHalfScore) },
+        { label: "先制回数", value: toNum(s.firstGoalCount) },
+        { label: "逆転勝利数", value: toNum(s.winBehindCount) },
+        { label: "逆転敗北数", value: toNum(s.loseBehindCount) },
+        { label: "該当側勝利数", value: toNum(s.winCountRole) },
+        { label: "該当側敗北数", value: toNum(s.loseCountRole) },
+        { label: "無得点試合数", value: toNum(s.failToScoreGameCount) },
     ].filter((r) => r.value !== null);
     if (rows.length === 0 || rows.every((r) => (r.value ?? 0) === 0)) {
         return _jsx("div", { className: "text-xs text-muted-foreground", children: "\u8868\u793A\u3067\u304D\u308B\u30B9\u30BF\u30C3\u30C4\u306E\u30C7\u30FC\u30BF\u304C\u3042\u308A\u307E\u305B\u3093\u3002" });
@@ -118,13 +118,13 @@ export default function OverviewDetail() {
                     _jsx("div", { className: "text-sm text-muted-foreground", children: "\u8A66\u5408\u30C7\u30FC\u30BF\u304C\u3042\u308A\u307E\u305B\u3093\u3002" })) : (
                     // ★ ここからは通常データがある場合のみ描画
                     _jsxs(_Fragment, { children: [_jsxs("header", { className: "space-y-1", children: [_jsxs("h1", { className: "text-2xl font-bold", children: [data.match.home_team, " vs ", data.match.away_team] }), _jsxs("div", { className: "text-sm text-muted-foreground", children: [data.match.round_no != null ? `ラウンド ${data.match.round_no} · ` : "", data.match.future_time ? `開催予定: ${new Date(data.match.future_time).toLocaleString("ja-JP")}` : "日程情報なし", data.match.game_year && data.match.game_month ? ` · ${data.match.game_year}年${data.match.game_month}月` : ""] })] }), _jsx("section", { className: "grid grid-cols-1 md:grid-cols-2 gap-4", children: data.surfaces.map((s) => {
-                                    const isHome = s.team === data.match.home_team;
-                                    const isAway = s.team === data.match.away_team;
+                                    const isHome = s.team === data.match.homeTeam;
+                                    const isAway = s.team === data.match.away_eam;
                                     // 値の取得（camelCase → snake_case → 役割依存のフォールバックの順）
-                                    const homeWins = s.homeWinCount ?? s.home_win_count ?? (isHome ? s.win_count_role : null) ?? 0;
-                                    const homeLoses = s.homeLoseCount ?? s.home_lose_count ?? (isHome ? s.lose_count_role : null) ?? 0;
-                                    const awayWins = s.awayWinCount ?? s.away_win_count ?? (isAway ? s.win_count_role : null) ?? 0;
-                                    const awayLoses = s.awayLoseCount ?? s.away_lose_count ?? (isAway ? s.lose_count_role : null) ?? 0;
+                                    const homeWins = s.homeWinCount ?? s.homeWinCount ?? (isHome ? s.winCountRole : null) ?? 0;
+                                    const homeLoses = s.homeLoseCount ?? s.homeLoseCount ?? (isHome ? s.loseCountRole : null) ?? 0;
+                                    const awayWins = s.awayWinCount ?? s.awayWinCount ?? (isAway ? s.winCountRole : null) ?? 0;
+                                    const awayLoses = s.awayLoseCount ?? s.awayLoseCount ?? (isAway ? s.loseCountRole : null) ?? 0;
                                     return (_jsxs("div", { className: "rounded-xl border bg-card p-4 shadow-sm", children: [_jsxs("div", { className: "flex items-center justify-between mb-2", children: [_jsxs("h2", { className: "text-lg font-semibold", children: [s.team, " ", isHome ? "(HOME)" : isAway ? "(AWAY)" : ""] }), _jsx("div", { className: "text-sm text-muted-foreground flex items-center gap-3", children: isHome ? (_jsxs(_Fragment, { children: [_jsx("span", { className: "font-medium", children: "HOME" }), _jsxs("span", { children: ["\u52DD ", homeWins] }), _jsxs("span", { children: ["\u6557 ", homeLoses] })] })) : (_jsxs(_Fragment, { children: [_jsx("span", { className: "font-medium", children: "AWAY" }), _jsxs("span", { children: ["\u52DD ", awayWins] }), _jsxs("span", { children: ["\u6557 ", awayLoses] })] })) })] }), _jsx("div", { className: "flex flex-wrap gap-2 mb-3", children: badgesFromSurface(s, { isHome, isAway }) }), _jsxs("div", { className: "grid grid-cols-3 gap-3 text-sm mb-4", children: [_jsxs("div", { className: "rounded-lg border p-3", children: [_jsx("div", { className: "text-xs text-muted-foreground", children: "\u9806\u4F4D" }), _jsx("div", { className: "text-xl font-bold", children: s.rank ?? "—" })] }), _jsxs("div", { className: "rounded-lg border p-3", children: [_jsx("div", { className: "text-xs text-muted-foreground", children: "\u6210\u7E3E" }), _jsxs("div", { className: "text-xl font-bold", children: [s.win ?? 0, "\u52DD-", s.draw ?? 0, "\u5206-", s.lose ?? 0, "\u6557"] })] }), _jsxs("div", { className: "rounded-lg border p-3", children: [_jsx("div", { className: "text-xs text-muted-foreground", children: "\u8A66\u5408\u6570" }), _jsx("div", { className: "text-xl font-bold", children: s.games ?? "—" })] })] }), _jsxs("div", { className: "rounded-lg border p-3 mt-2", children: [_jsx("div", { className: "text-xs text-muted-foreground mb-1", children: "\u4E3B\u8981\u30B9\u30BF\u30C3\u30C4\uFF08\u5F79\u5272\u306B\u5FDC\u3058\u3066\u81EA\u52D5\u5207\u66FF\uFF09" }), _jsx(StatsSummaryChart, { s: s })] })] }, s.team));
                                 }) })] }))] })] }));
 }

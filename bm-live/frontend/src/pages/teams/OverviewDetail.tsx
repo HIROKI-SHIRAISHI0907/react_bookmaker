@@ -28,66 +28,66 @@ function badgesFromSurface(s: SurfaceSnapshot, opts?: { isHome?: boolean; isAway
   const list: JSX.Element[] = [];
 
   // 直近連勝表示（3連勝以上）
-  if (s.consecutive_win_disp) {
-    list.push(<Badge key="consecutive-win" icon={<TrendingUp className="w-3 h-3" />} text={s.consecutive_win_disp} tone="good" />);
+  if (s.consecutiveWinDisp) {
+    list.push(<Badge key="consecutive-win" icon={<TrendingUp className="w-3 h-3" />} text={s.consecutiveWinDisp} tone="good" />);
   }
 
   // 直近連敗表示（3連敗以上）
-  if (s.consecutive_lose_disp) {
-    list.push(<Badge key="consecutive-lose" icon={<TrendingDown className="w-3 h-3" />} text={s.consecutive_lose_disp} tone="bad" />);
+  if (s.consecutiveLoseDisp) {
+    list.push(<Badge key="consecutive-lose" icon={<TrendingDown className="w-3 h-3" />} text={s.consecutiveLoseDisp} tone="bad" />);
   }
 
   // 無敗記録表示（無敗が3回連続）
-  if (s.unbeaten_streak_disp) {
-    list.push(<Badge key="unbeaten" icon={<ShieldCheck className="w-3 h-3" />} text={s.unbeaten_streak_disp} />);
+  if (s.unbeatenStreakDisp) {
+    list.push(<Badge key="unbeaten" icon={<ShieldCheck className="w-3 h-3" />} text={s.unbeatenStreakDisp} />);
   }
 
   // 得点継続表示（3試合連続得点）
-  if (s.consecutive_score_count_disp) {
-    list.push(<Badge key="scoring-streak" icon={<Flame className="w-3 h-3" />} text={s.consecutive_score_count_disp} tone="good" />);
+  if (s.consecutiveScoreCountDisp) {
+    list.push(<Badge key="scoring-streak" icon={<Flame className="w-3 h-3" />} text={s.consecutiveScoreCountDisp} tone="good" />);
   }
 
   // 序盤好調（勝率7割以上）
-  if (s.first_week_game_win_disp) {
-    list.push(<Badge key="first-week-hot" icon={<Rocket className="w-3 h-3" />} text={s.first_week_game_win_disp} tone="good" />);
+  if (s.firstWeekGameWinDisp) {
+    list.push(<Badge key="first-week-hot" icon={<Rocket className="w-3 h-3" />} text={s.firstWeekGameWinDisp} tone="good" />);
   }
 
   // 中盤好調（勝率7割以上）
-  if (s.mid_week_game_win_disp) {
-    list.push(<Badge key="mid-week-hot" icon={<Activity className="w-3 h-3" />} text={s.mid_week_game_win_disp} tone="good" />);
+  if (s.midWeekGameWinDisp) {
+    list.push(<Badge key="mid-week-hot" icon={<Activity className="w-3 h-3" />} text={s.midWeekGameWinDisp} tone="good" />);
   }
 
   // 終盤好調（勝率7割以上）
-  if (s.last_week_game_win_disp) {
-    list.push(<Badge key="last-week-hot" icon={<Flag className="w-3 h-3" />} text={s.last_week_game_win_disp} tone="good" />);
+  if (s.lastWeekGameWinDisp) {
+    list.push(<Badge key="last-week-hot" icon={<Flag className="w-3 h-3" />} text={s.lastWeekGameWinDisp} tone="good" />);
   }
 
   // 初勝利表示（5試合以上未勝利→初勝利）
-  if (s.first_win_disp) {
-    list.push(<Badge key="first-win" icon={<Award className="w-3 h-3" />} text={s.first_win_disp} tone="good" />);
+  if (s.firstWinDisp) {
+    list.push(<Badge key="first-win" icon={<Award className="w-3 h-3" />} text={s.firstWinDisp} tone="good" />);
   }
 
   // 負けが混んだ時（4連敗以上）
-  if (s.lose_streak_disp) {
-    list.push(<Badge key="lose-streak" icon={<AlertTriangle className="w-3 h-3" />} text={s.lose_streak_disp} tone="bad" />);
+  if (s.loseStreakDisp) {
+    list.push(<Badge key="lose-streak" icon={<AlertTriangle className="w-3 h-3" />} text={s.loseStreakDisp} tone="bad" />);
   }
 
   // 昇格表示（昇格組）
-  if (s.promote_disp) {
-    list.push(<Badge key="promote" icon={<ArrowUp className="w-3 h-3" />} text={s.promote_disp} tone="good" />);
+  if (s.promoteDisp) {
+    list.push(<Badge key="promote" icon={<ArrowUp className="w-3 h-3" />} text={s.promoteDisp} tone="good" />);
   }
 
   // 降格表示（降格組）
-  if (s.descend_disp) {
-    list.push(<Badge key="descend" icon={<ArrowDown className="w-3 h-3" />} text={s.descend_disp} tone="bad" />);
+  if (s.descendDisp) {
+    list.push(<Badge key="descend" icon={<ArrowDown className="w-3 h-3" />} text={s.descendDisp} tone="bad" />);
   }
 
   // 逆境系（3割以上逆転勝利）※ホーム/アウェーで出し分け
-  if (opts?.isHome && s.home_adversity_disp) {
-    list.push(<Badge key="home-adversity" icon={<HomeIcon className="w-3 h-3" />} text={s.home_adversity_disp} tone="good" />);
+  if (opts?.isHome && s.homeAdversityDisp) {
+    list.push(<Badge key="home-adversity" icon={<HomeIcon className="w-3 h-3" />} text={s.homeAdversityDisp} tone="good" />);
   }
-  if (opts?.isAway && s.away_adversity_disp) {
-    list.push(<Badge key="away-adversity" icon={<Plane className="w-3 h-3" />} text={s.away_adversity_disp} tone="good" />);
+  if (opts?.isAway && s.awayAdversityDisp) {
+    list.push(<Badge key="away-adversity" icon={<Plane className="w-3 h-3" />} text={s.awayAdversityDisp} tone="good" />);
   }
 
   return list.length ? list : null;
@@ -98,16 +98,16 @@ function StatsSummaryChart({ s }: { s: SurfaceSnapshot }) {
   const toNum = (v: unknown) => (v == null ? null : Number.isFinite(Number(v)) ? Number(v) : null);
 
   const rows = [
-    { label: "合計得点", value: toNum(s.goals_for) },
-    { label: "クリーンシート", value: toNum(s.clean_sheets) },
-    { label: "前半得点", value: toNum(s.first_half_score) },
-    { label: "後半得点", value: toNum(s.second_half_score) },
-    { label: "先制回数", value: toNum(s.first_goal_count) },
-    { label: "逆転勝利数", value: toNum(s.win_behind_count) },
-    { label: "逆転敗北数", value: toNum(s.lose_behind_count) },
-    { label: "該当側勝利数", value: toNum(s.win_count_role) },
-    { label: "該当側敗北数", value: toNum(s.lose_count_role) },
-    { label: "無得点試合数", value: toNum(s.fail_to_score_game_count) },
+    { label: "合計得点", value: toNum(s.goalsFor) },
+    { label: "クリーンシート", value: toNum(s.cleanSheets) },
+    { label: "前半得点", value: toNum(s.firstHalfScore) },
+    { label: "後半得点", value: toNum(s.secondHalfScore) },
+    { label: "先制回数", value: toNum(s.firstGoalCount) },
+    { label: "逆転勝利数", value: toNum(s.winBehindCount) },
+    { label: "逆転敗北数", value: toNum(s.loseBehindCount) },
+    { label: "該当側勝利数", value: toNum(s.winCountRole) },
+    { label: "該当側敗北数", value: toNum(s.loseCountRole) },
+    { label: "無得点試合数", value: toNum(s.failToScoreGameCount) },
   ].filter((r) => r.value !== null);
 
   if (rows.length === 0 || rows.every((r) => (r.value ?? 0) === 0)) {
@@ -196,14 +196,14 @@ export default function OverviewDetail() {
 
             <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {data.surfaces.map((s) => {
-                const isHome = s.team === data.match.home_team;
-                const isAway = s.team === data.match.away_team;
+                const isHome = s.team === data.match.homeTeam;
+                const isAway = s.team === data.match.away_eam;
 
                 // 値の取得（camelCase → snake_case → 役割依存のフォールバックの順）
-                const homeWins = s.homeWinCount ?? (s as any).home_win_count ?? (isHome ? s.win_count_role : null) ?? 0;
-                const homeLoses = s.homeLoseCount ?? (s as any).home_lose_count ?? (isHome ? s.lose_count_role : null) ?? 0;
-                const awayWins = s.awayWinCount ?? (s as any).away_win_count ?? (isAway ? s.win_count_role : null) ?? 0;
-                const awayLoses = s.awayLoseCount ?? (s as any).away_lose_count ?? (isAway ? s.lose_count_role : null) ?? 0;
+                const homeWins = s.homeWinCount ?? (s as any).homeWinCount ?? (isHome ? s.winCountRole : null) ?? 0;
+                const homeLoses = s.homeLoseCount ?? (s as any).homeLoseCount ?? (isHome ? s.loseCountRole : null) ?? 0;
+                const awayWins = s.awayWinCount ?? (s as any).awayWinCount ?? (isAway ? s.winCountRole : null) ?? 0;
+                const awayLoses = s.awayLoseCount ?? (s as any).awayLoseCount ?? (isAway ? s.loseCountRole : null) ?? 0;
 
                 return (
                   <div key={s.team} className="rounded-xl border bg-card p-4 shadow-sm">

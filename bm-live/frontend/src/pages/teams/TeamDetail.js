@@ -214,7 +214,7 @@ export default function TeamDetail() {
                                                             const ResultBadge = () => {
                                                                 if (it.status !== "FINISHED")
                                                                     return null;
-                                                                if (it.home_score == null || it.away_score == null || !detailQ.data)
+                                                                if (it.homeScore == null || it.awayScore == null || !detailQ.data)
                                                                     return null;
                                                                 const norm = (s) => s
                                                                     .replace(/[\u3000\u00A0]/g, " ")
@@ -222,10 +222,10 @@ export default function TeamDetail() {
                                                                     .trim()
                                                                     .toLowerCase();
                                                                 const teamName = norm(detailQ.data.name);
-                                                                const home = norm(it.home_team);
-                                                                const away = norm(it.away_team);
-                                                                const hs = Number(it.home_score);
-                                                                const as = Number(it.away_score);
+                                                                const home = norm(it.homeTeam);
+                                                                const away = norm(it.awayTeam);
+                                                                const hs = Number(it.homeScore);
+                                                                const as = Number(it.awayScore);
                                                                 let label = "DRAW";
                                                                 if (home === teamName)
                                                                     label = hs > as ? "WIN" : hs < as ? "LOSE" : "DRAW";
@@ -234,26 +234,26 @@ export default function TeamDetail() {
                                                                 const cls = label === "WIN" ? "bg-green-100 text-green-700" : label === "LOSE" ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-700";
                                                                 return _jsx("span", { className: `inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${cls}`, children: label });
                                                             };
-                                                            const RightPane = it.status === "FINISHED" && it.home_score != null && it.away_score != null ? (_jsxs("div", { className: "w-28 text-right shrink-0", children: [_jsxs("div", { className: "text-sm font-semibold tabular-nums", children: [it.home_score, " ", _jsx("span", { className: "text-muted-foreground", children: "-" }), " ", it.away_score] }), _jsx("div", { className: "mt-1", children: _jsx(ResultBadge, {}) })] })) : null;
+                                                            const RightPane = it.status === "FINISHED" && it.homeScore != null && it.awayScore != null ? (_jsxs("div", { className: "w-28 text-right shrink-0", children: [_jsxs("div", { className: "text-sm font-semibold tabular-nums", children: [it.homeScore, " ", _jsx("span", { className: "text-muted-foreground", children: "-" }), " ", it.awayScore] }), _jsx("div", { className: "mt-1", children: _jsx(ResultBadge, {}) })] })) : null;
                                                             return (_jsx("li", { className: "py-2", children: _jsxs("div", { role: "button", tabIndex: 0, className: `flex items-center gap-3 rounded-md px-2 py-2 transition ${clickable ? "hover:bg-accent/40 cursor-pointer" : "opacity-70 cursor-default"}`, onClick: () => clickable && navigate(detailPath), onKeyDown: (e) => {
                                                                         if (clickable && (e.key === "Enter" || e.key === " ")) {
                                                                             e.preventDefault();
                                                                             navigate(detailPath);
                                                                         }
-                                                                    }, children: [_jsx("div", { className: "w-32 shrink-0 text-sm", children: it.round_no != null ? _jsxs("span", { className: "font-bold", children: ["\u30E9\u30A6\u30F3\u30C9 ", it.round_no] }) : _jsx("span", { className: "text-muted-foreground", children: "\u30E9\u30A6\u30F3\u30C9 -" }) }), _jsxs("div", { className: "flex-1", children: [_jsxs("div", { className: "text-sm", children: [it.home_team, " vs ", it.away_team, it.status === "LIVE" && _jsx("span", { className: "ml-2 inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] leading-none", children: "LIVE" })] }), _jsxs("div", { className: "text-xs text-muted-foreground", children: [formatTimesMinute(it.latest_times), it.link && (_jsxs(_Fragment, { children: [" ", "\u00B7", " ", _jsx("button", { type: "button", className: "underline", onClick: (e) => {
+                                                                    }, children: [_jsx("div", { className: "w-32 shrink-0 text-sm", children: it.roundNo != null ? _jsxs("span", { className: "font-bold", children: ["\u30E9\u30A6\u30F3\u30C9 ", it.roundNo] }) : _jsx("span", { className: "text-muted-foreground", children: "\u30E9\u30A6\u30F3\u30C9 -" }) }), _jsxs("div", { className: "flex-1", children: [_jsxs("div", { className: "text-sm", children: [it.homeTeam, " vs ", it.awayTeam, it.status === "LIVE" && _jsx("span", { className: "ml-2 inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] leading-none", children: "LIVE" })] }), _jsxs("div", { className: "text-xs text-muted-foreground", children: [formatTimesMinute(it.latest_times), it.link && (_jsxs(_Fragment, { children: [" ", "\u00B7", " ", _jsx("button", { type: "button", className: "underline", onClick: (e) => {
                                                                                                         e.stopPropagation();
                                                                                                         window.open(it.link, "_blank", "noopener,noreferrer");
                                                                                                     }, children: "\u5916\u90E8\u8A73\u7D30" })] }))] })] }), RightPane] }) }, it.seq));
                                                         }) })) })] }));
                                     })(), hasFuture && (_jsxs("section", { children: [_jsx("h3", { className: "mb-2 text-base font-semibold", children: "\u958B\u50AC\u4E88\u5B9A" }), _jsx("div", { className: "rounded-xl border bg-card p-4 shadow-sm", children: futureQ.isLoading ? (_jsx("div", { className: "text-sm text-muted-foreground", children: "\u8AAD\u307F\u8FBC\u307F\u4E2D..." })) : (_jsx("ul", { className: "divide-y", children: scheduledSorted.map((it) => {
                                                         const detailPath = `/${countryParam}/${leagueParam}/${teamSlug}/scheduled/${it.seq}`;
-                                                        const ovPath = `/${countryParam}/${leagueParam}/${teamSlug}/overview/${it.seq}` + `?home=${encodeURIComponent(it.home_team)}&away=${encodeURIComponent(it.away_team)}`;
+                                                        const ovPath = `/${countryParam}/${leagueParam}/${teamSlug}/overview/${it.seq}` + `?home=${encodeURIComponent(it.homeTeam)}&away=${encodeURIComponent(it.awayTeam)}`;
                                                         return (_jsx("li", { className: "py-2", children: _jsxs("div", { role: "button", tabIndex: 0, className: "flex items-center gap-3 rounded-md px-2 py-2 hover:bg-accent/40 transition cursor-pointer", onClick: () => navigate(detailPath), onKeyDown: (e) => {
                                                                     if (e.key === "Enter" || e.key === " ") {
                                                                         e.preventDefault();
                                                                         navigate(detailPath);
                                                                     }
-                                                                }, children: [_jsx("div", { className: "w-32 shrink-0 text-sm", children: it.round_no != null ? _jsxs("span", { className: "font-bold", children: ["\u30E9\u30A6\u30F3\u30C9 ", it.round_no] }) : _jsx("span", { className: "text-muted-foreground", children: "\u30E9\u30A6\u30F3\u30C9 -" }) }), _jsxs("div", { className: "flex-1", children: [_jsxs("div", { className: "text-sm", children: [it.home_team, " vs ", it.away_team] }), _jsxs("div", { className: "text-xs text-muted-foreground", children: [new Date(it.future_time).toLocaleString("ja-JP"), _jsx("span", { children: " \u00B7 " }), _jsx(Link, { to: ovPath, onClick: (e) => e.stopPropagation(), className: "underline", children: "\u5206\u6790\u3092\u898B\u308B" }), it.link && (_jsxs(_Fragment, { children: [" ", "&middot", " ", _jsx("button", { type: "button", className: "underline", onClick: (e) => {
+                                                                }, children: [_jsx("div", { className: "w-32 shrink-0 text-sm", children: it.roundNo != null ? _jsxs("span", { className: "font-bold", children: ["\u30E9\u30A6\u30F3\u30C9 ", it.roundNo] }) : _jsx("span", { className: "text-muted-foreground", children: "\u30E9\u30A6\u30F3\u30C9 -" }) }), _jsxs("div", { className: "flex-1", children: [_jsxs("div", { className: "text-sm", children: [it.homeTeam, " vs ", it.awayTeam] }), _jsxs("div", { className: "text-xs text-muted-foreground", children: [new Date(it.futureTime).toLocaleString("ja-JP"), _jsx("span", { children: " \u00B7 " }), _jsx(Link, { to: ovPath, onClick: (e) => e.stopPropagation(), className: "underline", children: "\u5206\u6790\u3092\u898B\u308B" }), it.link && (_jsxs(_Fragment, { children: [" ", "&middot", " ", _jsx("button", { type: "button", className: "underline", onClick: (e) => {
                                                                                                     e.stopPropagation();
                                                                                                     window.open(it.link, "_blank", "noopener,noreferrer");
                                                                                                 }, children: "\u5916\u90E8\u8A73\u7D30" })] }))] })] })] }) }, it.seq));

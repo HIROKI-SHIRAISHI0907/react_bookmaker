@@ -71,7 +71,7 @@ export default function LiveNow() {
   const grouped = useMemo(() => {
     const map = new Map<string, LiveMatch[]>();
     (data ?? []).forEach((m) => {
-      const key = (m.data_category || "その他").trim();
+      const key = (m.dataCategory || "その他").trim();
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(m);
     });
@@ -125,7 +125,7 @@ export default function LiveNow() {
                   <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     {matches.map((m) => {
                       // teamSlug はサーバーから渡された home_slug を最優先に利用
-                      const teamSlug = (m.home_slug && m.home_slug.trim()) || slugifyLoose(m.home_team_name) || m.home_team_name;
+                      const teamSlug = (m.homeSlug && m.homeSlug.trim()) || slugifyLoose(m.homeTeamName) || m.homeTeamName;
 
                       // History / GameDetails と同形式のパスに内部遷移
                       const detailPath = `/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(teamSlug)}/history/${m.seq}`;
@@ -147,12 +147,12 @@ export default function LiveNow() {
                             <div className="flex items-center justify-between">
                               <div className="flex-1">
                                 <div className="flex items-center justify-between">
-                                  <span className="font-medium truncate">{m.home_team_name}</span>
-                                  <span className="text-xl font-bold tabular-nums">{m.home_score ?? "-"}</span>
+                                  <span className="font-medium truncate">{m.homeTeamName}</span>
+                                  <span className="text-xl font-bold tabular-nums">{m.homeScore ?? "-"}</span>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                  <span className="font-medium truncate">{m.away_team_name}</span>
-                                  <span className="text-xl font-bold tabular-nums">{m.away_score ?? "-"}</span>
+                                  <span className="font-medium truncate">{m.awayTeamName}</span>
+                                  <span className="text-xl font-bold tabular-nums">{m.awayScore ?? "-"}</span>
                                 </div>
                               </div>
                               <div className="ml-3 text-right">
@@ -163,12 +163,12 @@ export default function LiveNow() {
 
                             <div className="mt-2 grid grid-cols-3 gap-2 text-xs text-muted-foreground">
                               <div>
-                                on target: <span className="font-medium text-foreground">{m.home_shoot_in ?? "-"}</span> / <span className="font-medium text-foreground">{m.away_shoot_in ?? "-"}</span>
+                                on target: <span className="font-medium text-foreground">{m.homeShootIn ?? "-"}</span> / <span className="font-medium text-foreground">{m.awayShootIn ?? "-"}</span>
                               </div>
                               <div>
-                                xG: <span className="font-medium text-foreground">{m.home_exp ?? "-"}</span> / <span className="font-medium text-foreground">{m.away_exp ?? "-"}</span>
+                                xG: <span className="font-medium text-foreground">{m.homeExp ?? "-"}</span> / <span className="font-medium text-foreground">{m.awayExp ?? "-"}</span>
                               </div>
-                              <div>更新: {m.record_time ? new Date(m.record_time).toLocaleString("ja-JP") : "-"}</div>
+                              <div>更新: {m.recordTime ? new Date(m.recordTime).toLocaleString("ja-JP") : "-"}</div>
                             </div>
 
                             {/* “詳細”は内部遷移に統一（外部URLは必要なら別タブ用ボタンを出す） */}

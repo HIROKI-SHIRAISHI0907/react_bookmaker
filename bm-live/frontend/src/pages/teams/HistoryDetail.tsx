@@ -101,7 +101,7 @@ function ScoreHeader({ d }: { d: HistoryDetail }) {
   const headerLeft = [comp].filter(Boolean).join(" ");
 
   // recorded_at が無ければ null 表示
-  const whenText = d.recorded_at ? new Date(d.recorded_at).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" }) : "-";
+  const whenText = d.recordedAt ? new Date(d.recordedAt).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" }) : "-";
 
   return (
     <section className="rounded-2xl border bg-card p-6 shadow-sm">
@@ -144,16 +144,16 @@ function TeamStatCard({ title, side, data }: { title: string; side: "home" | "aw
         <Line k="xG" v={fmtFloat(d.xg)} />
         <Line k="ポゼッション" v={fmtPercent(d.possession)} />
         <Line k="シュート(総)" v={fmtNum(d.shots)} />
-        <Line k="枠内シュート" v={fmtNum(d.shots_on)} />
-        <Line k="枠外シュート" v={fmtNum(d.shots_off)} />
+        <Line k="枠内シュート" v={fmtNum(d.shotsOn)} />
+        <Line k="枠外シュート" v={fmtNum(d.shotsOff)} />
         <Line k="ブロック" v={fmtNum(d.blocks)} />
         <Line k="CK" v={fmtNum(d.corners)} />
-        <Line k="ビッグチャンス" v={fmtNum(d.big_chances)} />
+        <Line k="ビッグチャンス" v={fmtNum(d.bigChances)} />
         <Line k="セーブ" v={fmtNum(d.saves)} />
         <Line k="警告" v={fmtNum(d.yc)} />
         <Line k="退場" v={fmtNum(d.rc)} />
         <Line k="パス成功" v={d.passes ?? "-"} />
-        {d.long_passes && <Line k="ロングパス" v={d.long_passes} />}
+        {d.longPasses && <Line k="ロングパス" v={d.longPasses} />}
       </ul>
     </div>
   );

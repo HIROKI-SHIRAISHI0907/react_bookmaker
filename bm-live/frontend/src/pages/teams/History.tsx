@@ -52,10 +52,10 @@ export default function History() {
 
   const resultOf = (m: PastMatch, teamName: string): "WIN" | "LOSE" | "DRAW" => {
     const key = norm(teamName);
-    const home = norm(m.home_team);
-    const away = norm(m.away_team);
-    const hs = Number(m.home_score ?? 0);
-    const as = Number(m.away_score ?? 0);
+    const home = norm(m.homeTeam);
+    const away = norm(m.awayTeam);
+    const hs = Number(m.homeScore ?? 0);
+    const as = Number(m.awayScore ?? 0);
 
     if (home === key) return hs > as ? "WIN" : hs < as ? "LOSE" : "DRAW";
     if (away === key) return as > hs ? "WIN" : as < hs ? "LOSE" : "DRAW";
@@ -65,7 +65,7 @@ export default function History() {
   // 新しい順に整列
   const rows = useMemo(() => {
     const list = historyQ.data ?? [];
-    return [...list].sort((a, b) => new Date(b.match_time).getTime() - new Date(a.match_time).getTime());
+    return [...list].sort((a, b) => new Date(b.matchTime).getTime() - new Date(a.matchTime).getTime());
   }, [historyQ.data]);
 
   // パス生成用（詳細へ）
@@ -113,13 +113,13 @@ export default function History() {
                   <Link key={m.seq} to={detailPath} className="group flex items-center gap-3 py-3 px-4 hover:bg-accent/40 transition rounded-md">
                     {/* ラウンド */}
                     <div className="w-32 shrink-0 text-sm">
-                      {m.round_no != null ? <span className="font-bold">ラウンド {m.round_no}</span> : <span className="text-muted-foreground">ラウンド -</span>}
+                      {m.roundNo != null ? <span className="font-bold">ラウンド {m.roundNo}</span> : <span className="text-muted-foreground">ラウンド -</span>}
                     </div>
 
                     {/* 左（対戦 + 日付） */}
                     <div className="flex-1">
                       <div className="text-sm">
-                        {m.home_team} vs {m.away_team}
+                        {m.homeTeam} vs {m.awayTeam}
                         {m.link && (
                           <>
                             {" "}
@@ -130,13 +130,13 @@ export default function History() {
                           </>
                         )}
                       </div>
-                      <div className="text-xs text-muted-foreground">{m.match_time ? new Date(m.match_time).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" }) : "-"}</div>
+                      <div className="text-xs text-muted-foreground">{m.matchTime ? new Date(m.matchTime).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" }) : "-"}</div>
                     </div>
 
                     {/* 右（スコア + 結果） */}
                     <div className="w-24 text-right">
                       <div className="text-sm">
-                        {m.home_score ?? 0} - {m.away_score ?? 0}
+                        {m.homeScore ?? 0} - {m.awayScore ?? 0}
                       </div>
                       <div className={`text-xs ${resultClass}`}>{result}</div>
                     </div>

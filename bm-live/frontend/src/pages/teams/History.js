@@ -45,10 +45,10 @@ export default function History() {
         .toLowerCase();
     const resultOf = (m, teamName) => {
         const key = norm(teamName);
-        const home = norm(m.home_team);
-        const away = norm(m.away_team);
-        const hs = Number(m.home_score ?? 0);
-        const as = Number(m.away_score ?? 0);
+        const home = norm(m.homeTeam);
+        const away = norm(m.awayTeam);
+        const hs = Number(m.homeScore ?? 0);
+        const as = Number(m.awayScore ?? 0);
         if (home === key)
             return hs > as ? "WIN" : hs < as ? "LOSE" : "DRAW";
         if (away === key)
@@ -58,7 +58,7 @@ export default function History() {
     // 新しい順に整列
     const rows = useMemo(() => {
         const list = historyQ.data ?? [];
-        return [...list].sort((a, b) => new Date(b.match_time).getTime() - new Date(a.match_time).getTime());
+        return [...list].sort((a, b) => new Date(b.matchTime).getTime() - new Date(a.matchTime).getTime());
     }, [historyQ.data]);
     // パス生成用（詳細へ）
     const encCountry = encodeURIComponent(countryLabel);
@@ -70,6 +70,6 @@ export default function History() {
                                 const result = resultOf(m, teamQ.data.name);
                                 const resultClass = result === "WIN" ? "text-red-600 font-extrabold" : result === "LOSE" ? "text-blue-600 font-extrabold" : "text-green-600 font-extrabold";
                                 const detailPath = `/${encodeURIComponent(countryLabel)}/${encodeURIComponent(leagueLabel)}/${encodeURIComponent(teamSlug)}/history/${m.seq}`;
-                                return (_jsxs(Link, { to: detailPath, className: "group flex items-center gap-3 py-3 px-4 hover:bg-accent/40 transition rounded-md", children: [_jsx("div", { className: "w-32 shrink-0 text-sm", children: m.round_no != null ? _jsxs("span", { className: "font-bold", children: ["\u30E9\u30A6\u30F3\u30C9 ", m.round_no] }) : _jsx("span", { className: "text-muted-foreground", children: "\u30E9\u30A6\u30F3\u30C9 -" }) }), _jsxs("div", { className: "flex-1", children: [_jsxs("div", { className: "text-sm", children: [m.home_team, " vs ", m.away_team, m.link && (_jsxs(_Fragment, { children: [" ", "\u00B7", " ", _jsx("a", { className: "underline", href: m.link, target: "_blank", rel: "noreferrer", onClick: (e) => e.stopPropagation(), children: "\u5916\u90E8\u8A73\u7D30" })] }))] }), _jsx("div", { className: "text-xs text-muted-foreground", children: m.match_time ? new Date(m.match_time).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" }) : "-" })] }), _jsxs("div", { className: "w-24 text-right", children: [_jsxs("div", { className: "text-sm", children: [m.home_score ?? 0, " - ", m.away_score ?? 0] }), _jsx("div", { className: `text-xs ${resultClass}`, children: result })] })] }, m.seq));
+                                return (_jsxs(Link, { to: detailPath, className: "group flex items-center gap-3 py-3 px-4 hover:bg-accent/40 transition rounded-md", children: [_jsx("div", { className: "w-32 shrink-0 text-sm", children: m.roundNo != null ? _jsxs("span", { className: "font-bold", children: ["\u30E9\u30A6\u30F3\u30C9 ", m.roundNo] }) : _jsx("span", { className: "text-muted-foreground", children: "\u30E9\u30A6\u30F3\u30C9 -" }) }), _jsxs("div", { className: "flex-1", children: [_jsxs("div", { className: "text-sm", children: [m.homeTeam, " vs ", m.awayTeam, m.link && (_jsxs(_Fragment, { children: [" ", "\u00B7", " ", _jsx("a", { className: "underline", href: m.link, target: "_blank", rel: "noreferrer", onClick: (e) => e.stopPropagation(), children: "\u5916\u90E8\u8A73\u7D30" })] }))] }), _jsx("div", { className: "text-xs text-muted-foreground", children: m.matchTime ? new Date(m.matchTime).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" }) : "-" })] }), _jsxs("div", { className: "w-24 text-right", children: [_jsxs("div", { className: "text-sm", children: [m.homeScore ?? 0, " - ", m.awayScore ?? 0] }), _jsx("div", { className: `text-xs ${resultClass}`, children: result })] })] }, m.seq));
                             }) })) })] })] }));
 }
