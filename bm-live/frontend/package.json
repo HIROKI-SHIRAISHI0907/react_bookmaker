@@ -38,14 +38,19 @@
     "@tanstack/react-query": "^5.90.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
     "embla-carousel-react": "^8.6.0",
+    "input-otp": "^1.4.2",
     "lucide-react": "^0.544.0",
     "react": "^18.3.1",
     "react-day-picker": "^9.13.0",
     "react-dom": "^18.3.1",
+    "react-hook-form": "^7.71.1",
+    "react-resizable-panels": "^4.5.9",
     "react-router-dom": "^6.27.0",
     "recharts": "^3.2.1",
-    "tailwind-merge": "^3.3.1"
+    "tailwind-merge": "^3.4.0",
+    "vaul": "^1.1.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.14",

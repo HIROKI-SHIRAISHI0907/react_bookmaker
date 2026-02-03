@@ -196,8 +196,8 @@ export default function OverviewDetail() {
 
             <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {data.surfaces.map((s) => {
-                const isHome = s.team === data.match.homeTeam;
-                const isAway = s.team === data.match.away_eam;
+                const isHome = s.team === data.match.home_team;
+                const isAway = s.team === data.match.away_team;
 
                 // 値の取得（camelCase → snake_case → 役割依存のフォールバックの順）
                 const homeWins = s.homeWinCount ?? (s as any).homeWinCount ?? (isHome ? s.winCountRole : null) ?? 0;

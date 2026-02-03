@@ -118,8 +118,8 @@ export default function OverviewDetail() {
                     _jsx("div", { className: "text-sm text-muted-foreground", children: "\u8A66\u5408\u30C7\u30FC\u30BF\u304C\u3042\u308A\u307E\u305B\u3093\u3002" })) : (
                     // ★ ここからは通常データがある場合のみ描画
                     _jsxs(_Fragment, { children: [_jsxs("header", { className: "space-y-1", children: [_jsxs("h1", { className: "text-2xl font-bold", children: [data.match.home_team, " vs ", data.match.away_team] }), _jsxs("div", { className: "text-sm text-muted-foreground", children: [data.match.round_no != null ? `ラウンド ${data.match.round_no} · ` : "", data.match.future_time ? `開催予定: ${new Date(data.match.future_time).toLocaleString("ja-JP")}` : "日程情報なし", data.match.game_year && data.match.game_month ? ` · ${data.match.game_year}年${data.match.game_month}月` : ""] })] }), _jsx("section", { className: "grid grid-cols-1 md:grid-cols-2 gap-4", children: data.surfaces.map((s) => {
-                                    const isHome = s.team === data.match.homeTeam;
-                                    const isAway = s.team === data.match.away_eam;
+                                    const isHome = s.team === data.match.home_team;
+                                    const isAway = s.team === data.match.away_team;
                                     // 値の取得（camelCase → snake_case → 役割依存のフォールバックの順）
                                     const homeWins = s.homeWinCount ?? s.homeWinCount ?? (isHome ? s.winCountRole : null) ?? 0;
                                     const homeLoses = s.homeLoseCount ?? s.homeLoseCount ?? (isHome ? s.loseCountRole : null) ?? 0;
