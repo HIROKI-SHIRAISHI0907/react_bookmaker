@@ -5,7 +5,7 @@ export type LeagueGrouped = {
 };
 
 export async function fetchLeaguesGrouped(): Promise<LeagueGrouped[]> {
-  const res = await fetch("/api/leagues/grouped", { credentials: "include" });
+  const res = await fetch("/v1/api/leagues/grouped", { credentials: "include" });
   if (!res.ok) throw new Error("Failed to fetch leagues");
   return res.json();
 }

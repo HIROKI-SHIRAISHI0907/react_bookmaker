@@ -8,7 +8,7 @@ export default function Protected({ children }: PropsWithChildren) {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch("http://localhost:8080/api/auth/me", { credentials: "include" });
+        const res = await fetch("http://localhost:8080/v1/api/auth/me", { credentials: "include" });
         if (res.ok) setOk(true);
         else nav("/login", { replace: true });
       } catch {

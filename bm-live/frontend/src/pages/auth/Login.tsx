@@ -10,7 +10,7 @@ export default function Login() {
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     try {
-      await api("/api/auth/login", {
+      await api("/v1/api/auth/login", {
         method: "POST",
         body: JSON.stringify({ email, password }),
       });
