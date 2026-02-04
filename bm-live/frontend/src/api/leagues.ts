@@ -27,7 +27,7 @@ export type TeamsInLeague = {
 };
 
 export async function fetchTeamsInLeague(country: string, league: string): Promise<TeamsInLeague> {
-  const url = `/api/leagues/${encodeURIComponent(country)}/${encodeURIComponent(league)}`;
+  const url = `/v1/api/leagues/${encodeURIComponent(country)}/${encodeURIComponent(league)}`;
   const res = await fetch(url, { credentials: "include" });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
@@ -49,7 +49,7 @@ export type TeamDetail = {
 };
 
 export async function fetchTeamDetail(country: string, league: string, teamEnglish: string): Promise<TeamDetail> {
-  const url = `/api/leagues/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(teamEnglish)}`;
+  const url = `/v1/api/leagues/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(teamEnglish)}`;
   const res = await fetch(url, { credentials: "include" });
   if (!res.ok) throw new Error("Failed to fetch team detail");
   return res.json();

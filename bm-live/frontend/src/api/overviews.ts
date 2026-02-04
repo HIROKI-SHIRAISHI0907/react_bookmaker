@@ -24,7 +24,7 @@ export type MonthlyOverviewResponse = {
 };
 
 export async function fetchMonthlyOverview(country: string, league: string, teamSlug: string): Promise<MonthlyOverviewResponse> {
-  const url = new URL(`/api/overview/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(teamSlug)}`, window.location.origin);
+  const url = new URL(`/v1/api/overview/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(teamSlug)}`, window.location.origin);
   const res = await fetch(url.toString(), { headers: { Accept: "application/json" } });
   if (!res.ok) throw new Error("Failed to fetch monthly overview");
   return (await res.json()) as MonthlyOverviewResponse;
@@ -74,7 +74,7 @@ export type ScheduleOverviewResponse = {
 };
 
 export async function fetchScheduleOverview(country: string, league: string, seq: number): Promise<ScheduleOverviewResponse> {
-  const url = new URL(`/api/overview/${encodeURIComponent(country)}/${encodeURIComponent(league)}/match/${seq}`, window.location.origin);
+  const url = new URL(`/v1/api/overview/${encodeURIComponent(country)}/${encodeURIComponent(league)}/match/${seq}`, window.location.origin);
   const res = await fetch(url.toString(), { headers: { Accept: "application/json" } });
   if (!res.ok) throw new Error("Failed to fetch schedule overview");
   return (await res.json()) as ScheduleOverviewResponse;

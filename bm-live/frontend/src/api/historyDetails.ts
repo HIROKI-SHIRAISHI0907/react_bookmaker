@@ -53,7 +53,7 @@ export type HistoryDetail = {
  * 返却: { detail: {...} }
  */
 export async function fetchHistoryDetail(country: string, league: string, teamSlug: string, seq: string): Promise<HistoryDetail> {
-  const url = `/api/${encodeURIComponent(country)}` + `/${encodeURIComponent(league)}` + `/${encodeURIComponent(teamSlug)}` + `/${encodeURIComponent(seq)}/history`;
+  const url = `/v1/api/${encodeURIComponent(country)}` + `/${encodeURIComponent(league)}` + `/${encodeURIComponent(teamSlug)}` + `/${encodeURIComponent(seq)}/history`;
 
   const res = await fetch(url, { credentials: "include", headers: { Accept: "application/json" } });
   if (!res.ok) {

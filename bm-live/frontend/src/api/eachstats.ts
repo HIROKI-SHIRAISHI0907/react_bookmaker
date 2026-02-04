@@ -93,7 +93,7 @@ export function normalizeStats(raw: RawStats): StatsBySideScore {
 
 // 取得関数（整形して返す）
 export async function fetchTeamFeatureStats(country: string, league: string, teamEnglish: string): Promise<TeamStatsResponse> {
-  const url = `/api/stats/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(teamEnglish)}`;
+  const url = `/v1/api/stats/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(teamEnglish)}`;
   const res = await fetch(url, { credentials: "include" });
   if (!res.ok) {
     const text = await res.text().catch(() => "");

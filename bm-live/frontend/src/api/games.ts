@@ -23,7 +23,7 @@ type Opts = { country: string; league: string };
  */
 export async function fetchTeamGames(teamSlug: string, opts: Opts): Promise<{ live: GameMatch[]; finished: GameMatch[] }> {
   const { country, league } = opts;
-  const url = `/api/games/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(teamSlug)}`;
+  const url = `/v1/api/games/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(teamSlug)}`;
   const res = await fetch(url, { credentials: "include" });
   if (!res.ok) {
     const text = await res.text().catch(() => "");

@@ -18,7 +18,7 @@ export type LeagueStanding = {
 };
 
 export async function fetchLeagueStanding(countryRaw: string, leagueRaw: string): Promise<LeagueStanding> {
-  const url = new URL(`/api/standings/${encodeURIComponent(countryRaw)}/${encodeURIComponent(leagueRaw)}`, window.location.origin);
+  const url = new URL(`/v1/api/standings/${encodeURIComponent(countryRaw)}/${encodeURIComponent(leagueRaw)}`, window.location.origin);
 
   const res = await fetch(url.toString(), { headers: { Accept: "application/json" } });
   if (!res.ok) throw new Error("Failed to fetch standings");

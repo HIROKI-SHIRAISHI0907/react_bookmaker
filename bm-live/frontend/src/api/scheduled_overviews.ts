@@ -70,7 +70,7 @@ export type ScheduleOverviewNoData = { message: string };
 export type ScheduleOverviewApi = ScheduleOverviewResponse | ScheduleOverviewNoData;
 
 export async function fetchScheduleOverview(country: string, league: string, seq: number, opts?: { home?: string; away?: string }): Promise<ScheduleOverviewApi> {
-  const url = new URL(`/api/scheduled-overview/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(String(seq))}`, window.location.origin);
+  const url = new URL(`/v1/api/scheduled-overview/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(String(seq))}`, window.location.origin);
   if (opts?.home) url.searchParams.set("home", opts.home);
   if (opts?.away) url.searchParams.set("away", opts.away);
 

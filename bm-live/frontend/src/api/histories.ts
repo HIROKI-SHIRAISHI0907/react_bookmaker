@@ -19,7 +19,7 @@ export async function fetchPastMatches(country: string, league: string, teamSlug
   const params = new URLSearchParams();
   if (q?.opponent) params.set("opponent", q.opponent);
 
-  const url = `/api/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(teamSlug)}${params.toString() ? `?${params}` : ""}/history`;
+  const url = `/v1/api/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(teamSlug)}${params.toString() ? `?${params}` : ""}/history`;
   const res = await fetch(url, { credentials: "include" });
   if (!res.ok) {
     const text = await res.text().catch(() => "");

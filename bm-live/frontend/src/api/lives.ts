@@ -68,7 +68,7 @@ function isLiveRow(r: any): boolean {
 
 /** A) 国・リーグ指定で本日の LIVE を取得 */
 export async function fetchLiveMatchesByLeague(country: string, league: string): Promise<LiveMatch[]> {
-  const url = `/api/live-matches?country=${encodeURIComponent(country)}&league=${encodeURIComponent(league)}`;
+  const url = `/v1/api/live-matches?country=${encodeURIComponent(country)}&league=${encodeURIComponent(league)}`;
   const res = await fetch(url, { headers: { Accept: "application/json" } });
   if (!res.ok) {
     const txt = await res.text().catch(() => "");
@@ -80,7 +80,7 @@ export async function fetchLiveMatchesByLeague(country: string, league: string):
 
 /** B) 本日（全カテゴリ＝国・リーグ横断）の LIVE を取得 */
 export async function fetchLiveMatchesTodayAll(): Promise<LiveMatch[]> {
-  const res = await fetch(`/api/live-matches`, { headers: { Accept: "application/json" } });
+  const res = await fetch(`/v1/api/live-matches`, { headers: { Accept: "application/json" } });
   if (!res.ok) {
     const txt = await res.text().catch(() => "");
     throw new Error(`failed to fetch live matches (all) (${res.status}) ${txt}`);
