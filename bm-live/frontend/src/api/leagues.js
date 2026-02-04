@@ -1,11 +1,11 @@
 export async function fetchLeaguesGrouped() {
-    const res = await fetch("/api/leagues/grouped", { credentials: "include" });
+    const res = await fetch("/v1/api/leagues/grouped", { credentials: "include" });
     if (!res.ok)
         throw new Error("Failed to fetch leagues");
     return res.json();
 }
 export async function fetchTeamsInLeague(country, league) {
-    const url = `/api/leagues/${encodeURIComponent(country)}/${encodeURIComponent(league)}`;
+    const url = `/v1/api/leagues/${encodeURIComponent(country)}/${encodeURIComponent(league)}`;
     const res = await fetch(url, { credentials: "include" });
     if (!res.ok) {
         const text = await res.text().catch(() => "");
@@ -15,7 +15,7 @@ export async function fetchTeamsInLeague(country, league) {
     return res.json();
 }
 export async function fetchTeamDetail(country, league, teamEnglish) {
-    const url = `/api/leagues/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(teamEnglish)}`;
+    const url = `/v1/api/leagues/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(teamEnglish)}`;
     const res = await fetch(url, { credentials: "include" });
     if (!res.ok)
         throw new Error("Failed to fetch team detail");

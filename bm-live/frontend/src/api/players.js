@@ -1,6 +1,6 @@
 export async function fetchTeamPlayers(teamSlug, opts) {
     const { country, league } = opts;
-    const url = `/api/players/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(teamSlug)}`;
+    const url = `/v1/api/players/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(teamSlug)}`;
     const res = await fetch(url, { credentials: "include" });
     if (!res.ok) {
         const text = await res.text().catch(() => "");

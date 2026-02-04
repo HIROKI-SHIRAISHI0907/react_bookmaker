@@ -1,5 +1,5 @@
 export async function fetchTeamCorrelations(country, league, team, opponent) {
-    const base = `/api/leagues/correlations/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(team)}`;
+    const base = `/v1/api/leagues/correlations/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(team)}`;
     const url = opponent ? `${base}?opponent=${encodeURIComponent(opponent)}` : base;
     const res = await fetch(url, { credentials: "include" });
     if (!res.ok) {

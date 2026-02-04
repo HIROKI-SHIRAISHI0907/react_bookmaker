@@ -4,7 +4,7 @@
  * 返却: { detail: {...} }
  */
 export async function fetchHistoryDetail(country, league, teamSlug, seq) {
-    const url = `/api/${encodeURIComponent(country)}` + `/${encodeURIComponent(league)}` + `/${encodeURIComponent(teamSlug)}` + `/${encodeURIComponent(seq)}/history`;
+    const url = `/v1/api/${encodeURIComponent(country)}` + `/${encodeURIComponent(league)}` + `/${encodeURIComponent(teamSlug)}` + `/${encodeURIComponent(seq)}/history`;
     const res = await fetch(url, { credentials: "include", headers: { Accept: "application/json" } });
     if (!res.ok) {
         const text = await res.text().catch(() => "");

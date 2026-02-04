@@ -2,7 +2,7 @@
 // GET /api/future/:country/:league/:team
 export async function fetchFutureMatches(teamSlug, opts) {
     const { country, league } = opts;
-    const url = `/api/future/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(teamSlug)}`;
+    const url = `/v1/api/future/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(teamSlug)}`;
     const res = await fetch(url, { credentials: "include", headers: { Accept: "application/json" } });
     if (!res.ok) {
         const text = await res.text().catch(() => "");

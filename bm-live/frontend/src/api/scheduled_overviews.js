@@ -1,5 +1,5 @@
 export async function fetchScheduleOverview(country, league, seq, opts) {
-    const url = new URL(`/api/scheduled-overview/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(String(seq))}`, window.location.origin);
+    const url = new URL(`/v1/api/scheduled-overview/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(String(seq))}`, window.location.origin);
     if (opts?.home)
         url.searchParams.set("home", opts.home);
     if (opts?.away)
