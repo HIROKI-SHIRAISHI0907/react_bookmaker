@@ -1,56 +1,54 @@
-// frontend/src/App.tsx
-import { Routes, Route, Navigate } from "react-router-dom";
-
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Login from "./pages/auth/Login";
-import Register from "./pages/auth/Register";
 import Dashboard from "./pages/top/Dashboard";
 import RequireAuth from "./pages/auth/RequireAuth";
 import LeagueMenu from "./pages/humberger/LeagueMenu";
-import LeagueTeams from "./pages/teams/Team";
-import TeamDetail from "./pages/teams/TeamDetail";
-import History from "./pages/teams/History";
-import HistoryDetail from "./pages/teams/HistoryDetail";
-import GameDetail from "./pages/teams/GameDetail";
-import LiveNow from "./pages/teams/LiveNow";
-import OverviewDetail from "./pages/teams/OverviewDetail";
-import RankingPage from "./pages/ranking/Ranking";
+import FavoritePage from "./pages/favorite/FavoritePage";
+
+function WhereAmI() {
+  const loc = useLocation();
+  return (
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 99999,
+        background: "rgba(255,0,0,.9)",
+        color: "#fff",
+        padding: 8,
+        fontFamily: "monospace",
+      }}
+    >
+      pathname: {loc.pathname}
+    </div>
+  );
+}
 
 export default function App() {
   return (
-    <Routes>
-      {/* 公開ページ */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+    <>
+      <WhereAmI />
+      <div style={{ paddingTop: 40 }}>
+        <Routes>
+          <Route path="/" element={<Navigate to="/top" replace />} />
 
-      {/* パラメタ付きページ */}
-      <Route path="/live" element={<LiveNow />} />
-      <Route path="/:country/:league" element={<LeagueTeams />} />
+          {/* 末尾スラッシュにも対応 */}
+          <Route path="/favorite" element={<FavoritePage />} />
+          <Route path="/favorite/*" element={<FavoritePage />} />
 
-      {/* ★ live は team よりも前に置く（順番重要！）liveがteam扱いになってしまう */}
-      <Route path="/:country/:league/live" element={<LiveNow />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/:country/:league" element={<LeagueMenu />} />
 
-      <Route path="/:country/:league/:team" element={<TeamDetail />} />
+          <Route element={<RequireAuth />}>
+            <Route path="/top" element={<Dashboard />} />
+          </Route>
 
-      <Route path="/:country/:league/:team/overview/:seq" element={<OverviewDetail />} />
-
-      <Route path="/:country/:league/:team/history" element={<History />} />
-
-      <Route path="/:country/:league/:team/history/:seq" element={<HistoryDetail />} />
-
-      <Route path="/:country/:league/:team/game/:seq" element={<GameDetail />} />
-
-      <Route path="/ranking/:country/:league" element={<RankingPage />} />
-
-      {/* 認証保護ページ */}
-      {/* <Route element={<RequireAuth />}>*/}
-      <Route path="/top" element={<Dashboard />} />
-      {/* </Route>*/}
-
-      {/* ルートアクセスは /top に飛ばす */}
-      <Route path="/" element={<Navigate to="/top" replace />} />
-
-      {/* フォールバック */}
-      <Route path="*" element={<Navigate to="/top" replace />} />
-    </Routes>
+          {/* デバッグ中はリダイレクトしない */}
+          <Route path="*" element={<div style={{ padding: 40 }}>NO ROUTE MATCHED</div>} />
+        </Routes>
+      </div>
+    </>
   );
 }
