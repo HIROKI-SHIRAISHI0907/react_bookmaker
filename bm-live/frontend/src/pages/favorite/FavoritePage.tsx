@@ -1,12 +1,19 @@
 import React, { useEffect, useMemo, useState, useTransition } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
+type SelectedFavoriteItem = {
+  country: string;
+  league?: string | null;
+  team?: string | null;
+};
+
 /** ===== view API types（既存の /v1/api/favorite/view ） ===== */
 type FavoriteViewResponse = {
   allowAll: boolean;
   allowedCountries: { country: string }[];
   allowedLeaguesByCountry: { country: string; leagues: string[] }[];
   allowedTeamsByCountryLeague: { country: string; league: string; teams: string[] }[];
+  selectedItems?: SelectedFavoriteItem[];
   responseCode: string;
   message: string;
 };
@@ -112,6 +119,28 @@ export default function FavoritePage() {
     }
   }, [selectedCountry, selectedLeague, leaguesByCountry]);
 
+  // お気に入り済みチームをデフォルトチェックに反映
+  useEffect(() => {
+    if (!data?.selectedItems) return;
+
+    const next: Record<string, Set<string>> = {};
+
+    for (const item of data.selectedItems) {
+      const country = (item.country ?? "").trim();
+      const league = (item.league ?? "").trim();
+      const team = (item.team ?? "").trim();
+
+      // チーム登録だけチェックに反映（country/leagueのみは除外）
+      if (!country || !league || !team) continue;
+
+      const key = `${country}__${league}`;
+      if (!next[key]) next[key] = new Set<string>();
+      next[key].add(team);
+    }
+
+    setSelectedTeams(next);
+  }, [data]);
+
   const currentLeagues = useMemo(() => {
     if (!selectedCountry) return [];
     return leaguesByCountry.get(selectedCountry) ?? [];
@@ -169,7 +198,7 @@ export default function FavoritePage() {
    * POST /v1/api/favorites へ FavoriteInsertRequest を送る
    */
   const upsertMutation = useMutation({
-    mutationFn: (req: FavoriteInsertRequest) => postJson<FavoriteResponse>("v1/api/favorites", req),
+    mutationFn: (req: FavoriteInsertRequest) => postJson<FavoriteResponse>("/v1/api/favorites", req),
     onSuccess: async (res) => {
       // 必要ならメッセージ表示
       // alert(res.message);
