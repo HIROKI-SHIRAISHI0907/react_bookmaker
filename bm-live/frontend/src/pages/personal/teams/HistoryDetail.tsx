@@ -1,10 +1,10 @@
 // frontend/src/pages/teams/HistoryDetail.tsx
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import AppHeader from "../../components/layout/AppHeader";
-import { Skeleton } from "../../components/ui/skeleton";
+import AppHeader from "../../../components/layout/AppHeader";
+import { Skeleton } from "../../../components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
-import { fetchHistoryDetail, type HistoryDetail, type SideStats } from "../../api/historyDetails";
+import { fetchHistoryDetail, type HistoryDetail, type SideStats } from "../../../api/historyDetails";
 
 export default function HistoryDetail() {
   const params = useParams<{ country?: string; league?: string; team?: string; seq?: string }>();

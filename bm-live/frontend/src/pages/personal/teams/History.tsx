@@ -3,12 +3,12 @@ import { Link, useParams } from "react-router-dom";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import AppHeader from "../../components/layout/AppHeader";
+import AppHeader from "../../../components/layout/AppHeader";
 import { ArrowLeft } from "lucide-react";
-import { Skeleton } from "../../components/ui/skeleton";
+import { Skeleton } from "../../../components/ui/skeleton";
 
-import { fetchPastMatches, type PastMatch } from "../../api/histories";
-import { fetchTeamDetail, type TeamDetail as TeamDetailType } from "../../api/leagues";
+import { fetchPastMatches, type PastMatch } from "../../../api/histories";
+import { fetchTeamDetail, type TeamDetail as TeamDetailType } from "../../../api/leagues";
 
 export default function History() {
   const params = useParams<{ country?: string; league?: string; team?: string }>();

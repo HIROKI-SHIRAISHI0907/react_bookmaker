@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { queryClient } from "../../lib/queryClient";
-import MatchHeader from "../../components/MatchHeader";
-import StatsGrid from "../../components/StatsGrid";
-import ThemeToggle from "../../components/ThemeToggle";
-import { Button } from "../../components/ui/button";
-import { Skeleton } from "../../components/ui/skeleton";
-import AppHeader from "../../components/layout/AppHeader";
+import { queryClient } from "../../../lib/queryClient";
+import MatchHeader from "../../../components/MatchHeader";
+import StatsGrid from "../../../components/StatsGrid";
+import ThemeToggle from "../../../components/ThemeToggle";
+import { Button } from "../../../components/ui/button";
+import { Skeleton } from "../../../components/ui/skeleton";
+import AppHeader from "../../../components/layout/AppHeader";
 import { RefreshCw } from "lucide-react";
 
 // --- デザイン確認用: 型定義 & モック --------------------

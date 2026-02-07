@@ -1,9 +1,9 @@
 // src/pages/teams/Team.tsx
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { fetchTeamsInLeague, type TeamsInLeague } from "../../api/leagues";
-import { Skeleton } from "../../components/ui/skeleton";
-import AppHeader from "../../components/layout/AppHeader"; // ← 追加
+import { fetchTeamsInLeague, type TeamsInLeague } from "../../../api/leagues";
+import { Skeleton } from "../../../components/ui/skeleton";
+import AppHeader from "../../../components/layout/AppHeader"; // ← 追加
 
 export default function LeagueTeams() {
   // URLの country / league は既に encodeURIComponent 済みなので、表示・API の両方で raw を用意

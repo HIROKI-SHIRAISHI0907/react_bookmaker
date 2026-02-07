@@ -1,10 +1,10 @@
 // frontend/src/pages/teams/GameDetails.tsx
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import AppHeader from "../../components/layout/AppHeader";
-import { Skeleton } from "../../components/ui/skeleton";
+import AppHeader from "../../../components/layout/AppHeader";
+import { Skeleton } from "../../../components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
-import { fetchGameDetail, type GameDetail } from "../../api/gameDetails";
+import { fetchGameDetail, type GameDetail } from "../../../api/gameDetails";
 
 export default function GameDetail() {
   const params = useParams<{ country?: string; league?: string; team?: string; seq?: string }>();

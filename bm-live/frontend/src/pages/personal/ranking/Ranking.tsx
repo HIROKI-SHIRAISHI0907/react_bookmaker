@@ -1,8 +1,8 @@
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import AppHeader from "../../components/layout/AppHeader";
-import { Skeleton } from "../../components/ui/skeleton";
-import { fetchLeagueStanding, type LeagueStanding } from "../../api/standings";
+import AppHeader from "../../../components/layout/AppHeader";
+import { Skeleton } from "../../../components/ui/skeleton";
+import { fetchLeagueStanding, type LeagueStanding } from "../../../api/standings";
 
 export default function RankingPage() {
   const { country = "", league = "" } = useParams();

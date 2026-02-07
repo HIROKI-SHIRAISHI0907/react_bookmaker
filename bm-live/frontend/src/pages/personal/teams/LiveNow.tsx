@@ -2,9 +2,9 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
-import AppHeader from "../../components/layout/AppHeader";
-import { Skeleton } from "../../components/ui/skeleton";
-import { fetchLiveMatchesTodayAll, type LiveMatch } from "../../api/lives";
+import AppHeader from "../../../components/layout/AppHeader";
+import { Skeleton } from "../../../components/ui/skeleton";
+import { fetchLiveMatchesTodayAll, type LiveMatch } from "../../../api/lives";
 import { useNavigate } from "react-router-dom";
 
 /** 半角英数と -/_ 以外をハイフンに置換する簡易 slugify */

@@ -3,23 +3,23 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 
-import { fetchTeamDetail, type TeamDetail as TeamDetailType } from "../../api/leagues";
-import { fetchTeamCorrelations, type TeamCorrelationsPayload } from "../../api/correlations";
-import { fetchTeamFeatureStats, type TeamStatsResponse } from "../../api/eachstats";
-import { fetchFutureMatches, type FutureMatch } from "../../api/upcomings";
-import { fetchTeamGames, type GameMatch } from "../../api/games";
-import { fetchTeamPlayers, type Player } from "../../api/players";
-import { fetchRankHistory, type RankHistoryResponse } from "../../api/rankHistory";
+import { fetchTeamDetail, type TeamDetail as TeamDetailType } from "../../../api/leagues";
+import { fetchTeamCorrelations, type TeamCorrelationsPayload } from "../../../api/correlations";
+import { fetchTeamFeatureStats, type TeamStatsResponse } from "../../../api/eachstats";
+import { fetchFutureMatches, type FutureMatch } from "../../../api/upcomings";
+import { fetchTeamGames, type GameMatch } from "../../../api/games";
+import { fetchTeamPlayers, type Player } from "../../../api/players";
+import { fetchRankHistory, type RankHistoryResponse } from "../../../api/rankHistory";
 
-import AppHeader from "../../components/layout/AppHeader";
-import CorrelationPanel from "../../components/correlation/CorrelationPanel";
-import TeamFeaturePanel from "../../components/feature/TeamFeaturePanel";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../components/ui/tabs";
-import { Skeleton } from "../../components/ui/skeleton";
+import AppHeader from "../../../components/layout/AppHeader";
+import CorrelationPanel from "../../../components/correlation/CorrelationPanel";
+import TeamFeaturePanel from "../../../components/feature/TeamFeaturePanel";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../../components/ui/tabs";
+import { Skeleton } from "../../../components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
 
 // 月次サマリ API
-import { fetchMonthlyOverview, type MonthlyOverviewResponse } from "../../api/overviews";
+import { fetchMonthlyOverview, type MonthlyOverviewResponse } from "../../../api/overviews";
 
 // recharts
 import { ResponsiveContainer, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
