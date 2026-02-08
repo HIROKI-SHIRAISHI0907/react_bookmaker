@@ -10,6 +10,7 @@ import PersonalLayout from "./pages/personal/PersonalLayout";
 import ManualScrapePage from "./pages/admin/scrape/ManualScrapePage";
 import S3FileCountPage from "./pages/admin/s3/S3FileCountPage";
 import CountryLeagueForceAdminPage from "./pages/admin/force/CountryLeagueForceAdminPage";
+import NoticeAdminPage from "./pages/admin/notice/NoticeAdminPage";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -37,11 +38,11 @@ export default function App() {
             <Route path="force/update" element={<CountryLeagueForceAdminPage />} />
             <Route path="scrape/manual" element={<ManualScrapePage />} />
             <Route path="s3/fileCount" element={<S3FileCountPage />} />
+            <Route path="notices" element={<NoticeAdminPage />} />
           </Route>
 
-          <Route element={<RequireAuth />}>
-            <Route path="/top" element={<Dashboard />} />
-          </Route>
+          <Route path="/top" element={<Dashboard />} />
+          <Route element={<RequireAuth />}></Route>
 
           <Route path="*" element={<div style={{ padding: 40 }}>NO ROUTE MATCHED</div>} />
         </Routes>

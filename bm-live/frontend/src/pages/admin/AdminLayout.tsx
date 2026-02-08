@@ -26,6 +26,9 @@ export default function AdminLayout() {
           <NavLink to="s3/fileCount" style={linkStyle}>
             S3ファイル情報取得管理
           </NavLink>
+          <NavLink to="notices" style={linkStyle}>
+            お知らせ通知管理
+          </NavLink>
         </div>
       </aside>
 

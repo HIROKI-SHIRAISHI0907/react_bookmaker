@@ -1,3 +1,4 @@
+// frontend/src/pages/personal/top/Dashboard.tsx
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "../../../lib/queryClient";
@@ -8,6 +9,7 @@ import { Button } from "../../../components/ui/button";
 import { Skeleton } from "../../../components/ui/skeleton";
 import AppHeader from "../../../components/layout/AppHeader";
 import { RefreshCw } from "lucide-react";
+import NoticeRibbon from "../../../pages/personal/component/notice/NoticeRibbon";
 
 // --- デザイン確認用: 型定義 & モック --------------------
 type TeamPair = { home: number; away: number };
@@ -120,6 +122,8 @@ export default function Dashboard() {
           </Button>
         }
       />
+
+      <NoticeRibbon />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
