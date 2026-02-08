@@ -23,7 +23,7 @@ type FutureMatch = {
   id: number; // future_master.id
   homeTeam: string;
   awayTeam: string;
-  futureTime: string | null; // ISO文字列
+  futureTime: string | null;
   link?: string | null;
   gameTeamCategory?: string | null;
   roundNo?: number | null;
@@ -32,7 +32,6 @@ type FutureMatch = {
 type FutureMatchesResponse = { matches: FutureMatch[] };
 
 function toOffsetJst(datetimeLocal: string): string | null {
-  // "YYYY-MM-DDTHH:mm" -> "YYYY-MM-DDTHH:mm:00+09:00"
   if (!datetimeLocal) return null;
   return datetimeLocal.length === 16 ? `${datetimeLocal}:00+09:00` : `${datetimeLocal}+09:00`;
 }
@@ -41,8 +40,23 @@ function safeText(s: unknown): string {
   return typeof s === "string" ? s : "";
 }
 
+/** OK: json / text を返す。NG: 本文も含めて throw して console に出す */
+async function fetchOrThrow(url: string, init?: RequestInit) {
+  const res = await fetch(url, init);
+  const ct = res.headers.get("content-type") ?? "";
+  const isJson = ct.includes("application/json");
+  const body = isJson ? await res.json().catch(() => null) : await res.text().catch(() => "");
+
+  if (!res.ok) {
+    const bodyText = typeof body === "string" ? body : JSON.stringify(body);
+    console.error(`[HTTP ${res.status}] ${url}`, body);
+    throw new Error(`HTTP ${res.status} ${bodyText}`);
+  }
+  return body;
+}
+
 export default function NoticeAdminPage() {
-  // --- Future match filter（必要最小） ---
+  // --- Future match filter ---
   const [country, setCountry] = useState<string>("jp");
   const [league, setLeague] = useState<string>("j1");
   const [limit, setLimit] = useState<number>(50);
@@ -53,19 +67,29 @@ export default function NoticeAdminPage() {
   const [body, setBody] = useState("");
   const [displayFrom, setDisplayFrom] = useState("");
   const [displayTo, setDisplayTo] = useState("");
-
   const [selectedFutureId, setSelectedFutureId] = useState<number | "">("");
+
+  // --- “押した感” 用：行ごとの処理中ID ---
+  const [publishingId, setPublishingId] = useState<number | null>(null);
+  const [archivingId, setArchivingId] = useState<number | null>(null);
+
+  // ✅ 更新後に「即」一覧APIを叩く共通関数
+  const refetchAdminList = async () => {
+    await queryClient.refetchQueries({ queryKey: ["admin-notices"] });
+  };
+  const refetchFrontActive = async () => {
+    await queryClient.refetchQueries({ queryKey: ["notices-active"] });
+  };
 
   // --- Queries ---
   const noticesQuery = useQuery<Notice[]>({
     queryKey: ["admin-notices"],
     queryFn: async () => {
-      const res = await fetch("/v1/api/admin/notices", { headers: { Accept: "application/json" } });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      return Array.isArray(data) ? data : [];
+      const data = await fetchOrThrow("/v1/api/admin/notices", { headers: { Accept: "application/json" } });
+      return Array.isArray(data) ? (data as Notice[]) : [];
     },
-    staleTime: 10_000,
+    staleTime: 10_000, // 0にしない（“更新”が押せない感を減らす）
+    refetchOnWindowFocus: false, // 勝手にfetchして isFetching が続くのを防ぐ
   });
 
   const futureQuery = useQuery<FutureMatchesResponse>({
@@ -76,19 +100,17 @@ export default function NoticeAdminPage() {
       if (league) params.set("league", league);
       params.set("limit", String(limit));
 
-      const res = await fetch(`/v1/api/future/admin/matches?${params.toString()}`, {
+      const data = await fetchOrThrow(`/v1/api/future/admin/matches?${params.toString()}`, {
         headers: { Accept: "application/json" },
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
       return data && typeof data === "object" ? (data as FutureMatchesResponse) : { matches: [] };
     },
     staleTime: 30_000,
-    enabled: noticeType === "FEATURED_MATCH", // 注目試合の時だけ取る
+    enabled: noticeType === "FEATURED_MATCH",
+    refetchOnWindowFocus: false,
   });
 
   const matches = futureQuery.data?.matches ?? [];
-
   const selectedMatch = useMemo(() => {
     if (selectedFutureId === "") return null;
     return matches.find((m) => m.id === selectedFutureId) ?? null;
@@ -96,100 +118,74 @@ export default function NoticeAdminPage() {
 
   // --- Mutations ---
   const createMutation = useMutation({
-  mutationFn: async () => {
-    const payload: any = {
-      noticeType,
-      displayFrom: toOffsetJst(displayFrom),
-      displayTo: toOffsetJst(displayTo),
-    };
+    mutationFn: async () => {
+      const payload: any = {
+        noticeType,
+        displayFrom: toOffsetJst(displayFrom),
+        displayTo: toOffsetJst(displayTo),
+      };
 
-    if (noticeType === "NORMAL") {
-      payload.title = title;
-      payload.body = body;
-    } else {
-      if (selectedFutureId === "") throw new Error("注目試合を選択してください。");
-      payload.featureMatchId = selectedFutureId;
-      payload.title = "注目試合";
-      payload.body = "本日の注目対戦です！"; // ←DB制約切り分けにも有効（空を避ける）
-    }
-
-    console.log("[POST /v1/api/admin/notices] payload =", payload);
-
-    const res = await fetch("/v1/api/admin/notices", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    // ---- ここが重要：失敗時にレスポンスを必ず読んで吐く ----
-    if (!res.ok) {
-      const contentType = res.headers.get("content-type") || "";
-      let bodyText = "";
-      let bodyJson: any = null;
-
-      try {
-        if (contentType.includes("application/json")) {
-          bodyJson = await res.json();
-          bodyText = JSON.stringify(bodyJson);
-        } else {
-          bodyText = await res.text();
-        }
-      } catch (e) {
-        bodyText = "(failed to read response body)";
+      if (noticeType === "NORMAL") {
+        payload.title = title;
+        payload.body = body;
+      } else {
+        if (selectedFutureId === "") throw new Error("注目試合を選択してください。");
+        payload.featureMatchId = selectedFutureId;
+        payload.title = "注目試合";
+        payload.body = "本日の注目対戦です！"; // 空で落ちるDB制約がある場合の保険
       }
 
-      console.error("[POST /v1/api/admin/notices] HTTP", res.status, bodyJson ?? bodyText);
+      console.log("[POST /v1/api/admin/notices] payload =", payload);
 
-      throw new Error(`登録に失敗しました（HTTP ${res.status}） ${bodyText}`);
-    }
+      return await fetchOrThrow("/v1/api/admin/notices", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(payload),
+      });
+    },
+    onSuccess: async () => {
+      // form reset
+      setTitle("");
+      setBody("");
+      setDisplayFrom("");
+      setDisplayTo("");
+      setSelectedFutureId("");
 
-    // 成功時に JSON を返すならここで return res.json() してもOK
-    return true;
-  },
-
-  onError: (err) => {
-    console.error("[createMutation] error =", err);
-  },
-
-  onSuccess: async () => {
-    setTitle("");
-    setBody("");
-    setDisplayFrom("");
-    setDisplayTo("");
-    setSelectedFutureId("");
-
-    await queryClient.invalidateQueries({ queryKey: ["admin-notices"] });
-    await queryClient.invalidateQueries({ queryKey: ["notices-active"] });
-  },
-});
-
+      // ✅ 更新したら即一覧APIを叩く
+      await refetchAdminList();
+      await refetchFrontActive();
+    },
+    onError: (e) => console.error("[createMutation] error", e),
+  });
 
   const publishMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/v1/api/admin/notices/${id}/publish`, { method: "POST" });
-      if (!res.ok) throw new Error(`publish failed: HTTP ${res.status}`);
+      await fetchOrThrow(`/v1/api/admin/notices/${id}/publish`, { method: "POST", headers: { Accept: "application/json" } });
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["admin-notices"] });
-      await queryClient.invalidateQueries({ queryKey: ["notices-active"] });
+      await refetchAdminList();
+      await refetchFrontActive();
     },
+    onError: (e) => console.error("[publishMutation] error", e),
   });
 
   const archiveMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/v1/api/admin/notices/${id}/archive`, { method: "POST" });
-      if (!res.ok) throw new Error(`archive failed: HTTP ${res.status}`);
+      await fetchOrThrow(`/v1/api/admin/notices/${id}/archive`, { method: "POST", headers: { Accept: "application/json" } });
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["admin-notices"] });
-      await queryClient.invalidateQueries({ queryKey: ["notices-active"] });
+      await refetchAdminList();
+      await refetchFrontActive();
     },
+    onError: (e) => console.error("[archiveMutation] error", e),
   });
 
   // --- Form validation ---
   const canSubmitNormal = title.trim().length > 0 && body.trim().length > 0;
   const canSubmitFeatured = selectedFutureId !== "";
   const canSubmit = noticeType === "NORMAL" ? canSubmitNormal : canSubmitFeatured;
+
+  const isRefreshing = noticesQuery.isFetching; // 表示用（disabledには使わない）
 
   return (
     <div className="min-h-screen bg-background">
@@ -210,7 +206,6 @@ export default function NoticeAdminPage() {
                 onChange={(e) => {
                   const v = e.target.value as NoticeType;
                   setNoticeType(v);
-                  // 切り替え時の軽い整形
                   if (v === "NORMAL") setSelectedFutureId("");
                 }}
               >
@@ -244,59 +239,57 @@ export default function NoticeAdminPage() {
               </div>
             </>
           ) : (
-            <>
-              <div className="border rounded p-3 mb-3 bg-muted/20">
-                <div className="font-bold mb-2">注目試合候補（次の日以降）</div>
+            <div className="border rounded p-3 mb-3 bg-muted/20">
+              <div className="font-bold mb-2">注目試合候補（次の日以降）</div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-                  <div>
-                    <div className="text-sm mb-1">country</div>
-                    <input className="w-full border rounded px-2 py-1" value={country} onChange={(e) => setCountry(e.target.value)} placeholder="例）jp" />
-                  </div>
-                  <div>
-                    <div className="text-sm mb-1">league</div>
-                    <input className="w-full border rounded px-2 py-1" value={league} onChange={(e) => setLeague(e.target.value)} placeholder="例）j1" />
-                  </div>
-                  <div>
-                    <div className="text-sm mb-1">limit</div>
-                    <input type="number" className="w-full border rounded px-2 py-1" value={limit} onChange={(e) => setLimit(Number(e.target.value))} min={1} max={200} />
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                <div>
+                  <div className="text-sm mb-1">country</div>
+                  <input className="w-full border rounded px-2 py-1" value={country} onChange={(e) => setCountry(e.target.value)} placeholder="例）jp" />
                 </div>
-
-                {futureQuery.isLoading ? (
-                  <div className="space-y-2">
-                    <Skeleton className="h-5 w-full" />
-                    <Skeleton className="h-5 w-full" />
-                    <Skeleton className="h-5 w-2/3" />
-                  </div>
-                ) : futureQuery.error ? (
-                  <div className="text-red-600 text-sm">候補取得エラー: {safeText((futureQuery.error as any)?.message)}</div>
-                ) : (
-                  <div className="flex flex-col gap-2">
-                    <select className="border rounded px-2 py-2" value={selectedFutureId} onChange={(e) => setSelectedFutureId(e.target.value ? Number(e.target.value) : "")}>
-                      <option value="">注目試合を選択してください</option>
-                      {matches.map((m) => (
-                        <option key={m.id} value={m.id}>
-                          {m.futureTime ? m.futureTime : ""}　{m.homeTeam} vs {m.awayTeam}（id={m.id}）
-                        </option>
-                      ))}
-                    </select>
-
-                    {selectedMatch && (
-                      <div className="text-sm text-muted-foreground">
-                        選択中: {selectedMatch.homeTeam} vs {selectedMatch.awayTeam}（id={selectedMatch.id}）
-                        {selectedMatch.link ? (
-                          <span>
-                            {" "}
-                            / link: <span className="underline">{selectedMatch.link}</span>
-                          </span>
-                        ) : null}
-                      </div>
-                    )}
-                  </div>
-                )}
+                <div>
+                  <div className="text-sm mb-1">league</div>
+                  <input className="w-full border rounded px-2 py-1" value={league} onChange={(e) => setLeague(e.target.value)} placeholder="例）j1" />
+                </div>
+                <div>
+                  <div className="text-sm mb-1">limit</div>
+                  <input type="number" className="w-full border rounded px-2 py-1" value={limit} onChange={(e) => setLimit(Number(e.target.value))} min={1} max={200} />
+                </div>
               </div>
-            </>
+
+              {futureQuery.isLoading ? (
+                <div className="space-y-2">
+                  <Skeleton className="h-5 w-full" />
+                  <Skeleton className="h-5 w-full" />
+                  <Skeleton className="h-5 w-2/3" />
+                </div>
+              ) : futureQuery.error ? (
+                <div className="text-red-600 text-sm">候補取得エラー: {safeText((futureQuery.error as any)?.message)}</div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <select className="border rounded px-2 py-2" value={selectedFutureId} onChange={(e) => setSelectedFutureId(e.target.value ? Number(e.target.value) : "")}>
+                    <option value="">注目試合を選択してください</option>
+                    {matches.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.futureTime ? m.futureTime : ""}　{m.homeTeam} vs {m.awayTeam}（id={m.id}）
+                      </option>
+                    ))}
+                  </select>
+
+                  {selectedMatch && (
+                    <div className="text-sm text-muted-foreground">
+                      選択中: {selectedMatch.homeTeam} vs {selectedMatch.awayTeam}（id={selectedMatch.id}）
+                      {selectedMatch.link ? (
+                        <span>
+                          {" "}
+                          / link: <span className="underline">{selectedMatch.link}</span>
+                        </span>
+                      ) : null}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           )}
 
           <div className="flex items-center gap-3">
@@ -312,8 +305,10 @@ export default function NoticeAdminPage() {
         <div className="border rounded-lg p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="font-bold">一覧</div>
-            <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: ["admin-notices"] })} disabled={noticesQuery.isFetching}>
-              {noticesQuery.isFetching ? "更新中..." : "更新"}
+
+            {/* ✅ “更新”は常に押せる：disabledしない（押した気にならない/押せないの回避） */}
+            <Button variant="outline" size="sm" onClick={() => queryClient.refetchQueries({ queryKey: ["admin-notices"] })}>
+              {isRefreshing ? "更新中..." : "更新"}
             </Button>
           </div>
 
@@ -337,35 +332,72 @@ export default function NoticeAdminPage() {
                     <th className="py-2 pr-3">操作</th>
                   </tr>
                 </thead>
+
                 <tbody>
-                  {(noticesQuery.data ?? []).map((n) => (
-                    <tr key={n.id} className="border-b">
-                      <td className="py-2 pr-3 align-top">{n.id}</td>
-                      <td className="py-2 pr-3 align-top">
-                        <div className="font-bold">{n.title}</div>
-                        <div className="whitespace-pre-wrap text-sm">{n.body}</div>
-                        {n.noticeType ? (
-                          <div className="text-xs text-muted-foreground mt-1">
-                            type={n.noticeType}
-                            {n.featureMatchId ? ` / featuredMatchId=${n.featureMatchId}` : ""}
-                          </div>
-                        ) : null}
-                      </td>
-                      <td className="py-2 pr-3 align-top">{n.status}</td>
-                      <td className="py-2 pr-3 align-top text-sm">
-                        <div>{n.displayFrom ?? "-"}</div>
-                        <div>{n.displayTo ?? "-"}</div>
-                      </td>
-                      <td className="py-2 pr-3 align-top whitespace-nowrap">
-                        <Button size="sm" className="mr-2" onClick={() => publishMutation.mutate(n.id)} disabled={publishMutation.isPending}>
-                          公開
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={() => archiveMutation.mutate(n.id)} disabled={archiveMutation.isPending}>
-                          アーカイブ
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
+                  {(noticesQuery.data ?? []).map((n) => {
+                    const isPublishing = publishingId === n.id;
+                    const isArchiving = archivingId === n.id;
+                    const rowBusy = isPublishing || isArchiving;
+
+                    return (
+                      <tr key={n.id} className="border-b">
+                        <td className="py-2 pr-3 align-top">{n.id}</td>
+
+                        <td className="py-2 pr-3 align-top">
+                          <div className="font-bold">{n.title}</div>
+                          <div className="whitespace-pre-wrap text-sm">{n.body}</div>
+                          {n.noticeType ? (
+                            <div className="text-xs text-muted-foreground mt-1">
+                              type={n.noticeType}
+                              {n.featureMatchId ? ` / featureMatchId=${n.featureMatchId}` : ""}
+                            </div>
+                          ) : null}
+                        </td>
+
+                        <td className="py-2 pr-3 align-top">{n.status}</td>
+
+                        <td className="py-2 pr-3 align-top text-sm">
+                          <div>{n.displayFrom ?? "-"}</div>
+                          <div>{n.displayTo ?? "-"}</div>
+                        </td>
+
+                        <td className="py-2 pr-3 align-top whitespace-nowrap">
+                          <Button
+                            size="sm"
+                            className="mr-2"
+                            disabled={rowBusy}
+                            onClick={async () => {
+                              setPublishingId(n.id);
+                              try {
+                                await publishMutation.mutateAsync(n.id);
+                              } finally {
+                                setPublishingId(null);
+                              }
+                            }}
+                          >
+                            {isPublishing ? "公開中..." : "公開"}
+                          </Button>
+
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={rowBusy}
+                            onClick={async () => {
+                              setArchivingId(n.id);
+                              try {
+                                await archiveMutation.mutateAsync(n.id);
+                              } finally {
+                                setArchivingId(null);
+                              }
+                            }}
+                          >
+                            {isArchiving ? "アーカイブ中..." : "アーカイブ"}
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+
                   {(noticesQuery.data ?? []).length === 0 ? (
                     <tr>
                       <td className="py-3 text-sm text-muted-foreground" colSpan={5}>

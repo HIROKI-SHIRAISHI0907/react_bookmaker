@@ -17,6 +17,9 @@ export default function AdminLayout() {
         <div style={{ fontWeight: 800, marginBottom: 12 }}>管理画面</div>
 
         <div style={{ display: "grid", gap: 8 }}>
+          <NavLink to="data/fetch" style={linkStyle}>
+            データ取得管理
+          </NavLink>
           <NavLink to="force/update" style={linkStyle}>
             管理者国リーグ強制制御
           </NavLink>

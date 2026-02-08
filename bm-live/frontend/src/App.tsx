@@ -11,6 +11,7 @@ import ManualScrapePage from "./pages/admin/scrape/ManualScrapePage";
 import S3FileCountPage from "./pages/admin/s3/S3FileCountPage";
 import CountryLeagueForceAdminPage from "./pages/admin/force/CountryLeagueForceAdminPage";
 import NoticeAdminPage from "./pages/admin/notice/NoticeAdminPage";
+import DataFetchAdminPage from "./pages/admin/fetch/DataFetchAdminPage";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -39,6 +40,7 @@ export default function App() {
             <Route path="scrape/manual" element={<ManualScrapePage />} />
             <Route path="s3/fileCount" element={<S3FileCountPage />} />
             <Route path="notices" element={<NoticeAdminPage />} />
+            <Route path="data/fetch" element={<DataFetchAdminPage />} />
           </Route>
 
           <Route path="/top" element={<Dashboard />} />
