@@ -32,6 +32,9 @@ export default function AdminLayout() {
           <NavLink to="notices" style={linkStyle}>
             お知らせ通知管理
           </NavLink>
+          <NavLink to="manual/data/register" style={linkStyle}>
+            スクレイピングデータ手動登録・更新
+          </NavLink>
         </div>
       </aside>
 

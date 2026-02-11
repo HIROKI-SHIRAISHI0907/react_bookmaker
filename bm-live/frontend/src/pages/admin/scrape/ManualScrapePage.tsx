@@ -30,7 +30,7 @@ async function getJson<T>(url: string): Promise<T> {
 }
 
 export default function ManualScrapePage() {
-  const batchCodes = ["B002", "B003", "B004", "B005", "B008", "B009"];
+  const batchCodes = ["B002", "B003", "B004", "B005", "B007", "B008", "B009"];
   const [batchCode, setBatchCode] = useState(batchCodes[0]);
 
   const progressQuery = useQuery({
