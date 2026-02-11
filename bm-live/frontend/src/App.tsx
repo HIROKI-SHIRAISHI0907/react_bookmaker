@@ -12,7 +12,8 @@ import S3FileCountPage from "./pages/admin/s3/S3FileCountPage";
 import CountryLeagueForceAdminPage from "./pages/admin/force/CountryLeagueForceAdminPage";
 import NoticeAdminPage from "./pages/admin/notice/NoticeAdminPage";
 import DataFetchAdminPage from "./pages/admin/fetch/DataFetchAdminPage";
-import ManualDataRegisterPage from "./pages/admin/register/data/ManualDataConsolePage";
+import ManualDataTargetPage from "./pages/admin/target/ManualDataTargetPage";
+import ManualDataConsolePage from "./pages/admin/register/data/ManualDataConsolePage";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -42,7 +43,8 @@ export default function App() {
             <Route path="s3/fileCount" element={<S3FileCountPage />} />
             <Route path="notices" element={<NoticeAdminPage />} />
             <Route path="data/fetch" element={<DataFetchAdminPage />} />
-            <Route path="manual/data/register" element={<ManualDataRegisterPage />} />
+            <Route path="manual/data/target" element={<ManualDataTargetPage />} />
+            <Route path="manual/data/register" element={<ManualDataConsolePage />} />
           </Route>
 
           <Route path="/top" element={<Dashboard />} />

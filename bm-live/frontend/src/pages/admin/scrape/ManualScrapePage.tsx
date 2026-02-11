@@ -221,7 +221,7 @@ export default function ManualScrapePage() {
     mutationFn: async () => {
       // もし backend が CSVキー等を要求するなら、ここで body に渡す
       // await postJson(`/v1/api/all-league-scrape-master`, { batchCode, s3Key: csvItems[0].key });
-      await postNoBody(`/v1/api/all-league-scrape-master`);
+      await postJson(`/v1/api/admin/exec/task/all-league-scrape-master`, {});
     },
     onSuccess: async () => {
       setIsMasterModalOpen(false);
