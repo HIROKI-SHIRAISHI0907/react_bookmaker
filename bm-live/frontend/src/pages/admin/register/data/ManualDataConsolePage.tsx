@@ -409,7 +409,7 @@ export default function ManualDataConsolePage() {
    */
   const api = {
     DataEntity: {
-      create: "/api/admin/manual/data-entity",
+      create: "/v1/api/admin/manual/data-entity",
       // キー例：gameId/matchId/seq
       get: (gameId: string, matchId: string, seq: string) =>
         `/v1/api/admin/manual/data-entity?gameId=${encodeURIComponent(gameId)}&matchId=${encodeURIComponent(matchId)}&seq=${encodeURIComponent(seq)}`,
