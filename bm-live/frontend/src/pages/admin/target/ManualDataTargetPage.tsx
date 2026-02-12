@@ -20,7 +20,21 @@ export type AllLeagueResponse = {
   message?: string;
 };
 
+// ★ 追加：タスク実行APIのレスポンス（あなたのStatResponseResource想定）
+export type ExecTaskResponse = {
+  returnCd: string;
+  taskArn?: string;
+  message?: string;
+};
+
+// ★ 追加：タスク実行APIのリクエスト（StatRequestResource想定）
+// 今回は中身を使っていないので空で送る。将来フィールドが増えたらここに足す。
+export type ExecTaskRequest = Record<string, never>;
+
 const BASE = "/v1/api/all-league-master";
+
+// ★ 追加：B010起動API
+const EXEC_TASK_API = "/v1/api/admin/exec/task/all-league-scrape-master-json";
 
 export async function fetchAllLeagueMaster(): Promise<AllLeagueDTO[]> {
   const res = await fetch(BASE, { method: "GET" });
@@ -37,7 +51,26 @@ export async function patchAllLeagueMaster(req: AllLeagueRequest): Promise<AllLe
   return (await res.json()) as AllLeagueResponse;
 }
 
+// ★ 追加：B010タスク実行
+export async function execAllLeagueJsonTask(req: ExecTaskRequest = {}): Promise<ExecTaskResponse> {
+  const res = await fetch(EXEC_TASK_API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(req), // 空 {} を送る
+  });
+
+  // 4xx/5xx のときも body が返る可能性はあるが、まずは ok で弾く
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`POST failed: ${res.status} ${text}`);
+  }
+
+  return (await res.json()) as ExecTaskResponse;
+}
+
 type SaveState = { type: "idle" } | { type: "saving"; message?: string } | { type: "success"; message?: string } | { type: "error"; message?: string };
+
+type RunState = { type: "idle" } | { type: "running"; message?: string } | { type: "success"; message?: string; taskArn?: string } | { type: "error"; message?: string };
 
 type RowKey = string;
 const keyOf = (r: Pick<AllLeagueDTO, "country" | "league">): RowKey => `${r.country}__${r.league}`;
@@ -57,6 +90,9 @@ export default function ManualDataTargetPage() {
 
   const [q, setQ] = useState("");
   const [saveState, setSaveState] = useState<SaveState>({ type: "idle" });
+
+  // ★ 追加：タスク実行状態
+  const [runState, setRunState] = useState<RunState>({ type: "idle" });
 
   // 初期値（変更検知用）
   const [initialMap, setInitialMap] = useState<Record<RowKey, { logicFlg: string; dispFlg: string }>>({});
@@ -161,6 +197,33 @@ export default function ManualDataTargetPage() {
     setTimeout(() => setSaveState({ type: "idle" }), 1200);
   };
 
+  // ★ 追加：B010 タスク実行ボタンのハンドラ
+  const runUploadTask = async () => {
+    try {
+      setRunState({ type: "running", message: "タスク起動中..." });
+
+      // いまは空でOK（将来、envに渡す値が増えたらここで組み立て）
+      const res = await execAllLeagueJsonTask({});
+
+      // コントローラーは returnCd="ACCEPTED" を返す設計
+      if (res.returnCd && res.returnCd !== "ACCEPTED") {
+        setRunState({ type: "error", message: res.message ?? `タスク起動失敗: ${res.returnCd}` });
+        return;
+      }
+
+      setRunState({
+        type: "success",
+        message: "タスクを起動しました（ECSで実行中）",
+        taskArn: res.taskArn,
+      });
+
+      // しばらく表示してから薄めたいなら
+      // setTimeout(() => setRunState({ type: "idle" }), 5000);
+    } catch (e: any) {
+      setRunState({ type: "error", message: e?.message ?? "タスク起動に失敗しました" });
+    }
+  };
+
   if (loading) return <div>読み込み中...</div>;
   if (err) return <div style={{ color: "crimson" }}>Error: {err}</div>;
 
@@ -201,10 +264,30 @@ export default function ManualDataTargetPage() {
             まとめて保存
           </button>
 
-          <div style={{ fontSize: 12, marginLeft: 8 }}>
+          {/* ★ 追加：対象データアップロード実行ボタン */}
+          <button onClick={runUploadTask} style={btnDanger} disabled={runState.type === "running"} title="B010タスクを起動してJSON生成→S3アップロードを実行します">
+            対象データアップロード実行
+          </button>
+
+          <div style={{ fontSize: 12, marginLeft: 8, minWidth: 260 }}>
             {saveState.type === "saving" && <span>保存中… {saveState.message}</span>}
             {saveState.type === "success" && <span style={{ color: "green" }}>{saveState.message}</span>}
             {saveState.type === "error" && <span style={{ color: "crimson" }}>{saveState.message}</span>}
+
+            {/* ★ 追加：タスク起動結果 */}
+            {runState.type === "running" && <div>タスク起動中…</div>}
+            {runState.type === "success" && (
+              <div style={{ color: "green" }}>
+                {runState.message}
+                {runState.taskArn ? (
+                  <>
+                    <br />
+                    <span style={{ color: "#555" }}>taskArn: {runState.taskArn}</span>
+                  </>
+                ) : null}
+              </div>
+            )}
+            {runState.type === "error" && <div style={{ color: "crimson" }}>{runState.message}</div>}
           </div>
         </div>
       </div>
@@ -294,5 +377,15 @@ const btnGhost: React.CSSProperties = {
   borderRadius: 10,
   border: "1px solid #e5e7eb",
   background: "white",
+  cursor: "pointer",
+};
+
+// ★ 追加：目立たせるボタン（必要なら色はプロジェクトのデザインに合わせて調整）
+const btnDanger: React.CSSProperties = {
+  padding: "9px 12px",
+  borderRadius: 10,
+  border: "1px solid #fca5a5",
+  background: "#fee2e2",
+  color: "#991b1b",
   cursor: "pointer",
 };

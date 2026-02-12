@@ -14,6 +14,7 @@ import NoticeAdminPage from "./pages/admin/notice/NoticeAdminPage";
 import DataFetchAdminPage from "./pages/admin/fetch/DataFetchAdminPage";
 import ManualDataTargetPage from "./pages/admin/target/ManualDataTargetPage";
 import ManualDataConsolePage from "./pages/admin/register/data/ManualDataConsolePage";
+import ManualDataDefectPage from "./pages/admin/defect/ManualDataDefectPage";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -45,6 +46,7 @@ export default function App() {
             <Route path="data/fetch" element={<DataFetchAdminPage />} />
             <Route path="manual/data/target" element={<ManualDataTargetPage />} />
             <Route path="manual/data/register" element={<ManualDataConsolePage />} />
+            <Route path="manual/data/defect" element={<ManualDataDefectPage />} />
           </Route>
 
           <Route path="/top" element={<Dashboard />} />
