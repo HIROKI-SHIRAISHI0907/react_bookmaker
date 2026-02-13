@@ -15,6 +15,7 @@ import DataFetchAdminPage from "./pages/admin/fetch/DataFetchAdminPage";
 import ManualDataTargetPage from "./pages/admin/target/ManualDataTargetPage";
 import ManualDataConsolePage from "./pages/admin/register/data/ManualDataConsolePage";
 import ManualDataDefectPage from "./pages/admin/defect/ManualDataDefectPage";
+import TeamColorPage from "./pages/admin/color/TeamColorPage";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -47,6 +48,7 @@ export default function App() {
             <Route path="manual/data/target" element={<ManualDataTargetPage />} />
             <Route path="manual/data/register" element={<ManualDataConsolePage />} />
             <Route path="manual/data/defect" element={<ManualDataDefectPage />} />
+            <Route path="manual/teamColor" element={<TeamColorPage />} />
           </Route>
 
           <Route path="/top" element={<Dashboard />} />

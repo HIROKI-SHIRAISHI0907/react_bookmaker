@@ -41,6 +41,9 @@ export default function AdminLayout() {
           <NavLink to="manual/data/defect" style={linkStyle}>
             スクレイピングデータ欠陥値設定
           </NavLink>
+          <NavLink to="manual/teamColor" style={linkStyle}>
+            チームカラー設定
+          </NavLink>
         </div>
       </aside>
 
