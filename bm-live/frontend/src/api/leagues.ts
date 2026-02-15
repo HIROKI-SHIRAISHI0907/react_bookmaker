@@ -1,7 +1,14 @@
 // src/api/leagues.ts(Dashboard.tsxのハンバーガーメニューに表示する記述とリンク)(SpringBoot bookmakers-web bm_w011)
+type LeagueItem = {
+  name: string;
+  teamCount: number;
+  path: string;
+  routingPath: string;
+};
+
 export type LeagueGrouped = {
   country: string;
-  leagues: { name: string; team_count: number; path: string }[];
+  leagues: LeagueItem[];
 };
 
 export async function fetchLeaguesGrouped(): Promise<LeagueGrouped[]> {
@@ -18,6 +25,7 @@ export type TeamItem = {
   link: string; // /team/<english>/<hash>
   path: string; // /<country>/<league> (UI用)
   apiPath: string; // /api/leagues/<country>/<league>/<english>
+  routingPath: string; // /team/xxxx/XXXXXX
 };
 
 export type TeamsInLeague = {
@@ -27,6 +35,7 @@ export type TeamsInLeague = {
 };
 
 export async function fetchTeamsInLeague(country: string, league: string): Promise<TeamsInLeague> {
+  //country:england, league:premier-league
   const url = `/v1/api/leagues/${encodeURIComponent(country)}/${encodeURIComponent(league)}`;
   const res = await fetch(url, { credentials: "include" });
   if (!res.ok) {

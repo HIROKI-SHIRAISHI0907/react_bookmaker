@@ -1,9 +1,11 @@
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import Login from "./pages/auth/Login";
+import LoginPage from "./pages/auth/LoginPage";
+import ForgetPasswordPage from "./pages/auth/ForgetPasswordPage";
+import SignupPage from "./pages/auth/SignUpPage";
 import Dashboard from "./pages/personal/top/Dashboard";
-import RequireAuth from "./pages/auth/RequireAuth";
-import LeagueMenu from "./pages/humberger/LeagueMenu";
+import LeagueMenuPage from "./pages/humberger/LeagueMenuPage";
 import FavoritePage from "./pages/personal/favorite/FavoritePage";
+import TeamPage from "./pages/personal/teams/TeamPage";
 
 import AdminLayout from "./pages/admin/AdminLayout";
 import PersonalLayout from "./pages/personal/PersonalLayout";
@@ -36,8 +38,10 @@ export default function App() {
             <Route path="favorite" element={<FavoritePage />} />
           </Route>
 
-          <Route path="/login" element={<Login />} />
-          <Route path="/:country/:league" element={<LeagueMenu />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgetPasswordPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/soccer/:countrySlug/:leagueSlug" element={<LeagueMenuPage />} />
 
           <Route path="admin" element={<AdminLayout />}>
             <Route path="force/update" element={<CountryLeagueForceAdminPage />} />
@@ -52,7 +56,6 @@ export default function App() {
           </Route>
 
           <Route path="/top" element={<Dashboard />} />
-          <Route element={<RequireAuth />}></Route>
 
           <Route path="*" element={<div style={{ padding: 40 }}>NO ROUTE MATCHED</div>} />
         </Routes>
