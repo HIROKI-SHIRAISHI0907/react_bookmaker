@@ -14,16 +14,13 @@ export type GameMatch = {
   status: "LIVE" | "FINISHED"; // latest_times が「終了済」を含むかで判定
 };
 
-type Opts = { country: string; league: string };
-
 /**
- * 開催中/試合終了の試合を取得（/api/games/:country/:league/:team）
+ * 開催中/試合終了の試合を取得（/api/games/:teamSlug/:teamHash）
  * - backend 側で、public.data の最大 seq(=最新) に紐づく times を持ってきて、
  *   「終了済」を含むなら FINISHED、含まなければ LIVE に振り分けます
  */
-export async function fetchTeamGames(teamSlug: string, opts: Opts): Promise<{ live: GameMatch[]; finished: GameMatch[] }> {
-  const { country, league } = opts;
-  const url = `/v1/api/games/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(teamSlug)}`;
+export async function fetchTeamGames(teamSlug: string, teamHash: string): Promise<{ live: GameMatch[]; finished: GameMatch[] }> {
+  const url = `/v1/api/games/${encodeURIComponent(teamSlug)}/${encodeURIComponent(teamHash)}`;
   const res = await fetch(url, { credentials: "include" });
   if (!res.ok) {
     const text = await res.text().catch(() => "");

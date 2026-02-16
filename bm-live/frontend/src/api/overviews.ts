@@ -23,8 +23,8 @@ export type MonthlyOverviewResponse = {
   items: MonthlyOverview[];
 };
 
-export async function fetchMonthlyOverview(country: string, league: string, teamSlug: string): Promise<MonthlyOverviewResponse> {
-  const url = new URL(`/v1/api/overview/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(teamSlug)}`, window.location.origin);
+export async function fetchMonthlyOverview(teamSlug: string, teamHash: string): Promise<MonthlyOverviewResponse> {
+  const url = new URL(`/v1/api/overview/${encodeURIComponent(teamSlug)}/${encodeURIComponent(teamHash)}`, window.location.origin);
   const res = await fetch(url.toString(), { headers: { Accept: "application/json" } });
   if (!res.ok) throw new Error("Failed to fetch monthly overview");
   return (await res.json()) as MonthlyOverviewResponse;

@@ -7,26 +7,31 @@ export type Player = {
   position: string; // 例: ゴールキーパー/ディフェンダー/ミッドフィルダー/フォワード
   birth: string | null; // YYYY-MM-DD
   age: number | null;
-  market_value: string | null;
+  marketValue: string | null;
   height: string | null; // 例: "180cm"
   weight: string | null; // 例: "75kg"
-  loan_belong: string | null;
-  belong_list: string | null;
+  loanBelong: string | null;
+  belongList: string | null;
   injury: string | null;
-  contract_until: string | null; // YYYY-MM-DD
-  latest_info_date: string | null; // YYYY-MM-DD
+  contractUntil: string | null; // YYYY-MM-DD
+  latestInfoDate: string | null; // YYYY-MM-DD
 };
 
-type Opts = { country: string; league: string };
+export async function fetchTeamPlayers(teamSlug: string, teamHash: string): Promise<Player[]> {
+  console.log("[players] fetchTeamPlayers called", { teamSlug, teamHash });
+  const url = `/v1/api/players/${encodeURIComponent(teamSlug)}/${encodeURIComponent(teamHash)}`;
+  console.log("[players] fetching:", url);
 
-export async function fetchTeamPlayers(teamSlug: string, opts: Opts): Promise<Player[]> {
-  const { country, league } = opts;
-  const url = `/v1/api/players/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(teamSlug)}`;
-  const res = await fetch(url, { credentials: "include" });
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`players fetch failed: ${res.status} ${text}`);
-  }
-  const json = await res.json();
+  const res = await fetch(url, { credentials: "include", headers: { Accept: "application/json" } });
+  console.log("[players] status:", res.status, "content-type:", res.headers.get("content-type"));
+
+  const text = await res.text(); // いったん text で取る（JSONじゃない時に即わかる）
+  console.log("[players] body head:", text.slice(0, 200));
+
+  if (!res.ok) throw new Error(`players fetch failed: ${res.status} ${text}`);
+
+  const json = JSON.parse(text);
+  console.log("[players] count:", (json.players ?? []).length);
+
   return (json.players ?? []) as Player[];
 }

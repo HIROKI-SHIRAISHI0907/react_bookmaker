@@ -16,8 +16,8 @@ export type RankHistoryResponse = {
 /**
  * チームのラウンドごとの順位変動データを取得する
  */
-export async function fetchRankHistory(country: string, league: string): Promise<RankHistoryResponse> {
-  const url = `/v1/api/rank-history/${encodeURIComponent(country)}/${encodeURIComponent(league)}`;
+export async function fetchRankHistory(teamSlug: string, teamHash: string): Promise<RankHistoryResponse> {
+  const url = `/v1/api/rank-history/${encodeURIComponent(teamSlug)}/${encodeURIComponent(teamHash)}}`;
 
   const res = await fetch(url, { credentials: "include" });
   if (!res.ok) {

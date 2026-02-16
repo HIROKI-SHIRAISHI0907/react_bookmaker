@@ -60,85 +60,74 @@ function formatTimesMinute(s?: string | null) {
 }
 
 export default function TeamDetail() {
-  const params = useParams<{ country?: string; league?: string; team?: string; teams?: string }>();
+  const params = useParams<{ teamSlug?: string; teamHash?: string }>();
+
+  const teamSlug = params.teamSlug ?? "";
+  const teamHash = params.teamHash ?? "";
   const navigate = useNavigate();
-
-  const countryParam = params.country ?? "";
-  const leagueParam = params.league ?? "";
-  const teamSlug = params.team ?? params.teams ?? "";
-
-  const safeDecode = (s: string) => {
-    try {
-      return decodeURIComponent(s);
-    } catch {
-      return s;
-    }
-  };
-  const countryLabel = safeDecode(countryParam);
-  const leagueLabel = safeDecode(leagueParam);
 
   // 相手チーム選択（相関/統計用）
   const [opponent, setOpponent] = useState<string>("");
 
   // ========== Queries ==========
   const detailQ = useQuery<TeamDetailType>({
-    queryKey: ["team-detail", countryLabel, leagueLabel, teamSlug],
-    queryFn: () => fetchTeamDetail(countryLabel, leagueLabel, teamSlug),
-    enabled: !!countryLabel && !!leagueLabel && !!teamSlug,
+    queryKey: ["team-detail", teamSlug, teamHash],
+    queryFn: () => fetchTeamDetail(teamSlug, teamHash),
+    enabled: !!teamSlug && !!teamHash,
     staleTime: 10_000,
   });
 
   const corrQ = useQuery<TeamCorrelationsPayload>({
-    queryKey: ["team-correlations", countryLabel, leagueLabel, teamSlug, opponent],
-    queryFn: () => fetchTeamCorrelations(countryLabel, leagueLabel, teamSlug, opponent || undefined),
-    enabled: !!countryLabel && !!leagueLabel && !!teamSlug,
+    queryKey: ["team-correlations", teamSlug, teamHash, opponent],
+    queryFn: () => fetchTeamCorrelations(teamSlug, teamHash, opponent || undefined),
+    enabled: !!teamSlug && !!teamHash,
     staleTime: 10_000,
   });
 
   const statsQ = useQuery<TeamStatsResponse>({
-    queryKey: ["team-stats", countryLabel, leagueLabel, teamSlug],
-    queryFn: () => fetchTeamFeatureStats(countryLabel, leagueLabel, teamSlug),
-    enabled: !!countryLabel && !!leagueLabel && !!teamSlug,
+    queryKey: ["team-stats", teamSlug, teamHash],
+    queryFn: () => fetchTeamFeatureStats(teamSlug, teamHash),
+    enabled: !!teamSlug && !!teamHash,
     staleTime: 10_000,
   });
 
   // 試合予定（future.ts が返す SCHEDULED）
   const futureQ = useQuery<FutureMatch[]>({
-    queryKey: ["future-matches", countryLabel, leagueLabel, teamSlug],
-    queryFn: () => fetchFutureMatches(teamSlug, { country: countryLabel, league: leagueLabel }),
-    enabled: !!countryLabel && !!leagueLabel && !!teamSlug,
+    queryKey: ["future-matches", teamSlug, teamHash],
+    queryFn: () => fetchFutureMatches(teamSlug, teamHash),
+    enabled: !!teamSlug && !!teamHash,
     staleTime: 30_000,
   });
 
   // 当日ヒット（LIVE/FINISHED のみ）
   const gameQ = useQuery<{ live: GameMatch[]; finished: GameMatch[] }>({
-    queryKey: ["game-matches", countryLabel, leagueLabel, teamSlug],
-    queryFn: () => fetchTeamGames(teamSlug, { country: countryLabel, league: leagueLabel }),
-    enabled: !!countryLabel && !!leagueLabel && !!teamSlug,
+    queryKey: ["game-matches", teamSlug, teamHash],
+    queryFn: () => fetchTeamGames(teamSlug, teamHash),
+    enabled: !!teamSlug && !!teamHash,
     staleTime: 30_000,
   });
 
   // 選手
   const playersQ = useQuery<Player[]>({
-    queryKey: ["team-players", countryLabel, leagueLabel, teamSlug],
-    queryFn: () => fetchTeamPlayers(teamSlug, { country: countryLabel, league: leagueLabel }),
-    enabled: !!countryLabel && !!leagueLabel && !!teamSlug,
+    queryKey: ["team-players", teamSlug, teamHash],
+    queryFn: () => fetchTeamPlayers(teamSlug, teamHash),
+    enabled: !!teamSlug && !!teamHash,
     staleTime: 60_000,
   });
 
   // 月次サマリ（合算のみ）
   const monthlyQ = useQuery<MonthlyOverviewResponse>({
-    queryKey: ["team-monthly", countryLabel, leagueLabel, teamSlug],
-    queryFn: () => fetchMonthlyOverview(countryLabel, leagueLabel, teamSlug),
-    enabled: !!countryLabel && !!leagueLabel && !!teamSlug,
+    queryKey: ["team-monthly", teamSlug, teamHash],
+    queryFn: () => fetchMonthlyOverview(teamSlug, teamHash),
+    enabled: !!teamSlug && !!teamHash,
     staleTime: 60_000,
   });
 
   // 順位変動
   const rankHistoryQ = useQuery<RankHistoryResponse>({
-    queryKey: ["rank-history", countryLabel, leagueLabel],
-    queryFn: () => fetchRankHistory(countryLabel, leagueLabel),
-    enabled: !!countryLabel && !!leagueLabel,
+    queryKey: ["rank-history", teamSlug, teamHash],
+    queryFn: () => fetchRankHistory(teamSlug, teamHash),
+    enabled: !!teamSlug && !!teamHash,
     staleTime: 60_000,
   });
 
@@ -246,11 +235,11 @@ export default function TeamDetail() {
   const todaysMatches: GameMatch[] = hasLiveToday ? liveSorted : hasFinishedToday ? finishedSorted : [];
 
   // 戻るリンク/ヘッダ
-  const toBack = `/${encodeURIComponent(countryLabel)}/${encodeURIComponent(leagueLabel)}`;
-  const headerSubtitle = detailQ.data ? `${countryLabel} / ${leagueLabel} / ${detailQ.data.name}` : `${countryLabel} / ${leagueLabel}`;
+  const toBack = ``;
+  const headerSubtitle = detailQ.data ? `${detailQ.data.name}` : ``;
 
   // 過去対戦履歴ページへの導線（params はエンコード済みをそのまま使う）
-  const historyPath = `/${countryParam}/${leagueParam}/${teamSlug}/history`;
+  const historyPath = `/${teamSlug}/history`;
 
   return (
     <div className="min-h-screen bg-background">
@@ -261,7 +250,7 @@ export default function TeamDetail() {
         <div className="mb-2 flex items-center gap-3">
           <Link to={toBack} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:underline">
             <ArrowLeft className="w-4 h-4" />
-            {countryLabel} / {leagueLabel} に戻る
+            に戻る
           </Link>
         </div>
 
@@ -364,7 +353,7 @@ export default function TeamDetail() {
                         {todaysMatches.map((it) => {
                           const clickable = (it as any).latest_seq != null;
                           const latestSeq = (it as any).latest_seq as number | null;
-                          const detailPath = clickable ? `/${encodeURIComponent(countryLabel)}/${encodeURIComponent(leagueLabel)}/${encodeURIComponent(teamSlug)}/game/${latestSeq}` : "";
+                          const detailPath = clickable ? `/${encodeURIComponent(teamSlug)}/game/${latestSeq}` : "";
 
                           // 勝敗バッジ
                           const ResultBadge = () => {
@@ -471,8 +460,8 @@ export default function TeamDetail() {
                   ) : (
                     <ul className="divide-y">
                       {scheduledSorted.map((it) => {
-                        const detailPath = `/${countryParam}/${leagueParam}/${teamSlug}/scheduled/${it.seq}`;
-                        const ovPath = `/${countryParam}/${leagueParam}/${teamSlug}/overview/${it.seq}` + `?home=${encodeURIComponent(it.homeTeam)}&away=${encodeURIComponent(it.awayTeam)}`;
+                        const detailPath = `/${teamSlug}/scheduled/${it.seq}`;
+                        const ovPath = `/${teamSlug}/overview/${it.seq}` + `?home=${encodeURIComponent(it.homeTeam)}&away=${encodeURIComponent(it.awayTeam)}`;
 
                         return (
                           <li key={it.seq} className="py-2">
@@ -561,12 +550,12 @@ export default function TeamDetail() {
                               {m.age != null && <span>{m.age}歳</span>}
                               {m.height && <span>{m.height}</span>}
                               {m.weight && <span>{m.weight}</span>}
-                              {m.market_value && <span>市場価値: {m.market_value}</span>}
+                              {m.marketValue && <span>市場価値: {m.marketValue}</span>}
                             </div>
                             <div className="mt-1 text-[11px] text-muted-foreground space-x-2">
-                              {m.loan_belong && <span>レンタル元: {m.loan_belong}</span>}
+                              {m.loanBelong && <span>レンタル元: {m.loanBelong}</span>}
                               {m.injury && <span>負傷: {m.injury}</span>}
-                              {m.contract_until && <span>契約: {m.contract_until} まで</span>}
+                              {m.contractUntil && <span>契約: {m.contractUntil} まで</span>}
                             </div>
                           </div>
                         </li>

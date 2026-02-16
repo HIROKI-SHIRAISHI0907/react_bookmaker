@@ -5,7 +5,7 @@ import SignupPage from "./pages/auth/SignUpPage";
 import Dashboard from "./pages/personal/top/Dashboard";
 import LeagueMenuPage from "./pages/humberger/LeagueMenuPage";
 import FavoritePage from "./pages/personal/favorite/FavoritePage";
-import TeamPage from "./pages/personal/teams/TeamPage";
+import TeamDetailPage from "./pages/personal/teams/TeamDetailPage";
 
 import AdminLayout from "./pages/admin/AdminLayout";
 import PersonalLayout from "./pages/personal/PersonalLayout";
@@ -42,6 +42,7 @@ export default function App() {
           <Route path="/forgot-password" element={<ForgetPasswordPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/soccer/:countrySlug/:leagueSlug" element={<LeagueMenuPage />} />
+          <Route path="/team/:teamSlug/:teamHash" element={<TeamDetailPage />} />
 
           <Route path="admin" element={<AdminLayout />}>
             <Route path="force/update" element={<CountryLeagueForceAdminPage />} />

@@ -15,8 +15,8 @@ export type TeamCorrelationsPayload = {
   correlations: CorrelationsBySideScore;
 };
 
-export async function fetchTeamCorrelations(country: string, league: string, team: string, opponent?: string): Promise<TeamCorrelationsPayload> {
-  const base = `/v1/api/leagues/correlations/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(team)}`;
+export async function fetchTeamCorrelations(teamSlug: string, teamHash: string, opponent?: string): Promise<TeamCorrelationsPayload> {
+  const base = `/v1/api/leagues/correlations/${encodeURIComponent(teamSlug)}/${encodeURIComponent(teamHash)}`;
   const url = opponent ? `${base}?opponent=${encodeURIComponent(opponent)}` : base;
 
   const res = await fetch(url, { credentials: "include" });

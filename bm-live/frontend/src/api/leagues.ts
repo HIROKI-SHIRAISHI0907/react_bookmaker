@@ -57,9 +57,13 @@ export type TeamDetail = {
   paths: { leaguePage: string; apiSelf: string };
 };
 
-export async function fetchTeamDetail(country: string, league: string, teamEnglish: string): Promise<TeamDetail> {
-  const url = `/v1/api/leagues/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(teamEnglish)}`;
-  const res = await fetch(url, { credentials: "include" });
-  if (!res.ok) throw new Error("Failed to fetch team detail");
+export async function fetchTeamDetail(teamEnglish: string, teamHash: string): Promise<TeamDetail> {
+  const url = `/v1/api/leagues/${encodeURIComponent(teamEnglish)}/${encodeURIComponent(teamHash)}/teamDetail`;
+
+  const res = await fetch(url, { credentials: "include", headers: { Accept: "application/json" } });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Failed to fetch team detail: ${res.status} ${text}`);
+  }
   return res.json();
 }
