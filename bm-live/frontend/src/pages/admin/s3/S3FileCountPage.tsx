@@ -55,7 +55,7 @@ function defaultDate(): string {
 }
 
 export default function S3FileCountPage() {
-  const batchCodes = ["B002", "B003", "B004", "B005", "B008", "B009"];
+  const batchCodes = ["B002", "B003", "B004", "B005", "B006", "B008", "B009"];
 
   const [batchCode, setBatchCode] = useState(batchCodes[0]);
   const [scope, setScope] = useState<S3PrefixScope>("DEFAULT");

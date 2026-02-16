@@ -52,6 +52,12 @@ export default function DataFetchAdminPage() {
         endpoint: "/v1/api/admin/exec/task/future",
       },
       {
+        key: "B006",
+        title: "統計CSVデータ生成（B006）",
+        description: "POST /v1/api/admin/export/statCsv → B006 を起動",
+        endpoint: "/v1/api/admin/export/statCsv",
+      },
+      {
         key: "B008",
         title: "開催中データ取得（B008）",
         description: "POST /v1/api/admin/exec/task/bm-data → B008 を起動",
