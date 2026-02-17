@@ -15,7 +15,8 @@ type StatResponseResource = {
 };
 
 type TaskDef = {
-  key: string;
+  id: string; // UI用に一意（React key / 状態管理のキー）
+  code: string; // 業務コード（B006など）
   title: string;
   description: string;
   endpoint: string; // Springの@PostMappingのパス
@@ -28,43 +29,50 @@ export default function DataFetchAdminPage() {
   const tasks: TaskDef[] = useMemo(
     () => [
       {
-        key: "B002",
+        id: "B002",
+        code: "B002",
         title: "選手情報取得（B002）",
         description: "POST /v1/api/admin/exec/task/country-league-team-member → B002 を起動",
         endpoint: "/v1/api/admin/exec/task/country-league-team-member",
       },
       {
-        key: "B003",
+        id: "B003",
+        code: "B003",
         title: "国リーグ別シーズン開始情報取得（B003）",
         description: "POST /v1/api/admin/exec/task/country-league-season → B003 を起動",
         endpoint: "/v1/api/admin/exec/task/country-league-season",
       },
       {
-        key: "B004",
+        id: "B004",
+        code: "B004",
         title: "チーム名情報取得（B004）",
         description: "POST /v1/api/admin/exec/task/country-league → B004 を起動",
         endpoint: "/v1/api/admin/exec/task/country-league",
       },
       {
-        key: "B005",
+        id: "B005",
+        code: "B005",
         title: "試合予定データ取得（B005）",
         description: "POST /v1/api/admin/exec/task/future → B005 を起動",
         endpoint: "/v1/api/admin/exec/task/future",
       },
       {
-        key: "B006",
+        id: "B006_export",
+        code: "B006",
         title: "統計CSVデータ生成（B006）",
         description: "POST /v1/api/admin/export/statCsv → B006 を起動",
         endpoint: "/v1/api/admin/export/statCsv",
       },
       {
-        key: "B006",
+        id: "B006_import",
+        code: "B006",
         title: "統計CSVデータ取り入れ実行（B006）",
         description: "POST /v1/api/stat → applicationのB006 を起動",
         endpoint: "/v1/api/stat",
       },
       {
-        key: "B008",
+        id: "B008",
+        code: "B008",
         title: "開催中データ取得（B008）",
         description: "POST /v1/api/admin/exec/task/bm-data → B008 を起動",
         endpoint: "/v1/api/admin/exec/task/bm-data",
@@ -77,8 +85,8 @@ export default function DataFetchAdminPage() {
   const [league, setLeague] = useState("");
   const [season, setSeason] = useState("");
 
-  // 実行結果をタスクごとに保持
-  const [loadingKey, setLoadingKey] = useState<string | null>(null);
+  // 実行結果をタスクごとに保持（キーは task.id ）
+  const [loadingId, setLoadingId] = useState<string | null>(null);
   const [results, setResults] = useState<Record<string, StatResponseResource | null>>({});
   const [errors, setErrors] = useState<Record<string, string | null>>({});
 
@@ -92,8 +100,8 @@ export default function DataFetchAdminPage() {
   };
 
   const runTask = async (t: TaskDef) => {
-    setLoadingKey(t.key);
-    setErrors((p) => ({ ...p, [t.key]: null }));
+    setLoadingId(t.id);
+    setErrors((p) => ({ ...p, [t.id]: null }));
 
     try {
       const res = await fetch(`${API_BASE}${t.endpoint}`, {
@@ -111,12 +119,12 @@ export default function DataFetchAdminPage() {
       }
 
       const json = (await res.json()) as StatResponseResource;
-      setResults((p) => ({ ...p, [t.key]: json }));
+      setResults((p) => ({ ...p, [t.id]: json }));
     } catch (e: any) {
-      setErrors((p) => ({ ...p, [t.key]: e?.message ?? "unknown error" }));
-      setResults((p) => ({ ...p, [t.key]: null }));
+      setErrors((p) => ({ ...p, [t.id]: e?.message ?? "unknown error" }));
+      setResults((p) => ({ ...p, [t.id]: null }));
     } finally {
-      setLoadingKey(null);
+      setLoadingId(null);
     }
   };
 
@@ -135,31 +143,35 @@ export default function DataFetchAdminPage() {
 
       <div style={{ ...cardStyle, display: "grid", gap: 10 }}>
         <div style={{ fontWeight: 700 }}>リクエストパラメータ（任意）</div>
+
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
           <div>
             <div style={labelStyle}>country</div>
             <input value={country} onChange={(e) => setCountry(e.target.value)} placeholder="例: JP" style={{ width: "100%", padding: 10, borderRadius: 10, border: "1px solid #ddd" }} />
           </div>
+
           <div>
             <div style={labelStyle}>league</div>
             <input value={league} onChange={(e) => setLeague(e.target.value)} placeholder="例: J1" style={{ width: "100%", padding: 10, borderRadius: 10, border: "1px solid #ddd" }} />
           </div>
+
           <div>
             <div style={labelStyle}>season</div>
             <input value={season} onChange={(e) => setSeason(e.target.value)} placeholder="例: 2025" style={{ width: "100%", padding: 10, borderRadius: 10, border: "1px solid #ddd" }} />
           </div>
         </div>
+
         <div style={{ fontSize: 12, color: "#666" }}>※ Spring側で env に詰める想定なら、ここで入力 → request body に入れて送る → runner 側で env 反映、の流れにできます。</div>
       </div>
 
       <div style={{ display: "grid", gap: 12 }}>
         {tasks.map((t) => {
-          const isLoading = loadingKey === t.key;
-          const result = results[t.key];
-          const err = errors[t.key];
+          const isLoading = loadingId === t.id;
+          const result = results[t.id];
+          const err = errors[t.id];
 
           return (
-            <div key={t.key} style={{ ...cardStyle, display: "grid", gap: 10 }}>
+            <div key={t.id} style={{ ...cardStyle, display: "grid", gap: 10 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
                 <div>
                   <div style={{ fontWeight: 800 }}>{t.title}</div>
@@ -199,6 +211,7 @@ export default function DataFetchAdminPage() {
                     <div>
                       returnCd: <code>{result.returnCd ?? "-"}</code>
                     </div>
+
                     <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                       taskArn: <code style={{ wordBreak: "break-all" }}>{result.taskArn ?? "-"}</code>
                       {result.taskArn && (
