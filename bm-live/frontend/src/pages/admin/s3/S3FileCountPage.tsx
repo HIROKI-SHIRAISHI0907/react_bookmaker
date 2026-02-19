@@ -34,11 +34,11 @@ type S3FileListResponse = {
   bucket: string;
   prefix: string;
   recursive: boolean;
-  returnedCount: number; // JavaはlongだがJS側はnumber
+  returnedCount: number;
   message: string;
   items: Array<{
     key: string;
-    size: number; // Javaはlong
+    size: number;
     lastModifiedIso: string;
   }>;
 };
@@ -54,6 +54,75 @@ function defaultDate(): string {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+/** ===== small UI ===== */
+type Tone = "gray" | "blue" | "emerald" | "amber" | "rose";
+
+function Badge({ children, tone = "gray" }: { children: React.ReactNode; tone?: Tone }) {
+  const cls: Record<Tone, string> = {
+    gray: "bg-gray-100 text-gray-700 ring-gray-200",
+    blue: "bg-blue-100 text-blue-800 ring-blue-200",
+    emerald: "bg-emerald-100 text-emerald-800 ring-emerald-200",
+    amber: "bg-amber-100 text-amber-900 ring-amber-200",
+    rose: "bg-rose-100 text-rose-800 ring-rose-200",
+  };
+  return <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-extrabold ring-1 ring-inset ${cls[tone]}`}>{children}</span>;
+}
+
+function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return <div className={`rounded-2xl border bg-white/85 backdrop-blur shadow-sm ${className}`}>{children}</div>;
+}
+
+function Spinner() {
+  return (
+    <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+    </svg>
+  );
+}
+
+function Btn({
+  children,
+  onClick,
+  disabled,
+  loading,
+  variant = "primary",
+}: {
+  children: React.ReactNode;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  disabled?: boolean;
+  loading?: boolean;
+  variant?: "primary" | "secondary";
+}) {
+  const base =
+    "inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-extrabold transition-all shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
+  const v = variant === "primary" ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700 focus:ring-blue-500" : "bg-white text-gray-900 border-gray-200 hover:bg-gray-50 focus:ring-gray-300";
+
+  return (
+    <button onClick={onClick} disabled={disabled || loading} className={`${base} ${v}`}>
+      {loading ? <Spinner /> : null}
+      {children}
+    </button>
+  );
+}
+
+function Alert({ type, title, message }: { type: "info" | "warning" | "error"; title: string; message: string }) {
+  const cls = type === "error" ? "border-rose-200 bg-rose-50 text-rose-900" : type === "warning" ? "border-amber-200 bg-amber-50 text-amber-900" : "border-blue-200 bg-blue-50 text-blue-900";
+
+  const icon = type === "error" ? "❌" : type === "warning" ? "⚠️" : "💡";
+
+  return (
+    <div className={`rounded-2xl border p-4 flex items-start gap-3 ${cls}`}>
+      <div className="mt-0.5">{icon}</div>
+      <div className="min-w-0 flex-1">
+        <div className="text-sm font-extrabold">{title}</div>
+        <pre className="mt-1 text-xs whitespace-pre-wrap leading-relaxed">{message}</pre>
+      </div>
+    </div>
+  );
+}
+
+/** ===== page ===== */
 export default function S3FileCountPage() {
   const batchCodes = ["B002", "B003", "B004", "B005", "B006", "B008", "B009"];
 
@@ -93,7 +162,6 @@ export default function S3FileCountPage() {
       const listReq: S3FileListRequest = {
         batchCode,
         scope,
-        // サーバ側も limit を見ているので、そもそも返却を100に絞るのが一番軽い
         limit: 100,
       };
 
@@ -112,7 +180,6 @@ export default function S3FileCountPage() {
   });
 
   const totalCountText = typeof countQuery.data?.totalCount === "number" ? countQuery.data.totalCount.toLocaleString() : "-";
-
   const countOnDayText = typeof countQuery.data?.countOnDay === "number" ? countQuery.data.countOnDay.toLocaleString() : "-";
 
   const dayLabel = typeof countQuery.data?.dayJst === "string" && countQuery.data.dayJst ? `指定日（${countQuery.data.dayJst} / JST）` : "指定日";
@@ -120,146 +187,237 @@ export default function S3FileCountPage() {
   // ===== list 表示制限（描画は最大100件） =====
   const LIST_RENDER_LIMIT = 100;
   const listItems = listMutation.data?.items ?? [];
-  const getNum = (key: string) => {
+
+  const getTrailingNum = (key: string) => {
     const name = key.split("/").pop() ?? key;
     const m = name.match(/_(\d+)\.csv$/i);
     return m ? Number(m[1]) : Number.MAX_SAFE_INTEGER;
   };
-  const sortedItems = [...listItems].sort((a, b) => getNum(a.key) - getNum(b.key));
+
+  const sortedItems = useMemo(() => [...listItems].sort((a, b) => getTrailingNum(a.key) - getTrailingNum(b.key)), [listItems]);
+
   const isTruncatedForRender = sortedItems.length > LIST_RENDER_LIMIT;
   const renderItems = isTruncatedForRender ? sortedItems.slice(0, LIST_RENDER_LIMIT) : sortedItems;
 
-  function sortByTrailingNumber(a: { key: string }, b: { key: string }) {
-    const getNum = (key: string) => {
-      // 例: "path/to/teamMemberData_100.csv" -> 100
-      const name = key.split("/").pop() ?? key; // フォルダ付き対策
-      const m = name.match(/_(\d+)\.csv$/i);
-      return m ? Number(m[1]) : Number.MAX_SAFE_INTEGER;
-    };
-
-    return getNum(a.key) - getNum(b.key);
-  }
+  const busy = countQuery.isFetching || listMutation.isPending;
 
   return (
-    <div style={{ maxWidth: 980 }}>
-      <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 12 }}>S3 フォルダ件数</h2>
-
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 12 }}>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <div style={{ fontSize: 12, color: "#666" }}>Batch</div>
-          <select value={batchCode} onChange={(e) => setBatchCode(e.target.value)} disabled={countQuery.isFetching || listMutation.isPending}>
-            {batchCodes.map((b) => (
-              <option key={b} value={b}>
-                {b}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <div style={{ fontSize: 12, color: "#666" }}>Prefix</div>
-          <select value={scope} onChange={(e) => setScope(e.target.value as S3PrefixScope)} disabled={countQuery.isFetching || listMutation.isPending}>
-            <option value="DEFAULT">json/（DEFAULT）</option>
-            <option value="ROOT">ルート（ROOT）</option>
-          </select>
-        </div>
-
-        <label style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          <input type="checkbox" checked={useDate} onChange={(e) => setUseDate(e.target.checked)} disabled={countQuery.isFetching || listMutation.isPending} />
-          <span style={{ fontSize: 12, color: "#666" }}>日付指定（未指定なら今日JST）</span>
-        </label>
-
-        <input type="date" value={day} onChange={(e) => setDay(e.target.value)} disabled={!useDate || countQuery.isFetching || listMutation.isPending} />
-
-        <button onClick={() => countQuery.refetch()} disabled={countQuery.isFetching}>
-          {countQuery.isFetching ? "更新中…" : "件数を更新"}
-        </button>
-
-        <button onClick={() => listMutation.mutate()} disabled={listMutation.isPending}>
-          {listMutation.isPending ? "一覧取得中…" : "一覧を取得（最大100件）"}
-        </button>
-      </div>
-
-      {countQuery.isError && <div style={{ color: "#b91c1c", marginBottom: 10 }}>件数取得エラー: {(countQuery.error as Error).message}</div>}
-      {listMutation.isError && <div style={{ color: "#b91c1c", marginBottom: 10 }}>一覧取得エラー: {(listMutation.error as Error).message}</div>}
-
-      <div style={{ border: "1px solid #ddd", borderRadius: 10, padding: 12 }}>
-        <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-          <div>
-            <div style={{ fontSize: 12, color: "#666" }}>Bucket</div>
-            <div style={{ fontWeight: 900 }}>{countQuery.data?.bucket ?? "-"}</div>
-          </div>
-          <div style={{ minWidth: 360 }}>
-            <div style={{ fontSize: 12, color: "#666" }}>Prefix（解決後）</div>
-            <div style={{ fontWeight: 900, wordBreak: "break-all" }}>{countQuery.data?.prefix ?? "-"}</div>
-          </div>
-        </div>
-
-        <div style={{ marginTop: 12, display: "flex", gap: 18, flexWrap: "wrap" }}>
-          <div>
-            <div style={{ fontSize: 12, color: "#666" }}>Total（prefix配下）</div>
-            <div style={{ fontSize: 26, fontWeight: 900 }}>{totalCountText}</div>
-          </div>
-          <div>
-            <div style={{ fontSize: 12, color: "#666" }}>{dayLabel}</div>
-            <div style={{ fontSize: 26, fontWeight: 900 }}>{countOnDayText}</div>
-          </div>
-        </div>
-
-        {countQuery.data?.message && <div style={{ marginTop: 10, fontSize: 12, color: "#374151" }}>{countQuery.data.message}</div>}
-      </div>
-
-      {listMutation.data && (
-        <div style={{ marginTop: 14, border: "1px solid #ddd", borderRadius: 10, padding: 12 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "baseline" }}>
-            <div style={{ fontWeight: 900 }}>一覧（返却: {listMutation.data.returnedCount.toLocaleString()} 件）</div>
-            <div style={{ fontSize: 12, color: "#666" }}>
-              {listMutation.data.bucket} / {listMutation.data.prefix || "(root)"} / recursive: {String(listMutation.data.recursive)}
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-4 md:p-8">
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
+          <div className="flex items-center gap-4">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 rounded-2xl shadow-lg">
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16M4 12h16M4 17h16" />
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-3xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">S3 フォルダ件数</h1>
+              <p className="text-sm text-gray-600 mt-1">prefix 配下の総数と、指定日（JST）相当の件数を確認します。</p>
             </div>
           </div>
 
-          {/* ★ 警告（100件以上は描画しない） */}
-          {isTruncatedForRender && (
-            <div
-              style={{
-                marginTop: 10,
-                padding: 10,
-                borderRadius: 8,
-                border: "1px solid #f59e0b",
-                background: "#fffbeb",
-                color: "#92400e",
-                fontSize: 12,
-                fontWeight: 700,
-              }}
-            >
-              ⚠ 表示負荷軽減のため、先頭 {LIST_RENDER_LIMIT} 件のみ表示しています（実データ: {listItems.length.toLocaleString()} 件）。
-            </div>
-          )}
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge tone="blue">Batch {batchCode}</Badge>
+            <Badge tone="gray">Scope {scope}</Badge>
+            {useDate ? <Badge tone="amber">{day}</Badge> : <Badge tone="gray">日付未指定</Badge>}
+            {busy ? <Badge tone="amber">処理中…</Badge> : <Badge tone="emerald">待機中</Badge>}
+          </div>
+        </div>
 
-          <div style={{ overflow: "auto", marginTop: 10 }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-              <thead>
-                <tr style={{ textAlign: "left", borderBottom: "1px solid #e5e7eb" }}>
-                  <th style={{ padding: 8, minWidth: 520 }}>key</th>
-                  <th style={{ padding: 8, minWidth: 160 }}>size</th>
-                  <th style={{ padding: 8, minWidth: 220 }}>lastModifiedIso</th>
-                </tr>
-              </thead>
-              <tbody>
-                {renderItems.map((it) => (
-                  <tr key={it.key} style={{ borderBottom: "1px solid #f3f4f6" }}>
-                    <td style={{ padding: 8, wordBreak: "break-all" }}>{it.key}</td>
-                    <td style={{ padding: 8 }}>{typeof it.size === "number" ? it.size.toLocaleString() : "-"}</td>
-                    <td style={{ padding: 8 }}>{it.lastModifiedIso ?? "-"}</td>
-                  </tr>
+        {/* Controls */}
+        <Card className="p-6">
+          <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
+            <div>
+              <div className="text-lg font-extrabold text-gray-900">条件</div>
+              <div className="text-sm text-gray-600 mt-1">Batch / Prefix / 日付指定を切り替えて確認します</div>
+            </div>
+
+            <div className="flex gap-2 flex-wrap">
+              <Btn variant="secondary" onClick={() => countQuery.refetch()} disabled={countQuery.isFetching} loading={countQuery.isFetching}>
+                件数を更新
+              </Btn>
+              <Btn onClick={() => listMutation.mutate()} disabled={listMutation.isPending} loading={listMutation.isPending}>
+                一覧を取得（最大100件）
+              </Btn>
+            </div>
+          </div>
+
+          <div className="mt-5 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div className="grid gap-2">
+              <label className="text-sm font-extrabold text-gray-900">Batch</label>
+              <select
+                value={batchCode}
+                onChange={(e) => setBatchCode(e.target.value)}
+                disabled={busy}
+                className="w-full px-4 py-3 rounded-xl border bg-white text-sm font-semibold hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                {batchCodes.map((b) => (
+                  <option key={b} value={b}>
+                    {b}
+                  </option>
                 ))}
-              </tbody>
-            </table>
+              </select>
+            </div>
+
+            <div className="grid gap-2">
+              <label className="text-sm font-extrabold text-gray-900">Prefix scope</label>
+              <select
+                value={scope}
+                onChange={(e) => setScope(e.target.value as S3PrefixScope)}
+                disabled={busy}
+                className="w-full px-4 py-3 rounded-xl border bg-white text-sm font-semibold hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="DEFAULT">json/（DEFAULT）</option>
+                <option value="ROOT">ルート（ROOT）</option>
+                {/* 必要なら追加 */}
+                {/* <option value="PARENT">PARENT</option> */}
+                {/* <option value="CUSTOM">CUSTOM</option> */}
+              </select>
+            </div>
+
+            <div className="grid gap-2">
+              <label className="text-sm font-extrabold text-gray-900">日付指定</label>
+              <label className="inline-flex items-center gap-2">
+                <input type="checkbox" checked={useDate} onChange={(e) => setUseDate(e.target.checked)} disabled={busy} className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                <span className="text-sm text-gray-700 font-semibold">未指定なら今日JST</span>
+              </label>
+            </div>
+
+            <div className="grid gap-2">
+              <label className="text-sm font-extrabold text-gray-900">day</label>
+              <input
+                type="date"
+                value={day}
+                onChange={(e) => setDay(e.target.value)}
+                disabled={!useDate || busy}
+                className="w-full px-4 py-3 rounded-xl border bg-white text-sm font-semibold hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+              />
+            </div>
           </div>
 
-          {listMutation.data.message && <div style={{ marginTop: 10, fontSize: 12, color: "#374151" }}>{listMutation.data.message}</div>}
+          <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-3">
+            {countQuery.isError ? <Alert type="error" title="件数取得エラー" message={(countQuery.error as Error).message} /> : null}
+            {listMutation.isError ? <Alert type="error" title="一覧取得エラー" message={(listMutation.error as Error).message} /> : null}
+          </div>
+        </Card>
+
+        {/* Summary */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-extrabold text-gray-900">Bucket</div>
+              <Badge tone="gray">resolved</Badge>
+            </div>
+            <div className="mt-2 text-lg font-extrabold text-gray-900 break-all">{countQuery.data?.bucket ?? "-"}</div>
+          </Card>
+
+          <Card className="p-6 md:col-span-2">
+            <div className="flex items-center justify-between gap-3 flex-col md:flex-row">
+              <div className="w-full">
+                <div className="text-sm font-extrabold text-gray-900">Prefix（解決後）</div>
+                <div className="mt-2 text-sm font-semibold text-gray-800 break-all">
+                  <code className="px-2 py-1 rounded-lg bg-gray-50 border border-gray-200">{countQuery.data?.prefix ?? "-"}</code>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <Badge tone="blue">recursive: {String(countQuery.data?.recursive ?? "-")}</Badge>
+                <Badge tone="gray">batch: {countQuery.data?.batchCode ?? batchCode}</Badge>
+              </div>
+            </div>
+          </Card>
         </div>
-      )}
+
+        {/* Metrics */}
+        <Card className="p-6">
+          <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
+            <div>
+              <div className="text-lg font-extrabold text-gray-900">集計</div>
+              <div className="text-sm text-gray-600 mt-1">Total は prefix 配下、指定日は day（JST）相当</div>
+            </div>
+            {countQuery.data?.message ? <Badge tone="blue">message</Badge> : <Badge tone="gray">no message</Badge>}
+          </div>
+
+          <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="rounded-2xl border bg-gradient-to-br from-white to-gray-50 p-6">
+              <div className="text-sm text-gray-600 font-semibold">Total（prefix配下）</div>
+              <div className="mt-2 text-4xl font-extrabold text-gray-900">{totalCountText}</div>
+            </div>
+
+            <div className="rounded-2xl border bg-gradient-to-br from-white to-amber-50 p-6">
+              <div className="text-sm text-gray-600 font-semibold">{dayLabel}</div>
+              <div className="mt-2 text-4xl font-extrabold text-gray-900">{countOnDayText}</div>
+            </div>
+          </div>
+
+          {countQuery.data?.message ? (
+            <div className="mt-4 text-sm text-gray-700">
+              <span className="font-extrabold">message:</span> {countQuery.data.message}
+            </div>
+          ) : null}
+        </Card>
+
+        {/* List */}
+        {listMutation.data ? (
+          <Card className="p-0 overflow-hidden">
+            <div className="px-6 py-4 border-b bg-gradient-to-r from-white to-gray-50 flex items-start md:items-center justify-between gap-3 flex-col md:flex-row">
+              <div>
+                <div className="text-lg font-extrabold text-gray-900">一覧</div>
+                <div className="text-sm text-gray-600 mt-1">
+                  返却: <span className="font-extrabold">{listMutation.data.returnedCount.toLocaleString()}</span> 件 / limit=100
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge tone="gray">{listMutation.data.bucket}</Badge>
+                <Badge tone="gray">{listMutation.data.prefix || "(root)"}</Badge>
+                <Badge tone="blue">recursive {String(listMutation.data.recursive)}</Badge>
+              </div>
+            </div>
+
+            {isTruncatedForRender ? (
+              <div className="px-6 py-4">
+                <Alert type="warning" title="表示制限" message={`表示負荷軽減のため、先頭 ${LIST_RENDER_LIMIT} 件のみ描画しています（実データ: ${listItems.length.toLocaleString()} 件）。`} />
+              </div>
+            ) : null}
+
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-sm">
+                <thead>
+                  <tr className="text-left border-t border-b bg-gray-50">
+                    <th className="px-6 py-3 text-xs font-extrabold text-gray-600 min-w-[520px]">key</th>
+                    <th className="px-6 py-3 text-xs font-extrabold text-gray-600 min-w-[140px]">size</th>
+                    <th className="px-6 py-3 text-xs font-extrabold text-gray-600 min-w-[220px]">lastModifiedIso</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {renderItems.map((it) => (
+                    <tr key={it.key} className="border-b hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-3 align-top">
+                        <code className="text-xs font-semibold break-all">{it.key}</code>
+                      </td>
+                      <td className="px-6 py-3 align-top">{typeof it.size === "number" ? it.size.toLocaleString() : "-"}</td>
+                      <td className="px-6 py-3 align-top">{it.lastModifiedIso ?? "-"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {listMutation.data.message ? (
+              <div className="px-6 py-4 text-sm text-gray-700 border-t">
+                <span className="font-extrabold">message:</span> {listMutation.data.message}
+              </div>
+            ) : null}
+          </Card>
+        ) : null}
+
+        {/* Footer */}
+        <div className="text-center text-xs text-gray-500">取得できない場合は、管理者権限・セッション（credentials: include）・APIの到達性をご確認ください。</div>
+      </div>
     </div>
   );
 }

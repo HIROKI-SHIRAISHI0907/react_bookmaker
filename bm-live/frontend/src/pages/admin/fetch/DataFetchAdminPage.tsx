@@ -1,82 +1,203 @@
 // src/pages/admin/DataFetchAdminPage.tsx
 import React, { useMemo, useState } from "react";
 
+/** ============ Types ============ */
 type StatRequestResource = {
   country?: string;
   league?: string;
   season?: string;
-  // ここはあなたのDTOに合わせて増やしてOK
 };
 
 type StatResponseResource = {
   returnCd?: string;
   taskArn?: string;
-  // 追加フィールドがあるならここも増やす
+  // 必要なら追加
+  [k: string]: any;
 };
 
 type TaskDef = {
-  id: string; // UI用に一意（React key / 状態管理のキー）
-  code: string; // 業務コード（B006など）
+  id: string;
+  code: string;
   title: string;
   description: string;
-  endpoint: string; // Springの@PostMappingのパス
+  endpoint: string;
   defaultBody?: StatRequestResource;
 };
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? ""; // 例: http://localhost:8080 など
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 
+/** ============ Utils ============ */
+function toTrimOrNull(s: string): string | null {
+  const t = (s ?? "").trim();
+  return t === "" ? null : t;
+}
+
+function getErrorMessage(e: unknown): string {
+  if (e instanceof Error) return e.message;
+  return String(e ?? "unknown error");
+}
+
+async function postJsonSafe<T>(url: string, body: unknown): Promise<{ data: T | null; rawText: string | null }> {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(body ?? {}),
+  });
+
+  const ct = res.headers.get("content-type") ?? "";
+
+  if (!res.ok) {
+    let detail = "";
+    try {
+      if (ct.includes("application/json")) {
+        const j = await res.json();
+        detail = JSON.stringify(j, null, 2);
+      } else {
+        detail = await res.text();
+      }
+    } catch {
+      // ignore
+    }
+    throw new Error(`HTTP ${res.status} ${res.statusText}${detail ? `:\n${detail}` : ""}`);
+  }
+
+  // 204/空レスポンス対策
+  if (res.status === 204) return { data: null, rawText: null };
+
+  if (ct.includes("application/json")) {
+    const data = (await res.json()) as T;
+    return { data, rawText: null };
+  }
+
+  // JSONじゃない場合も落ちないように（念のため）
+  const text = await res.text().catch(() => "");
+  return { data: null, rawText: text || null };
+}
+
+/** ============ Common UI Components ============ */
+type CardProps = { children: React.ReactNode; className?: string };
+const Card = ({ children, className = "" }: CardProps) => <div className={`bg-white/90 backdrop-blur rounded-2xl shadow-sm border border-gray-100 ${className}`}>{children}</div>;
+
+type ButtonVariant = "primary" | "secondary" | "success" | "danger";
+type ButtonProps = {
+  children: React.ReactNode;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  variant?: ButtonVariant;
+  disabled?: boolean;
+  loading?: boolean;
+  icon?: React.ReactNode;
+  className?: string;
+};
+const Button = ({ children, onClick, variant = "primary", disabled, loading, icon, className = "" }: ButtonProps) => {
+  const variantClasses: Record<ButtonVariant, string> = {
+    primary: "bg-blue-600 hover:bg-blue-700 text-white border-blue-600 focus:ring-blue-500",
+    secondary: "bg-gray-50 hover:bg-gray-100 text-gray-800 border-gray-200 focus:ring-gray-300",
+    success: "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600 focus:ring-emerald-500",
+    danger: "bg-rose-600 hover:bg-rose-700 text-white border-rose-600 focus:ring-rose-500",
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled || loading}
+      className={`
+        inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold
+        transition-all duration-200 shadow-sm hover:shadow-md
+        disabled:opacity-50 disabled:cursor-not-allowed
+        focus:outline-none focus:ring-2 focus:ring-offset-2
+        ${variantClasses[variant]}
+        ${className}
+      `}
+    >
+      {loading && (
+        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+        </svg>
+      )}
+      {!loading && icon}
+      {children}
+    </button>
+  );
+};
+
+type InputProps = {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  hint?: string;
+};
+const Input = ({ label, value, onChange, placeholder = "", hint }: InputProps) => (
+  <div>
+    <label className="block text-sm font-semibold text-gray-800 mb-2">{label}</label>
+    <input
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className="
+        w-full px-4 py-3 rounded-xl border border-gray-200 bg-white
+        transition-colors duration-200
+        hover:border-gray-300
+        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+      "
+    />
+    {hint && <p className="mt-2 text-xs text-gray-500">{hint}</p>}
+  </div>
+);
+
+type AlertType = "info" | "success" | "error" | "warning";
+const Alert = ({ type, title, message, onClose }: { type: AlertType; title: string; message: string; onClose?: () => void }) => {
+  const typeClasses: Record<AlertType, string> = {
+    info: "bg-blue-50 border-blue-200 text-blue-900",
+    success: "bg-emerald-50 border-emerald-200 text-emerald-900",
+    error: "bg-rose-50 border-rose-200 text-rose-900",
+    warning: "bg-amber-50 border-amber-200 text-amber-900",
+  };
+  return (
+    <div className={`border rounded-2xl p-4 flex gap-3 items-start ${typeClasses[type]}`}>
+      <div className="mt-0.5">
+        {type === "info" && "💡"}
+        {type === "success" && "✅"}
+        {type === "error" && "❌"}
+        {type === "warning" && "⚠️"}
+      </div>
+      <div className="flex-1">
+        <div className="font-bold text-sm">{title}</div>
+        <pre className="mt-1 whitespace-pre-wrap text-xs leading-relaxed">{message}</pre>
+      </div>
+      {onClose && (
+        <button onClick={onClose} className="text-gray-500 hover:text-gray-800 transition-colors">
+          ✕
+        </button>
+      )}
+    </div>
+  );
+};
+
+const Badge = ({ children, tone = "gray" }: { children: React.ReactNode; tone?: "gray" | "blue" | "emerald" | "amber" | "rose" }) => {
+  const classes: Record<string, string> = {
+    gray: "bg-gray-100 text-gray-700 border-gray-200",
+    blue: "bg-blue-100 text-blue-800 border-blue-200",
+    emerald: "bg-emerald-100 text-emerald-800 border-emerald-200",
+    amber: "bg-amber-100 text-amber-800 border-amber-200",
+    rose: "bg-rose-100 text-rose-800 border-rose-200",
+  };
+  return <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${classes[tone]}`}>{children}</span>;
+};
+
+/** ============ Page ============ */
 export default function DataFetchAdminPage() {
   const tasks: TaskDef[] = useMemo(
     () => [
-      {
-        id: "B002",
-        code: "B002",
-        title: "選手情報取得（B002）",
-        description: "POST /v1/api/admin/exec/task/country-league-team-member → B002 を起動",
-        endpoint: "/v1/api/admin/exec/task/country-league-team-member",
-      },
-      {
-        id: "B003",
-        code: "B003",
-        title: "国リーグ別シーズン開始情報取得（B003）",
-        description: "POST /v1/api/admin/exec/task/country-league-season → B003 を起動",
-        endpoint: "/v1/api/admin/exec/task/country-league-season",
-      },
-      {
-        id: "B004",
-        code: "B004",
-        title: "チーム名情報取得（B004）",
-        description: "POST /v1/api/admin/exec/task/country-league → B004 を起動",
-        endpoint: "/v1/api/admin/exec/task/country-league",
-      },
-      {
-        id: "B005",
-        code: "B005",
-        title: "試合予定データ取得（B005）",
-        description: "POST /v1/api/admin/exec/task/future → B005 を起動",
-        endpoint: "/v1/api/admin/exec/task/future",
-      },
-      {
-        id: "B006_export",
-        code: "B006",
-        title: "統計CSVデータ生成（B006）",
-        description: "POST /v1/api/admin/export/statCsv → B006 を起動",
-        endpoint: "/v1/api/admin/export/statCsv",
-      },
-      {
-        id: "B006_import",
-        code: "B006",
-        title: "統計CSVデータ取り入れ実行（B006）",
-        description: "POST /v1/api/stat → applicationのB006 を起動",
-        endpoint: "/v1/api/stat",
-      },
-      {
-        id: "B008",
-        code: "B008",
-        title: "開催中データ取得（B008）",
-        description: "POST /v1/api/admin/exec/task/bm-data → B008 を起動",
-        endpoint: "/v1/api/admin/exec/task/bm-data",
-      },
+      { id: "B002", code: "B002", title: "選手情報取得", description: "country / league / team / member を収集", endpoint: "/v1/api/admin/exec/task/country-league-team-member" },
+      { id: "B003", code: "B003", title: "国リーグ別シーズン開始情報取得", description: "国×リーグのシーズン開始情報を更新", endpoint: "/v1/api/admin/exec/task/country-league-season" },
+      { id: "B004", code: "B004", title: "チーム名情報取得", description: "国×リーグのチーム情報を更新", endpoint: "/v1/api/admin/exec/task/country-league" },
+      { id: "B005", code: "B005", title: "試合予定データ取得", description: "未来の試合予定を取得", endpoint: "/v1/api/admin/exec/task/future" },
+      { id: "B006_export", code: "B006", title: "統計CSVデータ生成", description: "統計CSVを生成（export）", endpoint: "/v1/api/admin/export/statCsv" },
+      { id: "B006_import", code: "B006", title: "統計CSVデータ取り入れ実行", description: "統計CSVを取り込む（import）", endpoint: "/v1/api/stat" },
+      { id: "B008", code: "B008", title: "開催中データ取得", description: "開催中データを更新", endpoint: "/v1/api/admin/exec/task/bm-data" },
     ],
     [],
   );
@@ -85,161 +206,219 @@ export default function DataFetchAdminPage() {
   const [league, setLeague] = useState("");
   const [season, setSeason] = useState("");
 
-  // 実行結果をタスクごとに保持（キーは task.id ）
-  const [loadingId, setLoadingId] = useState<string | null>(null);
+  // タスクごとにローディング（並列実行OK）
+  const [running, setRunning] = useState<Set<string>>(new Set());
+
   const [results, setResults] = useState<Record<string, StatResponseResource | null>>({});
   const [errors, setErrors] = useState<Record<string, string | null>>({});
+  const [globalMessage, setGlobalMessage] = useState<{ type: AlertType; title: string; message: string } | null>(null);
 
-  const buildBody = (): StatRequestResource => {
-    // 空文字は送らない（nullも送らない想定）
+  const requestBody = useMemo<StatRequestResource>(() => {
     const body: StatRequestResource = {};
-    if (country.trim()) body.country = country.trim();
-    if (league.trim()) body.league = league.trim();
-    if (season.trim()) body.season = season.trim();
+    const c = toTrimOrNull(country);
+    const l = toTrimOrNull(league);
+    const s = toTrimOrNull(season);
+    if (c) body.country = c;
+    if (l) body.league = l;
+    if (s) body.season = s;
     return body;
-  };
+  }, [country, league, season]);
 
   const runTask = async (t: TaskDef) => {
-    setLoadingId(t.id);
+    setGlobalMessage(null);
     setErrors((p) => ({ ...p, [t.id]: null }));
+    setRunning((p) => new Set(p).add(t.id));
 
     try {
-      const res = await fetch(`${API_BASE}${t.endpoint}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include", // 認証/セッション使ってるなら必要。不要なら消してOK
-        body: JSON.stringify(buildBody()),
+      const url = `${API_BASE}${t.endpoint}`;
+      const { data, rawText } = await postJsonSafe<StatResponseResource>(url, requestBody);
+
+      const payload: StatResponseResource =
+        data ??
+        ({
+          returnCd: "OK",
+          taskArn: null,
+          _note: rawText ? `Non-JSON response: ${rawText}` : "No content",
+        } as any);
+
+      setResults((p) => ({ ...p, [t.id]: payload }));
+
+      setGlobalMessage({
+        type: "success",
+        title: `実行完了: ${t.code}`,
+        message: `${t.title}\nEndpoint: ${t.endpoint}`,
       });
-
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(`HTTP ${res.status} ${res.statusText}${text ? `: ${text}` : ""}`);
-      }
-
-      const json = (await res.json()) as StatResponseResource;
-      setResults((p) => ({ ...p, [t.id]: json }));
-    } catch (e: any) {
-      setErrors((p) => ({ ...p, [t.id]: e?.message ?? "unknown error" }));
+    } catch (e: unknown) {
+      const msg = getErrorMessage(e);
+      setErrors((p) => ({ ...p, [t.id]: msg }));
       setResults((p) => ({ ...p, [t.id]: null }));
+      setGlobalMessage({ type: "error", title: `実行失敗: ${t.code}`, message: msg });
     } finally {
-      setLoadingId(null);
+      setRunning((p) => {
+        const next = new Set(p);
+        next.delete(t.id);
+        return next;
+      });
     }
   };
 
-  const cardStyle: React.CSSProperties = {
-    border: "1px solid #eee",
-    borderRadius: 12,
-    padding: 14,
-    background: "white",
-  };
-
-  const labelStyle: React.CSSProperties = { fontSize: 12, color: "#666" };
-
   return (
-    <div style={{ display: "grid", gap: 16 }}>
-      <h2 style={{ margin: 0 }}>データ取得管理</h2>
-
-      <div style={{ ...cardStyle, display: "grid", gap: 10 }}>
-        <div style={{ fontWeight: 700 }}>リクエストパラメータ（任意）</div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
-          <div>
-            <div style={labelStyle}>country</div>
-            <input value={country} onChange={(e) => setCountry(e.target.value)} placeholder="例: JP" style={{ width: "100%", padding: 10, borderRadius: 10, border: "1px solid #ddd" }} />
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-4 md:p-8">
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
+          <div className="flex items-center gap-4">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 rounded-2xl shadow-lg">
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16M4 12h16M4 17h16" />
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-3xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">データ取得管理</h1>
+              <p className="text-sm text-gray-600 mt-1">バッチ起動（POST）と結果確認</p>
+            </div>
           </div>
 
-          <div>
-            <div style={labelStyle}>league</div>
-            <input value={league} onChange={(e) => setLeague(e.target.value)} placeholder="例: J1" style={{ width: "100%", padding: 10, borderRadius: 10, border: "1px solid #ddd" }} />
-          </div>
-
-          <div>
-            <div style={labelStyle}>season</div>
-            <input value={season} onChange={(e) => setSeason(e.target.value)} placeholder="例: 2025" style={{ width: "100%", padding: 10, borderRadius: 10, border: "1px solid #ddd" }} />
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge tone={API_BASE ? "emerald" : "amber"}>{API_BASE ? `API: ${API_BASE}` : "API_BASE 未設定"}</Badge>
+            <Badge tone="blue">タスク数: {tasks.length}</Badge>
           </div>
         </div>
 
-        <div style={{ fontSize: 12, color: "#666" }}>※ Spring側で env に詰める想定なら、ここで入力 → request body に入れて送る → runner 側で env 反映、の流れにできます。</div>
-      </div>
+        {/* Global alert */}
+        {globalMessage && <Alert type={globalMessage.type} title={globalMessage.title} message={globalMessage.message} onClose={() => setGlobalMessage(null)} />}
 
-      <div style={{ display: "grid", gap: 12 }}>
-        {tasks.map((t) => {
-          const isLoading = loadingId === t.id;
-          const result = results[t.id];
-          const err = errors[t.id];
-
-          return (
-            <div key={t.id} style={{ ...cardStyle, display: "grid", gap: 10 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                <div>
-                  <div style={{ fontWeight: 800 }}>{t.title}</div>
-                  <div style={{ fontSize: 12, color: "#666" }}>{t.description}</div>
-                  <div style={{ fontSize: 12, color: "#666" }}>
-                    Endpoint: <code>{t.endpoint}</code>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => runTask(t)}
-                  disabled={isLoading}
-                  style={{
-                    padding: "10px 14px",
-                    borderRadius: 10,
-                    border: "1px solid #ddd",
-                    background: isLoading ? "#f3f4f6" : "white",
-                    cursor: isLoading ? "not-allowed" : "pointer",
-                    fontWeight: 700,
-                  }}
-                >
-                  {isLoading ? "実行中..." : "実行"}
-                </button>
-              </div>
-
-              {err && (
-                <div style={{ padding: 10, borderRadius: 10, background: "#fff5f5", border: "1px solid #ffd6d6" }}>
-                  <div style={{ fontWeight: 700, color: "#b00020" }}>エラー</div>
-                  <div style={{ whiteSpace: "pre-wrap", fontSize: 12 }}>{err}</div>
-                </div>
-              )}
-
-              {result && (
-                <div style={{ padding: 10, borderRadius: 10, background: "#f8fafc", border: "1px solid #e5e7eb" }}>
-                  <div style={{ fontWeight: 700 }}>結果</div>
-                  <div style={{ display: "grid", gap: 6, marginTop: 6, fontSize: 13 }}>
-                    <div>
-                      returnCd: <code>{result.returnCd ?? "-"}</code>
-                    </div>
-
-                    <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                      taskArn: <code style={{ wordBreak: "break-all" }}>{result.taskArn ?? "-"}</code>
-                      {result.taskArn && (
-                        <button
-                          onClick={() => navigator.clipboard.writeText(result.taskArn!)}
-                          style={{
-                            padding: "6px 10px",
-                            borderRadius: 10,
-                            border: "1px solid #ddd",
-                            background: "white",
-                            cursor: "pointer",
-                            fontWeight: 700,
-                            fontSize: 12,
-                          }}
-                        >
-                          コピー
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
+        {/* Request params */}
+        <Card className="p-6">
+          <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
+            <div>
+              <div className="text-lg font-bold text-gray-900">リクエストパラメータ（任意）</div>
+              <div className="text-sm text-gray-600 mt-1">入力した値は各タスクの request body に入れて送信します</div>
             </div>
-          );
-        })}
-      </div>
 
-      <div style={{ fontSize: 12, color: "#666" }}>もしブラウザで叩けない場合は、Spring側の CORS 設定（または認証/CSRF）を確認してください。 例: 別ドメインで叩いてるなら CORS 許可が必要です。</div>
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                icon="🧹"
+                onClick={() => {
+                  setCountry("");
+                  setLeague("");
+                  setSeason("");
+                }}
+              >
+                クリア
+              </Button>
+
+              <Button variant="secondary" icon="📋" onClick={() => navigator.clipboard.writeText(JSON.stringify(requestBody, null, 2))}>
+                body をコピー
+              </Button>
+            </div>
+          </div>
+
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Input label="🏳️ country" value={country} onChange={setCountry} placeholder="例: JP" />
+            <Input label="🏆 league" value={league} onChange={setLeague} placeholder="例: J1" />
+            <Input label="📅 season" value={season} onChange={setSeason} placeholder="例: 2025" />
+          </div>
+
+          <div className="mt-4 text-xs text-gray-500">※ Spring側で env に詰める想定なら「入力 → request body → runner 側で env 反映」の流れにできます。</div>
+
+          <div className="mt-4 rounded-2xl border border-gray-100 bg-gray-50 p-4">
+            <div className="text-xs font-semibold text-gray-700 mb-2">送信 body（プレビュー）</div>
+            <pre className="text-xs text-gray-700 whitespace-pre-wrap">{JSON.stringify(requestBody, null, 2)}</pre>
+          </div>
+        </Card>
+
+        {/* Tasks */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {tasks.map((t) => {
+            const isRunning = running.has(t.id);
+            const result = results[t.id];
+            const err = errors[t.id];
+
+            const tone: "gray" | "blue" | "emerald" | "amber" | "rose" = err ? "rose" : result ? "emerald" : "gray";
+
+            return (
+              <Card key={t.id} className="p-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge tone="blue">{t.code}</Badge>
+                      <Badge tone={tone}>{err ? "ERROR" : result ? "DONE" : "IDLE"}</Badge>
+                    </div>
+
+                    <div className="mt-2 text-lg font-extrabold text-gray-900 truncate">{t.title}</div>
+                    <div className="mt-1 text-sm text-gray-600">{t.description}</div>
+
+                    <div className="mt-3 text-xs text-gray-500">
+                      Endpoint: <code className="px-2 py-1 rounded-lg bg-gray-100 border border-gray-200">{t.endpoint}</code>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2 shrink-0">
+                    <Button onClick={() => runTask(t)} loading={isRunning} disabled={isRunning} icon={!isRunning ? "▶️" : undefined}>
+                      {isRunning ? "実行中..." : "実行"}
+                    </Button>
+
+                    <Button variant="secondary" icon="📎" onClick={() => navigator.clipboard.writeText(`${API_BASE}${t.endpoint}`)}>
+                      URLコピー
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Error */}
+                {err && (
+                  <div className="mt-4">
+                    <Alert type="error" title="エラー" message={err} />
+                  </div>
+                )}
+
+                {/* Result */}
+                {result && (
+                  <div className="mt-4 rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="text-sm font-bold text-gray-900">結果</div>
+                      <div className="flex gap-2">
+                        <Button variant="secondary" icon="📋" onClick={() => navigator.clipboard.writeText(JSON.stringify(result, null, 2))} className="px-3 py-2 text-xs">
+                          JSONコピー
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 grid gap-2 text-sm text-gray-800">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs text-gray-500">returnCd</span>
+                        <code className="px-2 py-1 rounded-lg bg-white border border-gray-200">{result.returnCd ?? "-"}</code>
+                      </div>
+
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs text-gray-500">taskArn</span>
+                        <code className="px-2 py-1 rounded-lg bg-white border border-gray-200 break-all">{result.taskArn ?? "-"}</code>
+                        {result.taskArn && (
+                          <Button variant="secondary" icon="📋" onClick={() => navigator.clipboard.writeText(String(result.taskArn))} className="px-3 py-2 text-xs">
+                            コピー
+                          </Button>
+                        )}
+                      </div>
+
+                      <details className="mt-2">
+                        <summary className="cursor-pointer text-xs font-semibold text-gray-700 select-none">詳細JSONを表示</summary>
+                        <pre className="mt-2 text-xs whitespace-pre-wrap text-gray-700">{JSON.stringify(result, null, 2)}</pre>
+                      </details>
+                    </div>
+                  </div>
+                )}
+              </Card>
+            );
+          })}
+        </div>
+
+        {/* Footer */}
+        <div className="text-center text-xs text-gray-500">
+          ブラウザから叩けない場合は、Spring側の <span className="font-semibold">CORS</span> / <span className="font-semibold">認証</span> / <span className="font-semibold">CSRF</span>{" "}
+          を確認してください。
+        </div>
+      </div>
     </div>
   );
 }

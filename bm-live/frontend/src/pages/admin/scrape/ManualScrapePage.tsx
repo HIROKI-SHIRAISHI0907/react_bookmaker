@@ -88,6 +88,92 @@ async function postJson<T>(url: string, body?: unknown): Promise<T> {
   return res.json();
 }
 
+/** ===================== UI（小さめ部品） ===================== */
+type Tone = "gray" | "blue" | "emerald" | "amber" | "rose" | "violet";
+
+function Badge({ children, tone = "gray" }: { children: React.ReactNode; tone?: Tone }) {
+  const cls: Record<Tone, string> = {
+    gray: "bg-gray-100 text-gray-700 ring-gray-200",
+    blue: "bg-blue-100 text-blue-800 ring-blue-200",
+    emerald: "bg-emerald-100 text-emerald-800 ring-emerald-200",
+    amber: "bg-amber-100 text-amber-900 ring-amber-200",
+    rose: "bg-rose-100 text-rose-800 ring-rose-200",
+    violet: "bg-violet-100 text-violet-800 ring-violet-200",
+  };
+  return <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-extrabold ring-1 ring-inset ${cls[tone]}`}>{children}</span>;
+}
+
+function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return <div className={`rounded-2xl border bg-white/85 backdrop-blur shadow-sm ${className}`}>{children}</div>;
+}
+
+function Spinner() {
+  return (
+    <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+    </svg>
+  );
+}
+
+function Button({
+  children,
+  onClick,
+  disabled,
+  loading,
+  variant = "primary",
+  title,
+  className = "",
+  type = "button",
+}: {
+  children: React.ReactNode;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  disabled?: boolean;
+  loading?: boolean;
+  variant?: "primary" | "secondary" | "danger";
+  title?: string;
+  className?: string;
+  type?: "button" | "submit";
+}) {
+  const base =
+    "inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-extrabold transition-all shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
+  const v =
+    variant === "primary"
+      ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700 focus:ring-blue-500"
+      : variant === "danger"
+        ? "bg-rose-600 text-white border-rose-600 hover:bg-rose-700 focus:ring-rose-500"
+        : "bg-white text-gray-900 border-gray-200 hover:bg-gray-50 focus:ring-gray-300";
+  return (
+    <button type={type} onClick={onClick} disabled={disabled || loading} title={title} className={`${base} ${v} ${className}`}>
+      {loading ? <Spinner /> : null}
+      {children}
+    </button>
+  );
+}
+
+function Alert({ type, title, message }: { type: "info" | "warning" | "error"; title: string; message: string }) {
+  const cls = type === "error" ? "border-rose-200 bg-rose-50 text-rose-900" : type === "warning" ? "border-amber-200 bg-amber-50 text-amber-900" : "border-blue-200 bg-blue-50 text-blue-900";
+  const icon = type === "error" ? "❌" : type === "warning" ? "⚠️" : "💡";
+  return (
+    <div className={`rounded-2xl border p-4 flex items-start gap-3 ${cls}`}>
+      <div className="mt-0.5">{icon}</div>
+      <div className="min-w-0 flex-1">
+        <div className="text-sm font-extrabold">{title}</div>
+        <pre className="mt-1 text-xs whitespace-pre-wrap leading-relaxed">{message}</pre>
+      </div>
+    </div>
+  );
+}
+
+function statusTone(status?: string): Tone {
+  const s = (status ?? "").toUpperCase();
+  if (s === "RUNNING") return "emerald";
+  if (s === "STOPPED") return "gray";
+  if (s === "NOT_FOUND") return "amber";
+  if (!s) return "gray";
+  return "blue";
+}
+
 function ConfirmModal(props: {
   open: boolean;
   title?: string;
@@ -100,52 +186,33 @@ function ConfirmModal(props: {
   confirmDisabled?: boolean;
 }) {
   const { open, title = "確認", message, confirmText = "OK", cancelText = "キャンセル", onConfirm, onClose, isLoading, confirmDisabled } = props;
-
   if (!open) return null;
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      onClick={onClose}
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(0,0,0,0.35)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 16,
-        zIndex: 9999,
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: "min(520px, 100%)",
-          background: "#fff",
-          borderRadius: 12,
-          border: "1px solid #e5e7eb",
-          padding: 16,
-          boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
-        }}
-      >
-        <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 8 }}>{title}</div>
-        <div style={{ color: "#374151", marginBottom: 16, whiteSpace: "pre-wrap" }}>{message}</div>
+    <div role="dialog" aria-modal="true" onClick={onClose} className="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center p-4">
+      <div onClick={(e) => e.stopPropagation()} className="w-full max-w-lg rounded-2xl border bg-white shadow-xl">
+        <div className="px-5 py-4 border-b bg-gradient-to-r from-white to-gray-50 rounded-t-2xl">
+          <div className="text-base font-extrabold text-gray-900">{title}</div>
+        </div>
 
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-          <button onClick={onClose} disabled={isLoading}>
-            {cancelText}
-          </button>
-          <button onClick={onConfirm} disabled={isLoading || confirmDisabled} style={{ fontWeight: 800 }} title={confirmDisabled ? "条件を満たしていないため実行できません" : ""}>
-            {isLoading ? "処理中…" : confirmText}
-          </button>
+        <div className="p-5">
+          <pre className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{message}</pre>
+
+          <div className="mt-5 flex items-center justify-end gap-2">
+            <Button variant="secondary" onClick={onClose} disabled={isLoading}>
+              {cancelText}
+            </Button>
+            <Button variant="primary" onClick={onConfirm} disabled={isLoading || confirmDisabled} loading={isLoading} title={confirmDisabled ? "条件を満たしていないため実行できません" : undefined}>
+              {confirmText}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
+/** ===================== Page ===================== */
 export default function ManualScrapePage() {
   const batchCodes = ["B002", "B003", "B004", "B005", "B007", "B008", "B009"];
   const [batchCode, setBatchCode] = useState(batchCodes[0]);
@@ -174,12 +241,11 @@ export default function ManualScrapePage() {
   const [scope, setScope] = useState<S3PrefixScope>("DEFAULT");
   const [isMasterModalOpen, setIsMasterModalOpen] = useState(false);
 
-  // S3 count/list request（参考実装に合わせる）
   const countReq = useMemo<S3FileCountRequest>(
     () => ({
       batchCode,
       scope,
-      day: null, // 日付を使う場合はここを string にする
+      day: null,
     }),
     [batchCode, scope],
   );
@@ -189,9 +255,6 @@ export default function ManualScrapePage() {
       batchCode,
       scope,
       limit: 100,
-      // 必要なら上書き指定できる
-      // recursiveOverride: true,
-      // prefixOverride: "some/prefix/",
     }),
     [batchCode, scope],
   );
@@ -219,8 +282,6 @@ export default function ManualScrapePage() {
 
   const masterMutation = useMutation({
     mutationFn: async () => {
-      // もし backend が CSVキー等を要求するなら、ここで body に渡す
-      // await postJson(`/v1/api/all-league-scrape-master`, { batchCode, s3Key: csvItems[0].key });
       await postJson(`/v1/api/admin/exec/task/all-league-scrape-master`, {});
     },
     onSuccess: async () => {
@@ -231,207 +292,296 @@ export default function ManualScrapePage() {
 
   const busy = runMutation.isPending || masterMutation.isPending;
 
+  const percent = progressQuery.data?.percent ?? null;
+  const percentSafe = Math.min(100, Math.max(0, typeof percent === "number" ? percent : 0));
+
+  const teamsDone = progressQuery.data?.teamsDone ?? null;
+  const teamsTotal = progressQuery.data?.teamsTotal ?? null;
+
+  const s3TotalText = typeof s3CountQuery.data?.totalCount === "number" ? s3CountQuery.data.totalCount.toLocaleString() : "-";
+  const s3CountOnDayText = typeof s3CountQuery.data?.countOnDay === "number" ? s3CountQuery.data.countOnDay.toLocaleString() : "-";
+  const s3ReturnedText = typeof s3ListQuery.data?.returnedCount === "number" ? s3ListQuery.data.returnedCount.toLocaleString() : "-";
+
   return (
-    <div style={{ maxWidth: 980 }}>
-      <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 12 }}>スクレイピング管理</h2>
-
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 12 }}>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <div style={{ fontSize: 12, color: "#666" }}>Batch</div>
-          <select value={batchCode} onChange={(e) => setBatchCode(e.target.value)} disabled={busy}>
-            {batchCodes.map((b) => (
-              <option key={b} value={b}>
-                {b}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {isB007 && (
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <div style={{ fontSize: 12, color: "#666" }}>Prefix</div>
-            <select value={scope} onChange={(e) => setScope(e.target.value as S3PrefixScope)} disabled={busy}>
-              <option value="DEFAULT">json/（DEFAULT）</option>
-              <option value="ROOT">ルート（ROOT）</option>
-              {/* 必要なら */}
-              {/* <option value="PARENT">PARENT</option>
-              <option value="CUSTOM">CUSTOM</option> */}
-            </select>
-          </div>
-        )}
-
-        <button onClick={() => runMutation.mutate()} disabled={runMutation.isPending || isRunning || masterMutation.isPending} title={isRunning ? "RUNNING中のため実行できません" : ""}>
-          {runMutation.isPending ? "起動中…" : isRunning ? "実行中" : "実行"}
-        </button>
-
-        <button onClick={() => progressQuery.refetch()} disabled={progressQuery.isFetching || busy}>
-          {progressQuery.isFetching ? "更新中…" : "更新"}
-        </button>
-
-        {isB007 && (
-          <>
-            <button
-              onClick={() => {
-                s3CountQuery.refetch();
-                s3ListQuery.refetch();
-              }}
-              disabled={busy || s3CountQuery.isFetching || s3ListQuery.isFetching}
-              title="S3のファイル状況を再取得します"
-            >
-              {s3CountQuery.isFetching || s3ListQuery.isFetching ? "S3確認中…" : "S3確認"}
-            </button>
-
-            <button
-              onClick={() => setIsMasterModalOpen(true)}
-              disabled={busy || isRunning || !canRegisterMaster}
-              title={isRunning ? "RUNNING中はマスタ登録できません" : !canRegisterMaster ? "S3にcsvがちょうど1つ必要です" : ""}
-            >
-              マスタ登録
-            </button>
-
-            <div style={{ fontSize: 12 }}>
-              判定: <span style={{ fontWeight: 800, color: canRegisterMaster ? "#065f46" : "#b91c1c" }}>{canRegisterMaster ? "OK（csv=1）" : `NG（csv=${csvItems.length}）`}</span>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-4 md:p-8">
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
+          <div className="flex items-center gap-4">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 rounded-2xl shadow-lg">
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16M4 12h16M4 17h16" />
+              </svg>
             </div>
-          </>
-        )}
-      </div>
-
-      {runMutation.isError && <div style={{ color: "#b91c1c", marginBottom: 10 }}>起動エラー: {(runMutation.error as Error).message}</div>}
-      {progressQuery.isError && <div style={{ color: "#b91c1c", marginBottom: 10 }}>進捗取得エラー: {(progressQuery.error as Error).message}</div>}
-      {masterMutation.isError && <div style={{ color: "#b91c1c", marginBottom: 10 }}>マスタ登録エラー: {(masterMutation.error as Error).message}</div>}
-
-      {/* ===== Progress Panel ===== */}
-      <div style={{ border: "1px solid #ddd", borderRadius: 10, padding: 12 }}>
-        <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-          <div>
-            <div style={{ fontSize: 12, color: "#666" }}>Status</div>
-            <div style={{ fontWeight: 900 }}>{progressQuery.data?.status ?? "-"}</div>
+            <div>
+              <h1 className="text-3xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">スクレイピング管理</h1>
+              <p className="text-sm text-gray-600 mt-1">ECS起動（RUN）と進捗監視、B007はS3成果物からマスタ登録まで</p>
+            </div>
           </div>
-          <div>
-            <div style={{ fontSize: 12, color: "#666" }}>Task</div>
-            <div style={{ fontWeight: 900 }}>{progressQuery.data?.taskId ?? "-"}</div>
-          </div>
-          <div>
-            <div style={{ fontSize: 12, color: "#666" }}>Time</div>
-            <div style={{ fontWeight: 900 }}>{progressQuery.data?.logTime ?? "-"}</div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge tone="blue">Batch {batchCode}</Badge>
+            <Badge tone={statusTone(progressQuery.data?.status)}>{progressQuery.data?.status ?? "-"}</Badge>
+            {busy ? <Badge tone="amber">処理中…</Badge> : <Badge tone="emerald">待機中</Badge>}
           </div>
         </div>
 
-        <div style={{ marginTop: 12 }}>
-          <div style={{ fontSize: 12, color: "#666" }}>Progress</div>
-          <div style={{ fontWeight: 900 }}>
-            {progressQuery.data?.percent != null
-              ? `${progressQuery.data.percent.toFixed(1)}% (${progressQuery.data.teamsDone}/${progressQuery.data.teamsTotal})`
-              : (progressQuery.data?.message ?? "進捗情報なし")}
-          </div>
-          <div style={{ height: 10, background: "#eee", borderRadius: 999, overflow: "hidden", marginTop: 6 }}>
-            <div
-              style={{
-                width: `${Math.min(100, Math.max(0, progressQuery.data?.percent ?? 0))}%`,
-                height: "100%",
-                background: "#2563eb",
-                transition: "width 0.3s",
-              }}
-            />
-          </div>
-        </div>
-
-        {progressQuery.data?.logLine && (
-          <div style={{ marginTop: 12 }}>
-            <div style={{ fontSize: 12, color: "#666" }}>Latest Log</div>
-            <pre style={{ background: "#0b1020", color: "#e5e7eb", padding: 10, borderRadius: 8, whiteSpace: "pre-wrap" }}>{progressQuery.data.logLine}</pre>
-          </div>
-        )}
-      </div>
-
-      {/* ===== S3 Panel（B007 only） ===== */}
-      {isB007 && (
-        <div style={{ marginTop: 14, border: "1px solid #ddd", borderRadius: 10, padding: 12 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "baseline" }}>
-            <div style={{ fontWeight: 900 }}>S3 成果物確認（B007）</div>
-            <div style={{ fontSize: 12, color: "#666" }}>
-              {s3CountQuery.data?.bucket ?? "-"} / {s3CountQuery.data?.prefix ?? "-"} / recursive: {String(s3CountQuery.data?.recursive ?? "-")}
-            </div>
-          </div>
-
-          {(s3CountQuery.isError || s3ListQuery.isError) && (
-            <div style={{ color: "#b91c1c", marginTop: 10 }}>S3取得エラー: {((s3CountQuery.error as Error)?.message || (s3ListQuery.error as Error)?.message) ?? "unknown"}</div>
-          )}
-
-          <div style={{ marginTop: 12, display: "flex", gap: 18, flexWrap: "wrap" }}>
+        {/* Controls */}
+        <Card className="p-6">
+          <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
             <div>
-              <div style={{ fontSize: 12, color: "#666" }}>Total（prefix配下）</div>
-              <div style={{ fontSize: 22, fontWeight: 900 }}>{typeof s3CountQuery.data?.totalCount === "number" ? s3CountQuery.data.totalCount.toLocaleString() : "-"}</div>
+              <div className="text-lg font-extrabold text-gray-900">操作</div>
+              <div className="text-sm text-gray-600 mt-1">RUN/更新、B007はS3確認・マスタ登録</div>
             </div>
-            <div>
-              <div style={{ fontSize: 12, color: "#666" }}>指定日（countOnDay）</div>
-              <div style={{ fontSize: 22, fontWeight: 900 }}>{typeof s3CountQuery.data?.countOnDay === "number" ? s3CountQuery.data.countOnDay.toLocaleString() : "-"}</div>
-            </div>
-            <div>
-              <div style={{ fontSize: 12, color: "#666" }}>CSV files</div>
-              <div style={{ fontSize: 22, fontWeight: 900 }}>{csvItems.length.toLocaleString()}</div>
-            </div>
-            <div>
-              <div style={{ fontSize: 12, color: "#666" }}>Returned（list）</div>
-              <div style={{ fontSize: 22, fontWeight: 900 }}>{typeof s3ListQuery.data?.returnedCount === "number" ? s3ListQuery.data.returnedCount.toLocaleString() : "-"}</div>
+
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                onClick={() => runMutation.mutate()}
+                disabled={runMutation.isPending || isRunning || masterMutation.isPending}
+                loading={runMutation.isPending}
+                title={isRunning ? "RUNNING中のため実行できません" : undefined}
+              >
+                {isRunning ? "実行中" : "実行"}
+              </Button>
+
+              <Button variant="secondary" onClick={() => progressQuery.refetch()} disabled={progressQuery.isFetching || busy} loading={progressQuery.isFetching}>
+                更新
+              </Button>
+
+              {isB007 ? (
+                <>
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      s3CountQuery.refetch();
+                      s3ListQuery.refetch();
+                    }}
+                    disabled={busy || s3CountQuery.isFetching || s3ListQuery.isFetching}
+                    loading={s3CountQuery.isFetching || s3ListQuery.isFetching}
+                    title="S3のファイル状況を再取得します"
+                  >
+                    S3確認
+                  </Button>
+
+                  <Button
+                    variant="danger"
+                    onClick={() => setIsMasterModalOpen(true)}
+                    disabled={busy || isRunning || !canRegisterMaster}
+                    title={isRunning ? "RUNNING中はマスタ登録できません" : !canRegisterMaster ? "S3にcsvがちょうど1つ必要です" : undefined}
+                  >
+                    マスタ登録
+                  </Button>
+                </>
+              ) : null}
             </div>
           </div>
 
-          {s3CountQuery.data?.message && <div style={{ marginTop: 10, fontSize: 12, color: "#374151" }}>{s3CountQuery.data.message}</div>}
-          {s3ListQuery.data?.message && <div style={{ marginTop: 10, fontSize: 12, color: "#374151" }}>{s3ListQuery.data.message}</div>}
+          <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <div className="grid gap-2">
+              <label className="text-sm font-extrabold text-gray-900">Batch</label>
+              <select
+                value={batchCode}
+                onChange={(e) => setBatchCode(e.target.value)}
+                disabled={busy}
+                className="w-full px-4 py-3 rounded-xl border bg-white text-sm font-semibold hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                {batchCodes.map((b) => (
+                  <option key={b} value={b}>
+                    {b}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          {/* list table */}
-          <div style={{ overflow: "auto", marginTop: 10 }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-              <thead>
-                <tr style={{ textAlign: "left", borderBottom: "1px solid #e5e7eb", background: "#fafafa" }}>
-                  <th style={{ padding: 8, minWidth: 520 }}>key</th>
-                  <th style={{ padding: 8, minWidth: 160 }}>size</th>
-                  <th style={{ padding: 8, minWidth: 220 }}>lastModifiedIso</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(s3ListQuery.data?.items ?? []).map((it) => {
-                  const isCsv = it.key.toLowerCase().endsWith(".csv");
-                  return (
-                    <tr key={it.key} style={{ borderBottom: "1px solid #f3f4f6", background: isCsv ? "#f0f9ff" : "#fff" }}>
-                      <td style={{ padding: 8, wordBreak: "break-all" }}>{it.key}</td>
-                      <td style={{ padding: 8 }}>{typeof it.size === "number" ? it.size.toLocaleString() : "-"}</td>
-                      <td style={{ padding: 8 }}>{it.lastModifiedIso ?? "-"}</td>
-                    </tr>
-                  );
-                })}
-                {(s3ListQuery.data?.items ?? []).length === 0 && (
-                  <tr>
-                    <td colSpan={3} style={{ padding: 10, fontSize: 12, color: "#666" }}>
-                      ファイルがありません
-                    </td>
+            {isB007 ? (
+              <div className="grid gap-2">
+                <label className="text-sm font-extrabold text-gray-900">Prefix scope（B007）</label>
+                <select
+                  value={scope}
+                  onChange={(e) => setScope(e.target.value as S3PrefixScope)}
+                  disabled={busy}
+                  className="w-full px-4 py-3 rounded-xl border bg-white text-sm font-semibold hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="DEFAULT">json/（DEFAULT）</option>
+                  <option value="ROOT">ルート（ROOT）</option>
+                </select>
+              </div>
+            ) : (
+              <div className="hidden md:block" />
+            )}
+
+            {isB007 ? (
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge tone={canRegisterMaster ? "emerald" : "rose"}>判定: {canRegisterMaster ? "OK（csv=1）" : `NG（csv=${csvItems.length}）`}</Badge>
+                <Badge tone="gray">scope: {scope}</Badge>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge tone="gray">progress poll: 5s</Badge>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+            {runMutation.isError ? <Alert type="error" title="起動エラー" message={(runMutation.error as Error).message} /> : null}
+            {progressQuery.isError ? <Alert type="error" title="進捗取得エラー" message={(progressQuery.error as Error).message} /> : null}
+            {masterMutation.isError ? <Alert type="error" title="マスタ登録エラー" message={(masterMutation.error as Error).message} /> : null}
+          </div>
+        </Card>
+
+        {/* Progress */}
+        <Card className="p-6">
+          <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
+            <div>
+              <div className="text-lg font-extrabold text-gray-900">進捗</div>
+              <div className="text-sm text-gray-600 mt-1">最新の進捗とログを表示します（5秒ごとに更新）</div>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge tone={statusTone(progressQuery.data?.status)}>{progressQuery.data?.status ?? "-"}</Badge>
+              <Badge tone="gray">task: {progressQuery.data?.taskId ?? "-"}</Badge>
+              <Badge tone="gray">time: {progressQuery.data?.logTime ?? "-"}</Badge>
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <div className="text-sm font-extrabold text-gray-900">Progress</div>
+            <div className="mt-1 text-sm text-gray-700 font-semibold">
+              {percent != null ? `${percent.toFixed(1)}% ${teamsDone != null && teamsTotal != null ? `(${teamsDone}/${teamsTotal})` : ""}` : (progressQuery.data?.message ?? "進捗情報なし")}
+            </div>
+
+            <div className="mt-3 h-3 rounded-full bg-gray-200 overflow-hidden">
+              <div className="h-full bg-blue-600 transition-[width] duration-300" style={{ width: `${percentSafe}%` }} />
+            </div>
+          </div>
+
+          {progressQuery.data?.logLine ? (
+            <div className="mt-5">
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-sm font-extrabold text-gray-900">Latest Log</div>
+                <Button variant="secondary" className="px-3 py-2 text-xs" onClick={() => navigator.clipboard.writeText(String(progressQuery.data?.logLine ?? ""))}>
+                  ログコピー
+                </Button>
+              </div>
+
+              <pre className="mt-3 rounded-2xl border border-gray-900/10 bg-[#0b1020] text-gray-100 p-4 text-xs leading-relaxed whitespace-pre-wrap">{progressQuery.data.logLine}</pre>
+            </div>
+          ) : null}
+        </Card>
+
+        {/* S3 Panel（B007 only） */}
+        {isB007 ? (
+          <Card className="p-6">
+            <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
+              <div>
+                <div className="text-lg font-extrabold text-gray-900">S3 成果物確認（B007）</div>
+                <div className="text-sm text-gray-600 mt-1">prefix 配下の件数と list（最大100）を確認します</div>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge tone="gray">{s3CountQuery.data?.bucket ?? "-"}</Badge>
+                <Badge tone="gray">{s3CountQuery.data?.prefix ?? "-"}</Badge>
+                <Badge tone="blue">recursive {String(s3CountQuery.data?.recursive ?? "-")}</Badge>
+              </div>
+            </div>
+
+            {s3CountQuery.isError || s3ListQuery.isError ? (
+              <div className="mt-4">
+                <Alert type="error" title="S3取得エラー" message={((s3CountQuery.error as Error)?.message || (s3ListQuery.error as Error)?.message) ?? "unknown"} />
+              </div>
+            ) : null}
+
+            <div className="mt-5 grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="rounded-2xl border bg-gradient-to-br from-white to-gray-50 p-5">
+                <div className="text-xs text-gray-600 font-semibold">Total（prefix配下）</div>
+                <div className="mt-2 text-3xl font-extrabold text-gray-900">{s3TotalText}</div>
+              </div>
+
+              <div className="rounded-2xl border bg-gradient-to-br from-white to-amber-50 p-5">
+                <div className="text-xs text-gray-600 font-semibold">指定日（countOnDay）</div>
+                <div className="mt-2 text-3xl font-extrabold text-gray-900">{s3CountOnDayText}</div>
+              </div>
+
+              <div className="rounded-2xl border bg-gradient-to-br from-white to-blue-50 p-5">
+                <div className="text-xs text-gray-600 font-semibold">CSV files</div>
+                <div className="mt-2 text-3xl font-extrabold text-gray-900">{csvItems.length.toLocaleString()}</div>
+              </div>
+
+              <div className="rounded-2xl border bg-gradient-to-br from-white to-gray-50 p-5">
+                <div className="text-xs text-gray-600 font-semibold">Returned（list）</div>
+                <div className="mt-2 text-3xl font-extrabold text-gray-900">{s3ReturnedText}</div>
+              </div>
+            </div>
+
+            {!canRegisterMaster ? (
+              <div className="mt-4">
+                <Alert type="warning" title="マスタ登録の条件" message={`マスタ登録するには、S3に csv がちょうど 1つ必要です（現在: ${csvItems.length}）。`} />
+              </div>
+            ) : null}
+
+            {s3CountQuery.data?.message ? (
+              <div className="mt-4 text-sm text-gray-700">
+                <span className="font-extrabold">count message:</span> {s3CountQuery.data.message}
+              </div>
+            ) : null}
+
+            {s3ListQuery.data?.message ? (
+              <div className="mt-2 text-sm text-gray-700">
+                <span className="font-extrabold">list message:</span> {s3ListQuery.data.message}
+              </div>
+            ) : null}
+
+            <div className="mt-5 overflow-x-auto rounded-2xl border bg-white">
+              <table className="w-full border-collapse text-sm">
+                <thead>
+                  <tr className="text-left border-b bg-gray-50">
+                    <th className="px-5 py-3 text-xs font-extrabold text-gray-600 min-w-[520px]">key</th>
+                    <th className="px-5 py-3 text-xs font-extrabold text-gray-600 min-w-[140px]">size</th>
+                    <th className="px-5 py-3 text-xs font-extrabold text-gray-600 min-w-[220px]">lastModifiedIso</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {(s3ListQuery.data?.items ?? []).map((it) => {
+                    const isCsv = it.key.toLowerCase().endsWith(".csv");
+                    return (
+                      <tr key={it.key} className={`border-b hover:bg-gray-50 transition-colors ${isCsv ? "bg-blue-50/60" : ""}`}>
+                        <td className="px-5 py-3 align-top">
+                          <code className="text-xs font-semibold break-all">{it.key}</code>
+                        </td>
+                        <td className="px-5 py-3 align-top">{typeof it.size === "number" ? it.size.toLocaleString() : "-"}</td>
+                        <td className="px-5 py-3 align-top">{it.lastModifiedIso ?? "-"}</td>
+                      </tr>
+                    );
+                  })}
+                  {(s3ListQuery.data?.items ?? []).length === 0 ? (
+                    <tr>
+                      <td colSpan={3} className="px-5 py-6 text-sm text-gray-500">
+                        ファイルがありません
+                      </td>
+                    </tr>
+                  ) : null}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        ) : null}
 
-          {!canRegisterMaster && (
-            <div style={{ marginTop: 10, fontSize: 12, color: "#b91c1c", fontWeight: 700 }}>マスタ登録するには、S3に csv がちょうど 1つ存在する必要があります（現在: {csvItems.length}）。</div>
-          )}
-        </div>
-      )}
+        {/* Confirm Modal */}
+        <ConfirmModal
+          open={isMasterModalOpen}
+          title="マスタ登録"
+          message={canRegisterMaster ? `マスタに登録しますか？\n対象CSV: ${csvItems[0]?.key ?? ""}` : `マスタ登録できません。\nS3に csv がちょうど 1つ必要です（現在: ${csvItems.length}）。`}
+          onClose={() => {
+            if (!masterMutation.isPending) setIsMasterModalOpen(false);
+          }}
+          onConfirm={() => masterMutation.mutate()}
+          isLoading={masterMutation.isPending}
+          confirmText="登録する"
+          cancelText="やめる"
+          confirmDisabled={!canRegisterMaster}
+        />
 
-      {/* ===== Confirm Modal ===== */}
-      <ConfirmModal
-        open={isMasterModalOpen}
-        title="マスタ登録"
-        message={canRegisterMaster ? `マスタに登録しますか？\n対象CSV: ${csvItems[0]?.key ?? ""}` : `マスタ登録できません。\nS3に csv がちょうど 1つ必要です（現在: ${csvItems.length}）。`}
-        onClose={() => {
-          if (!masterMutation.isPending) setIsMasterModalOpen(false);
-        }}
-        onConfirm={() => masterMutation.mutate()}
-        isLoading={masterMutation.isPending}
-        confirmText="登録する"
-        cancelText="やめる"
-        confirmDisabled={!canRegisterMaster}
-      />
+        <div className="text-center text-xs text-gray-500">取得できない場合は、管理者権限・セッション（credentials: include）・API到達性をご確認ください。</div>
+      </div>
     </div>
   );
 }
