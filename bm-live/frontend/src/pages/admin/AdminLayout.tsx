@@ -44,6 +44,9 @@ export default function AdminLayout() {
           <NavLink to="manual/teamColor" style={linkStyle}>
             チームカラー設定
           </NavLink>
+          <NavLink to="ingested" style={linkStyle}>
+            投入済みデータ参照管理
+          </NavLink>
         </div>
       </aside>
 
