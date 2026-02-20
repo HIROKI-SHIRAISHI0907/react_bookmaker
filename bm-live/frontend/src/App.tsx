@@ -43,7 +43,7 @@ export default function App() {
           <Route path="/forgot-password" element={<ForgetPasswordPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/soccer/:countrySlug/:leagueSlug" element={<LeagueMenuPage />} />
-          <Route path="/team/:teamSlug/:teamHash" element={<TeamDetailPage />} />
+          <Route path="/team/:teamEnglish/:teamHash" element={<TeamDetailPage />} />
 
           <Route path="admin" element={<AdminLayout />}>
             <Route path="force/update" element={<CountryLeagueForceAdminPage />} />
