@@ -38,6 +38,15 @@ type EachScoreLostDataResponseDTO = {
   status: string | null; // "FINISHED" 等（無くてもOK）
 };
 
+// 得失点スコア
+type ScoredLostRow = {
+  key: string;
+  dateText: string;
+  roundText: string;
+  gf: number;
+  ga: number;
+};
+
 function fmtJstDateOnly(iso: string) {
   const d = new Date(iso);
   return d.toLocaleDateString("ja-JP", { month: "2-digit", day: "2-digit" });
@@ -177,6 +186,28 @@ type OverviewListResponse = {
   items: OverviewResponse[];
 };
 
+// ラウンドラベル
+function labelRound(m: EachScoreLostDataResponseDTO) {
+  const r = (m.roundNo ?? "").trim();
+  if (r) return `ラウンド${r}`;
+
+  const mm = (m.dataCategory ?? "").match(/ラウンド\s*([0-9０-９]+)/);
+  if (mm?.[1]) return `ラウンド${mm[1]}`;
+
+  return "ラウンド?";
+}
+
+// チーム視点の得失点
+function toGfGa(m: EachScoreLostDataResponseDTO, teamName: string) {
+  const isHome = m.homeTeamName === teamName;
+  const hs = Number(m.homeScore ?? 0);
+  const as = Number(m.awayScore ?? 0);
+  return {
+    gf: isHome ? hs : as,
+    ga: isHome ? as : hs,
+  };
+}
+
 function cx(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
 }
@@ -204,6 +235,13 @@ function rColor(r: number) {
     if (a < 0.6) return "bg-rose-100 text-rose-900 ring-rose-300";
     return "bg-rose-200 text-rose-950 ring-rose-400";
   }
+}
+
+function labelRoundXAndDate(m: EachScoreLostDataResponseDTO) {
+  // roundNo優先、無ければ dataCategory から抽出
+  const r = (m.roundNo ?? "").trim() || (m.dataCategory ?? "").match(/ラウンド\s*([0-9０-９]+)/)?.[1] || "?";
+  const dt = m.recordTime ? fmtJstDateOnly(m.recordTime) : "--/--";
+  return `${dt} ラウンド${r}`;
 }
 
 function Badge(props: { children: React.ReactNode; tone?: "slate" | "indigo" | "emerald" | "amber" | "rose" }) {
@@ -913,16 +951,6 @@ export default function TeamDetailMockPage() {
     });
   }, [filteredMatches]);
 
-  const goalsByMatch = useMemo(() => {
-    const rows = [...MATCHES].slice(0, 6);
-    return rows.map((m) => ({
-      label: new Date(m.dateISO).toLocaleDateString("ja-JP", { month: "2-digit", day: "2-digit" }),
-      gf: m.gf,
-      ga: m.ga,
-      status: m.status,
-    }));
-  }, [MATCHES]);
-
   const monthAgg = useMemo(() => {
     return [
       { month: "2026-02", games: 4, gf: 5, ga: 1 },
@@ -933,6 +961,44 @@ export default function TeamDetailMockPage() {
 
   // ★ UI全体で使う「次戦」
   const nextMatch = useMemo(() => MATCHES.find((m) => m.status === "SCHEDULED") ?? null, [MATCHES]);
+
+  const scoredLostBarsRows = useMemo(() => {
+    const ms = scoredLostApi?.matches ?? [];
+    if (!ms.length) return [];
+
+    const rows = ms
+      // FINISHEDだけに寄せる（必要なら）
+      .filter((m) => (m.status ?? "FINISHED") === "FINISHED")
+      // recordTimeが無いと並び替えが不安なので落とす（任意）
+      .filter((m) => !!m.recordTime)
+      // 新しい順にしたい場合（グラフを「直近が上」）
+      .sort((a, b) => new Date(b.recordTime!).getTime() - new Date(a.recordTime!).getTime())
+      .map((m) => {
+        const teamName = (teamApi?.name ?? TEAM.name).trim();
+
+        const hs = Number(m.homeScore ?? 0);
+        const as = Number(m.awayScore ?? 0);
+
+        const isHome = m.homeTeamName === teamName;
+        const isAway = m.awayTeamName === teamName;
+
+        // 判定不能なら「homeを自チーム扱い」に倒す（崩れ防止）
+        const gf = isAway ? as : hs;
+        const ga = isAway ? hs : as;
+
+        return {
+          label: labelRoundXAndDate(m), // "MM/DD ラウンドX"
+          gf,
+          ga,
+          status: "FINISHED" as MatchStatus,
+        };
+      });
+
+    // period（直近5/10）に合わせたいならここでslice
+    if (period === "5") return rows.slice(0, 5);
+    if (period === "10") return rows.slice(0, 10);
+    return rows;
+  }, [scoredLostApi, TEAM.name, teamApi?.name, period]);
 
   // ---------------------------
   // RENDER
@@ -1162,7 +1228,7 @@ export default function TeamDetailMockPage() {
                     </div>
                   }
                 >
-                  <BarsByMatch rows={goalsByMatch} />
+                  <BarsByMatch rows={scoredLostBarsRows} />
                 </Card>
 
                 <Card className="lg:col-span-5" title="月毎の得点 / 失点（mock）" right={<Badge tone="slate">集計</Badge>}>
