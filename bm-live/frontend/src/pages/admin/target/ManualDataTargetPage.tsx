@@ -108,16 +108,43 @@ export async function fetchAllLeagueMaster(): Promise<AllLeagueDTO[]> {
   return Array.isArray(data) ? data : [];
 }
 
+const OK_CODES = new Set(["0", "200"]);
+const isOkCode = (code?: string) => OK_CODES.has(String(code ?? ""));
+
 export async function patchAllLeagueMaster(req: AllLeagueRequest): Promise<AllLeagueResponse> {
-  const data = await fetchJsonStrict<AllLeagueResponse | null>(BASE, {
+  const res = await fetch(BASE, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(req),
-    allowEmptyBody: true, // ★空bodyでも落ちないように
   });
 
-  // サーバが空を返した場合の保険（成功扱いにする/厳密にしたいならここは throw に変更）
-  return data ?? { responseCode: "200", message: "empty response (treated as success)" };
+  const ct = res.headers.get("content-type") ?? "";
+  const text = await res.text().catch(() => "");
+
+  let json: any = null;
+  if (ct.includes("application/json") && text.trim() !== "") {
+    try {
+      json = JSON.parse(text);
+    } catch {
+      json = null;
+    }
+  }
+
+  // HTTPがエラーでも responseCode が成功なら成功扱い（暫定回避）
+  if (!res.ok) {
+    if (json && isOkCode(json.responseCode)) {
+      return json as AllLeagueResponse;
+    }
+    throw new Error([`HTTP ${res.status} ${res.statusText}`, `url: ${res.url}`, `content-type: ${ct}`, text ? `body(snippet):\n${text.slice(0, 500)}` : ""].filter(Boolean).join("\n"));
+  }
+
+  // 通常成功
+  if (!json) return { responseCode: "200", message: "empty response (treated as success)" };
+  return json as AllLeagueResponse;
 }
 
 export async function execAllLeagueJsonTask(req: ExecTaskRequest = {}): Promise<ExecTaskResponse> {
@@ -323,7 +350,8 @@ export default function ManualDataTargetPage() {
           dispFlg: r.dispFlg,
         });
 
-        if (res.responseCode !== "200") {
+        // ★ "0" も成功扱い
+        if (!isOkCode(res.responseCode)) {
           errors.push({ key: keyOf(r), code: res.responseCode, message: res.message });
         }
       } catch (e: any) {

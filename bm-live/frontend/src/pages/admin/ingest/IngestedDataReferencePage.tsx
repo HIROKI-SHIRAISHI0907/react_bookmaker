@@ -1,5 +1,19 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
+type FinGettingRequest = {
+  matches: Array<{
+    matchDate: string; // "YYYY-MM-DD"
+    matchId: string;
+    matchUrl?: string;
+  }>;
+};
+
+type ExecTaskResponse = {
+  returnCd?: string;
+  taskArn?: string;
+  message?: string;
+};
+
 function extractMidFromUrl(url: string | null | undefined): string | null {
   const s = (url ?? "").trim();
   if (!s) return null;
@@ -278,6 +292,10 @@ export default function IngestedDataReferencePage() {
   const [toDate, setToDate] = useState(() => toISODateInputValue(today));
   const [keyword, setKeyword] = useState("");
 
+  const [execLoading, setExecLoading] = useState(false);
+  const [execError, setExecError] = useState<string | null>(null);
+  const [execResult, setExecResult] = useState<ExecTaskResponse | null>(null);
+
   // ---- paging (matchKey単位)
   const [offset, setOffset] = useState(0);
   const [pageSize, setPageSize] = useState(100);
@@ -295,6 +313,35 @@ export default function IngestedDataReferencePage() {
   // その後 matchKey単位でフロント側 pagination します。
   const FETCH_LIMIT_RAW = 5000;
 
+  const runB008FinGettingTask = async () => {
+    setExecLoading(true);
+    setExecError(null);
+    setExecResult(null);
+
+    try {
+      const req = buildFinGettingRequestFromGroups(groupedFiltered, fromDate, toDate);
+
+      // guard：空なら叩かない
+      if (req.matches.length === 0) {
+        setExecError("対象が0件です（matchIdが取れない or フィルタで空）");
+        return;
+      }
+
+      // 注意：envで渡す方式は大量だと上限に当たる可能性があるので、ひとまずUIでも警告
+      if (req.matches.length > 300) {
+        // ここは運用に合わせて閾値調整
+        throw new Error(`対象が多すぎます（${req.matches.length}件）。日付/keywordで絞ってから実行してください。`);
+      }
+
+      const res = await postFinGettingJson(req);
+      setExecResult(res);
+    } catch (e: any) {
+      setExecError(e?.message ?? String(e));
+    } finally {
+      setExecLoading(false);
+    }
+  };
+
   const apiUrl = useMemo(() => {
     const params = new URLSearchParams();
 
@@ -309,42 +356,59 @@ export default function IngestedDataReferencePage() {
     return `/v1/api/admin/ingested?${params.toString()}`;
   }, [fromDate, toDate, keyword]);
 
-  const downloadB008FinGettingJson = () => {
-    // 日付キー：from==toならその日付。違う場合は registerTime(JST) で振り分け
+  function resolveMatchIdPreferUrlMid(matchId: string | null, matchUrl: string | null): string | null {
+    const u = (matchUrl ?? "").trim();
+    const mid = extractMidFromUrl(u);
+    if (mid) return mid; // URLがあるならmidを正とする
+    const m = (matchId ?? "").trim();
+    return m || null;
+  }
+
+  function buildFinGettingRequestFromGroups(groups: MatchGroupRow[], fromDate: string, toDate: string): FinGettingRequest {
     const singleDay = fromDate === toDate;
 
-    const out: Record<string, Array<{ matchId: string; matchUrl?: string }>> = {};
+    // dateごとに (matchId) 重複排除
+    const perDate = new Map<string, Map<string, { matchDate: string; matchId: string; matchUrl?: string }>>();
 
-    for (const g of groupedFiltered) {
-      const mid = (g.matchId ?? "").trim();
-      if (!mid) continue;
-
+    for (const g of groups) {
       const dk = singleDay ? fromDate : (isoToJstDateKey(g.latestRegisterTime) ?? fromDate);
 
-      const row: { matchId: string; matchUrl?: string } = { matchId: mid };
+      const mid = resolveMatchIdPreferUrlMid(g.matchId, g.matchUrl);
+      if (!mid) continue;
+
       const url = (g.matchUrl ?? "").trim();
+      const row: { matchDate: string; matchId: string; matchUrl?: string } = { matchDate: dk, matchId: mid };
       if (url) row.matchUrl = url;
 
-      (out[dk] ??= []).push(row);
+      if (!perDate.has(dk)) perDate.set(dk, new Map());
+      // 同一matchIdは最後のもの優先（URL付きが来たら上書きされる）
+      perDate.get(dk)!.set(mid, row);
     }
 
-    // dateごとに matchId 重複排除（最後のもの優先）
-    for (const dk of Object.keys(out)) {
-      const m = new Map<string, { matchId: string; matchUrl?: string }>();
-      for (const r of out[dk]) m.set(r.matchId, r);
-      out[dk] = Array.from(m.values());
+    const matches: FinGettingRequest["matches"] = [];
+    for (const [, m] of perDate) {
+      matches.push(...Array.from(m.values()));
     }
 
-    const jsonText = JSON.stringify(out, null, 2);
-    const blob = new Blob([jsonText], { type: "application/json;charset=utf-8" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "b008_fin_getting.json";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(a.href);
-  };
+    // 任意：安定のためソート
+    matches.sort((a, b) => (a.matchDate + a.matchId).localeCompare(b.matchDate + b.matchId));
+
+    return { matches };
+  }
+
+  async function postFinGettingJson(req: FinGettingRequest, signal?: AbortSignal): Promise<ExecTaskResponse> {
+    const res = await fetch("/v1/api/admin/exec/task/fin-getting-json", {
+      method: "POST",
+      signal,
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify(req),
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(`HTTP ${res.status} ${res.statusText}${text ? `: ${text}` : ""}`);
+    }
+    return (await res.json()) as ExecTaskResponse;
+  }
 
   const refetch = () => {
     setOffset(0);
@@ -559,6 +623,9 @@ export default function IngestedDataReferencePage() {
       </div>
 
       <Card title="検索条件">
+        <Button onClick={runB008FinGettingTask} disabled={loading || execLoading || groupedFiltered.length === 0}>
+          {execLoading ? "B008起動中…" : "B008（fin-getting-json）起動"}
+        </Button>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
           <div>
             <div className="mb-1 text-xs font-medium text-slate-600">from</div>
@@ -607,6 +674,20 @@ export default function IngestedDataReferencePage() {
           </div>
         </div>
       </Card>
+
+      {execError && (
+        <Alert tone="error" title="B008起動に失敗しました">
+          {execError}
+        </Alert>
+      )}
+
+      {execResult && (
+        <Alert tone="info" title="B008を起動しました">
+          returnCd: {execResult.returnCd ?? "-"}
+          <br />
+          taskArn: {execResult.taskArn ?? "-"}
+        </Alert>
+      )}
 
       {error && (
         <Alert tone="error" title="取得に失敗しました">

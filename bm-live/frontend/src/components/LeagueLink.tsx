@@ -101,10 +101,12 @@ export default function LeagueMenu() {
                       <ul className="ml-2 mt-1 space-y-1">
                         {g.leagues.map((l, li) => {
                           // ✅ routingPath 優先（なければ path）
-                          const to = l.routingPath ?? l.path;
+                          const to = l.path; // ★ここを固定（アプリ内に遷移）
 
                           // ✅ key を必ずユニークにする（country + name だけだと衝突する）
                           const key = `${g.country}__${l.name}__${to}`;
+
+                          const hasVariants = (l.variantCount ?? 0) >= 2;
 
                           return (
                             <li key={key}>
@@ -114,8 +116,12 @@ export default function LeagueMenu() {
                                 className="block rounded px-2 py-1 text-sm hover:bg-accent animate-in-left"
                                 style={{ animationDelay: `${gi * 45 + li * 25}ms` }}
                               >
-                                {l.name}
-                                <span className="ml-1 opacity-60">({l.teamCount})</span>
+                                <span className="inline-flex items-center gap-2">
+                                  <span>{l.name}</span>
+                                  {hasVariants ? <span className="text-xs opacity-70">▶</span> : null}
+                                  <span className="ml-1 opacity-60">({l.teamCount})</span>
+                                  {hasVariants ? <span className="text-xs opacity-60">({l.variantCount})</span> : null}
+                                </span>
                               </Link>
                             </li>
                           );

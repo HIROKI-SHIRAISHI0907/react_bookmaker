@@ -45,26 +45,33 @@ export default function LeagueMenuPage() {
               {data.country} / {data.league}
             </h1>
 
-            {/* ✅ カード風リスト */}
-            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {data.teams.map((t) => (
-                <li key={t.hash}>
-                  <Link
-                    to={t.routingPath}
-                    className="
-                      block rounded-lg border p-4
-                      transition-colors duration-150
-                      hover:bg-accent hover:text-accent-foreground
-                      cursor-pointer
-                      focus:outline-none focus:ring-2 focus:ring-ring
-                    "
-                  >
-                    <div className="font-medium">{t.name}</div>
-                    <div className="text-xs text-muted-foreground mt-1 truncate">{t.routingPath}</div>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            {/* ★親リーグ：variants を表示 */}
+            {Array.isArray(data.variants) && data.variants.length > 0 ? (
+              <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {data.variants.map((v) => (
+                  <li key={v.path}>
+                    <Link to={v.path} className="block rounded-lg border p-4 hover:bg-accent hover:text-accent-foreground">
+                      <div className="font-medium">{v.name}</div>
+                      <div className="text-xs text-muted-foreground mt-1">teams: {v.teamCount}</div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+
+            {/* ★子リーグ：teams を表示（従来） */}
+            {Array.isArray(data.teams) && data.teams.length > 0 ? (
+              <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {data.teams.map((t) => (
+                  <li key={t.hash}>
+                    <Link to={t.routingPath} className="block rounded-lg border p-4 hover:bg-accent hover:text-accent-foreground">
+                      <div className="font-medium">{t.name}</div>
+                      <div className="text-xs text-muted-foreground mt-1 truncate">{t.routingPath}</div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </>
         )}
       </main>

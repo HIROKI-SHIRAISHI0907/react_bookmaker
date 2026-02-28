@@ -1,9 +1,10 @@
 // src/api/leagues.ts(Dashboard.tsxのハンバーガーメニューに表示する記述とリンク)(SpringBoot bookmakers-web bm_w011)
 type LeagueItem = {
-  name: string;
-  teamCount: number;
-  path: string;
-  routingPath: string;
+  name: string; // サイドメニュー表示名（親リーグ名：J2・J3リーグ など）
+  teamCount: number; // 親なら合計
+  path: string; // ★アプリ内遷移用（/leagues/<country>/<leagueGroup> など）
+  routingPath?: string; // Flashscore path（必要なら外部リンク用に保持）
+  variantCount?: number; // ★サブリーグ数（親だけ意味がある）
 };
 
 export type LeagueGrouped = {
@@ -28,10 +29,18 @@ export type TeamItem = {
   routingPath: string; // /team/xxxx/XXXXXX
 };
 
+export type LeagueVariantItem = {
+  name: string; // "J2・J3リーグ - WEST A"
+  teamCount: number;
+  path: string; // アプリ内
+  routingPath?: string;
+};
+
 export type TeamsInLeague = {
   country: string;
-  league: string;
-  teams: TeamItem[];
+  league: string; // 親なら "J2・J3リーグ"、子なら "J2・J3リーグ - WEST A"
+  variants?: LeagueVariantItem[]; // ★親の場合に入る
+  teams?: TeamItem[]; // ★子の場合に入る（従来の teams のままでもOK）
 };
 
 export async function fetchTeamsInLeague(country: string, league: string): Promise<TeamsInLeague> {
