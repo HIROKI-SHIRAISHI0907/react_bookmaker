@@ -13,6 +13,34 @@ type TeamMeta = {
   crestText?: string;
 };
 
+// --- Team member API (/api/team-member-master/{teamEnglish}/{teamHash}) ---
+type TeamMemberDTO = {
+  id: string;
+  country: string;
+  league: string;
+  team: string;
+  score: string;
+  loanBelong: string;
+  jersey: string;
+  member: string;
+  facePicPath: string;
+  belongList: string;
+  height: string;
+  weight: string;
+  position: string;
+  birth: string;
+  age: string;
+  marketValue: string;
+  injury: string;
+  versusTeamScoreData: string;
+  retireFlg: string;
+  deadline: string;
+  deadlineContractDate: string;
+  latestInfoDate: string;
+  updStamp: string;
+  delFlg: string;
+};
+
 // --- Team detail ---
 type TeamDetailResponse = {
   id: number;
@@ -457,6 +485,58 @@ export default function TeamDetailMockPage() {
   }, [summaryRows, selectedYear]);
 
   // =========================
+  // TEAM MEMBER API
+  // =========================
+  const [teamMembers, setTeamMembers] = useState<TeamMemberDTO[] | null>(null);
+  const [teamMembersLoading, setTeamMembersLoading] = useState(false);
+  const [teamMembersError, setTeamMembersError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!teamEnglish || !teamHash) return;
+    let cancelled = false;
+
+    (async () => {
+      setTeamMembersLoading(true);
+      setTeamMembersError(null);
+
+      // 候補URL：まず /v1/api を試し、404等なら /api を試す
+      const urls = [
+        `/v1/api/team-member-master/${encodeURIComponent(teamEnglish)}/${encodeURIComponent(teamHash)}`,
+        `/api/team-member-master/${encodeURIComponent(teamEnglish)}/${encodeURIComponent(teamHash)}`,
+      ];
+
+      try {
+        let lastErr: any = null;
+
+        for (const url of urls) {
+          try {
+            const data = await fetchJsonStrict<TeamMemberDTO[]>(url, { method: "GET" });
+            if (!cancelled) setTeamMembers(data);
+            lastErr = null;
+            break;
+          } catch (e: any) {
+            lastErr = e;
+            // 次のURLへ
+          }
+        }
+
+        if (lastErr) throw lastErr;
+      } catch (e: any) {
+        if (!cancelled) {
+          setTeamMembersError(String(e?.message ?? e));
+          setTeamMembers(null);
+        }
+      } finally {
+        if (!cancelled) setTeamMembersLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [teamEnglish, teamHash]);
+
+  // =========================
   // LIVE API
   // =========================
   const [liveApi, setLiveApi] = useState<LiveMatchResponse[] | null>(null);
@@ -488,6 +568,21 @@ export default function TeamDetailMockPage() {
       cancelled = true;
     };
   }, [teamEnglish, teamHash]);
+
+  const visibleTeamMembers = useMemo(() => {
+    const xs = teamMembers ?? [];
+
+    // delFlg = "1" を除外したい場合（要件に合わせて）
+    const filtered = xs.filter((m) => (m.delFlg ?? "0") !== "1");
+
+    // 背番号でソート（数値っぽいもの優先）
+    const toNum = (s: string) => {
+      const n = Number(String(s ?? "").trim());
+      return Number.isFinite(n) ? n : 9999;
+    };
+
+    return [...filtered].sort((a, b) => toNum(a.jersey) - toNum(b.jersey));
+  }, [teamMembers]);
 
   const liveBanner: LiveBannerModel | null = useMemo(() => {
     if (!teamEnglish) return null;
@@ -1001,7 +1096,7 @@ export default function TeamDetailMockPage() {
               <div className="grid gap-4 lg:grid-cols-12">
                 <Card
                   className="lg:col-span-7"
-                  title="各試合ごとの得点 / 失点（scoredLost）"
+                  title="各試合ごとの得点 / 失点"
                   right={
                     <div className="flex items-center gap-2">
                       {scoredLostLoading && <Badge tone="slate">取得中</Badge>}
@@ -1100,8 +1195,79 @@ export default function TeamDetailMockPage() {
           )}
 
           {tab === "players" && (
-            <Card title="選手（mock）" right={<Badge tone="slate">後で強化</Badge>}>
-              <div className="text-sm text-slate-600">（略）</div>
+            <Card
+              title={
+                <div className="flex items-center gap-2">
+                  <span>選手</span>
+                  <Badge tone="indigo">team-member-master</Badge>
+                </div>
+              }
+              right={
+                <div className="flex items-center gap-2">
+                  {teamMembersLoading && <Badge tone="slate">取得中</Badge>}
+                  {teamMembersError && <Badge tone="rose">取得失敗</Badge>}
+                  {visibleTeamMembers && <Badge tone="slate">{visibleTeamMembers.length}人</Badge>}
+                </div>
+              }
+            >
+              {teamMembersError && <pre className="mb-4 whitespace-pre-wrap rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-900">{teamMembersError}</pre>}
+
+              {!teamMembersLoading && (!visibleTeamMembers || visibleTeamMembers.length === 0) ? (
+                <div className="text-sm text-slate-600">選手データがありません</div>
+              ) : (
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {visibleTeamMembers.map((m) => {
+                    const jersey = (m.jersey ?? "").trim();
+                    const pos = (m.position ?? "").trim();
+                    const age = (m.age ?? "").trim();
+                    const score = (m.score ?? "").trim();
+                    const injury = (m.injury ?? "").trim();
+                    const isLoan = (m.deadline ?? "").trim() === "1";
+                    const isRetired = (m.retireFlg ?? "").trim() === "1";
+
+                    return (
+                      <div key={m.id ?? `${m.member}_${m.jersey}`} className="rounded-2xl border border-slate-200 bg-white p-4">
+                        <div className="flex items-start gap-3">
+                          <div className="h-12 w-12 overflow-hidden rounded-xl bg-slate-100 ring-1 ring-slate-200">
+                            {m.facePicPath ? (
+                              <img
+                                src={m.facePicPath}
+                                alt={m.member}
+                                className="h-full w-full object-cover"
+                                onError={(e) => {
+                                  // 画像が無い/URL違いでも崩さない
+                                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                                }}
+                              />
+                            ) : null}
+                          </div>
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              {jersey && <Badge tone="slate">#{jersey}</Badge>}
+                              {pos && <Badge tone="indigo">{pos}</Badge>}
+                              {isLoan && <Badge tone="amber">期限付き</Badge>}
+                              {isRetired && <Badge tone="rose">引退</Badge>}
+                            </div>
+
+                            <div className="mt-2 truncate text-sm font-black text-slate-900">{m.member}</div>
+
+                            <div className="mt-1 flex flex-wrap gap-2 text-xs text-slate-600">
+                              {age && <span>年齢: {age}</span>}
+                              {score && <span>得点: {score}</span>}
+                              {m.marketValue && <span>市場価値: {m.marketValue}</span>}
+                            </div>
+
+                            {injury && <div className="mt-2 text-xs font-semibold text-rose-700">{injury}</div>}
+
+                            {m.latestInfoDate && <div className="mt-2 text-[11px] text-slate-500">latest: {m.latestInfoDate}</div>}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </Card>
           )}
         </div>

@@ -1,593 +1,782 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
-/** ================= Types ================= */
-type TableName = "FUTURE_MASTER" | "DATA";
+function extractMidFromUrl(url: string | null | undefined): string | null {
+  const s = (url ?? "").trim();
+  if (!s) return null;
+  const m = s.match(/[?&]mid=([A-Za-z0-9]+)/);
+  return m?.[1] ?? null;
+}
 
-type FutureMasterIngestSummaryDTO = {
-  seq: number;
-  gameTeamCategory: string | null;
-  futureTime: string | null;
-  homeTeamName: string | null;
-  awayTeamName: string | null;
-  gameLink: string | null;
-  startFlg: string | null;
-};
+function isoToJstDateKey(iso: string): string | null {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
 
-type DataIngestSummaryDTO = {
-  seq: string;
-  dataCategory: string | null;
-  times: string | null;
-  homeTeamName: string | null;
-  awayTeamName: string | null;
-  recordTime: string | null;
+  // JST固定で "YYYY-MM-DD" を作る（PCのローカルTZに依存しない）
+  const parts = new Intl.DateTimeFormat("ja-JP", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(d);
+
+  const y = parts.find((p) => p.type === "year")?.value;
+  const m = parts.find((p) => p.type === "month")?.value;
+  const dd = parts.find((p) => p.type === "day")?.value;
+  if (!y || !m || !dd) return null;
+  return `${y}-${m}-${dd}`;
+}
+
+/** =========================
+ * Types (API DTO)
+ * ========================= */
+type ApiEnvelope = {
+  offset: number;
+  limit: number;
+  total: number;
+  rows: IngestedRowDTO[];
 };
 
 type IngestedRowDTO = {
-  table: TableName;
-  seq: string;
-  registerTime: string; // OffsetDateTime ISO
+  seq: number;
+  table: string; // "data" | "future_master" | etc
+  registerTime: string; // ISO string
   updateTime?: string | null;
-  future?: FutureMasterIngestSummaryDTO | null;
-  data?: DataIngestSummaryDTO | null;
+
+  /** backend enrich (あれば使う) */
+  futureExists?: boolean;
+  hasFinishedTimes?: boolean;
+  timesList?: string[];
+
+  /** payload */
+  data?: DataRowDTO | null;
+  future?: FutureMasterRowDTO | null;
 };
 
-type IngestedDataReferenceResponse = {
-  from: string;
-  to: string;
-  rows: IngestedRowDTO[];
-  total: number;
+type DataRowDTO = {
+  // data table (必要な分だけ)
+  gameId?: string | number | null; // ← あなたが「dataはgame_idが良い」と言っていたので最優先で使う
+  gameLink?: string | null;
+
+  dataCategory?: string | null;
+  times?: string | null;
+
+  homeTeamName?: string | null;
+  awayTeamName?: string | null;
 };
 
-/** ================= Utils ================= */
-function toDatetimeLocalValue(iso: string) {
-  // ISO → datetime-local（秒落とし）
-  const d = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  const yyyy = d.getFullYear();
-  const mm = pad(d.getMonth() + 1);
-  const dd = pad(d.getDate());
-  const hh = pad(d.getHours());
-  const mi = pad(d.getMinutes());
-  return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
-}
-
-function fromDatetimeLocalValue(v: string) {
-  // datetime-local（ローカル）→ ISO（UTC）
-  const d = new Date(v);
-  return d.toISOString();
-}
-
-function addDays(date: Date, days: number) {
-  const d = new Date(date);
-  d.setDate(d.getDate() + days);
-  return d;
-}
-
-function formatDateTime(iso: string) {
-  if (!iso) return "-";
-  const d = new Date(iso);
-  return d.toLocaleString();
-}
-
-function getErrorMessage(e: unknown): string {
-  if (e instanceof Error) return e.message;
-  return String(e ?? "unknown error");
-}
-
-/** ================= Small UI components (Tailwind) ================= */
-type CardProps = { children: React.ReactNode; className?: string };
-const Card = ({ children, className = "" }: CardProps) => <div className={`bg-white/90 backdrop-blur rounded-2xl shadow-sm border border-gray-100 ${className}`}>{children}</div>;
-
-type BadgeTone = "gray" | "blue" | "emerald" | "amber" | "rose";
-const Badge = ({ children, tone = "gray" }: { children: React.ReactNode; tone?: BadgeTone }) => {
-  const classes: Record<BadgeTone, string> = {
-    gray: "bg-gray-100 text-gray-700 border-gray-200",
-    blue: "bg-blue-100 text-blue-800 border-blue-200",
-    emerald: "bg-emerald-100 text-emerald-800 border-emerald-200",
-    amber: "bg-amber-100 text-amber-800 border-amber-200",
-    rose: "bg-rose-100 text-rose-800 border-rose-200",
-  };
-  return <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${classes[tone]}`}>{children}</span>;
+type FutureMasterRowDTO = {
+  // future_master (必要な分だけ)
+  gameLink?: string | null;
+  gameTeamCategory?: string | null;
+  homeTeamName?: string | null;
+  awayTeamName?: string | null;
+  futureTime?: string | null;
 };
 
-type ButtonVariant = "primary" | "secondary";
-const Button = ({
-  children,
-  onClick,
-  disabled,
-  loading,
-  variant = "primary",
-  icon,
-  className = "",
-}: {
-  children: React.ReactNode;
-  onClick?: React.MouseEventHandler<HTMLButtonElement>;
-  disabled?: boolean;
-  loading?: boolean;
-  variant?: ButtonVariant;
-  icon?: React.ReactNode;
-  className?: string;
-}) => {
-  const variants: Record<ButtonVariant, string> = {
-    primary: "bg-blue-600 hover:bg-blue-700 text-white border-blue-600 focus:ring-blue-500",
-    secondary: "bg-gray-50 hover:bg-gray-100 text-gray-900 border-gray-200 focus:ring-gray-300",
-  };
+/** =========================
+ * UI Small Components
+ * ========================= */
+function normKeyPart(s: string | null | undefined) {
+  // NFKCで半角カナ等を寄せる + 全角スペースを普通のスペースへ + 連続空白圧縮
+  return (s ?? "")
+    .normalize("NFKC")
+    .replace(/\u3000/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
+function makeCompositeKey(home: string, away: string, category: string) {
+  const h = normKeyPart(home);
+  const a = normKeyPart(away);
+  const c = normKeyPart(category);
+  // 3つ揃っていれば複合キーを採用（matchKeyより優先）
+  if (h && a && c) return `H:${h}|||A:${a}|||C:${c}`;
+  return null;
+}
+
+function Card(props: { title?: string; children: React.ReactNode; className?: string }) {
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled || loading}
-      className={`
-        inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold
-        transition-all duration-200 shadow-sm hover:shadow-md
-        disabled:opacity-50 disabled:cursor-not-allowed
-        focus:outline-none focus:ring-2 focus:ring-offset-2
-        ${variants[variant]}
-        ${className}
-      `}
-    >
-      {loading && (
-        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24" aria-hidden="true">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-        </svg>
-      )}
-      {!loading && icon}
-      {children}
-    </button>
-  );
-};
-
-const Input = ({ label, value, onChange, type = "text", className = "" }: { label: string; value: string; onChange: (v: string) => void; type?: React.HTMLInputTypeAttribute; className?: string }) => (
-  <div className={className}>
-    <label className="block text-sm font-semibold text-gray-800 mb-2">{label}</label>
-    <input
-      type={type}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="
-        w-full px-4 py-3 rounded-xl border border-gray-200 bg-white
-        transition-colors duration-200
-        hover:border-gray-300
-        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-      "
-    />
-  </div>
-);
-
-type AlertType = "info" | "success" | "error" | "warning";
-const Alert = ({ type, title, message, onClose }: { type: AlertType; title: string; message: string; onClose?: () => void }) => {
-  const classes: Record<AlertType, string> = {
-    info: "bg-blue-50 border-blue-200 text-blue-900",
-    success: "bg-emerald-50 border-emerald-200 text-emerald-900",
-    error: "bg-rose-50 border-rose-200 text-rose-900",
-    warning: "bg-amber-50 border-amber-200 text-amber-900",
-  };
-
-  return (
-    <div className={`border rounded-2xl p-4 flex gap-3 items-start ${classes[type]}`}>
-      <div className="mt-0.5">
-        {type === "info" && "💡"}
-        {type === "success" && "✅"}
-        {type === "error" && "❌"}
-        {type === "warning" && "⚠️"}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="font-bold text-sm">{title}</div>
-        <pre className="mt-1 whitespace-pre-wrap text-xs leading-relaxed">{message}</pre>
-      </div>
-      {onClose && (
-        <button onClick={onClose} className="text-gray-500 hover:text-gray-800 transition-colors">
-          ✕
-        </button>
-      )}
+    <div className={`rounded-xl border border-slate-200 bg-white p-4 shadow-sm ${props.className ?? ""}`}>
+      {props.title && <div className="mb-3 text-base font-semibold text-slate-900">{props.title}</div>}
+      {props.children}
     </div>
   );
+}
+
+type BadgeTone = "slate" | "emerald" | "rose" | "amber" | "blue" | "gray";
+function Badge(props: { tone?: BadgeTone; children: React.ReactNode; className?: string }) {
+  const tone = props.tone ?? "slate";
+  const map: Record<BadgeTone, string> = {
+    slate: "bg-slate-100 text-slate-700 border-slate-200",
+    emerald: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    rose: "bg-rose-50 text-rose-700 border-rose-200",
+    amber: "bg-amber-50 text-amber-800 border-amber-200",
+    blue: "bg-blue-50 text-blue-700 border-blue-200",
+    gray: "bg-gray-100 text-gray-700 border-gray-200",
+  };
+  return <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${map[tone]} ${props.className ?? ""}`}>{props.children}</span>;
+}
+
+function Button(props: { children: React.ReactNode; onClick?: () => void; disabled?: boolean; tone?: "primary" | "ghost"; className?: string }) {
+  const tone = props.tone ?? "primary";
+  const base = "inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed";
+  const cls = tone === "primary" ? "bg-slate-900 text-white hover:bg-slate-800" : "bg-white text-slate-800 border border-slate-200 hover:bg-slate-50";
+  return (
+    <button className={`${base} ${cls} ${props.className ?? ""}`} onClick={props.onClick} disabled={props.disabled}>
+      {props.children}
+    </button>
+  );
+}
+
+function Input(props: { value: string; onChange: (v: string) => void; type?: string; placeholder?: string; className?: string }) {
+  return (
+    <input
+      className={`w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400 ${props.className ?? ""}`}
+      value={props.value}
+      onChange={(e) => props.onChange(e.target.value)}
+      type={props.type ?? "text"}
+      placeholder={props.placeholder}
+    />
+  );
+}
+
+function Alert(props: { tone?: "info" | "error"; title: string; children?: React.ReactNode }) {
+  const tone = props.tone ?? "info";
+  const cls = tone === "error" ? "border-rose-200 bg-rose-50 text-rose-800" : "border-slate-200 bg-slate-50 text-slate-800";
+  return (
+    <div className={`rounded-xl border p-3 ${cls}`}>
+      <div className="text-sm font-semibold">{props.title}</div>
+      {props.children && <div className="mt-1 text-sm opacity-90">{props.children}</div>}
+    </div>
+  );
+}
+
+/** =========================
+ * Utils
+ * ========================= */
+function toISODateInputValue(d: Date) {
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+function fmtJstLike(iso: string | null | undefined) {
+  if (!iso) return "-";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return String(iso);
+  // ローカル表示（あなたの環境がJSTならJST表示）
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mi = String(d.getMinutes()).padStart(2, "0");
+  const ss = String(d.getSeconds()).padStart(2, "0");
+  return `${y}/${m}/${day} ${hh}:${mi}:${ss}`;
+}
+
+async function fetchJsonStrict<T>(url: string, signal?: AbortSignal): Promise<T> {
+  const res = await fetch(url, { method: "GET", signal, headers: { Accept: "application/json" } });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`HTTP ${res.status} ${res.statusText}${text ? `: ${text}` : ""}`);
+  }
+  return (await res.json()) as T;
+}
+
+function norm(s: string | null | undefined) {
+  return (s ?? "").trim();
+}
+
+/**
+ * "3:45" / "39:19" / "63'" をソート可能な数値にする
+ * - mm:ss => seconds
+ * - 63' => 63*60
+ * - "終了済" => Infinity（最後に回す）
+ */
+function timesSortKey(t: string): number | null {
+  const x = t.trim();
+  if (!x) return null;
+  if (x === "終了済") return Number.POSITIVE_INFINITY;
+
+  // 63'
+  const m1 = x.match(/^(\d+)\s*'$/);
+  if (m1) {
+    const mm = Number(m1[1]);
+    if (Number.isFinite(mm)) return mm * 60;
+  }
+
+  // mm:ss
+  const m2 = x.match(/^(\d{1,3}):(\d{1,2})$/);
+  if (m2) {
+    const mm = Number(m2[1]);
+    const ss = Number(m2[2]);
+    if (Number.isFinite(mm) && Number.isFinite(ss)) return mm * 60 + ss;
+  }
+
+  return null;
+}
+
+function isAllowedTimes(t: string) {
+  const k = timesSortKey(t);
+  return k !== null; // mm:ss / 63' / 終了済 だけを残す
+}
+
+function sortTimesAscWithFinishedLast(list: string[]) {
+  const uniq = Array.from(new Set(list.map((s) => s.trim()).filter(Boolean)));
+  const allowed = uniq.filter(isAllowedTimes);
+  allowed.sort((a, b) => {
+    const ka = timesSortKey(a)!;
+    const kb = timesSortKey(b)!;
+    return ka - kb;
+  });
+  return allowed;
+}
+
+/** =========================
+ * Aggregation Types (Front)
+ * ========================= */
+type IngestLog = {
+  seq: number;
+  table: string;
+  registerTime: string;
+  updateTime?: string | null;
+  times?: string | null;
 };
 
-const Toggle = ({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) => (
-  <label className="inline-flex items-center gap-2 select-none cursor-pointer">
-    <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-    <span className="text-sm font-semibold text-gray-800">{label}</span>
-  </label>
-);
+type MatchGroupRow = {
+  groupKey: string;
 
-/** ================= Page ================= */
+  home: string;
+  away: string;
+  category: string;
+
+  matchId: string | null;
+  matchUrl: string | null;
+
+  // flags
+  futureExists: boolean;
+  hasFinished: boolean;
+
+  // times aggregated from ALL data rows (and timesList if provided)
+  timesAllSorted: string[];
+
+  // logs (all data rows)
+  ingestsSortedAsc: IngestLog[];
+
+  // sorting key (newest first for list)
+  latestRegisterTime: string;
+};
+
+/** =========================
+ * Page
+ * ========================= */
 export default function IngestedDataReferencePage() {
-  // 初期：直近7日
-  const now = useMemo(() => new Date(), []);
-  const [fromLocal, setFromLocal] = useState(() => toDatetimeLocalValue(addDays(now, -7).toISOString()));
-  const [toLocal, setToLocal] = useState(() => toDatetimeLocalValue(now.toISOString()));
+  // ---- filters
+  const today = useMemo(() => new Date(), []);
+  const [fromDate, setFromDate] = useState(() => toISODateInputValue(new Date(today.getTime() - 7 * 86400 * 1000)));
+  const [toDate, setToDate] = useState(() => toISODateInputValue(today));
+  const [keyword, setKeyword] = useState("");
 
-  const [includeFuture, setIncludeFuture] = useState(true);
-  const [includeData, setIncludeData] = useState(true);
-
-  const [limit, setLimit] = useState(100);
+  // ---- paging (matchKey単位)
   const [offset, setOffset] = useState(0);
+  const [pageSize, setPageSize] = useState(100);
 
+  // ---- fetch state
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [res, setRes] = useState<IngestedDataReferenceResponse | null>(null);
+  const [envelope, setEnvelope] = useState<ApiEnvelope | null>(null);
 
-  const [expandedKey, setExpandedKey] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
-  const canSearch = includeFuture || includeData;
+  // NOTE:
+  // backendが raw rows を offset/limit で返す場合、ページ跨ぎで同一試合が分断される可能性があります。
+  // ここでは「フロントで確実に集約したい」ので、サーバへは大きめ limit で取りに行き、
+  // その後 matchKey単位でフロント側 pagination します。
+  const FETCH_LIMIT_RAW = 5000;
 
-  async function fetchRows(nextOffset: number) {
-    if (!canSearch) return;
+  const apiUrl = useMemo(() => {
+    const params = new URLSearchParams();
 
-    // from <= to バリデーション
-    const fromDate = new Date(fromLocal);
-    const toDate = new Date(toLocal);
-    if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) {
-      setError("日時の形式が不正です。");
-      return;
+    const from = toOffsetDateTimeParam(fromDate, false);
+    const to = toOffsetDateTimeParam(toDate, true);
+
+    params.set("from", from);
+    params.set("to", to);
+    params.set("offset", "0");
+    params.set("limit", String(FETCH_LIMIT_RAW));
+    if (keyword.trim()) params.set("q", keyword.trim()); // backendが対応していれば有効
+    return `/v1/api/admin/ingested?${params.toString()}`;
+  }, [fromDate, toDate, keyword]);
+
+  const downloadB008FinGettingJson = () => {
+    // 日付キー：from==toならその日付。違う場合は registerTime(JST) で振り分け
+    const singleDay = fromDate === toDate;
+
+    const out: Record<string, Array<{ matchId: string; matchUrl?: string }>> = {};
+
+    for (const g of groupedFiltered) {
+      const mid = (g.matchId ?? "").trim();
+      if (!mid) continue;
+
+      const dk = singleDay ? fromDate : (isoToJstDateKey(g.latestRegisterTime) ?? fromDate);
+
+      const row: { matchId: string; matchUrl?: string } = { matchId: mid };
+      const url = (g.matchUrl ?? "").trim();
+      if (url) row.matchUrl = url;
+
+      (out[dk] ??= []).push(row);
     }
-    if (fromDate > toDate) {
-      setError("From は To 以下にしてください。");
-      return;
+
+    // dateごとに matchId 重複排除（最後のもの優先）
+    for (const dk of Object.keys(out)) {
+      const m = new Map<string, { matchId: string; matchUrl?: string }>();
+      for (const r of out[dk]) m.set(r.matchId, r);
+      out[dk] = Array.from(m.values());
     }
+
+    const jsonText = JSON.stringify(out, null, 2);
+    const blob = new Blob([jsonText], { type: "application/json;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "b008_fin_getting.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+  };
+
+  const refetch = () => {
+    setOffset(0);
+    void doFetch();
+  };
+
+  const doFetch = async () => {
+    abortRef.current?.abort();
+    const ac = new AbortController();
+    abortRef.current = ac;
 
     setLoading(true);
     setError(null);
 
     try {
-      const fromIso = fromDatetimeLocalValue(fromLocal);
-      const toIso = fromDatetimeLocalValue(toLocal);
-
-      const params = new URLSearchParams();
-      params.set("from", fromIso);
-      params.set("to", toIso);
-      params.set("includeFutureMaster", String(includeFuture));
-      params.set("includeData", String(includeData));
-      params.set("limit", String(limit));
-      params.set("offset", String(nextOffset));
-
-      const r = await fetch(`/v1/api/admin/ingested?${params.toString()}`, {
-        method: "GET",
-        headers: { Accept: "application/json" },
-        credentials: "include", // セッション運用なら便利。不要なら消してOK
-      });
-
-      if (!r.ok) {
-        const txt = await r.text().catch(() => "");
-        throw new Error(`HTTP ${r.status} ${r.statusText}${txt ? `: ${txt}` : ""}`);
-      }
-
-      const json = (await r.json()) as IngestedDataReferenceResponse;
-      setRes(json);
-      setOffset(nextOffset);
-      setExpandedKey(null);
-    } catch (e: unknown) {
-      setError(getErrorMessage(e) || "Failed to fetch");
+      const res = await fetchJsonStrict<ApiEnvelope>(apiUrl, ac.signal);
+      setEnvelope(res);
+    } catch (e: any) {
+      if (e?.name === "AbortError") return;
+      setError(e?.message ?? String(e));
+      setEnvelope(null);
     } finally {
       setLoading(false);
     }
-  }
-
-  useEffect(() => {
-    fetchRows(0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const rows = res?.rows ?? [];
-  const total = res?.total ?? 0;
-
-  const page = Math.floor(offset / limit) + 1;
-  const maxPage = Math.max(1, Math.ceil(total / limit));
-
-  const selectedTables = useMemo(() => {
-    const t: TableName[] = [];
-    if (includeFuture) t.push("FUTURE_MASTER");
-    if (includeData) t.push("DATA");
-    return t;
-  }, [includeFuture, includeData]);
-
-  const preset = (days: number) => {
-    const n = new Date();
-    setToLocal(toDatetimeLocalValue(n.toISOString()));
-    setFromLocal(toDatetimeLocalValue(addDays(n, -days).toISOString()));
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-4 md:p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
-          <div className="flex items-center gap-4">
-            <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-3 rounded-2xl shadow-lg">
-              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 00-4-4H3m6 6h12m0 0v-2a4 4 0 00-4-4h-2m6 6H9" />
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-3xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">投入済みデータ参照</h1>
-              <p className="text-sm text-gray-600 mt-1">期間・テーブル条件で投入済みデータを追跡します（一覧クリックで詳細展開）</p>
-            </div>
-          </div>
+  useEffect(() => {
+    void doFetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apiUrl]);
 
-          <div className="flex items-center gap-2 flex-wrap">
-            <Badge tone="blue">total: {total}</Badge>
-            <Badge tone="gray">
-              page: {page}/{maxPage}
-            </Badge>
-            {selectedTables.map((t) => (
-              <Badge key={t} tone={t === "FUTURE_MASTER" ? "emerald" : "amber"}>
-                {t}
-              </Badge>
-            ))}
+  const rawRows = envelope?.rows ?? [];
+
+  /** =========================
+   * ここが「全処理」の核：matchKey単位に集約
+   *
+   * groupKey 優先順位:
+   *  1) data.gameId があれば gid:{gameId}
+   *  2) それ以外は home|||away|||category
+   *     (future/dataのどちらかに情報があれば埋める)
+   * ========================= */
+  const groupedAll: MatchGroupRow[] = useMemo(() => {
+    type Acc = Omit<MatchGroupRow, "timesAllSorted" | "ingestsSortedAsc"> & {
+      timesSet: Set<string>;
+      ingests: IngestLog[];
+      futureCount: number;
+      dataCount: number;
+    };
+
+    const map = new Map<string, Acc>();
+
+    for (const r of rawRows) {
+      const homeRaw = norm(r.data?.homeTeamName) || norm(r.future?.homeTeamName) || "-";
+      const awayRaw = norm(r.data?.awayTeamName) || norm(r.future?.awayTeamName) || "-";
+      const catRaw = norm(r.data?.dataCategory) || norm(r.future?.gameTeamCategory) || "-";
+
+      // ★同一試合の判定は「複合キー」を最優先（表記ゆれ対策は normKeyPart 内）
+      const composite = makeCompositeKey(homeRaw, awayRaw, catRaw);
+
+      // matchKeyは補助（デバッグ用/後で統合用）
+      const matchKey =
+        norm(r.data?.gameId as any) ||
+        norm(r.data?.gameLink) ||
+        (() => {
+          const gl = norm(r.future?.gameLink);
+          const m = gl.match(/mid=([A-Za-z0-9]+)/);
+          return m?.[1] ?? gl;
+        })();
+
+      const dataGameId = r.data?.gameId != null ? String(r.data.gameId) : "";
+      const dataLink = norm(r.data?.gameLink);
+      const futureLink = norm(r.future?.gameLink);
+
+      // matchId（優先順：data.gameId > gameLink(mid) > futureLink(mid)）
+      const matchId = (dataGameId && normKeyPart(dataGameId)) || extractMidFromUrl(dataLink) || extractMidFromUrl(futureLink) || null;
+
+      // matchUrl（取れるなら URL を。無ければ null）
+      // できるだけ /match/ を含むほうを優先
+      const matchUrl = (dataLink.includes("/match/") ? dataLink : "") || (futureLink.includes("/match/") ? futureLink : "") || null;
+
+      // 最終キー：複合キーが作れるならそれ。無理なら matchKey。どっちも無理なら seq fallback
+      const groupKey = composite ?? (matchKey ? `MK:${normKeyPart(matchKey)}` : null) ?? `fallback:${r.seq}`;
+
+      const futureExists = Boolean(r.futureExists) || r.table === "FUTURE_MASTER" || Boolean(r.future);
+
+      // times候補（data.times + timesList）
+      const timesCandidates: string[] = [];
+      if (r.data?.times) timesCandidates.push(r.data.times);
+      if (Array.isArray(r.timesList)) timesCandidates.push(...r.timesList);
+
+      const hasFinished = Boolean(r.hasFinishedTimes) || timesCandidates.some((t) => (t ?? "").trim() === "終了済");
+
+      const ingest: IngestLog = {
+        seq: Number(r.seq),
+        table: String(r.table),
+        registerTime: r.registerTime,
+        updateTime: r.updateTime ?? null,
+        times: r.data?.times ?? null,
+      };
+
+      const existing = map.get(groupKey);
+      if (!existing) {
+        const timesSet = new Set<string>();
+        for (const t of timesCandidates) {
+          const tt = (t ?? "").trim();
+          if (tt) timesSet.add(tt);
+        }
+
+        map.set(groupKey, {
+          groupKey,
+          home: homeRaw,
+          away: awayRaw,
+          category: catRaw,
+          matchId,
+          matchUrl,
+          futureExists,
+          hasFinished,
+          latestRegisterTime: r.registerTime,
+          timesSet,
+          ingests: [ingest],
+          futureCount: r.table === "FUTURE_MASTER" ? 1 : 0,
+          dataCount: r.table === "DATA" ? 1 : 0,
+        });
+      } else {
+        // 欠けている情報を埋める
+        if (existing.home === "-" && homeRaw !== "-") existing.home = homeRaw;
+        if (existing.away === "-" && awayRaw !== "-") existing.away = awayRaw;
+        if (existing.category === "-" && catRaw !== "-") existing.category = catRaw;
+
+        if (!existing.matchId && matchId) existing.matchId = matchId;
+        if (!existing.matchUrl && matchUrl) existing.matchUrl = matchUrl;
+
+        for (const t of timesCandidates) {
+          const tt = (t ?? "").trim();
+          if (tt) existing.timesSet.add(tt);
+        }
+
+        existing.ingests.push(ingest);
+        existing.futureExists = existing.futureExists || futureExists;
+        existing.hasFinished = existing.hasFinished || hasFinished;
+
+        if (new Date(r.registerTime).getTime() > new Date(existing.latestRegisterTime).getTime()) {
+          existing.latestRegisterTime = r.registerTime;
+        }
+
+        if (r.table === "FUTURE_MASTER") existing.futureCount += 1;
+        if (r.table === "DATA") existing.dataCount += 1;
+
+        map.set(groupKey, existing);
+      }
+    }
+
+    const out: MatchGroupRow[] = [];
+    for (const v of map.values()) {
+      const timesAllSorted = sortTimesAscWithFinishedLast(Array.from(v.timesSet));
+      const ingestsSortedAsc = v.ingests.slice().sort((a, b) => new Date(a.registerTime).getTime() - new Date(b.registerTime).getTime());
+
+      out.push({
+        groupKey: v.groupKey,
+        home: v.home,
+        away: v.away,
+        category: v.category,
+        matchId: v.matchId ?? null,
+        matchUrl: v.matchUrl ?? null,
+        futureExists: v.futureExists,
+        hasFinished: v.hasFinished,
+        timesAllSorted,
+        ingestsSortedAsc,
+        latestRegisterTime: v.latestRegisterTime,
+      });
+    }
+
+    // 一覧は新しい順
+    out.sort((a, b) => new Date(b.latestRegisterTime).getTime() - new Date(a.latestRegisterTime).getTime());
+    return out;
+  }, [rawRows]);
+
+  // keyword は backend q が効かない可能性があるので、フロントでも絞り込み（保険）
+  const groupedFiltered: MatchGroupRow[] = useMemo(() => {
+    const q = keyword.trim();
+    if (!q) return groupedAll;
+    return groupedAll.filter((g) => {
+      const s = `${g.home} ${g.away} ${g.category} ${g.groupKey}`.toLowerCase();
+      return s.includes(q.toLowerCase());
+    });
+  }, [groupedAll, keyword]);
+
+  const totalGroups = groupedFiltered.length;
+  const showingGroups = groupedFiltered.slice(offset, offset + pageSize);
+
+  // expand state
+  const [expandedKeys, setExpandedKeys] = useState<Record<string, boolean>>({});
+  const toggleExpand = (k: string) => setExpandedKeys((p) => ({ ...p, [k]: !p[k] }));
+
+  const canPrev = offset > 0;
+  const canNext = offset + pageSize < totalGroups;
+
+  return (
+    <div className="mx-auto w-full max-w-6xl space-y-4 p-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <div className="text-xl font-bold text-slate-900">Ingested Data Reference</div>
+          <div className="mt-1 text-sm text-slate-600">
+            一覧（新しい順 / matchKey単位） &nbsp;|&nbsp; offset: {offset} / showing: {showingGroups.length} / total: {totalGroups}
           </div>
         </div>
 
-        {/* Error */}
-        {error && <Alert type="error" title="エラー" message={error} onClose={() => setError(null)} />}
-
-        {/* Search Panel */}
-        <Card className="p-6">
-          <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
-            <div>
-              <div className="text-lg font-extrabold text-gray-900">検索条件</div>
-              <div className="text-sm text-gray-600 mt-1">
-                From/To は <span className="font-semibold">ローカル日時入力</span> → APIへは ISO（UTC）で送信します
-              </div>
-            </div>
-
-            <div className="flex gap-2 flex-wrap">
-              <Button variant="secondary" onClick={() => preset(1)} disabled={loading} icon="🕐">
-                24h
-              </Button>
-              <Button variant="secondary" onClick={() => preset(7)} disabled={loading} icon="📅">
-                7d
-              </Button>
-              <Button variant="secondary" onClick={() => preset(30)} disabled={loading} icon="🗓️">
-                30d
-              </Button>
-              <Button onClick={() => fetchRows(0)} disabled={loading || !canSearch} loading={loading} icon="🔍">
-                検索
-              </Button>
-            </div>
-          </div>
-
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input label="From" type="datetime-local" value={fromLocal} onChange={setFromLocal} />
-            <Input label="To" type="datetime-local" value={toLocal} onChange={setToLocal} />
-          </div>
-
-          <div className="mt-5 flex items-center gap-4 flex-wrap">
-            <Toggle checked={includeFuture} onChange={setIncludeFuture} label="FUTURE_MASTER" />
-            <Toggle checked={includeData} onChange={setIncludeData} label="DATA" />
-
-            <div className="ml-0 md:ml-auto flex items-center gap-2">
-              <span className="text-sm font-semibold text-gray-800">limit</span>
-              <select
-                value={limit}
-                onChange={(e) => {
-                  const v = Number(e.target.value);
-                  setLimit(v);
-                  fetchRows(0);
-                }}
-                className="
-                  px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm font-semibold
-                  hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                "
-              >
-                {[25, 50, 100, 200, 500].map((n) => (
-                  <option key={n} value={n}>
-                    {n}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {!canSearch && (
-            <div className="mt-4">
-              <Alert type="warning" title="注意" message="テーブルを最低1つ選択してください。" />
-            </div>
-          )}
-        </Card>
-
-        {/* Table */}
-        <Card className="p-0 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between gap-4">
-            <div className="font-extrabold text-gray-900">一覧（新しい順）</div>
-            <div className="text-sm text-gray-500">
-              offset: <span className="font-semibold text-gray-800">{offset}</span> / showing: <span className="font-semibold text-gray-800">{rows.length}</span>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
-                  {["table", "seq", "registerTime", "updateTime", "summary"].map((h) => (
-                    <th key={h} className="text-left px-6 py-4 text-xs font-extrabold text-gray-600 whitespace-nowrap">
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-
-              <tbody>
-                {loading && (
-                  <>
-                    {Array.from({ length: 6 }).map((_, i) => (
-                      <tr key={i} className="border-b border-gray-100">
-                        <td className="px-6 py-4" colSpan={5}>
-                          <div className="h-4 w-full bg-gray-200 rounded animate-pulse" />
-                        </td>
-                      </tr>
-                    ))}
-                  </>
-                )}
-
-                {!loading && rows.length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-10 text-center text-sm text-gray-500">
-                      対象データがありません。
-                    </td>
-                  </tr>
-                )}
-
-                {!loading &&
-                  rows.map((r) => {
-                    const key = `${r.table}:${r.seq}:${r.registerTime}`;
-                    const expanded = expandedKey === key;
-
-                    const summary =
-                      r.table === "FUTURE_MASTER"
-                        ? `${r.future?.homeTeamName ?? "-"} vs ${r.future?.awayTeamName ?? "-"} / ${r.future?.gameTeamCategory ?? "-"}`
-                        : `${r.data?.homeTeamName ?? "-"} vs ${r.data?.awayTeamName ?? "-"} / ${r.data?.dataCategory ?? "-"}`;
-
-                    const tableTone: BadgeTone = r.table === "FUTURE_MASTER" ? "emerald" : "amber";
-
-                    return (
-                      <React.Fragment key={key}>
-                        <tr
-                          onClick={() => setExpandedKey(expanded ? null : key)}
-                          className={`
-                            border-b border-gray-100 cursor-pointer transition-colors
-                            ${expanded ? "bg-blue-50/40" : "hover:bg-gray-50"}
-                          `}
-                        >
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <Badge tone={tableTone}>{r.table}</Badge>
-                          </td>
-
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-2">
-                              <code className="text-xs font-semibold px-2 py-1 rounded-lg bg-white border border-gray-200">{r.seq}</code>
-                              <Button
-                                variant="secondary"
-                                className="px-3 py-2 text-xs"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigator.clipboard.writeText(r.seq);
-                                }}
-                              >
-                                コピー
-                              </Button>
-                            </div>
-                          </td>
-
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{formatDateTime(r.registerTime)}</td>
-
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{r.updateTime ? formatDateTime(r.updateTime) : "-"}</td>
-
-                          <td className="px-6 py-4 text-sm text-gray-800">
-                            <div className="flex items-center justify-between gap-3">
-                              <span className="min-w-0 truncate">{summary}</span>
-                              <span className="text-xs text-gray-500">{expanded ? "▲" : "▼"}</span>
-                            </div>
-                          </td>
-                        </tr>
-
-                        {expanded && (
-                          <tr className="border-b border-gray-100">
-                            <td colSpan={5} className="px-6 py-5 bg-white">
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-                                  <div className="text-sm font-extrabold text-gray-900 mb-3">Meta</div>
-                                  <div className="text-sm text-gray-800 space-y-1">
-                                    <div>
-                                      <span className="text-gray-500 text-xs">table</span> <span className="font-semibold">{r.table}</span>
-                                    </div>
-                                    <div>
-                                      <span className="text-gray-500 text-xs">seq</span> <span className="font-semibold">{r.seq}</span>
-                                    </div>
-                                    <div>
-                                      <span className="text-gray-500 text-xs">registerTime</span> <span className="font-semibold">{formatDateTime(r.registerTime)}</span>
-                                    </div>
-                                    <div>
-                                      <span className="text-gray-500 text-xs">updateTime</span> <span className="font-semibold">{r.updateTime ? formatDateTime(r.updateTime) : "-"}</span>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-                                  <div className="text-sm font-extrabold text-gray-900 mb-3">{r.table === "FUTURE_MASTER" ? "FUTURE_MASTER Summary" : "DATA Summary"}</div>
-
-                                  {r.table === "FUTURE_MASTER" ? (
-                                    <div className="text-sm text-gray-800 space-y-1">
-                                      <div>
-                                        <span className="text-gray-500 text-xs">gameTeamCategory</span> <span className="font-semibold">{r.future?.gameTeamCategory ?? "-"}</span>
-                                      </div>
-                                      <div>
-                                        <span className="text-gray-500 text-xs">futureTime</span> <span className="font-semibold">{r.future?.futureTime ?? "-"}</span>
-                                      </div>
-                                      <div>
-                                        <span className="text-gray-500 text-xs">home</span> <span className="font-semibold">{r.future?.homeTeamName ?? "-"}</span>
-                                      </div>
-                                      <div>
-                                        <span className="text-gray-500 text-xs">away</span> <span className="font-semibold">{r.future?.awayTeamName ?? "-"}</span>
-                                      </div>
-                                      <div className="flex items-center gap-2 flex-wrap">
-                                        <span className="text-gray-500 text-xs">gameLink</span>
-                                        <span className="font-semibold break-all">{r.future?.gameLink ?? "-"}</span>
-                                        {r.future?.gameLink && (
-                                          <Button
-                                            variant="secondary"
-                                            className="px-3 py-2 text-xs"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              navigator.clipboard.writeText(r.future!.gameLink!);
-                                            }}
-                                          >
-                                            linkコピー
-                                          </Button>
-                                        )}
-                                      </div>
-                                      <div>
-                                        <span className="text-gray-500 text-xs">startFlg</span> <span className="font-semibold">{r.future?.startFlg ?? "-"}</span>
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <div className="text-sm text-gray-800 space-y-1">
-                                      <div>
-                                        <span className="text-gray-500 text-xs">dataCategory</span> <span className="font-semibold">{r.data?.dataCategory ?? "-"}</span>
-                                      </div>
-                                      <div>
-                                        <span className="text-gray-500 text-xs">times</span> <span className="font-semibold">{r.data?.times ?? "-"}</span>
-                                      </div>
-                                      <div>
-                                        <span className="text-gray-500 text-xs">home</span> <span className="font-semibold">{r.data?.homeTeamName ?? "-"}</span>
-                                      </div>
-                                      <div>
-                                        <span className="text-gray-500 text-xs">away</span> <span className="font-semibold">{r.data?.awayTeamName ?? "-"}</span>
-                                      </div>
-                                      <div>
-                                        <span className="text-gray-500 text-xs">recordTime</span> <span className="font-semibold">{r.data?.recordTime ?? "-"}</span>
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-
-                              <div className="mt-4 text-xs text-gray-500">※ 行クリックで詳細を開閉します（コピー操作は行クリックを止めるようにしています）</div>
-                            </td>
-                          </tr>
-                        )}
-                      </React.Fragment>
-                    );
-                  })}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination */}
-          <div className="px-6 py-4 flex items-center justify-end gap-2 border-t border-gray-100">
-            <Button variant="secondary" onClick={() => fetchRows(Math.max(0, offset - limit))} disabled={loading || offset <= 0} icon="⬅️">
-              前へ
-            </Button>
-            <Button variant="secondary" onClick={() => fetchRows(offset + limit)} disabled={loading || offset + limit >= total} icon="➡️">
-              次へ
-            </Button>
-          </div>
-        </Card>
-
-        {/* Footer */}
-        <div className="text-center text-xs text-gray-500">ブラウザで取得できない場合は、Spring側の CORS / 認証（credentials: include）/ 管理者権限をご確認ください。</div>
+        <div className="flex flex-wrap items-center gap-2">
+          {loading ? <Badge tone="slate">取得中…</Badge> : <Badge tone="gray">raw rows: {rawRows.length}</Badge>}
+          <Badge tone="gray">raw fetch limit: {FETCH_LIMIT_RAW}</Badge>
+        </div>
       </div>
+
+      <Card title="検索条件">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+          <div>
+            <div className="mb-1 text-xs font-medium text-slate-600">from</div>
+            <Input type="date" value={fromDate} onChange={setFromDate} />
+          </div>
+          <div>
+            <div className="mb-1 text-xs font-medium text-slate-600">to</div>
+            <Input type="date" value={toDate} onChange={setToDate} />
+          </div>
+          <div className="md:col-span-2">
+            <div className="mb-1 text-xs font-medium text-slate-600">keyword（フロント側でも絞り込み）</div>
+            <Input value={keyword} onChange={setKeyword} placeholder="例: 東京ヴェルディ / J1 / round 1 ..." />
+          </div>
+        </div>
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <Button onClick={refetch} disabled={loading}>
+            再取得
+          </Button>
+          <Button
+            tone="ghost"
+            onClick={() => {
+              setKeyword("");
+              setOffset(0);
+            }}
+          >
+            keywordクリア
+          </Button>
+
+          <div className="ml-auto flex items-center gap-2">
+            <span className="text-xs text-slate-600">page size</span>
+            <select
+              className="rounded-lg border border-slate-200 bg-white px-2 py-2 text-sm"
+              value={pageSize}
+              onChange={(e) => {
+                setPageSize(Number(e.target.value));
+                setOffset(0);
+              }}
+            >
+              {[50, 100, 200].map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </Card>
+
+      {error && (
+        <Alert tone="error" title="取得に失敗しました">
+          {error}
+        </Alert>
+      )}
+
+      <Card title="一覧">
+        <div className="divide-y divide-slate-200 rounded-xl border border-slate-200">
+          {showingGroups.length === 0 && !loading && <div className="p-4 text-sm text-slate-600">データがありません</div>}
+
+          {showingGroups.map((g) => {
+            const expanded = Boolean(expandedKeys[g.groupKey]);
+            const summary = `${g.home} vs ${g.away} / ${g.category}`;
+
+            const timesText = g.timesAllSorted.length ? g.timesAllSorted.join(", ") : null;
+
+            return (
+              <div key={g.groupKey} className="p-4">
+                <button className="w-full text-left" onClick={() => toggleExpand(g.groupKey)} type="button">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-semibold text-slate-900">{summary}</div>
+
+                      {/* Badges: ここがあなたの「future_masterにあるか / 終了済があるか」 */}
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {g.futureExists ? <Badge tone="emerald">future_masterに存在</Badge> : <Badge tone="rose">future_masterに存在しない</Badge>}
+
+                        {g.hasFinished ? <Badge tone="blue">終了済あり</Badge> : <Badge tone="amber">終了済なし</Badge>}
+
+                        {g.timesAllSorted.length > 0 && <Badge tone="gray">times {g.timesAllSorted.length}種</Badge>}
+
+                        {/* groupKey を表示（gid優先） */}
+                        <Badge tone="gray">{g.groupKey}</Badge>
+                      </div>
+                    </div>
+
+                    <div className="shrink-0 text-xs text-slate-500">{expanded ? "▲" : "▼"}</div>
+                  </div>
+                </button>
+
+                {expanded && (
+                  <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                      <div className="rounded-lg border border-slate-200 bg-white p-3">
+                        <div className="text-xs font-semibold text-slate-800">Meta</div>
+                        <div className="mt-2 space-y-1 text-sm text-slate-700">
+                          <div>
+                            <span className="text-slate-500">home</span> {g.home}
+                          </div>
+                          <div>
+                            <span className="text-slate-500">away</span> {g.away}
+                          </div>
+                          <div>
+                            <span className="text-slate-500">category</span> {g.category}
+                          </div>
+                          <div>
+                            <span className="text-slate-500">latestRegisterTime</span> {fmtJstLike(g.latestRegisterTime)}
+                          </div>
+                        </div>
+
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {g.futureExists ? <Badge tone="emerald">future_masterに存在</Badge> : <Badge tone="rose">future_masterに存在しない</Badge>}
+                          {g.hasFinished ? <Badge tone="blue">終了済あり</Badge> : <Badge tone="amber">終了済なし</Badge>}
+                        </div>
+                      </div>
+
+                      <div className="rounded-lg border border-slate-200 bg-white p-3">
+                        <div className="text-xs font-semibold text-slate-800">times 一覧（昇順 → 終了済）</div>
+                        <div className="mt-2 text-sm text-slate-700">
+                          {g.timesAllSorted.length ? (
+                            <div className="flex flex-wrap gap-2">
+                              {g.timesAllSorted.map((t) => (
+                                <Badge key={t} tone={t === "終了済" ? "blue" : "slate"}>
+                                  {t}
+                                </Badge>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-slate-500">times がありません</div>
+                          )}
+                        </div>
+
+                        {timesText && <div className="mt-3 text-xs text-slate-500">{timesText}</div>}
+                      </div>
+                    </div>
+
+                    <div className="mt-3 rounded-lg border border-slate-200 bg-white p-3">
+                      <div className="flex items-center justify-between">
+                        <div className="text-xs font-semibold text-slate-800">data 行（この試合に紐づくものを全部 / 昇順）</div>
+
+                        {/* コピー（行クリックを止める） */}
+                        <div className="flex items-center gap-2">
+                          <Button
+                            tone="ghost"
+                            onClick={() => {
+                              navigator.clipboard?.writeText(g.groupKey).catch(() => {});
+                            }}
+                            className="px-2 py-1 text-xs"
+                          >
+                            keyコピー
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="mt-2 overflow-x-auto">
+                        <table className="w-full border-collapse text-sm">
+                          <thead>
+                            <tr className="border-b border-slate-200 text-left text-xs text-slate-500">
+                              <th className="py-2 pr-3">seq</th>
+                              <th className="py-2 pr-3">table</th>
+                              <th className="py-2 pr-3">registerTime</th>
+                              <th className="py-2 pr-3">updateTime</th>
+                              <th className="py-2 pr-3">times</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {g.ingestsSortedAsc.map((it) => (
+                              <tr key={`${it.table}:${it.seq}`} className="border-b border-slate-100 last:border-b-0">
+                                <td className="py-2 pr-3 font-mono text-xs text-slate-700">{it.seq}</td>
+                                <td className="py-2 pr-3 text-xs text-slate-700">{it.table}</td>
+                                <td className="py-2 pr-3 text-xs text-slate-700">{fmtJstLike(it.registerTime)}</td>
+                                <td className="py-2 pr-3 text-xs text-slate-700">{fmtJstLike(it.updateTime ?? null)}</td>
+                                <td className="py-2 pr-3 text-xs text-slate-700">
+                                  {it.times ? <Badge tone={it.times.trim() === "終了済" ? "blue" : "slate"}>{it.times}</Badge> : <span className="text-slate-400">-</span>}
+                                </td>
+                              </tr>
+                            ))}
+                            {g.ingestsSortedAsc.length === 0 && (
+                              <tr>
+                                <td className="py-3 text-slate-500" colSpan={5}>
+                                  該当する data 行がありません
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div className="mt-2 text-xs text-slate-500">※ 行クリックで詳細を開閉します（コピー操作は行クリックを止めるようにしています）</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Pagination (matchKey単位) */}
+        <div className="mt-3 flex items-center justify-between">
+          <div className="text-xs text-slate-600">
+            offset: {offset} / showing: {showingGroups.length} / total: {totalGroups}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button tone="ghost" disabled={!canPrev} onClick={() => setOffset((v) => Math.max(0, v - pageSize))}>
+              Prev
+            </Button>
+            <Button tone="ghost" disabled={!canNext} onClick={() => setOffset((v) => Math.min(totalGroups, v + pageSize))}>
+              Next
+            </Button>
+          </div>
+        </div>
+      </Card>
     </div>
   );
+}
+
+function toOffsetDateTimeParam(dateOnly: string, endOfDay: boolean): string {
+  // dateOnly: "YYYY-MM-DD"
+  // JSTで範囲検索したい前提（必要なら "+00:00" や "Z" に変えてOK）
+  return endOfDay ? `${dateOnly}T23:59:59+09:00` : `${dateOnly}T00:00:00+09:00`;
 }
