@@ -1,9 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Button } from "../../../components/ui/button";
+import { Skeleton } from "../../../components/ui/skeleton";
 
+/** =========================
+ * Types
+ * ========================= */
 type FinGettingRequest = {
   matches: Array<{
     matchDate: string; // "YYYY-MM-DD"
-    matchId: string;
+    matchId: string; // mid
     matchUrl?: string;
   }>;
 };
@@ -14,35 +19,6 @@ type ExecTaskResponse = {
   message?: string;
 };
 
-function extractMidFromUrl(url: string | null | undefined): string | null {
-  const s = (url ?? "").trim();
-  if (!s) return null;
-  const m = s.match(/[?&]mid=([A-Za-z0-9]+)/);
-  return m?.[1] ?? null;
-}
-
-function isoToJstDateKey(iso: string): string | null {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return null;
-
-  // JST固定で "YYYY-MM-DD" を作る（PCのローカルTZに依存しない）
-  const parts = new Intl.DateTimeFormat("ja-JP", {
-    timeZone: "Asia/Tokyo",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(d);
-
-  const y = parts.find((p) => p.type === "year")?.value;
-  const m = parts.find((p) => p.type === "month")?.value;
-  const dd = parts.find((p) => p.type === "day")?.value;
-  if (!y || !m || !dd) return null;
-  return `${y}-${m}-${dd}`;
-}
-
-/** =========================
- * Types (API DTO)
- * ========================= */
 type ApiEnvelope = {
   offset: number;
   limit: number;
@@ -51,205 +27,44 @@ type ApiEnvelope = {
 };
 
 type IngestedRowDTO = {
-  seq: number;
-  table: string; // "data" | "future_master" | etc
-  registerTime: string; // ISO string
+  seq: string; // ★バックエンドは String
+  table: "FUTURE_MASTER" | "DATA"; // ★enumに合わせる
+
+  registerTime: string; // OffsetDateTimeのISO文字列想定
   updateTime?: string | null;
 
-  /** backend enrich (あれば使う) */
   futureExists?: boolean;
   hasFinishedTimes?: boolean;
   timesList?: string[];
 
-  /** payload */
   data?: DataRowDTO | null;
   future?: FutureMasterRowDTO | null;
+
+  matchKey?: string | null;
 };
 
 type DataRowDTO = {
-  // data table (必要な分だけ)
-  gameId?: string | number | null; // ← あなたが「dataはgame_idが良い」と言っていたので最優先で使う
-  gameLink?: string | null;
-
+  seq?: string | null;
   dataCategory?: string | null;
   times?: string | null;
-
   homeTeamName?: string | null;
   awayTeamName?: string | null;
+
+  recordTime?: string | null; // ★追加：これを record_time として使う
+
+  gameId?: string | number | null;
+  gameLink?: string | null;
 };
 
 type FutureMasterRowDTO = {
-  // future_master (必要な分だけ)
   gameLink?: string | null;
   gameTeamCategory?: string | null;
   homeTeamName?: string | null;
   awayTeamName?: string | null;
-  futureTime?: string | null;
+
+  futureTime?: string | null; // ★既存のまま（future_master.future_time）
 };
 
-/** =========================
- * UI Small Components
- * ========================= */
-function normKeyPart(s: string | null | undefined) {
-  // NFKCで半角カナ等を寄せる + 全角スペースを普通のスペースへ + 連続空白圧縮
-  return (s ?? "")
-    .normalize("NFKC")
-    .replace(/\u3000/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function makeCompositeKey(home: string, away: string, category: string) {
-  const h = normKeyPart(home);
-  const a = normKeyPart(away);
-  const c = normKeyPart(category);
-  // 3つ揃っていれば複合キーを採用（matchKeyより優先）
-  if (h && a && c) return `H:${h}|||A:${a}|||C:${c}`;
-  return null;
-}
-
-function Card(props: { title?: string; children: React.ReactNode; className?: string }) {
-  return (
-    <div className={`rounded-xl border border-slate-200 bg-white p-4 shadow-sm ${props.className ?? ""}`}>
-      {props.title && <div className="mb-3 text-base font-semibold text-slate-900">{props.title}</div>}
-      {props.children}
-    </div>
-  );
-}
-
-type BadgeTone = "slate" | "emerald" | "rose" | "amber" | "blue" | "gray";
-function Badge(props: { tone?: BadgeTone; children: React.ReactNode; className?: string }) {
-  const tone = props.tone ?? "slate";
-  const map: Record<BadgeTone, string> = {
-    slate: "bg-slate-100 text-slate-700 border-slate-200",
-    emerald: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    rose: "bg-rose-50 text-rose-700 border-rose-200",
-    amber: "bg-amber-50 text-amber-800 border-amber-200",
-    blue: "bg-blue-50 text-blue-700 border-blue-200",
-    gray: "bg-gray-100 text-gray-700 border-gray-200",
-  };
-  return <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${map[tone]} ${props.className ?? ""}`}>{props.children}</span>;
-}
-
-function Button(props: { children: React.ReactNode; onClick?: () => void; disabled?: boolean; tone?: "primary" | "ghost"; className?: string }) {
-  const tone = props.tone ?? "primary";
-  const base = "inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed";
-  const cls = tone === "primary" ? "bg-slate-900 text-white hover:bg-slate-800" : "bg-white text-slate-800 border border-slate-200 hover:bg-slate-50";
-  return (
-    <button className={`${base} ${cls} ${props.className ?? ""}`} onClick={props.onClick} disabled={props.disabled}>
-      {props.children}
-    </button>
-  );
-}
-
-function Input(props: { value: string; onChange: (v: string) => void; type?: string; placeholder?: string; className?: string }) {
-  return (
-    <input
-      className={`w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400 ${props.className ?? ""}`}
-      value={props.value}
-      onChange={(e) => props.onChange(e.target.value)}
-      type={props.type ?? "text"}
-      placeholder={props.placeholder}
-    />
-  );
-}
-
-function Alert(props: { tone?: "info" | "error"; title: string; children?: React.ReactNode }) {
-  const tone = props.tone ?? "info";
-  const cls = tone === "error" ? "border-rose-200 bg-rose-50 text-rose-800" : "border-slate-200 bg-slate-50 text-slate-800";
-  return (
-    <div className={`rounded-xl border p-3 ${cls}`}>
-      <div className="text-sm font-semibold">{props.title}</div>
-      {props.children && <div className="mt-1 text-sm opacity-90">{props.children}</div>}
-    </div>
-  );
-}
-
-/** =========================
- * Utils
- * ========================= */
-function toISODateInputValue(d: Date) {
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
-}
-
-function fmtJstLike(iso: string | null | undefined) {
-  if (!iso) return "-";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return String(iso);
-  // ローカル表示（あなたの環境がJSTならJST表示）
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mi = String(d.getMinutes()).padStart(2, "0");
-  const ss = String(d.getSeconds()).padStart(2, "0");
-  return `${y}/${m}/${day} ${hh}:${mi}:${ss}`;
-}
-
-async function fetchJsonStrict<T>(url: string, signal?: AbortSignal): Promise<T> {
-  const res = await fetch(url, { method: "GET", signal, headers: { Accept: "application/json" } });
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`HTTP ${res.status} ${res.statusText}${text ? `: ${text}` : ""}`);
-  }
-  return (await res.json()) as T;
-}
-
-function norm(s: string | null | undefined) {
-  return (s ?? "").trim();
-}
-
-/**
- * "3:45" / "39:19" / "63'" をソート可能な数値にする
- * - mm:ss => seconds
- * - 63' => 63*60
- * - "終了済" => Infinity（最後に回す）
- */
-function timesSortKey(t: string): number | null {
-  const x = t.trim();
-  if (!x) return null;
-  if (x === "終了済") return Number.POSITIVE_INFINITY;
-
-  // 63'
-  const m1 = x.match(/^(\d+)\s*'$/);
-  if (m1) {
-    const mm = Number(m1[1]);
-    if (Number.isFinite(mm)) return mm * 60;
-  }
-
-  // mm:ss
-  const m2 = x.match(/^(\d{1,3}):(\d{1,2})$/);
-  if (m2) {
-    const mm = Number(m2[1]);
-    const ss = Number(m2[2]);
-    if (Number.isFinite(mm) && Number.isFinite(ss)) return mm * 60 + ss;
-  }
-
-  return null;
-}
-
-function isAllowedTimes(t: string) {
-  const k = timesSortKey(t);
-  return k !== null; // mm:ss / 63' / 終了済 だけを残す
-}
-
-function sortTimesAscWithFinishedLast(list: string[]) {
-  const uniq = Array.from(new Set(list.map((s) => s.trim()).filter(Boolean)));
-  const allowed = uniq.filter(isAllowedTimes);
-  allowed.sort((a, b) => {
-    const ka = timesSortKey(a)!;
-    const kb = timesSortKey(b)!;
-    return ka - kb;
-  });
-  return allowed;
-}
-
-/** =========================
- * Aggregation Types (Front)
- * ========================= */
 type IngestLog = {
   seq: number;
   table: string;
@@ -265,155 +80,235 @@ type MatchGroupRow = {
   away: string;
   category: string;
 
-  matchId: string | null;
+  matchStartTimeIso: string | null; // future_master.future_time（ISO想定）
+  dataRecordTime: string | null; // ★data.recordTime（record_time）
+
+  matchId: string | null; // mid想定
   matchUrl: string | null;
 
-  // flags
   futureExists: boolean;
   hasFinished: boolean;
 
-  // times aggregated from ALL data rows (and timesList if provided)
   timesAllSorted: string[];
-
-  // logs (all data rows)
   ingestsSortedAsc: IngestLog[];
 
-  // sorting key (newest first for list)
   latestRegisterTime: string;
 };
 
 /** =========================
+ * UI helpers (NoticeAdminPage風)
+ * ========================= */
+type Tone = "gray" | "blue" | "emerald" | "amber" | "rose" | "violet";
+
+function Badge({ children, tone = "gray" }: { children: React.ReactNode; tone?: Tone }) {
+  const cls: Record<Tone, string> = {
+    gray: "bg-gray-100 text-gray-700 ring-gray-200",
+    blue: "bg-blue-100 text-blue-800 ring-blue-200",
+    emerald: "bg-emerald-100 text-emerald-800 ring-emerald-200",
+    amber: "bg-amber-100 text-amber-900 ring-amber-200",
+    rose: "bg-rose-100 text-rose-800 ring-rose-200",
+    violet: "bg-violet-100 text-violet-800 ring-violet-200",
+  };
+  return <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ring-1 ring-inset ${cls[tone]}`}>{children}</span>;
+}
+
+function recordTimeToJstDateKey(recordTime: string | null | undefined): string | null {
+  const s = (recordTime ?? "").trim();
+  if (!s) return null;
+
+  // すでに日付だけならそれを採用
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+
+  // Dateで解釈できる形式（ISOなど）
+  let d = new Date(s);
+  if (!Number.isNaN(d.getTime())) return isoToJstDateKey(d.toISOString());
+
+  // "YYYY-MM-DD HH:mm:ss" っぽい場合は JST とみなして +09:00 を付与
+  if (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}$/.test(s)) {
+    const isoLike = s.replace(" ", "T") + "+09:00";
+    d = new Date(isoLike);
+    if (!Number.isNaN(d.getTime())) return isoToJstDateKey(d.toISOString());
+  }
+
+  return null;
+}
+
+function Panel({ title, desc, right, children }: { title: string; desc?: string; right?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="rounded-2xl border bg-white/80 backdrop-blur shadow-sm">
+      <div className="px-5 py-4 border-b bg-gradient-to-r from-white to-gray-50 rounded-t-2xl">
+        <div className="flex items-start justify-between gap-4 flex-col md:flex-row">
+          <div>
+            <div className="text-base font-extrabold text-gray-900">{title}</div>
+            {desc ? <div className="text-sm text-muted-foreground mt-1">{desc}</div> : null}
+          </div>
+          {right ? <div className="shrink-0">{right}</div> : null}
+        </div>
+      </div>
+      <div className="p-5">{children}</div>
+    </div>
+  );
+}
+
+function Alert({ type, title, message, onClose }: { type: "info" | "success" | "error"; title: string; message: string; onClose?: () => void }) {
+  const cls = type === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : type === "error" ? "border-rose-200 bg-rose-50 text-rose-900" : "border-blue-200 bg-blue-50 text-blue-900";
+
+  return (
+    <div className={`rounded-2xl border p-4 flex items-start gap-3 ${cls}`}>
+      <div className="min-w-0 flex-1">
+        <div className="text-sm font-extrabold">{title}</div>
+        <pre className="mt-1 text-xs whitespace-pre-wrap leading-relaxed">{message}</pre>
+      </div>
+      {onClose ? (
+        <button onClick={onClose} className="text-gray-500 hover:text-gray-800 transition-colors" type="button">
+          ✕
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+/** =========================
+ * Utils
+ * ========================= */
+function safeText(s: unknown): string {
+  return typeof s === "string" ? s : "";
+}
+
+async function fetchJsonStrict<T>(url: string, signal?: AbortSignal): Promise<T> {
+  const res = await fetch(url, { method: "GET", signal, headers: { Accept: "application/json" } });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`HTTP ${res.status} ${res.statusText}${text ? `: ${text}` : ""}`);
+  }
+  return (await res.json()) as T;
+}
+
+function extractMidFromUrl(url: string | null | undefined): string | null {
+  const s = (url ?? "").trim();
+  if (!s) return null;
+  const m = s.match(/[?&]mid=([A-Za-z0-9]+)/);
+  return m?.[1] ?? null;
+}
+
+function norm(s: string | null | undefined) {
+  return (s ?? "").trim();
+}
+
+function normKeyPart(s: string | null | undefined) {
+  return (s ?? "")
+    .normalize("NFKC")
+    .replace(/\u3000/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function makeCompositeKey(home: string, away: string, category: string) {
+  const h = normKeyPart(home);
+  const a = normKeyPart(away);
+  const c = normKeyPart(category);
+  if (h && a && c) return `H:${h}|||A:${a}|||C:${c}`;
+  return null;
+}
+
+function fmtJstFixed(iso: string | null | undefined, withSeconds = false) {
+  if (!iso) return "-";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return String(iso);
+  return new Intl.DateTimeFormat("ja-JP", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: withSeconds ? "2-digit" : undefined,
+  }).format(d);
+}
+
+function isoToJstDateKey(iso: string): string | null {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+
+  const parts = new Intl.DateTimeFormat("ja-JP", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(d);
+
+  const y = parts.find((p) => p.type === "year")?.value;
+  const m = parts.find((p) => p.type === "month")?.value;
+  const dd = parts.find((p) => p.type === "day")?.value;
+  if (!y || !m || !dd) return null;
+  return `${y}-${m}-${dd}`;
+}
+
+/**
+ * times sort (昇順 → 終了済最後)
+ */
+function timesSortKey(t: string): number | null {
+  const x = t.trim();
+  if (!x) return null;
+  if (x === "終了済") return Number.POSITIVE_INFINITY;
+
+  const m1 = x.match(/^(\d+)\s*'$/);
+  if (m1) {
+    const mm = Number(m1[1]);
+    if (Number.isFinite(mm)) return mm * 60;
+  }
+
+  const m2 = x.match(/^(\d{1,3}):(\d{1,2})$/);
+  if (m2) {
+    const mm = Number(m2[1]);
+    const ss = Number(m2[2]);
+    if (Number.isFinite(mm) && Number.isFinite(ss)) return mm * 60 + ss;
+  }
+  return null;
+}
+
+function sortTimesAscWithFinishedLast(list: string[]) {
+  const uniq = Array.from(new Set(list.map((s) => s.trim()).filter(Boolean)));
+  const allowed = uniq.filter((t) => timesSortKey(t) !== null);
+  allowed.sort((a, b) => timesSortKey(a)! - timesSortKey(b)!);
+  return allowed;
+}
+
+/** =========================
  * Page
  * ========================= */
-export default function IngestedDataReferencePage() {
-  // ---- filters
-  const today = useMemo(() => new Date(), []);
-  const [fromDate, setFromDate] = useState(() => toISODateInputValue(new Date(today.getTime() - 7 * 86400 * 1000)));
-  const [toDate, setToDate] = useState(() => toISODateInputValue(today));
+export default function IngestedDataReferenceAdminPage() {
+  // サーバ絞り込み（国）
+  const [country, setCountry] = useState("日本");
+
+  // フロント絞り込み（追加）
   const [keyword, setKeyword] = useState("");
 
+  // B008
   const [execLoading, setExecLoading] = useState(false);
   const [execError, setExecError] = useState<string | null>(null);
   const [execResult, setExecResult] = useState<ExecTaskResponse | null>(null);
 
-  // ---- paging (matchKey単位)
+  // paging (group単位)
   const [offset, setOffset] = useState(0);
   const [pageSize, setPageSize] = useState(100);
 
-  // ---- fetch state
+  // fetch state
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [envelope, setEnvelope] = useState<ApiEnvelope | null>(null);
 
   const abortRef = useRef<AbortController | null>(null);
 
-  // NOTE:
-  // backendが raw rows を offset/limit で返す場合、ページ跨ぎで同一試合が分断される可能性があります。
-  // ここでは「フロントで確実に集約したい」ので、サーバへは大きめ limit で取りに行き、
-  // その後 matchKey単位でフロント側 pagination します。
   const FETCH_LIMIT_RAW = 5000;
-
-  const runB008FinGettingTask = async () => {
-    setExecLoading(true);
-    setExecError(null);
-    setExecResult(null);
-
-    try {
-      const req = buildFinGettingRequestFromGroups(groupedFiltered, fromDate, toDate);
-
-      // guard：空なら叩かない
-      if (req.matches.length === 0) {
-        setExecError("対象が0件です（matchIdが取れない or フィルタで空）");
-        return;
-      }
-
-      // 注意：envで渡す方式は大量だと上限に当たる可能性があるので、ひとまずUIでも警告
-      if (req.matches.length > 300) {
-        // ここは運用に合わせて閾値調整
-        throw new Error(`対象が多すぎます（${req.matches.length}件）。日付/keywordで絞ってから実行してください。`);
-      }
-
-      const res = await postFinGettingJson(req);
-      setExecResult(res);
-    } catch (e: any) {
-      setExecError(e?.message ?? String(e));
-    } finally {
-      setExecLoading(false);
-    }
-  };
 
   const apiUrl = useMemo(() => {
     const params = new URLSearchParams();
-
-    const from = toOffsetDateTimeParam(fromDate, false);
-    const to = toOffsetDateTimeParam(toDate, true);
-
-    params.set("from", from);
-    params.set("to", to);
     params.set("offset", "0");
     params.set("limit", String(FETCH_LIMIT_RAW));
-    if (keyword.trim()) params.set("q", keyword.trim()); // backendが対応していれば有効
+    if (country.trim()) params.set("country", country.trim());
     return `/v1/api/admin/ingested?${params.toString()}`;
-  }, [fromDate, toDate, keyword]);
-
-  function resolveMatchIdPreferUrlMid(matchId: string | null, matchUrl: string | null): string | null {
-    const u = (matchUrl ?? "").trim();
-    const mid = extractMidFromUrl(u);
-    if (mid) return mid; // URLがあるならmidを正とする
-    const m = (matchId ?? "").trim();
-    return m || null;
-  }
-
-  function buildFinGettingRequestFromGroups(groups: MatchGroupRow[], fromDate: string, toDate: string): FinGettingRequest {
-    const singleDay = fromDate === toDate;
-
-    // dateごとに (matchId) 重複排除
-    const perDate = new Map<string, Map<string, { matchDate: string; matchId: string; matchUrl?: string }>>();
-
-    for (const g of groups) {
-      const dk = singleDay ? fromDate : (isoToJstDateKey(g.latestRegisterTime) ?? fromDate);
-
-      const mid = resolveMatchIdPreferUrlMid(g.matchId, g.matchUrl);
-      if (!mid) continue;
-
-      const url = (g.matchUrl ?? "").trim();
-      const row: { matchDate: string; matchId: string; matchUrl?: string } = { matchDate: dk, matchId: mid };
-      if (url) row.matchUrl = url;
-
-      if (!perDate.has(dk)) perDate.set(dk, new Map());
-      // 同一matchIdは最後のもの優先（URL付きが来たら上書きされる）
-      perDate.get(dk)!.set(mid, row);
-    }
-
-    const matches: FinGettingRequest["matches"] = [];
-    for (const [, m] of perDate) {
-      matches.push(...Array.from(m.values()));
-    }
-
-    // 任意：安定のためソート
-    matches.sort((a, b) => (a.matchDate + a.matchId).localeCompare(b.matchDate + b.matchId));
-
-    return { matches };
-  }
-
-  async function postFinGettingJson(req: FinGettingRequest, signal?: AbortSignal): Promise<ExecTaskResponse> {
-    const res = await fetch("/v1/api/admin/exec/task/fin-getting-json", {
-      method: "POST",
-      signal,
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify(req),
-    });
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      throw new Error(`HTTP ${res.status} ${res.statusText}${text ? `: ${text}` : ""}`);
-    }
-    return (await res.json()) as ExecTaskResponse;
-  }
-
-  const refetch = () => {
-    setOffset(0);
-    void doFetch();
-  };
+  }, [country]);
 
   const doFetch = async () => {
     abortRef.current?.abort();
@@ -422,7 +317,6 @@ export default function IngestedDataReferencePage() {
 
     setLoading(true);
     setError(null);
-
     try {
       const res = await fetchJsonStrict<ApiEnvelope>(apiUrl, ac.signal);
       setEnvelope(res);
@@ -442,20 +336,13 @@ export default function IngestedDataReferencePage() {
 
   const rawRows = envelope?.rows ?? [];
 
-  /** =========================
-   * ここが「全処理」の核：matchKey単位に集約
-   *
-   * groupKey 優先順位:
-   *  1) data.gameId があれば gid:{gameId}
-   *  2) それ以外は home|||away|||category
-   *     (future/dataのどちらかに情報があれば埋める)
-   * ========================= */
   const groupedAll: MatchGroupRow[] = useMemo(() => {
     type Acc = Omit<MatchGroupRow, "timesAllSorted" | "ingestsSortedAsc"> & {
       timesSet: Set<string>;
       ingests: IngestLog[];
-      futureCount: number;
-      dataCount: number;
+      matchStartTimeSourceRegisterTime: string | null;
+      // ★追加：data.recordTime の「最新DATA行」の値を保持
+      dataRecordTimeSourceRegisterTime: string | null;
     };
 
     const map = new Map<string, Acc>();
@@ -465,36 +352,29 @@ export default function IngestedDataReferencePage() {
       const awayRaw = norm(r.data?.awayTeamName) || norm(r.future?.awayTeamName) || "-";
       const catRaw = norm(r.data?.dataCategory) || norm(r.future?.gameTeamCategory) || "-";
 
-      // ★同一試合の判定は「複合キー」を最優先（表記ゆれ対策は normKeyPart 内）
-      const composite = makeCompositeKey(homeRaw, awayRaw, catRaw);
-
-      // matchKeyは補助（デバッグ用/後で統合用）
-      const matchKey =
-        norm(r.data?.gameId as any) ||
-        norm(r.data?.gameLink) ||
-        (() => {
-          const gl = norm(r.future?.gameLink);
-          const m = gl.match(/mid=([A-Za-z0-9]+)/);
-          return m?.[1] ?? gl;
-        })();
-
       const dataGameId = r.data?.gameId != null ? String(r.data.gameId) : "";
+      const gid = normKeyPart(dataGameId);
+
       const dataLink = norm(r.data?.gameLink);
       const futureLink = norm(r.future?.gameLink);
+      const mid = extractMidFromUrl(dataLink) || extractMidFromUrl(futureLink) || null;
 
-      // matchId（優先順：data.gameId > gameLink(mid) > futureLink(mid)）
-      const matchId = (dataGameId && normKeyPart(dataGameId)) || extractMidFromUrl(dataLink) || extractMidFromUrl(futureLink) || null;
+      const ftIso = norm(r.future?.futureTime) || null;
 
-      // matchUrl（取れるなら URL を。無ければ null）
-      // できるだけ /match/ を含むほうを優先
-      const matchUrl = (dataLink.includes("/match/") ? dataLink : "") || (futureLink.includes("/match/") ? futureLink : "") || null;
+      const dataRecordTime = norm(r.data?.recordTime) || null; // ★record_time
+      const isDataRow = String(r.table).toUpperCase() === "DATA";
 
-      // 最終キー：複合キーが作れるならそれ。無理なら matchKey。どっちも無理なら seq fallback
-      const groupKey = composite ?? (matchKey ? `MK:${normKeyPart(matchKey)}` : null) ?? `fallback:${r.seq}`;
+      const composite = makeCompositeKey(homeRaw, awayRaw, catRaw);
 
-      const futureExists = Boolean(r.futureExists) || r.table === "FUTURE_MASTER" || Boolean(r.future);
+      // ★分裂しにくい順に
+      const groupKey = (gid ? `gid:${gid}` : null) ?? (mid ? `mid:${mid}` : null) ?? (composite ? `cmp:${composite}` : null) ?? `fallback:${r.seq}`;
 
-      // times候補（data.times + timesList）
+      const matchId = mid || (gid ? gid : null);
+
+      const matchUrl = (dataLink && dataLink.includes("/match/") ? dataLink : "") || (futureLink && futureLink.includes("/match/") ? futureLink : "") || dataLink || futureLink || null;
+
+      const futureExists = Boolean(r.futureExists) || String(r.table).toUpperCase() === "FUTURE_MASTER" || Boolean(r.future);
+
       const timesCandidates: string[] = [];
       if (r.data?.times) timesCandidates.push(r.data.times);
       if (Array.isArray(r.timesList)) timesCandidates.push(...r.timesList);
@@ -522,24 +402,57 @@ export default function IngestedDataReferencePage() {
           home: homeRaw,
           away: awayRaw,
           category: catRaw,
+
+          matchStartTimeIso: ftIso,
+          matchStartTimeSourceRegisterTime: ftIso ? r.registerTime : null,
+          dataRecordTime: isDataRow ? dataRecordTime : null, //
+          dataRecordTimeSourceRegisterTime: isDataRow && dataRecordTime ? r.registerTime : null,
+
           matchId,
           matchUrl,
+
           futureExists,
           hasFinished,
           latestRegisterTime: r.registerTime,
+
           timesSet,
           ingests: [ingest],
-          futureCount: r.table === "FUTURE_MASTER" ? 1 : 0,
-          dataCount: r.table === "DATA" ? 1 : 0,
         });
       } else {
-        // 欠けている情報を埋める
         if (existing.home === "-" && homeRaw !== "-") existing.home = homeRaw;
         if (existing.away === "-" && awayRaw !== "-") existing.away = awayRaw;
         if (existing.category === "-" && catRaw !== "-") existing.category = catRaw;
 
         if (!existing.matchId && matchId) existing.matchId = matchId;
         if (!existing.matchUrl && matchUrl) existing.matchUrl = matchUrl;
+
+        if (ftIso) {
+          if (!existing.matchStartTimeIso) {
+            existing.matchStartTimeIso = ftIso;
+            existing.matchStartTimeSourceRegisterTime = r.registerTime;
+          } else {
+            const prev = existing.matchStartTimeSourceRegisterTime ? new Date(existing.matchStartTimeSourceRegisterTime).getTime() : -1;
+            const cur = new Date(r.registerTime).getTime();
+            if (cur > prev) {
+              existing.matchStartTimeIso = ftIso;
+              existing.matchStartTimeSourceRegisterTime = r.registerTime;
+            }
+          }
+        }
+
+        if (isDataRow && dataRecordTime) {
+          if (!existing.dataRecordTime) {
+            existing.dataRecordTime = dataRecordTime;
+            existing.dataRecordTimeSourceRegisterTime = r.registerTime;
+          } else {
+            const prev = existing.dataRecordTimeSourceRegisterTime ? new Date(existing.dataRecordTimeSourceRegisterTime).getTime() : -1;
+            const cur = new Date(r.registerTime).getTime();
+            if (cur > prev) {
+              existing.dataRecordTime = dataRecordTime;
+              existing.dataRecordTimeSourceRegisterTime = r.registerTime;
+            }
+          }
+        }
 
         for (const t of timesCandidates) {
           const tt = (t ?? "").trim();
@@ -554,310 +467,400 @@ export default function IngestedDataReferencePage() {
           existing.latestRegisterTime = r.registerTime;
         }
 
-        if (r.table === "FUTURE_MASTER") existing.futureCount += 1;
-        if (r.table === "DATA") existing.dataCount += 1;
-
         map.set(groupKey, existing);
       }
     }
 
     const out: MatchGroupRow[] = [];
     for (const v of map.values()) {
-      const timesAllSorted = sortTimesAscWithFinishedLast(Array.from(v.timesSet));
-      const ingestsSortedAsc = v.ingests.slice().sort((a, b) => new Date(a.registerTime).getTime() - new Date(b.registerTime).getTime());
-
       out.push({
         groupKey: v.groupKey,
         home: v.home,
         away: v.away,
         category: v.category,
+        matchStartTimeIso: v.matchStartTimeIso ?? null,
+
+        dataRecordTime: v.dataRecordTime ?? null, // ★追加
+
         matchId: v.matchId ?? null,
         matchUrl: v.matchUrl ?? null,
         futureExists: v.futureExists,
         hasFinished: v.hasFinished,
-        timesAllSorted,
-        ingestsSortedAsc,
+        timesAllSorted: sortTimesAscWithFinishedLast(Array.from(v.timesSet)),
+        ingestsSortedAsc: v.ingests.slice().sort((a, b) => new Date(a.registerTime).getTime() - new Date(b.registerTime).getTime()),
         latestRegisterTime: v.latestRegisterTime,
       });
     }
 
-    // 一覧は新しい順
     out.sort((a, b) => new Date(b.latestRegisterTime).getTime() - new Date(a.latestRegisterTime).getTime());
     return out;
   }, [rawRows]);
 
-  // keyword は backend q が効かない可能性があるので、フロントでも絞り込み（保険）
-  const groupedFiltered: MatchGroupRow[] = useMemo(() => {
-    const q = keyword.trim();
+  const groupedFiltered = useMemo(() => {
+    const q = keyword.trim().toLowerCase();
     if (!q) return groupedAll;
-    return groupedAll.filter((g) => {
-      const s = `${g.home} ${g.away} ${g.category} ${g.groupKey}`.toLowerCase();
-      return s.includes(q.toLowerCase());
-    });
+    return groupedAll.filter((g) => `${g.home} ${g.away} ${g.category} ${g.groupKey}`.toLowerCase().includes(q));
   }, [groupedAll, keyword]);
 
   const totalGroups = groupedFiltered.length;
   const showingGroups = groupedFiltered.slice(offset, offset + pageSize);
 
-  // expand state
+  // expand
   const [expandedKeys, setExpandedKeys] = useState<Record<string, boolean>>({});
   const toggleExpand = (k: string) => setExpandedKeys((p) => ({ ...p, [k]: !p[k] }));
 
   const canPrev = offset > 0;
   const canNext = offset + pageSize < totalGroups;
 
+  // stats (header badges)
+  const stats = useMemo(() => {
+    const total = groupedFiltered.length;
+    const futureOk = groupedFiltered.filter((g) => g.futureExists).length;
+    const finished = groupedFiltered.filter((g) => g.hasFinished).length;
+    return { total, futureOk, finished };
+  }, [groupedFiltered]);
+
+  function resolveMatchIdPreferUrlMid(matchId: string | null, matchUrl: string | null): string | null {
+    const mid = extractMidFromUrl(matchUrl);
+    if (mid) return mid;
+    const m = (matchId ?? "").trim();
+    return m || null;
+  }
+
+  function computeMatchDateKeyForB008(g: MatchGroupRow): string | null {
+    // 1) future_master.future_time を最優先
+    const d1 = g.matchStartTimeIso ? isoToJstDateKey(g.matchStartTimeIso) : null;
+    if (d1) return d1;
+
+    // 2) future_timeが無ければ data.recordTime（record_time）
+    const d2 = recordTimeToJstDateKey(g.dataRecordTime);
+    if (d2) return d2;
+
+    return null;
+  }
+
+  function buildFinGettingRequestFromGroups(groups: MatchGroupRow[]): FinGettingRequest {
+    const perDate = new Map<string, Map<string, { matchDate: string; matchId: string; matchUrl?: string }>>();
+
+    for (const g of groups) {
+      const matchDate = computeMatchDateKeyForB008(g);
+      if (!matchDate) continue;
+
+      const mid = resolveMatchIdPreferUrlMid(g.matchId, g.matchUrl);
+      if (!mid) continue;
+
+      const url = (g.matchUrl ?? "").trim();
+      const row: { matchDate: string; matchId: string; matchUrl?: string } = { matchDate, matchId: mid };
+      if (url) row.matchUrl = url;
+
+      if (!perDate.has(matchDate)) perDate.set(matchDate, new Map());
+      perDate.get(matchDate)!.set(mid, row);
+    }
+
+    const matches: FinGettingRequest["matches"] = [];
+    for (const [, m] of perDate) matches.push(...Array.from(m.values()));
+    matches.sort((a, b) => (a.matchDate + a.matchId).localeCompare(b.matchDate + b.matchId));
+    return { matches };
+  }
+
+  async function postFinGettingJson(req: FinGettingRequest, signal?: AbortSignal): Promise<ExecTaskResponse> {
+    const res = await fetch("/v1/api/admin/exec/task/fin-getting-json", {
+      method: "POST",
+      signal,
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify(req),
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(`HTTP ${res.status} ${res.statusText}${text ? `: ${text}` : ""}`);
+    }
+    return (await res.json()) as ExecTaskResponse;
+  }
+
+  const runB008 = async () => {
+    setExecLoading(true);
+    setExecError(null);
+    setExecResult(null);
+
+    try {
+      const req = buildFinGettingRequestFromGroups(groupedFiltered);
+
+      if (req.matches.length === 0) {
+        setExecError("対象が0件です（midが取れない/日付が作れない/フィルタで空）");
+        return;
+      }
+      if (req.matches.length > 300) {
+        throw new Error(`対象が多すぎます（${req.matches.length}件）。keywordで絞ってから実行してください。`);
+      }
+
+      const res = await postFinGettingJson(req);
+      setExecResult(res);
+    } catch (e: any) {
+      setExecError(e?.message ?? String(e));
+    } finally {
+      setExecLoading(false);
+    }
+  };
+
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-4 p-4">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <div className="text-xl font-bold text-slate-900">Ingested Data Reference</div>
-          <div className="mt-1 text-sm text-slate-600">
-            一覧（新しい順 / matchKey単位） &nbsp;|&nbsp; offset: {offset} / showing: {showingGroups.length} / total: {totalGroups}
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
+      <div className="container mx-auto px-4 py-6 max-w-6xl space-y-6">
+        {/* Header (NoticeAdminPage と同じ構造) */}
+        <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
+          <div className="flex items-center gap-4">
+            <div className="bg-gradient-to-r from-violet-600 to-blue-600 text-white p-3 rounded-2xl shadow-lg">
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4h16v16H4zM7 8h10M7 12h10M7 16h10" />
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-3xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">投入済データ参照管理</h1>
+              <p className="text-sm text-muted-foreground mt-1">国フィルタで投入済データを参照し、future_master がある場合は試合日時も表示します。B008（fin-getting-json）起動も可能です。</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge tone="blue">total {stats.total}</Badge>
+            <Badge tone="emerald">future_master {stats.futureOk}</Badge>
+            <Badge tone="violet">finished {stats.finished}</Badge>
+            <Badge tone="gray">raw {rawRows.length}</Badge>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {loading ? <Badge tone="slate">取得中…</Badge> : <Badge tone="gray">raw rows: {rawRows.length}</Badge>}
-          <Badge tone="gray">raw fetch limit: {FETCH_LIMIT_RAW}</Badge>
-        </div>
-      </div>
+        {/* Alerts */}
+        {execError ? <Alert type="error" title="B008起動に失敗しました" message={execError} onClose={() => setExecError(null)} /> : null}
+        {execResult ? <Alert type="success" title="JSONを作成してS3へアップロードしました" message={`returnCd: ${execResult.returnCd ?? "-"}`} onClose={() => setExecResult(null)} /> : null}
+        {error ? <Alert type="error" title="取得に失敗しました" message={error} onClose={() => setError(null)} /> : null}
 
-      <Card title="検索条件">
-        <Button onClick={runB008FinGettingTask} disabled={loading || execLoading || groupedFiltered.length === 0}>
-          {execLoading ? "B008起動中…" : "B008（fin-getting-json）起動"}
-        </Button>
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
-          <div>
-            <div className="mb-1 text-xs font-medium text-slate-600">from</div>
-            <Input type="date" value={fromDate} onChange={setFromDate} />
+        {/* Filter Panel */}
+        <Panel
+          title="検索条件"
+          desc="from/to（登録日時）は使いません。国で取得して、keywordはフロント側で絞り込みます。"
+          right={
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setOffset(0);
+                  void doFetch();
+                }}
+                disabled={loading}
+              >
+                {loading ? "更新中..." : "再取得"}
+              </Button>
+              <Button size="sm" onClick={runB008} disabled={loading || execLoading || groupedFiltered.length === 0}>
+                {execLoading ? "B008起動中..." : "B008起動"}
+              </Button>
+            </div>
+          }
+        >
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="space-y-2">
+              <div className="text-sm font-semibold text-gray-800">country（サーバ絞り込み）</div>
+              <input
+                className="w-full rounded-xl border bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={country}
+                onChange={(e) => {
+                  setCountry(e.target.value);
+                  setOffset(0);
+                }}
+                placeholder="例）日本"
+              />
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <div className="text-sm font-semibold text-gray-800">keyword（フロント側絞り込み）</div>
+              <input
+                className="w-full rounded-xl border bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={keyword}
+                onChange={(e) => {
+                  setKeyword(e.target.value);
+                  setOffset(0);
+                }}
+                placeholder="例）高知 / J2 / ラウンド3 ..."
+              />
+            </div>
           </div>
-          <div>
-            <div className="mb-1 text-xs font-medium text-slate-600">to</div>
-            <Input type="date" value={toDate} onChange={setToDate} />
+
+          <div className="mt-4 flex items-center gap-2 flex-wrap">
+            <Badge tone="gray">raw fetch limit {FETCH_LIMIT_RAW}</Badge>
+            {envelope && envelope.total > rawRows.length ? (
+              <Badge tone="amber">
+                注意: total={envelope.total} / 取得={rawRows.length}（limitで打ち切り）
+              </Badge>
+            ) : (
+              <Badge tone="emerald">取得OK</Badge>
+            )}
+
+            <div className="ml-auto flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">page size</span>
+              <select
+                className="rounded-xl border bg-white px-3 py-2 text-sm"
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setOffset(0);
+                }}
+              >
+                {[50, 100, 200].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-          <div className="md:col-span-2">
-            <div className="mb-1 text-xs font-medium text-slate-600">keyword（フロント側でも絞り込み）</div>
-            <Input value={keyword} onChange={setKeyword} placeholder="例: 東京ヴェルディ / J1 / round 1 ..." />
-          </div>
-        </div>
+        </Panel>
 
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <Button onClick={refetch} disabled={loading}>
-            再取得
-          </Button>
-          <Button
-            tone="ghost"
-            onClick={() => {
-              setKeyword("");
-              setOffset(0);
-            }}
-          >
-            keywordクリア
-          </Button>
+        {/* List Panel */}
+        <Panel
+          title="一覧"
+          desc="新しい順。カードをクリックで詳細を開閉します。future_master がある場合は試合日時を表示。"
+          right={
+            <div className="flex items-center gap-2">
+              <Badge tone="gray">
+                offset {offset} / showing {Math.min(pageSize, Math.max(0, totalGroups - offset))} / total {totalGroups}
+              </Badge>
+              <Button variant="outline" size="sm" disabled={!canPrev} onClick={() => setOffset((v) => Math.max(0, v - pageSize))}>
+                Prev
+              </Button>
+              <Button variant="outline" size="sm" disabled={!canNext} onClick={() => setOffset((v) => Math.min(totalGroups, v + pageSize))}>
+                Next
+              </Button>
+            </div>
+          }
+        >
+          {loading ? (
+            <div className="space-y-3">
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-2/3" />
+            </div>
+          ) : showingGroups.length === 0 ? (
+            <div className="text-sm text-muted-foreground">データがありません。</div>
+          ) : (
+            <div className="grid grid-cols-1 gap-3">
+              {showingGroups.map((g) => {
+                const expanded = Boolean(expandedKeys[g.groupKey]);
+                const summary = `${g.home} vs ${g.away} / ${g.category}`;
 
-          <div className="ml-auto flex items-center gap-2">
-            <span className="text-xs text-slate-600">page size</span>
-            <select
-              className="rounded-lg border border-slate-200 bg-white px-2 py-2 text-sm"
-              value={pageSize}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value));
-                setOffset(0);
-              }}
-            >
-              {[50, 100, 200].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </Card>
+                return (
+                  <div key={g.groupKey} className="rounded-2xl border bg-white hover:shadow-sm transition-shadow p-4">
+                    <button type="button" className="w-full text-left" onClick={() => toggleExpand(g.groupKey)}>
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <div className="text-lg font-extrabold text-gray-900 truncate">{summary}</div>
 
-      {execError && (
-        <Alert tone="error" title="B008起動に失敗しました">
-          {execError}
-        </Alert>
-      )}
-
-      {execResult && (
-        <Alert tone="info" title="B008を起動しました">
-          returnCd: {execResult.returnCd ?? "-"}
-          <br />
-          taskArn: {execResult.taskArn ?? "-"}
-        </Alert>
-      )}
-
-      {error && (
-        <Alert tone="error" title="取得に失敗しました">
-          {error}
-        </Alert>
-      )}
-
-      <Card title="一覧">
-        <div className="divide-y divide-slate-200 rounded-xl border border-slate-200">
-          {showingGroups.length === 0 && !loading && <div className="p-4 text-sm text-slate-600">データがありません</div>}
-
-          {showingGroups.map((g) => {
-            const expanded = Boolean(expandedKeys[g.groupKey]);
-            const summary = `${g.home} vs ${g.away} / ${g.category}`;
-
-            const timesText = g.timesAllSorted.length ? g.timesAllSorted.join(", ") : null;
-
-            return (
-              <div key={g.groupKey} className="p-4">
-                <button className="w-full text-left" onClick={() => toggleExpand(g.groupKey)} type="button">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="truncate text-sm font-semibold text-slate-900">{summary}</div>
-
-                      {/* Badges: ここがあなたの「future_masterにあるか / 終了済があるか」 */}
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {g.futureExists ? <Badge tone="emerald">future_masterに存在</Badge> : <Badge tone="rose">future_masterに存在しない</Badge>}
-
-                        {g.hasFinished ? <Badge tone="blue">終了済あり</Badge> : <Badge tone="amber">終了済なし</Badge>}
-
-                        {g.timesAllSorted.length > 0 && <Badge tone="gray">times {g.timesAllSorted.length}種</Badge>}
-
-                        {/* groupKey を表示（gid優先） */}
-                        <Badge tone="gray">{g.groupKey}</Badge>
-                      </div>
-                    </div>
-
-                    <div className="shrink-0 text-xs text-slate-500">{expanded ? "▲" : "▼"}</div>
-                  </div>
-                </button>
-
-                {expanded && (
-                  <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
-                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                      <div className="rounded-lg border border-slate-200 bg-white p-3">
-                        <div className="text-xs font-semibold text-slate-800">Meta</div>
-                        <div className="mt-2 space-y-1 text-sm text-slate-700">
-                          <div>
-                            <span className="text-slate-500">home</span> {g.home}
+                          <div className="mt-1 text-sm text-muted-foreground">
+                            試合日時:{" "}
+                            {g.futureExists && g.matchStartTimeIso ? <span className="font-semibold text-gray-900">{fmtJstFixed(g.matchStartTimeIso)}</span> : <span className="text-gray-400">-</span>}
                           </div>
-                          <div>
-                            <span className="text-slate-500">away</span> {g.away}
-                          </div>
-                          <div>
-                            <span className="text-slate-500">category</span> {g.category}
-                          </div>
-                          <div>
-                            <span className="text-slate-500">latestRegisterTime</span> {fmtJstLike(g.latestRegisterTime)}
+
+                          <div className="mt-2 flex items-center gap-2 flex-wrap">
+                            {g.futureExists ? <Badge tone="emerald">future_masterに存在</Badge> : <Badge tone="rose">future_masterに存在しない</Badge>}
+                            {g.hasFinished ? <Badge tone="violet">終了済あり</Badge> : <Badge tone="amber">終了済なし</Badge>}
+                            {g.timesAllSorted.length ? <Badge tone="gray">times {g.timesAllSorted.length}</Badge> : <Badge tone="gray">times 0</Badge>}
+                            <Badge tone="gray">{g.groupKey}</Badge>
                           </div>
                         </div>
 
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {g.futureExists ? <Badge tone="emerald">future_masterに存在</Badge> : <Badge tone="rose">future_masterに存在しない</Badge>}
-                          {g.hasFinished ? <Badge tone="blue">終了済あり</Badge> : <Badge tone="amber">終了済なし</Badge>}
-                        </div>
+                        <div className="shrink-0 text-xs text-muted-foreground">{expanded ? "▲" : "▼"}</div>
                       </div>
+                    </button>
 
-                      <div className="rounded-lg border border-slate-200 bg-white p-3">
-                        <div className="text-xs font-semibold text-slate-800">times 一覧（昇順 → 終了済）</div>
-                        <div className="mt-2 text-sm text-slate-700">
-                          {g.timesAllSorted.length ? (
-                            <div className="flex flex-wrap gap-2">
-                              {g.timesAllSorted.map((t) => (
-                                <Badge key={t} tone={t === "終了済" ? "blue" : "slate"}>
+                    {expanded ? (
+                      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="rounded-2xl border bg-gray-50 px-4 py-3">
+                          <div className="text-sm font-extrabold text-gray-900">Meta</div>
+                          <div className="mt-2 text-sm text-gray-800 space-y-1">
+                            <div>
+                              <span className="text-muted-foreground">home</span> {g.home}
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">away</span> {g.away}
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">category</span> {g.category}
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">matchStartTime</span> {fmtJstFixed(g.matchStartTimeIso, true)}
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">latestRegisterTime</span> {fmtJstFixed(g.latestRegisterTime, true)}
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">matchId(mid)</span> {g.matchId ?? "-"}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="rounded-2xl border bg-gray-50 px-4 py-3">
+                          <div className="text-sm font-extrabold text-gray-900">times</div>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {g.timesAllSorted.length ? (
+                              g.timesAllSorted.map((t) => (
+                                <Badge key={t} tone={t === "終了済" ? "violet" : "gray"}>
                                   {t}
                                 </Badge>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="text-slate-500">times がありません</div>
-                          )}
-                        </div>
-
-                        {timesText && <div className="mt-3 text-xs text-slate-500">{timesText}</div>}
-                      </div>
-                    </div>
-
-                    <div className="mt-3 rounded-lg border border-slate-200 bg-white p-3">
-                      <div className="flex items-center justify-between">
-                        <div className="text-xs font-semibold text-slate-800">data 行（この試合に紐づくものを全部 / 昇順）</div>
-
-                        {/* コピー（行クリックを止める） */}
-                        <div className="flex items-center gap-2">
-                          <Button
-                            tone="ghost"
-                            onClick={() => {
-                              navigator.clipboard?.writeText(g.groupKey).catch(() => {});
-                            }}
-                            className="px-2 py-1 text-xs"
-                          >
-                            keyコピー
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div className="mt-2 overflow-x-auto">
-                        <table className="w-full border-collapse text-sm">
-                          <thead>
-                            <tr className="border-b border-slate-200 text-left text-xs text-slate-500">
-                              <th className="py-2 pr-3">seq</th>
-                              <th className="py-2 pr-3">table</th>
-                              <th className="py-2 pr-3">registerTime</th>
-                              <th className="py-2 pr-3">updateTime</th>
-                              <th className="py-2 pr-3">times</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {g.ingestsSortedAsc.map((it) => (
-                              <tr key={`${it.table}:${it.seq}`} className="border-b border-slate-100 last:border-b-0">
-                                <td className="py-2 pr-3 font-mono text-xs text-slate-700">{it.seq}</td>
-                                <td className="py-2 pr-3 text-xs text-slate-700">{it.table}</td>
-                                <td className="py-2 pr-3 text-xs text-slate-700">{fmtJstLike(it.registerTime)}</td>
-                                <td className="py-2 pr-3 text-xs text-slate-700">{fmtJstLike(it.updateTime ?? null)}</td>
-                                <td className="py-2 pr-3 text-xs text-slate-700">
-                                  {it.times ? <Badge tone={it.times.trim() === "終了済" ? "blue" : "slate"}>{it.times}</Badge> : <span className="text-slate-400">-</span>}
-                                </td>
-                              </tr>
-                            ))}
-                            {g.ingestsSortedAsc.length === 0 && (
-                              <tr>
-                                <td className="py-3 text-slate-500" colSpan={5}>
-                                  該当する data 行がありません
-                                </td>
-                              </tr>
+                              ))
+                            ) : (
+                              <span className="text-sm text-muted-foreground">times がありません</span>
                             )}
-                          </tbody>
-                        </table>
+                          </div>
+                        </div>
+
+                        <div className="md:col-span-2 rounded-2xl border bg-white px-4 py-3">
+                          <div className="flex items-center justify-between">
+                            <div className="text-sm font-extrabold text-gray-900">投入ログ（昇順）</div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigator.clipboard?.writeText(g.groupKey).catch(() => {});
+                              }}
+                            >
+                              keyコピー
+                            </Button>
+                          </div>
+
+                          <div className="mt-3 overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="border-b text-xs text-muted-foreground">
+                                  <th className="py-2 pr-3 text-left">seq</th>
+                                  <th className="py-2 pr-3 text-left">table</th>
+                                  <th className="py-2 pr-3 text-left">registerTime(JST)</th>
+                                  <th className="py-2 pr-3 text-left">updateTime(JST)</th>
+                                  <th className="py-2 pr-3 text-left">times</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {g.ingestsSortedAsc.map((it) => (
+                                  <tr key={`${it.table}:${it.seq}`} className="border-b last:border-b-0">
+                                    <td className="py-2 pr-3 font-mono text-xs">{it.seq}</td>
+                                    <td className="py-2 pr-3 text-xs">{it.table}</td>
+                                    <td className="py-2 pr-3 text-xs">{fmtJstFixed(it.registerTime, true)}</td>
+                                    <td className="py-2 pr-3 text-xs">{fmtJstFixed(it.updateTime ?? null, true)}</td>
+                                    <td className="py-2 pr-3 text-xs">
+                                      {it.times ? <Badge tone={it.times.trim() === "終了済" ? "violet" : "gray"}>{it.times}</Badge> : <span className="text-gray-400">-</span>}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
                       </div>
-
-                      <div className="mt-2 text-xs text-slate-500">※ 行クリックで詳細を開閉します（コピー操作は行クリックを止めるようにしています）</div>
-                    </div>
+                    ) : null}
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Pagination (matchKey単位) */}
-        <div className="mt-3 flex items-center justify-between">
-          <div className="text-xs text-slate-600">
-            offset: {offset} / showing: {showingGroups.length} / total: {totalGroups}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button tone="ghost" disabled={!canPrev} onClick={() => setOffset((v) => Math.max(0, v - pageSize))}>
-              Prev
-            </Button>
-            <Button tone="ghost" disabled={!canNext} onClick={() => setOffset((v) => Math.min(totalGroups, v + pageSize))}>
-              Next
-            </Button>
-          </div>
-        </div>
-      </Card>
+                );
+              })}
+            </div>
+          )}
+        </Panel>
+      </div>
     </div>
   );
-}
-
-function toOffsetDateTimeParam(dateOnly: string, endOfDay: boolean): string {
-  // dateOnly: "YYYY-MM-DD"
-  // JSTで範囲検索したい前提（必要なら "+00:00" や "Z" に変えてOK）
-  return endOfDay ? `${dateOnly}T23:59:59+09:00` : `${dateOnly}T00:00:00+09:00`;
 }
