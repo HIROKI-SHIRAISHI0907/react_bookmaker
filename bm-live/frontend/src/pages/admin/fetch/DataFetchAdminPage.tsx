@@ -198,6 +198,13 @@ export default function DataFetchAdminPage() {
       { id: "B006_export", code: "B006", title: "統計CSVデータ生成", description: "統計CSVを生成（export）", endpoint: "/v1/api/admin/export/statCsv" },
       { id: "B006_import", code: "B006", title: "統計CSVデータ取り入れ実行", description: "統計CSVを取り込む（import）", endpoint: "/v1/api/stat" },
       { id: "B008", code: "B008", title: "開催中データ取得", description: "開催中データを更新", endpoint: "/v1/api/admin/exec/task/bm-data" },
+      {
+        id: "B010",
+        code: "B010",
+        title: "欠損値（未来データ、終了済データ）データ取得",
+        description: "欠損値（未来データ、終了済データ）データを更新",
+        endpoint: "/v1/api/admin/exec/task/fin-getting-json",
+      },
     ],
     [],
   );

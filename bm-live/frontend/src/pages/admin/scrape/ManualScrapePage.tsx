@@ -1,6 +1,15 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import React, { useMemo, useState } from "react";
 
+type EcsRunRequest = {
+  batchCd: string;
+  // 必要なら後で追加（例: dryRun?: boolean; など）
+};
+
+type EcsRunResponse = {
+  taskArn?: string;
+};
+
 type ProgressRes = {
   taskId?: string;
   status?: "RUNNING" | "STOPPED" | "NOT_FOUND" | string;
@@ -214,7 +223,7 @@ function ConfirmModal(props: {
 
 /** ===================== Page ===================== */
 export default function ManualScrapePage() {
-  const batchCodes = ["B002", "B003", "B004", "B005", "B007", "B008", "B009"];
+  const batchCodes = ["B002", "B003", "B004", "B005", "B007", "B008", "B009", "B010"];
   const [batchCode, setBatchCode] = useState(batchCodes[0]);
 
   // ===== Progress =====
@@ -227,11 +236,16 @@ export default function ManualScrapePage() {
   const isRunning = useMemo(() => progressQuery.data?.status === "RUNNING", [progressQuery.data]);
 
   // ===== Run =====
+  const [lastTaskArn, setLastTaskArn] = useState<string | null>(null);
+  const RUN_URL = `/v1/api/admin/scrape/ecs/run`;
   const runMutation = useMutation({
     mutationFn: async () => {
-      await postNoBody(`/v1/api/admin/scrape/ecs/${batchCode}/run`);
+      const body: EcsRunRequest = { batchCd: batchCode };
+      const res = await postJson<EcsRunResponse>(RUN_URL, body);
+      return res;
     },
-    onSuccess: async () => {
+    onSuccess: async (res) => {
+      setLastTaskArn(res?.taskArn ?? null);
       await progressQuery.refetch();
     },
   });

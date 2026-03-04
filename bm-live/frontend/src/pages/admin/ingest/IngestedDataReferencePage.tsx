@@ -278,11 +278,20 @@ function sortTimesAscWithFinishedLast(list: string[]) {
  * Page
  * ========================= */
 export default function IngestedDataReferenceAdminPage() {
+  // 手入力 matchUrl（groupKey単位で上書き）
+  const [manualMatchUrlByGroupKey, setManualMatchUrlByGroupKey] = useState<Record<string, string>>({});
+
   // サーバ絞り込み（国）
   const [country, setCountry] = useState("日本");
 
   // フロント絞り込み（追加）
   const [keyword, setKeyword] = useState("");
+
+  // 追加：フィルタ
+  const [onlyMissingMatchUrl, setOnlyMissingMatchUrl] = useState(false);
+
+  // 追加：要対応のみ（future_masterに無い OR 終了済が無い）
+  const [onlyNeedsAttention, setOnlyNeedsAttention] = useState(false);
 
   // B008
   const [execLoading, setExecLoading] = useState(false);
@@ -498,9 +507,26 @@ export default function IngestedDataReferenceAdminPage() {
 
   const groupedFiltered = useMemo(() => {
     const q = keyword.trim().toLowerCase();
-    if (!q) return groupedAll;
-    return groupedAll.filter((g) => `${g.home} ${g.away} ${g.category} ${g.groupKey}`.toLowerCase().includes(q));
-  }, [groupedAll, keyword]);
+
+    let list = groupedAll;
+
+    // (A) matchUrl 空のみ
+    if (onlyMissingMatchUrl) {
+      list = list.filter((g) => !getEffectiveMatchUrl(g));
+    }
+
+    // (B) future_masterにない OR 終了済がない
+    if (onlyNeedsAttention) {
+      list = list.filter((g) => !g.futureExists || !g.hasFinished);
+    }
+
+    // (C) keyword
+    if (q) {
+      list = list.filter((g) => `${g.home} ${g.away} ${g.category} ${g.groupKey}`.toLowerCase().includes(q));
+    }
+
+    return list;
+  }, [groupedAll, keyword, onlyMissingMatchUrl, onlyNeedsAttention, manualMatchUrlByGroupKey]);
 
   const totalGroups = groupedFiltered.length;
   const showingGroups = groupedFiltered.slice(offset, offset + pageSize);
@@ -519,6 +545,10 @@ export default function IngestedDataReferenceAdminPage() {
     const finished = groupedFiltered.filter((g) => g.hasFinished).length;
     return { total, futureOk, finished };
   }, [groupedFiltered]);
+
+  const missingUrlCount = useMemo(() => groupedAll.filter((g) => !getEffectiveMatchUrl(g)).length, [groupedAll, manualMatchUrlByGroupKey]);
+
+  const needsAttentionCount = useMemo(() => groupedAll.filter((g) => !g.futureExists || !g.hasFinished).length, [groupedAll]);
 
   function resolveMatchIdPreferUrlMid(matchId: string | null, matchUrl: string | null): string | null {
     const mid = extractMidFromUrl(matchUrl);
@@ -549,12 +579,16 @@ export default function IngestedDataReferenceAdminPage() {
       const mid = resolveMatchIdPreferUrlMid(g.matchId, g.matchUrl);
       if (!mid) continue;
 
-      const url = (g.matchUrl ?? "").trim();
+      const url = getEffectiveMatchUrl(g); // ★手入力を優先
       const row: { matchDate: string; matchId: string; matchUrl?: string } = { matchDate, matchId: mid };
       if (url) row.matchUrl = url;
 
       if (!perDate.has(matchDate)) perDate.set(matchDate, new Map());
       perDate.get(matchDate)!.set(mid, row);
+    }
+
+    function isMissingMatchUrl(g: MatchGroupRow): boolean {
+      return !getEffectiveMatchUrl(g); // manualもautoも空なら true
     }
 
     const matches: FinGettingRequest["matches"] = [];
@@ -563,8 +597,16 @@ export default function IngestedDataReferenceAdminPage() {
     return { matches };
   }
 
+  function getEffectiveMatchUrl(g: MatchGroupRow): string | null {
+    const manual = (manualMatchUrlByGroupKey[g.groupKey] ?? "").trim();
+    if (manual) return manual;
+
+    const auto = (g.matchUrl ?? "").trim();
+    return auto || null;
+  }
+
   async function postFinGettingJson(req: FinGettingRequest, signal?: AbortSignal): Promise<ExecTaskResponse> {
-    const res = await fetch("/v1/api/admin/exec/task/fin-getting-json", {
+    const res = await fetch("/v1/api/admin/fin-getting-json", {
       method: "POST",
       signal,
       headers: { "Content-Type": "application/json", Accept: "application/json" },
@@ -583,6 +625,28 @@ export default function IngestedDataReferenceAdminPage() {
     setExecResult(null);
 
     try {
+      // ★ここで検証（レンダリング中ではなく、クリック時）
+      const badUrls = Object.entries(manualMatchUrlByGroupKey)
+        .filter(([, url]) => url.trim())
+        .filter(([, url]) => {
+          try {
+            new URL(url.trim());
+            return false;
+          } catch {
+            return true;
+          }
+        });
+
+      if (badUrls.length) {
+        setExecError(
+          `不正なURLがあります: ${badUrls
+            .slice(0, 5)
+            .map(([k]) => k)
+            .join(", ")} ...`,
+        );
+        return; // ★ここで終了（finally は走って execLoading は false に戻る）
+      }
+
       const req = buildFinGettingRequestFromGroups(groupedFiltered);
 
       if (req.matches.length === 0) {
@@ -624,6 +688,8 @@ export default function IngestedDataReferenceAdminPage() {
             <Badge tone="emerald">future_master {stats.futureOk}</Badge>
             <Badge tone="violet">finished {stats.finished}</Badge>
             <Badge tone="gray">raw {rawRows.length}</Badge>
+            <Badge tone="amber">url空 {missingUrlCount}</Badge>
+            <Badge tone="rose">要対応 {needsAttentionCount}</Badge>
           </div>
         </div>
 
@@ -681,6 +747,32 @@ export default function IngestedDataReferenceAdminPage() {
                 placeholder="例）高知 / J2 / ラウンド3 ..."
               />
             </div>
+          </div>
+
+          <div className="mt-4 flex items-center gap-4 flex-wrap">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={onlyMissingMatchUrl}
+                onChange={(e) => {
+                  setOnlyMissingMatchUrl(e.target.checked);
+                  setOffset(0);
+                }}
+              />
+              matchUrl 未入力のみ
+            </label>
+
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={onlyNeedsAttention}
+                onChange={(e) => {
+                  setOnlyNeedsAttention(e.target.checked);
+                  setOffset(0);
+                }}
+              />
+              要対応のみ（futureなし または 終了済なし）
+            </label>
           </div>
 
           <div className="mt-4 flex items-center gap-2 flex-wrap">
@@ -792,6 +884,53 @@ export default function IngestedDataReferenceAdminPage() {
                             <div>
                               <span className="text-muted-foreground">matchId(mid)</span> {g.matchId ?? "-"}
                             </div>
+                          </div>
+                          <div>
+                            <div className="text-muted-foreground">matchUrl（手動入力可）</div>
+
+                            <input
+                              className="mt-1 w-full rounded-xl border bg-white px-3 py-2 text-xs font-mono"
+                              placeholder="https://www.flashscore.co.jp/match/.../?mid=XXXX"
+                              value={manualMatchUrlByGroupKey[g.groupKey] ?? g.matchUrl ?? ""}
+                              onChange={(e) => {
+                                const v = e.target.value;
+                                setManualMatchUrlByGroupKey((p) => ({ ...p, [g.groupKey]: v }));
+                              }}
+                            />
+
+                            <div className="mt-2 flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setManualMatchUrlByGroupKey((p) => {
+                                    const next = { ...p };
+                                    delete next[g.groupKey]; // 手入力上書きを解除 → 自動取得に戻る
+                                    return next;
+                                  });
+                                }}
+                              >
+                                手入力を解除
+                              </Button>
+
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const v = (manualMatchUrlByGroupKey[g.groupKey] ?? g.matchUrl ?? "").trim();
+                                  navigator.clipboard?.writeText(v).catch(() => {});
+                                }}
+                                disabled={!(manualMatchUrlByGroupKey[g.groupKey] ?? g.matchUrl ?? "").trim()}
+                              >
+                                URLコピー
+                              </Button>
+                            </div>
+
+                            <div className="mt-1 text-xs text-muted-foreground">JSON には手入力が優先で載ります（空なら自動取得を使用）</div>
                           </div>
                         </div>
 
