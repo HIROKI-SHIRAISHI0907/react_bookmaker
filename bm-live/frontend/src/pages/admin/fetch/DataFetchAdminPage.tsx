@@ -195,9 +195,9 @@ export default function DataFetchAdminPage() {
       { id: "B003", code: "B003", title: "国リーグ別シーズン開始情報取得", description: "国×リーグのシーズン開始情報を更新", endpoint: "/v1/api/admin/exec/task/country-league-season" },
       { id: "B004", code: "B004", title: "チーム名情報取得", description: "国×リーグのチーム情報を更新", endpoint: "/v1/api/admin/exec/task/country-league" },
       { id: "B005", code: "B005", title: "試合予定データ取得", description: "未来の試合予定を取得", endpoint: "/v1/api/admin/exec/task/future" },
-      { id: "B006_export", code: "B006", title: "統計CSVデータ生成", description: "統計CSVを生成（export）", endpoint: "/v1/api/admin/export/statCsv" },
-      { id: "B006_import", code: "B006", title: "統計CSVデータ取り入れ実行", description: "統計CSVを取り込む（import）", endpoint: "/v1/api/stat" },
+      { id: "B006", code: "B006", title: "統計CSVデータ取り入れ実行", description: "統計CSVを取り込む", endpoint: "/v1/api/stat" },
       { id: "B008", code: "B008", title: "開催中データ取得", description: "開催中データを更新", endpoint: "/v1/api/admin/exec/task/bm-data" },
+      { id: "B011", code: "B011", title: "統計CSVデータ生成", description: "統計CSVを生成", endpoint: "/v1/api/admin/exec/task/stat-csv" },
       {
         id: "B010",
         code: "B010",
