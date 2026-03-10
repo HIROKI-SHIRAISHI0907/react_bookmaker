@@ -197,7 +197,6 @@ export default function DataFetchAdminPage() {
       { id: "B005", code: "B005", title: "試合予定データ取得", description: "未来の試合予定を取得", endpoint: "/v1/api/admin/exec/task/future" },
       { id: "B006", code: "B006", title: "統計CSVデータ取り入れ実行", description: "統計CSVを取り込む", endpoint: "/v1/api/stat" },
       { id: "B008", code: "B008", title: "開催中データ取得", description: "開催中データを更新", endpoint: "/v1/api/admin/exec/task/bm-data" },
-      { id: "B011", code: "B011", title: "統計CSVデータ生成", description: "統計CSVを生成", endpoint: "/v1/api/admin/exec/task/stat-csv" },
       {
         id: "B010",
         code: "B010",
@@ -205,6 +204,7 @@ export default function DataFetchAdminPage() {
         description: "欠損値（未来データ、終了済データ）データを更新",
         endpoint: "/v1/api/admin/exec/task/fin-getting-json",
       },
+      { id: "B011", code: "B011", title: "統計CSVデータ生成", description: "統計CSVを生成", endpoint: "/v1/api/admin/exec/task/stat-csv" },
     ],
     [],
   );
