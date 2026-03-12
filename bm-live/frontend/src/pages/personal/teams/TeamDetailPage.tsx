@@ -164,6 +164,40 @@ type MatchRow = {
   minute?: number;
 };
 
+// 順位DTO
+type TeamStandingsRowDTO = {
+  country: string;
+  league: string;
+  seasonYear: string;
+  match: number;
+  rank: number;
+  team: string;
+  win: number | null;
+  lose: number | null;
+  draw: number | null;
+  winningPoints: number | null;
+  // trendにも currentTeam が付いてくる場合があるので optional で受ける
+  currentTeam?: boolean;
+};
+
+type TeamStandingsRowViewDTO = {
+  rank: number;
+  match: number;
+  team: string;
+  win: number | null;
+  lose: number | null;
+  draw: number | null;
+  winningPoints: number | null;
+  currentTeam: boolean;
+};
+
+type TeamsStandingsResponse = {
+  seasonYear: string;
+  latestMatch: number;
+  standings: TeamStandingsRowViewDTO[];
+  trend: TeamStandingsRowDTO[];
+};
+
 type Kpi = { label: string; value: string; delta?: string; hint?: string };
 type CorrelationItem = { feature: string; r: number };
 
@@ -277,6 +311,92 @@ async function fetchJsonStrict<T>(url: string, init?: RequestInit): Promise<T> {
 // =====================
 // UI parts
 // =====================
+function MultiLineChart(props: {
+  series: Array<{
+    name: string;
+    points: Array<{ x: number; y: number | null }>; // y=null は欠損（線を切る）
+    highlight?: boolean; // 表示中チームなど
+  }>;
+  height?: number;
+}) {
+  const h = props.height ?? 180;
+  const w = 520;
+  const pad = 14;
+
+  const allPoints = props.series.flatMap((s) => s.points);
+  const valid = allPoints.filter((p) => p.y != null) as Array<{ x: number; y: number }>;
+
+  if (props.series.length === 0 || valid.length === 0) {
+    return <div className="grid h-[180px] place-items-center rounded-xl bg-slate-50 text-xs text-slate-500">no data</div>;
+  }
+
+  const xs = valid.map((p) => p.x);
+  const ys = valid.map((p) => p.y);
+
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+
+  // 順位は 1 が上位（上に出したい）なので、Y変換は通常の「小さいほど上」でOK
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+
+  const X = (x: number) => pad + ((x - minX) / Math.max(1e-9, maxX - minX)) * (w - pad * 2);
+  const Y = (y: number) => pad + ((y - minY) / Math.max(1e-9, maxY - minY)) * (h - pad * 2);
+  // ↑ ここがポイント：順位は「数字が大きいほど下位」なので、この式で下に行きます
+
+  // 色（目立たせたいのは表示中チーム）
+  const colorMain = "rgb(79 70 229)"; // indigo-600
+  const colorOther = "rgb(148 163 184)"; // slate-400
+
+  // 欠損(y=null) で path を分断する
+  function buildPath(points: Array<{ x: number; y: number | null }>) {
+    let d = "";
+    let penDown = false;
+
+    for (const p of points) {
+      if (p.y == null) {
+        penDown = false;
+        continue;
+      }
+      const xx = X(p.x).toFixed(2);
+      const yy = Y(p.y).toFixed(2);
+
+      if (!penDown) {
+        d += `M ${xx} ${yy} `;
+        penDown = true;
+      } else {
+        d += `L ${xx} ${yy} `;
+      }
+    }
+    return d.trim();
+  }
+
+  const gridLines = 5;
+
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} className="w-full">
+      {/* grid */}
+      {Array.from({ length: gridLines }).map((_, i) => {
+        const t = i / (gridLines - 1);
+        const y = pad + t * (h - pad * 2);
+        return <line key={i} x1={pad} x2={w - pad} y1={y} y2={y} stroke="rgb(226 232 240)" />;
+      })}
+
+      {/* lines */}
+      {props.series.map((s) => {
+        const d = buildPath(s.points);
+        if (!d) return null;
+
+        const stroke = s.highlight ? colorMain : colorOther;
+        const strokeWidth = s.highlight ? 3.2 : 1.6;
+        const opacity = s.highlight ? 1.0 : 0.45;
+
+        return <path key={s.name} d={d} fill="none" stroke={stroke} strokeWidth={strokeWidth} strokeLinejoin="round" strokeLinecap="round" opacity={opacity} />;
+      })}
+    </svg>
+  );
+}
+
 function Badge(props: { children: React.ReactNode; tone?: Tone }) {
   const tone = props.tone ?? "slate";
   const map: Record<Tone, string> = {
@@ -400,6 +520,54 @@ export default function TeamDetailMockPage() {
   const API_V1 = "/v1/api";
 
   // =========================
+  // STANDINGS API (/api/standings/.../front/border)
+  // =========================
+  const [standingsApi, setStandingsApi] = useState<TeamsStandingsResponse | null>(null);
+  const [standingsLoading, setStandingsLoading] = useState(false);
+  const [standingsError, setStandingsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!teamEnglish || !teamHash) return;
+    let cancelled = false;
+
+    (async () => {
+      setStandingsLoading(true);
+      setStandingsError(null);
+
+      // まず /api を試し、ダメなら /v1/api を試す（環境差吸収）
+      const paths = [`${API_V1}/standings/${encodeURIComponent(teamEnglish)}/${encodeURIComponent(teamHash)}/front/border`];
+
+      try {
+        let lastErr: any = null;
+
+        for (const p of paths) {
+          try {
+            const data = await fetchJsonStrict<TeamsStandingsResponse>(p, { method: "GET" });
+            if (!cancelled) setStandingsApi(data);
+            lastErr = null;
+            break;
+          } catch (e: any) {
+            lastErr = e;
+          }
+        }
+
+        if (lastErr) throw lastErr;
+      } catch (e: any) {
+        if (!cancelled) {
+          setStandingsError(String(e?.message ?? e));
+          setStandingsApi(null);
+        }
+      } finally {
+        if (!cancelled) setStandingsLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [teamEnglish, teamHash, API_V1]);
+
+  // =========================
   // TEAM API
   // =========================
   const [teamApi, setTeamApi] = useState<TeamDetailResponse | null>(null);
@@ -443,6 +611,154 @@ export default function TeamDetailMockPage() {
     };
     return fallback;
   }, [teamApi, teamEnglish, teamHash]);
+
+  // =========================
+  // standings: derived（TEAM確定後に作る）
+  // =========================
+  // 表示中チーム名（trend照合用）
+  const currentTeamNameForStandings = useMemo(() => {
+    return normalizeName(teamApi?.name ?? TEAM.name);
+  }, [teamApi?.name, TEAM.name]);
+
+  // 表示中チームが持っている「最大の節」= 最新順位表の節
+  const teamLatestMatch = useMemo(() => {
+    const rows = standingsApi?.trend ?? [];
+    const nm = currentTeamNameForStandings;
+    let mx = 0;
+
+    for (const r of rows) {
+      if (normalizeName(r.team) !== nm) continue;
+      mx = Math.max(mx, Number(r.match ?? 0));
+    }
+    return mx; // 0 の場合はデータなし
+  }, [standingsApi?.trend, currentTeamNameForStandings]);
+
+  // (B) latestMatch（APIが返す値が基本。無ければtrendから算出）
+  const latestMatchFromTrend = useMemo(() => {
+    const rows = standingsApi?.trend ?? [];
+    if (!rows.length) return 0;
+    return rows.reduce((mx, r) => Math.max(mx, Number(r.match ?? 0)), 0);
+  }, [standingsApi?.trend]);
+
+  const latestMatchSafe = useMemo(() => {
+    return Number(standingsApi?.latestMatch ?? 0) || latestMatchFromTrend || 0;
+  }, [standingsApi?.latestMatch, latestMatchFromTrend]);
+
+  // (C) trend から「表示中チーム」だけ抽出（チーム個別のミニグラフ用：任意）
+  const myTrend = useMemo(() => {
+    const rows = standingsApi?.trend ?? [];
+    const nm = currentTeamNameForStandings;
+
+    return rows
+      .filter((r) => normalizeName(r.team) === nm)
+      .slice()
+      .sort((a, b) => (a.match ?? 0) - (b.match ?? 0));
+  }, [standingsApi?.trend, currentTeamNameForStandings]);
+
+  // team -> (match -> rank) の辞書（表示中チームだけ）
+  const myRankIndex = useMemo(() => {
+    const rows = standingsApi?.trend ?? [];
+    const nm = currentTeamNameForStandings;
+    const map = new Map<number, number>();
+
+    for (const r of rows) {
+      if (normalizeName(r.team) !== nm) continue;
+      const m = Number(r.match ?? 0);
+      const rk = Number(r.rank ?? 0);
+      if (!m || !rk) continue;
+      map.set(m, rk);
+    }
+    return map;
+  }, [standingsApi?.trend, currentTeamNameForStandings]);
+
+  // 1..teamLatestMatch の全節を作り、欠損は null
+  const myRankSeries = useMemo(() => {
+    if (!teamLatestMatch) return [];
+    const points = Array.from({ length: teamLatestMatch }, (_, i) => {
+      const x = i + 1;
+      const y = myRankIndex.get(x) ?? null; // 欠損は null
+      return { x, y };
+    });
+
+    return [
+      {
+        name: currentTeamNameForStandings || "team",
+        points,
+        highlight: true,
+      },
+    ];
+  }, [teamLatestMatch, myRankIndex, currentTeamNameForStandings]);
+
+  const pointsTrendPoints = useMemo(() => {
+    return myTrend.map((r) => ({ x: r.match, y: Number(r.winningPoints ?? 0) }));
+  }, [myTrend]);
+
+  // 順位は “小さいほど上位” なので、MiniLineChartで上向きにしたいなら反転（任意）
+  const rankTrendPoints = useMemo(() => {
+    return myTrend.map((r) => ({ x: r.match, y: -Number(r.rank ?? 0) }));
+  }, [myTrend]);
+
+  // (D) 全チーム順位推移（リーグ全体）
+  //  1) 全チーム集合
+  const allTeamsInTrend = useMemo(() => {
+    const rows = standingsApi?.trend ?? [];
+    const set = new Set<string>();
+    for (const r of rows) set.add(normalizeName(r.team));
+    return Array.from(set)
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b, "ja"));
+  }, [standingsApi?.trend]);
+
+  //  2) team -> (match -> rank) インデックス
+  const rankIndexByTeam = useMemo(() => {
+    const rows = standingsApi?.trend ?? [];
+    const map = new Map<string, Map<number, number>>();
+
+    for (const r of rows) {
+      const team = normalizeName(r.team);
+      const m = Number(r.match ?? 0);
+      const rk = Number(r.rank ?? 0);
+      if (!team || !m || !rk) continue;
+
+      if (!map.has(team)) map.set(team, new Map());
+      map.get(team)!.set(m, rk);
+    }
+    return map;
+  }, [standingsApi?.trend]);
+
+  //  3) 全節(1..latestMatchSafe)に揃える。欠損は y=null（線を切る）
+  const allTeamsRankSeries = useMemo(() => {
+    if (!standingsApi || latestMatchSafe <= 0) return [];
+
+    const xs = Array.from({ length: latestMatchSafe }, (_, i) => i + 1);
+    const currentNm = currentTeamNameForStandings;
+
+    return allTeamsInTrend.map((team) => {
+      const idx = rankIndexByTeam.get(team);
+      const points = xs.map((x) => ({ x, y: idx?.get(x) ?? null })); // ← 欠損はnull
+      return { name: team, points, highlight: team === currentNm };
+    });
+  }, [standingsApi, latestMatchSafe, allTeamsInTrend, rankIndexByTeam, currentTeamNameForStandings]);
+
+  const standingsForTable = useMemo((): TeamStandingsRowViewDTO[] => {
+    const rows = standingsApi?.trend ?? [];
+    if (!rows.length || !teamLatestMatch) return [];
+
+    return rows
+      .filter((r) => Number(r.match ?? 0) === teamLatestMatch)
+      .slice()
+      .sort((a, b) => Number(a.rank ?? 9999) - Number(b.rank ?? 9999))
+      .map((r) => ({
+        rank: Number(r.rank ?? 0),
+        match: r.match,
+        team: r.team,
+        win: r.win ?? null,
+        lose: r.lose ?? null,
+        draw: r.draw ?? null,
+        winningPoints: r.winningPoints ?? null,
+        currentTeam: normalizeName(r.team) === currentTeamNameForStandings,
+      }));
+  }, [standingsApi?.trend, teamLatestMatch, currentTeamNameForStandings]);
 
   // =========================
   // OVERVIEW SUMMARY API
@@ -500,10 +816,7 @@ export default function TeamDetailMockPage() {
       setTeamMembersError(null);
 
       // 候補URL：まず /v1/api を試し、404等なら /api を試す
-      const urls = [
-        `/v1/api/team-member-master/${encodeURIComponent(teamEnglish)}/${encodeURIComponent(teamHash)}`,
-        `/api/team-member-master/${encodeURIComponent(teamEnglish)}/${encodeURIComponent(teamHash)}`,
-      ];
+      const urls = [`${API_V1}/team-member-master/${encodeURIComponent(teamEnglish)}/${encodeURIComponent(teamHash)}`];
 
       try {
         let lastErr: any = null;
@@ -1125,6 +1438,76 @@ export default function TeamDetailMockPage() {
                       </div>
                     ))}
                   </div>
+                </Card>
+              </div>
+              <div className="mt-4 grid gap-4 lg:grid-cols-12">
+                {/* 順位表（最新節） */}
+                <Card
+                  className="lg:col-span-7"
+                  title="順位表（最新節）"
+                  right={
+                    <div className="flex items-center gap-2">
+                      {standingsLoading && <Badge tone="slate">取得中</Badge>}
+                      {standingsError && <Badge tone="rose">取得失敗</Badge>}
+                    </div>
+                  }
+                >
+                  {!standingsApi || standingsApi.standings.length === 0 ? (
+                    <div className="text-sm text-slate-600">順位表データがありません</div>
+                  ) : (
+                    <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+                      <table className="min-w-[720px] w-full text-sm">
+                        <thead className="bg-slate-50 text-slate-600">
+                          <tr className="[&>th]:px-3 [&>th]:py-2 [&>th]:text-left">
+                            <th className="w-14">順位</th>
+                            <th>チーム</th>
+                            <th className="w-16 text-right">節</th>
+                            <th className="w-16 text-right">試合</th>
+                            <th className="w-16 text-right">勝点</th>
+                            <th className="w-14 text-right">勝</th>
+                            <th className="w-14 text-right">分</th>
+                            <th className="w-14 text-right">負</th>
+                          </tr>
+                        </thead>
+
+                        <tbody className="divide-y divide-slate-100">
+                          {standingsApi.standings.map((r) => {
+                            const played = (r.win ?? 0) + (r.draw ?? 0) + (r.lose ?? 0);
+                            return (
+                              <tr key={`${r.rank}_${r.team}`} className={cx("hover:bg-slate-50", r.currentTeam && "bg-indigo-50/60")}>
+                                <td className={cx("px-3 py-2 text-slate-600", r.currentTeam && "font-bold text-slate-900")}>{r.rank}</td>
+                                <td className={cx("px-3 py-2", r.currentTeam ? "font-black text-slate-900" : "font-medium text-slate-800")}>{r.team}</td>
+                                <td className="px-3 py-2 text-right">{r.match ?? "-"}</td>
+                                <td className="px-3 py-2 text-right">{played}</td>
+                                <td className={cx("px-3 py-2 text-right", r.currentTeam && "font-black")}>{r.winningPoints ?? "-"}</td>
+                                <td className="px-3 py-2 text-right">{r.win ?? "-"}</td>
+                                <td className="px-3 py-2 text-right">{r.draw ?? "-"}</td>
+                                <td className="px-3 py-2 text-right">{r.lose ?? "-"}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </Card>
+
+                {/* 全チームの順位推移（リーグ全体） */}
+                <Card className="lg:col-span-5" title="順位推移（表示中チーム）">
+                  {!teamLatestMatch ? (
+                    <div className="text-sm text-slate-600">推移データがありません</div>
+                  ) : (
+                    <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                      <div className="mb-2 flex items-center justify-between">
+                        <div className="text-sm font-semibold text-slate-900">順位推移</div>
+                        <div className="text-xs text-slate-500">x=節（1〜{teamLatestMatch}） / y=順位（上が1位）</div>
+                      </div>
+
+                      <MultiLineChart series={myRankSeries} height={220} />
+
+                      <div className="mt-3 text-xs text-slate-500">線が切れている箇所＝欠損（その節のデータ未取得）</div>
+                    </div>
+                  )}
                 </Card>
               </div>
             </>
