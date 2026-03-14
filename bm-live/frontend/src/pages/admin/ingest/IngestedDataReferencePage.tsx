@@ -88,7 +88,7 @@ type MatchGroupRow = {
 
   futureExists: boolean;
   hasFinished: boolean;
-
+  hasPenalty: boolean;
   timesAllSorted: string[];
   ingestsSortedAsc: IngestLog[];
 
@@ -244,13 +244,27 @@ function isoToJstDateKey(iso: string): string | null {
   return `${y}-${m}-${dd}`;
 }
 
+function isPenaltyLikeTimes(t: string | null | undefined): boolean {
+  const x = (t ?? "").trim();
+  if (!x) return false;
+  // 空白揺れを吸収して「ペナルティ」を含むか
+  const norm = x.replace(/\s+/g, "");
+  return norm.includes("ペナルティ");
+}
+
+function isFinishedLikeTimes(t: string | null | undefined): boolean {
+  const x = (t ?? "").trim();
+  if (!x) return false;
+  return x === "終了済" || isPenaltyLikeTimes(x);
+}
+
 /**
  * times sort (昇順 → 終了済最後)
  */
 function timesSortKey(t: string): number | null {
   const x = t.trim();
   if (!x) return null;
-  if (x === "終了済") return Number.POSITIVE_INFINITY;
+  if (isFinishedLikeTimes(x)) return Number.POSITIVE_INFINITY;
 
   const m1 = x.match(/^(\d+)\s*'$/);
   if (m1) {
@@ -388,7 +402,10 @@ export default function IngestedDataReferenceAdminPage() {
       if (r.data?.times) timesCandidates.push(r.data.times);
       if (Array.isArray(r.timesList)) timesCandidates.push(...r.timesList);
 
-      const hasFinished = Boolean(r.hasFinishedTimes) || timesCandidates.some((t) => (t ?? "").trim() === "終了済");
+      const hasPenalty = timesCandidates.some((t) => isPenaltyLikeTimes(t));
+      const hasFinished =
+        Boolean(r.hasFinishedTimes) || // サーバが立ててくれてる場合はそれを優先
+        timesCandidates.some((t) => isFinishedLikeTimes(t));
 
       const ingest: IngestLog = {
         seq: Number(r.seq),
@@ -419,7 +436,7 @@ export default function IngestedDataReferenceAdminPage() {
 
           matchId,
           matchUrl,
-
+          hasPenalty,
           futureExists,
           hasFinished,
           latestRegisterTime: r.registerTime,
@@ -494,6 +511,7 @@ export default function IngestedDataReferenceAdminPage() {
         matchId: v.matchId ?? null,
         matchUrl: v.matchUrl ?? null,
         futureExists: v.futureExists,
+        hasPenalty: v.hasPenalty,
         hasFinished: v.hasFinished,
         timesAllSorted: sortTimesAscWithFinishedLast(Array.from(v.timesSet)),
         ingestsSortedAsc: v.ingests.slice().sort((a, b) => new Date(a.registerTime).getTime() - new Date(b.registerTime).getTime()),
@@ -852,6 +870,7 @@ export default function IngestedDataReferenceAdminPage() {
                           <div className="mt-2 flex items-center gap-2 flex-wrap">
                             {g.futureExists ? <Badge tone="emerald">future_masterに存在</Badge> : <Badge tone="rose">future_masterに存在しない</Badge>}
                             {g.hasFinished ? <Badge tone="violet">終了済あり</Badge> : <Badge tone="amber">終了済なし</Badge>}
+                            {g.hasPenalty ? <Badge tone="violet">ペナルティあり</Badge> : null}
                             {g.timesAllSorted.length ? <Badge tone="gray">times {g.timesAllSorted.length}</Badge> : <Badge tone="gray">times 0</Badge>}
                             <Badge tone="gray">{g.groupKey}</Badge>
                           </div>
@@ -939,7 +958,7 @@ export default function IngestedDataReferenceAdminPage() {
                           <div className="mt-2 flex flex-wrap gap-2">
                             {g.timesAllSorted.length ? (
                               g.timesAllSorted.map((t) => (
-                                <Badge key={t} tone={t === "終了済" ? "violet" : "gray"}>
+                                <Badge key={t} tone={isFinishedLikeTimes(t) ? "violet" : "gray"}>
                                   {t}
                                 </Badge>
                               ))
@@ -983,7 +1002,7 @@ export default function IngestedDataReferenceAdminPage() {
                                     <td className="py-2 pr-3 text-xs">{fmtJstFixed(it.registerTime, true)}</td>
                                     <td className="py-2 pr-3 text-xs">{fmtJstFixed(it.updateTime ?? null, true)}</td>
                                     <td className="py-2 pr-3 text-xs">
-                                      {it.times ? <Badge tone={it.times.trim() === "終了済" ? "violet" : "gray"}>{it.times}</Badge> : <span className="text-gray-400">-</span>}
+                                      {it.times ? <Badge tone={isFinishedLikeTimes(it.times) ? "violet" : "gray"}>{it.times}</Badge> : <span className="text-gray-400">-</span>}
                                     </td>
                                   </tr>
                                 ))}

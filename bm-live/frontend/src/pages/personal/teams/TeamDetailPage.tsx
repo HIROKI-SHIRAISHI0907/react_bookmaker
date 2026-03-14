@@ -314,20 +314,24 @@ async function fetchJsonStrict<T>(url: string, init?: RequestInit): Promise<T> {
 function MultiLineChart(props: {
   series: Array<{
     name: string;
-    points: Array<{ x: number; y: number | null }>; // y=null は欠損（線を切る）
-    highlight?: boolean; // 表示中チームなど
+    points: Array<{ x: number; y: number | null }>;
+    highlight?: boolean;
   }>;
   height?: number;
+  xLabel?: string; // 追加
+  yLabel?: string; // 追加
 }) {
-  const h = props.height ?? 180;
-  const w = 520;
-  const pad = 14;
+  const h = props.height ?? 260;
+  const w = 740;
+
+  // 余白（軸ラベル/目盛りのため）
+  const m = { top: 16, right: 18, bottom: 42, left: 56 };
 
   const allPoints = props.series.flatMap((s) => s.points);
   const valid = allPoints.filter((p) => p.y != null) as Array<{ x: number; y: number }>;
 
   if (props.series.length === 0 || valid.length === 0) {
-    return <div className="grid h-[180px] place-items-center rounded-xl bg-slate-50 text-xs text-slate-500">no data</div>;
+    return <div className="grid h-[260px] place-items-center rounded-xl bg-slate-50 text-xs text-slate-500">no data</div>;
   }
 
   const xs = valid.map((p) => p.x);
@@ -335,20 +339,61 @@ function MultiLineChart(props: {
 
   const minX = Math.min(...xs);
   const maxX = Math.max(...xs);
-
-  // 順位は 1 が上位（上に出したい）なので、Y変換は通常の「小さいほど上」でOK
   const minY = Math.min(...ys);
   const maxY = Math.max(...ys);
 
-  const X = (x: number) => pad + ((x - minX) / Math.max(1e-9, maxX - minX)) * (w - pad * 2);
-  const Y = (y: number) => pad + ((y - minY) / Math.max(1e-9, maxY - minY)) * (h - pad * 2);
-  // ↑ ここがポイント：順位は「数字が大きいほど下位」なので、この式で下に行きます
+  const plotW = w - m.left - m.right;
+  const plotH = h - m.top - m.bottom;
 
-  // 色（目立たせたいのは表示中チーム）
-  const colorMain = "rgb(79 70 229)"; // indigo-600
-  const colorOther = "rgb(148 163 184)"; // slate-400
+  const denomX = Math.max(1e-9, maxX - minX);
+  const denomY = Math.max(1e-9, maxY - minY);
 
-  // 欠損(y=null) で path を分断する
+  const X = (x: number) => m.left + ((x - minX) / denomX) * plotW;
+
+  // 順位: 1が上に来るように（minY=1 を上へ）
+  const Y = (y: number) => m.top + ((y - minY) / denomY) * plotH;
+
+  // ---- 色（凡例にも使う）：チームごとに色を振る ----
+  const palette = [
+    "#1d4ed8",
+    "#0f766e",
+    "#9333ea",
+    "#b45309",
+    "#be123c",
+    "#047857",
+    "#6d28d9",
+    "#0369a1",
+    "#a21caf",
+    "#b91c1c",
+    "#2563eb",
+    "#059669",
+    "#7c3aed",
+    "#ca8a04",
+    "#e11d48",
+    "#0891b2",
+    "#16a34a",
+    "#f97316",
+    "#64748b",
+    "#334155",
+  ];
+
+  const colorFor = (name: string, i: number, highlight?: boolean) => {
+    if (highlight) return "rgb(79 70 229)"; // indigo
+    return palette[i % palette.length];
+  };
+
+  // ---- 目盛り（tick） ----
+  const xSpan = Math.max(1, maxX - minX);
+  const xStep = Math.max(1, Math.ceil(xSpan / 8)); // だいたい8個くらいに間引く
+
+  let yTicks = 5; // 5本くらい
+  const yTickVals = Array.from({ length: yTicks }, (_, i) => {
+    const t = yTicks === 1 ? 0 : i / (yTicks - 1);
+    // minY..maxY を等分
+    const v = minY + t * (maxY - minY);
+    return Math.round(v); // 順位は整数なので丸め
+  }).filter((v, idx, arr) => idx === 0 || v !== arr[idx - 1]);
+
   function buildPath(points: Array<{ x: number; y: number | null }>) {
     let d = "";
     let penDown = false;
@@ -371,27 +416,69 @@ function MultiLineChart(props: {
     return d.trim();
   }
 
-  const gridLines = 5;
-
   return (
     <svg viewBox={`0 0 ${w} ${h}`} className="w-full">
-      {/* grid */}
-      {Array.from({ length: gridLines }).map((_, i) => {
-        const t = i / (gridLines - 1);
-        const y = pad + t * (h - pad * 2);
-        return <line key={i} x1={pad} x2={w - pad} y1={y} y2={y} stroke="rgb(226 232 240)" />;
+      {/* ===== 軸（X/Y） ===== */}
+      {/* Y軸 */}
+      <line x1={m.left} x2={m.left} y1={m.top} y2={m.top + plotH} stroke="rgb(148 163 184)" />
+      {/* X軸 */}
+      <line x1={m.left} x2={m.left + plotW} y1={m.top + plotH} y2={m.top + plotH} stroke="rgb(148 163 184)" />
+
+      {/* ===== グリッド & Y目盛り ===== */}
+      {yTickVals.map((v) => {
+        const yy = Y(v);
+        return (
+          <g key={`y-${v}`}>
+            <line x1={m.left} x2={m.left + plotW} y1={yy} y2={yy} stroke="rgb(226 232 240)" />
+            <text x={m.left - 8} y={yy + 4} textAnchor="end" fontSize="11" fill="rgb(100 116 139)">
+              {v}
+            </text>
+          </g>
+        );
       })}
 
-      {/* lines */}
-      {props.series.map((s) => {
+      {/* ===== X目盛り ===== */}
+      {Array.from({ length: Math.floor((maxX - minX) / xStep) + 1 }, (_, i) => minX + i * xStep).map((v) => {
+        const xx = X(v);
+        return (
+          <g key={`x-${v}`}>
+            <line x1={xx} x2={xx} y1={m.top + plotH} y2={m.top + plotH + 6} stroke="rgb(203 213 225)" />
+            <text x={xx} y={m.top + plotH + 20} textAnchor="middle" fontSize="11" fill="rgb(100 116 139)">
+              {v}
+            </text>
+          </g>
+        );
+      })}
+
+      {/* ===== 軸ラベル ===== */}
+      <text x={m.left + plotW / 2} y={h - 10} textAnchor="middle" fontSize="12" fill="rgb(51 65 85)">
+        {props.xLabel ?? "節"}
+      </text>
+
+      {/* Yラベル（縦書き風：回転） */}
+      <text x={14} y={m.top + plotH / 2} textAnchor="middle" fontSize="12" fill="rgb(51 65 85)" transform={`rotate(-90 14 ${m.top + plotH / 2})`}>
+        {props.yLabel ?? "順位（1が上位）"}
+      </text>
+
+      {/* ===== 線 + 点 ===== */}
+      {props.series.map((s, idx) => {
         const d = buildPath(s.points);
-        if (!d) return null;
+        const stroke = colorFor(s.name, idx, s.highlight);
+        const strokeWidth = s.highlight ? 3.4 : 1.8;
+        const opacity = s.highlight ? 1.0 : 0.55;
 
-        const stroke = s.highlight ? colorMain : colorOther;
-        const strokeWidth = s.highlight ? 3.2 : 1.6;
-        const opacity = s.highlight ? 1.0 : 0.45;
+        const validPoints = s.points.filter((p) => p.y != null) as Array<{ x: number; y: number }>;
 
-        return <path key={s.name} d={d} fill="none" stroke={stroke} strokeWidth={strokeWidth} strokeLinejoin="round" strokeLinecap="round" opacity={opacity} />;
+        return (
+          <g key={s.name}>
+            {d && <path d={d} fill="none" stroke={stroke} strokeWidth={strokeWidth} strokeLinejoin="round" strokeLinecap="round" opacity={opacity} />}
+
+            {/* 点（1点しかなくても見える） */}
+            {validPoints.map((p, i2) => (
+              <circle key={i2} cx={X(p.x)} cy={Y(p.y)} r={s.highlight ? 4.4 : 3.0} fill="white" stroke={stroke} strokeWidth={s.highlight ? 2.2 : 1.4} opacity={s.highlight ? 1.0 : 0.75} />
+            ))}
+          </g>
+        );
       })}
     </svg>
   );
@@ -620,6 +707,51 @@ export default function TeamDetailMockPage() {
     return normalizeName(teamApi?.name ?? TEAM.name);
   }, [teamApi?.name, TEAM.name]);
 
+  const currentTeamNameFromStandings = useMemo(() => {
+    const s = standingsApi?.standings?.find((r) => r.currentTeam)?.team ?? "";
+    return normalizeName(s);
+  }, [standingsApi?.standings]);
+
+  const currentTeamKey = useMemo(() => {
+    const s = standingsApi?.standings?.find((r) => r.currentTeam)?.team ?? "";
+    return normalizeName(s) || normalizeName(teamApi?.name ?? TEAM.name);
+  }, [standingsApi?.standings, teamApi?.name, TEAM.name]);
+
+  // リーグ最大節（横軸の上限）
+  const leagueMaxMatch = useMemo(() => {
+    return Number(standingsApi?.latestMatch ?? 0) || 0;
+  }, [standingsApi?.latestMatch]);
+
+  const allTeamsRankSeries = useMemo(() => {
+    const rows = standingsApi?.trend ?? [];
+    if (!rows.length || leagueMaxMatch <= 0) return [];
+
+    // team一覧（trendに出てきたチーム）
+    const teams = Array.from(new Set(rows.map((r) => normalizeName(r.team)))).filter(Boolean);
+
+    // team -> (match -> rank)
+    const index = new Map<string, Map<number, number>>();
+    for (const r of rows) {
+      const t = normalizeName(r.team);
+      const m = Number(r.match ?? 0);
+      const rk = Number(r.rank ?? 0);
+      if (!t || !m || !rk) continue;
+      if (!index.has(t)) index.set(t, new Map());
+      index.get(t)!.set(m, rk);
+    }
+
+    // x=1..leagueMaxMatch を必ず作り、欠損は null
+    const xs = Array.from({ length: leagueMaxMatch }, (_, i) => i + 1);
+
+    return teams
+      .sort((a, b) => a.localeCompare(b, "ja"))
+      .map((team) => {
+        const idx = index.get(team);
+        const points = xs.map((x) => ({ x, y: idx?.get(x) ?? null })); // 欠損はnull→線が切れる
+        return { name: team, points, highlight: team === currentTeamKey };
+      });
+  }, [standingsApi?.trend, leagueMaxMatch, currentTeamKey]);
+
   // 表示中チームが持っている「最大の節」= 最新順位表の節
   const teamLatestMatch = useMemo(() => {
     const rows = standingsApi?.trend ?? [];
@@ -655,39 +787,33 @@ export default function TeamDetailMockPage() {
       .sort((a, b) => (a.match ?? 0) - (b.match ?? 0));
   }, [standingsApi?.trend, currentTeamNameForStandings]);
 
-  // team -> (match -> rank) の辞書（表示中チームだけ）
+  // 表示中チーム：match -> rank
   const myRankIndex = useMemo(() => {
     const rows = standingsApi?.trend ?? [];
-    const nm = currentTeamNameForStandings;
+    const key = currentTeamKey;
     const map = new Map<number, number>();
 
     for (const r of rows) {
-      if (normalizeName(r.team) !== nm) continue;
+      if (normalizeName(r.team) !== key) continue;
       const m = Number(r.match ?? 0);
       const rk = Number(r.rank ?? 0);
       if (!m || !rk) continue;
       map.set(m, rk);
     }
     return map;
-  }, [standingsApi?.trend, currentTeamNameForStandings]);
+  }, [standingsApi?.trend, currentTeamKey]);
 
-  // 1..teamLatestMatch の全節を作り、欠損は null
   const myRankSeries = useMemo(() => {
-    if (!teamLatestMatch) return [];
-    const points = Array.from({ length: teamLatestMatch }, (_, i) => {
+    if (!leagueMaxMatch) return [];
+
+    const points = Array.from({ length: leagueMaxMatch }, (_, i) => {
       const x = i + 1;
-      const y = myRankIndex.get(x) ?? null; // 欠損は null
+      const y = myRankIndex.get(x) ?? null; // 欠損は null（線を切る）
       return { x, y };
     });
 
-    return [
-      {
-        name: currentTeamNameForStandings || "team",
-        points,
-        highlight: true,
-      },
-    ];
-  }, [teamLatestMatch, myRankIndex, currentTeamNameForStandings]);
+    return [{ name: currentTeamKey || "team", points, highlight: true }];
+  }, [leagueMaxMatch, myRankIndex, currentTeamKey]);
 
   const pointsTrendPoints = useMemo(() => {
     return myTrend.map((r) => ({ x: r.match, y: Number(r.winningPoints ?? 0) }));
@@ -725,20 +851,6 @@ export default function TeamDetailMockPage() {
     }
     return map;
   }, [standingsApi?.trend]);
-
-  //  3) 全節(1..latestMatchSafe)に揃える。欠損は y=null（線を切る）
-  const allTeamsRankSeries = useMemo(() => {
-    if (!standingsApi || latestMatchSafe <= 0) return [];
-
-    const xs = Array.from({ length: latestMatchSafe }, (_, i) => i + 1);
-    const currentNm = currentTeamNameForStandings;
-
-    return allTeamsInTrend.map((team) => {
-      const idx = rankIndexByTeam.get(team);
-      const points = xs.map((x) => ({ x, y: idx?.get(x) ?? null })); // ← 欠損はnull
-      return { name: team, points, highlight: team === currentNm };
-    });
-  }, [standingsApi, latestMatchSafe, allTeamsInTrend, rankIndexByTeam, currentTeamNameForStandings]);
 
   const standingsForTable = useMemo((): TeamStandingsRowViewDTO[] => {
     const rows = standingsApi?.trend ?? [];
@@ -1493,19 +1605,56 @@ export default function TeamDetailMockPage() {
                 </Card>
 
                 {/* 全チームの順位推移（リーグ全体） */}
-                <Card className="lg:col-span-5" title="順位推移（表示中チーム）">
-                  {!teamLatestMatch ? (
+                <Card className="lg:col-span-12" title="順位推移（全チーム）">
+                  {!standingsApi || allTeamsRankSeries.length === 0 ? (
                     <div className="text-sm text-slate-600">推移データがありません</div>
                   ) : (
                     <div className="rounded-2xl border border-slate-200 bg-white p-4">
                       <div className="mb-2 flex items-center justify-between">
-                        <div className="text-sm font-semibold text-slate-900">順位推移</div>
-                        <div className="text-xs text-slate-500">x=節（1〜{teamLatestMatch}） / y=順位（上が1位）</div>
+                        <div className="text-sm font-semibold text-slate-900">リーグ全体の順位推移（太線＝表示中チーム）</div>
+                        <div className="text-xs text-slate-500">x=節（1〜{leagueMaxMatch}） / y=順位（上が1位）</div>
                       </div>
 
-                      <MultiLineChart series={myRankSeries} height={220} />
+                      <MultiLineChart series={allTeamsRankSeries} height={260} />
+                      {/* 凡例 */}
+                      <div className="mt-3 max-h-28 overflow-auto rounded-xl border border-slate-200 bg-white p-3">
+                        <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-700">
+                          {allTeamsRankSeries.map((s, i) => {
+                            // MultiLineChartと同じ配色規則に合わせる（同じ palette/関数を使うのが理想）
+                            const palette = [
+                              "#1d4ed8",
+                              "#0f766e",
+                              "#9333ea",
+                              "#b45309",
+                              "#be123c",
+                              "#047857",
+                              "#6d28d9",
+                              "#0369a1",
+                              "#a21caf",
+                              "#b91c1c",
+                              "#2563eb",
+                              "#059669",
+                              "#7c3aed",
+                              "#ca8a04",
+                              "#e11d48",
+                              "#0891b2",
+                              "#16a34a",
+                              "#f97316",
+                              "#64748b",
+                              "#334155",
+                            ];
+                            const color = s.highlight ? "rgb(79 70 229)" : palette[i % palette.length];
 
-                      <div className="mt-3 text-xs text-slate-500">線が切れている箇所＝欠損（その節のデータ未取得）</div>
+                            return (
+                              <div key={s.name} className="inline-flex items-center gap-2">
+                                <span className="inline-block h-2.5 w-6 rounded" style={{ backgroundColor: color, opacity: s.highlight ? 1 : 0.65 }} />
+                                <span className={cx("whitespace-nowrap", s.highlight && "font-bold text-slate-900")}>{s.name}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      <div className="mt-3 text-xs text-slate-500">線が切れている箇所＝その節のデータ未取得（欠損）</div>
                     </div>
                   )}
                 </Card>
