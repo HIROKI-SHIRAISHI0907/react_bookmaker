@@ -570,16 +570,27 @@ function MiniLineChart(props: { points: Array<{ x: number; y: number }>; height?
   );
 }
 
-function BarsByMatch(props: { rows: Array<{ label: string; gf: number; ga: number; status: MatchStatus }> }) {
+function BarsByMatch(props: { rows: Array<{ label: string; gf: number; ga: number; status: MatchStatus; opponent?: string; isHome?: boolean }> }) {
   const max = Math.max(1, ...props.rows.map((r) => Math.max(r.gf, r.ga)));
   return (
     <div className="space-y-2">
       {props.rows.map((r, idx) => (
-        <div key={idx} className="grid grid-cols-[140px_1fr] items-center gap-3">
-          <div className="truncate text-xs text-slate-600">
-            {r.label} {r.status === "LIVE" && <Badge tone="rose">LIVE</Badge>}
-            {r.status === "SCHEDULED" && <Badge tone="amber">NEXT</Badge>}
+        <div key={idx} className="grid grid-cols-[160px_1fr] items-center gap-3">
+          {/* ← 140px → 160px に広げて2行に */}
+          <div className="min-w-0 text-xs text-slate-600">
+            <div className="truncate font-medium">
+              {r.label}
+              {r.status === "LIVE" && <Badge tone="rose">LIVE</Badge>}
+              {r.status === "SCHEDULED" && <Badge tone="amber">NEXT</Badge>}
+            </div>
+            {r.opponent && (
+              <div className="truncate text-slate-400">
+                <span className="mr-1 font-semibold text-slate-500">{r.isHome ? "H" : "A"}</span>
+                vs {r.opponent}
+              </div>
+            )}
           </div>
+
           <div className="flex items-center gap-2">
             <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
               <div className="h-full rounded-full bg-indigo-500/80" style={{ width: `${(r.gf / max) * 100}%` }} />
@@ -1141,31 +1152,41 @@ export default function TeamDetailMockPage() {
 
     const teamName = normalizeName(teamApi?.name ?? TEAM.name);
 
-    const rows = ms
+    return ms
       .filter((m) => (m.status ?? "FINISHED") === "FINISHED")
       .filter((m) => !!m.recordTime)
       .slice()
-      .sort((a, b) => new Date(b.recordTime!).getTime() - new Date(a.recordTime!).getTime())
+      .sort((a, b) => {
+        const ra = parseInt(a.roundNo ?? "0", 10) || 0;
+        const rb = parseInt(b.roundNo ?? "0", 10) || 0;
+        return rb - ra;
+      })
       .map((m) => {
         const isHome = normalizeName(m.homeTeamName) === teamName;
         const isAway = normalizeName(m.awayTeamName) === teamName;
 
         const hs = Number(m.homeScore ?? 0);
-        const as = Number(m.awayScore ?? 0);
+        const as_ = Number(m.awayScore ?? 0);
 
-        // 判定できなければ “home扱い” に倒す（表示崩れ防止）
-        const gf = isAway ? as : isHome ? hs : hs;
-        const ga = isAway ? hs : isHome ? as : as;
+        const gf = isAway ? as_ : isHome ? hs : hs;
+        const ga = isAway ? hs : isHome ? as_ : as_;
+
+        // ✅ 対戦相手名を導出
+        const opponent = isHome
+          ? m.awayTeamName // 自チームがホームなら相手はアウェイ
+          : isAway
+            ? m.homeTeamName // 自チームがアウェイなら相手はホーム
+            : m.awayTeamName; // どちらでも判定不能のときはとりあえずアウェイ側
 
         return {
           label: labelRoundXAndDate(m),
           gf,
           ga,
           status: "FINISHED" as MatchStatus,
+          opponent: opponent ?? undefined,
+          isHome,
         };
       });
-
-    return rows;
   }, [scoredLostApi, teamApi?.name, TEAM.name]);
 
   // =========================
