@@ -1318,7 +1318,7 @@ export default function TeamDetailMockPage() {
     [],
   );
 
-  const [tab, setTab] = useState<"stats" | "matches" | "players">("stats");
+  const [tab, setTab] = useState<"stats" | "matches" | "players" | "standings">("stats");
   const [period, setPeriod] = useState<"5" | "10" | "season">("10");
   const [ha, setHa] = useState<"all" | "home" | "away">("all");
 
@@ -1531,6 +1531,9 @@ export default function TeamDetailMockPage() {
           <TabButton active={tab === "matches"} onClick={() => setTab("matches")}>
             試合
           </TabButton>
+          <TabButton active={tab === "standings"} onClick={() => setTab("standings")} badge={standingsLoading ? <Badge tone="slate">取得中</Badge> : undefined}>
+            順位表
+          </TabButton>
           <TabButton active={tab === "players"} onClick={() => setTab("players")} badge={<Badge tone="slate">低</Badge>}>
             選手
           </TabButton>
@@ -1571,113 +1574,6 @@ export default function TeamDetailMockPage() {
                       </div>
                     ))}
                   </div>
-                </Card>
-              </div>
-              <div className="mt-4 grid gap-4 lg:grid-cols-12">
-                {/* 順位表（最新節） */}
-                <Card
-                  className="lg:col-span-7"
-                  title="順位表（最新節）"
-                  right={
-                    <div className="flex items-center gap-2">
-                      {standingsLoading && <Badge tone="slate">取得中</Badge>}
-                      {standingsError && <Badge tone="rose">取得失敗</Badge>}
-                    </div>
-                  }
-                >
-                  {!standingsApi || standingsApi.standings.length === 0 ? (
-                    <div className="text-sm text-slate-600">順位表データがありません</div>
-                  ) : (
-                    <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
-                      <table className="min-w-[720px] w-full text-sm">
-                        <thead className="bg-slate-50 text-slate-600">
-                          <tr className="[&>th]:px-3 [&>th]:py-2 [&>th]:text-left">
-                            <th className="w-14">順位</th>
-                            <th>チーム</th>
-                            <th className="w-16 text-right">節</th>
-                            <th className="w-16 text-right">試合</th>
-                            <th className="w-16 text-right">勝点</th>
-                            <th className="w-14 text-right">勝</th>
-                            <th className="w-14 text-right">分</th>
-                            <th className="w-14 text-right">負</th>
-                          </tr>
-                        </thead>
-
-                        <tbody className="divide-y divide-slate-100">
-                          {standingsApi.standings.map((r) => {
-                            const played = (r.win ?? 0) + (r.draw ?? 0) + (r.lose ?? 0);
-                            return (
-                              <tr key={`${r.rank}_${r.team}`} className={cx("hover:bg-slate-50", r.currentTeam && "bg-indigo-50/60")}>
-                                <td className={cx("px-3 py-2 text-slate-600", r.currentTeam && "font-bold text-slate-900")}>{r.rank}</td>
-                                <td className={cx("px-3 py-2", r.currentTeam ? "font-black text-slate-900" : "font-medium text-slate-800")}>{r.team}</td>
-                                <td className="px-3 py-2 text-right">{r.match ?? "-"}</td>
-                                <td className="px-3 py-2 text-right">{played}</td>
-                                <td className={cx("px-3 py-2 text-right", r.currentTeam && "font-black")}>{r.winningPoints ?? "-"}</td>
-                                <td className="px-3 py-2 text-right">{r.win ?? "-"}</td>
-                                <td className="px-3 py-2 text-right">{r.draw ?? "-"}</td>
-                                <td className="px-3 py-2 text-right">{r.lose ?? "-"}</td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </Card>
-
-                {/* 全チームの順位推移（リーグ全体） */}
-                <Card className="lg:col-span-12" title="順位推移（全チーム）">
-                  {!standingsApi || allTeamsRankSeries.length === 0 ? (
-                    <div className="text-sm text-slate-600">推移データがありません</div>
-                  ) : (
-                    <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                      <div className="mb-2 flex items-center justify-between">
-                        <div className="text-sm font-semibold text-slate-900">リーグ全体の順位推移（太線＝表示中チーム）</div>
-                        <div className="text-xs text-slate-500">x=節（1〜{leagueMaxMatch}） / y=順位（上が1位）</div>
-                      </div>
-
-                      <MultiLineChart series={allTeamsRankSeries} height={260} />
-                      {/* 凡例 */}
-                      <div className="mt-3 max-h-28 overflow-auto rounded-xl border border-slate-200 bg-white p-3">
-                        <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-700">
-                          {allTeamsRankSeries.map((s, i) => {
-                            // MultiLineChartと同じ配色規則に合わせる（同じ palette/関数を使うのが理想）
-                            const palette = [
-                              "#1d4ed8",
-                              "#0f766e",
-                              "#9333ea",
-                              "#b45309",
-                              "#be123c",
-                              "#047857",
-                              "#6d28d9",
-                              "#0369a1",
-                              "#a21caf",
-                              "#b91c1c",
-                              "#2563eb",
-                              "#059669",
-                              "#7c3aed",
-                              "#ca8a04",
-                              "#e11d48",
-                              "#0891b2",
-                              "#16a34a",
-                              "#f97316",
-                              "#64748b",
-                              "#334155",
-                            ];
-                            const color = s.highlight ? "rgb(79 70 229)" : palette[i % palette.length];
-
-                            return (
-                              <div key={s.name} className="inline-flex items-center gap-2">
-                                <span className="inline-block h-2.5 w-6 rounded" style={{ backgroundColor: color, opacity: s.highlight ? 1 : 0.65 }} />
-                                <span className={cx("whitespace-nowrap", s.highlight && "font-bold text-slate-900")}>{s.name}</span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                      <div className="mt-3 text-xs text-slate-500">線が切れている箇所＝その節のデータ未取得（欠損）</div>
-                    </div>
-                  )}
                 </Card>
               </div>
             </>
@@ -1746,7 +1642,113 @@ export default function TeamDetailMockPage() {
               </Card>
             </div>
           )}
+          {tab === "standings" && (
+            <div className="space-y-4">
+              {/* 順位表（最新節） */}
+              <Card
+                title="順位表（最新節）"
+                right={
+                  <div className="flex items-center gap-2">
+                    {standingsLoading && <Badge tone="slate">取得中</Badge>}
+                    {standingsError && <Badge tone="rose">取得失敗</Badge>}
+                  </div>
+                }
+              >
+                {standingsError && <pre className="mb-4 whitespace-pre-wrap rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-900">{standingsError}</pre>}
+                {!standingsApi || standingsApi.standings.length === 0 ? (
+                  <div className="text-sm text-slate-600">順位表データがありません</div>
+                ) : (
+                  <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+                    <table className="min-w-[720px] w-full text-sm">
+                      <thead className="bg-slate-50 text-slate-600">
+                        <tr className="[&>th]:px-3 [&>th]:py-2 [&>th]:text-left">
+                          <th className="w-14">順位</th>
+                          <th>チーム</th>
+                          <th className="w-16 text-right">節</th>
+                          <th className="w-16 text-right">試合</th>
+                          <th className="w-16 text-right">勝点</th>
+                          <th className="w-14 text-right">勝</th>
+                          <th className="w-14 text-right">分</th>
+                          <th className="w-14 text-right">負</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {standingsApi.standings.map((r) => {
+                          const played = (r.win ?? 0) + (r.draw ?? 0) + (r.lose ?? 0);
+                          return (
+                            <tr key={`${r.rank}_${r.team}`} className={cx("hover:bg-slate-50", r.currentTeam && "bg-indigo-50/60")}>
+                              <td className={cx("px-3 py-2 text-slate-600", r.currentTeam && "font-bold text-slate-900")}>{r.rank}</td>
+                              <td className={cx("px-3 py-2", r.currentTeam ? "font-black text-slate-900" : "font-medium text-slate-800")}>{r.team}</td>
+                              <td className="px-3 py-2 text-right">{r.match ?? "-"}</td>
+                              <td className="px-3 py-2 text-right">{played}</td>
+                              <td className={cx("px-3 py-2 text-right", r.currentTeam && "font-black")}>{r.winningPoints ?? "-"}</td>
+                              <td className="px-3 py-2 text-right">{r.win ?? "-"}</td>
+                              <td className="px-3 py-2 text-right">{r.draw ?? "-"}</td>
+                              <td className="px-3 py-2 text-right">{r.lose ?? "-"}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </Card>
 
+              {/* 順位推移（全チーム） */}
+              <Card title="順位推移（全チーム）">
+                {!standingsApi || allTeamsRankSeries.length === 0 ? (
+                  <div className="text-sm text-slate-600">推移データがありません</div>
+                ) : (
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                    <div className="mb-2 flex items-center justify-between">
+                      <div className="text-sm font-semibold text-slate-900">リーグ全体の順位推移（太線＝表示中チーム）</div>
+                      <div className="text-xs text-slate-500">x=節（1〜{leagueMaxMatch}） / y=順位（上が1位）</div>
+                    </div>
+
+                    <MultiLineChart series={allTeamsRankSeries} height={260} />
+
+                    {/* 凡例 */}
+                    <div className="mt-3 max-h-28 overflow-auto rounded-xl border border-slate-200 bg-white p-3">
+                      <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-700">
+                        {allTeamsRankSeries.map((s, i) => {
+                          const palette = [
+                            "#1d4ed8",
+                            "#0f766e",
+                            "#9333ea",
+                            "#b45309",
+                            "#be123c",
+                            "#047857",
+                            "#6d28d9",
+                            "#0369a1",
+                            "#a21caf",
+                            "#b91c1c",
+                            "#2563eb",
+                            "#059669",
+                            "#7c3aed",
+                            "#ca8a04",
+                            "#e11d48",
+                            "#0891b2",
+                            "#16a34a",
+                            "#f97316",
+                            "#64748b",
+                            "#334155",
+                          ];
+                          const color = s.highlight ? "rgb(79 70 229)" : palette[i % palette.length];
+                          return (
+                            <div key={s.name} className="inline-flex items-center gap-2">
+                              <span className="inline-block h-2.5 w-6 rounded" style={{ backgroundColor: color, opacity: s.highlight ? 1 : 0.65 }} />
+                              <span className={cx("whitespace-nowrap", s.highlight && "font-bold text-slate-900")}>{s.name}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="mt-3 text-xs text-slate-500">線が切れている箇所＝その節のデータ未取得（欠損）</div>
+                  </div>
+                )}
+              </Card>
+            </div>
+          )}
           {tab === "players" && (
             <Card
               title={
