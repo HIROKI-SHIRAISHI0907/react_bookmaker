@@ -19,6 +19,8 @@ import ManualDataConsolePage from "./pages/admin/register/data/ManualDataConsole
 import ManualDataDefectPage from "./pages/admin/defect/ManualDataDefectPage";
 import TeamColorPage from "./pages/admin/color/TeamColorPage";
 import IngestedDataReferencePage from "./pages/admin/ingest/IngestedDataReferencePage";
+import AdminMatchKeySavePage from "./pages/admin/matchKey/AdminMatchKeySavePage";
+import AdminSubInputPage from "./pages/admin/csvSelect/AdminSubInputPage";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -56,6 +58,8 @@ export default function App() {
             <Route path="manual/data/defect" element={<ManualDataDefectPage />} />
             <Route path="manual/teamColor" element={<TeamColorPage />} />
             <Route path="ingested" element={<IngestedDataReferencePage />} />
+            <Route path="match-key-save" element={<AdminMatchKeySavePage />} />
+            <Route path="sub-input" element={<AdminSubInputPage />} />
           </Route>
 
           <Route path="/top" element={<Dashboard />} />

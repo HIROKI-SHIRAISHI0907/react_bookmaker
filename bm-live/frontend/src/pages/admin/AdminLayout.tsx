@@ -47,6 +47,12 @@ export default function AdminLayout() {
           <NavLink to="ingested" style={linkStyle}>
             投入済みデータ参照管理
           </NavLink>
+          <NavLink to="match-key-save" style={linkStyle}>
+            マッチキーチェック
+          </NavLink>
+          <NavLink to="sub-input" style={linkStyle}>
+            CSV等選択肢登録
+          </NavLink>
         </div>
       </aside>
 
