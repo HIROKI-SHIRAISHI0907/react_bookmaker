@@ -82,6 +82,146 @@ type EachScoreLostDataResponseDTO = {
 };
 type ScoredLostEnvelope = { matches: EachScoreLostDataResponseDTO[] };
 
+// --- Each Team Score API (/api/each-team-score?teamEnglish=...&teamHash=...) ---
+type StatSummaryDTO = {
+  min: string;
+  minCount: string;
+
+  max: string;
+  maxCount: string;
+
+  avg: string;
+  avgCount: string;
+
+  stddev: string;
+  stddevCount: string;
+
+  minTime: string;
+  minTimeCount: string;
+
+  maxTime: string;
+  maxTimeCount: string;
+
+  skewness: string;
+  skewnessCount: string;
+
+  kurtosis: string;
+  kurtosisCount: string;
+};
+
+type EachTeamScoreStatField =
+  | "homeExpStat"
+  | "awayExpStat"
+  | "homeInGoalExpStat"
+  | "awayInGoalExpStat"
+  | "homeDonationStat"
+  | "awayDonationStat"
+  | "homeShootAllStat"
+  | "awayShootAllStat"
+  | "homeShootInStat"
+  | "awayShootInStat"
+  | "homeShootOutStat"
+  | "awayShootOutStat"
+  | "homeBlockShootStat"
+  | "awayBlockShootStat"
+  | "homeBigChanceStat"
+  | "awayBigChanceStat"
+  | "homeCornerStat"
+  | "awayCornerStat"
+  | "homeBoxShootInStat"
+  | "awayBoxShootInStat"
+  | "homeBoxShootOutStat"
+  | "awayBoxShootOutStat"
+  | "homeGoalPostStat"
+  | "awayGoalPostStat"
+  | "homeGoalHeadStat"
+  | "awayGoalHeadStat"
+  | "homeKeeperSaveStat"
+  | "awayKeeperSaveStat"
+  | "homeFreeKickStat"
+  | "awayFreeKickStat"
+  | "homeOffsideStat"
+  | "awayOffsideStat"
+  | "homeFoulStat"
+  | "awayFoulStat"
+  | "homeYellowCardStat"
+  | "awayYellowCardStat"
+  | "homeRedCardStat"
+  | "awayRedCardStat"
+  | "homeSlowInStat"
+  | "awaySlowInStat"
+  | "homeBoxTouchStat"
+  | "awayBoxTouchStat"
+  | "homePassCountStat"
+  | "awayPassCountStat"
+  | "homeLongPassCountStat"
+  | "awayLongPassCountStat"
+  | "homeFinalThirdPassCountStat"
+  | "awayFinalThirdPassCountStat"
+  | "homeCrossCountStat"
+  | "awayCrossCountStat"
+  | "homeTackleCountStat"
+  | "awayTackleCountStat"
+  | "homeClearCountStat"
+  | "awayClearCountStat"
+  | "homeDuelCountStat"
+  | "awayDuelCountStat"
+  | "homeInterceptCountStat"
+  | "awayInterceptCountStat";
+
+type EachTeamScoreResponseDTO = {
+  id: string;
+  situation: string;
+  score: string;
+  country: string;
+  league: string;
+  team: string;
+
+  logicFlg: string;
+  registerId: string;
+  registerTime?: string | null;
+  updateId: string;
+  updateTime?: string | null;
+} & Record<EachTeamScoreStatField, StatSummaryDTO>;
+
+type EachTeamScoreStatPair = {
+  label: string;
+  homeKey: EachTeamScoreStatField;
+  awayKey: EachTeamScoreStatField;
+};
+
+const EACH_TEAM_SCORE_STAT_PAIRS: EachTeamScoreStatPair[] = [
+  { label: "期待値(xG)", homeKey: "homeExpStat", awayKey: "awayExpStat" },
+  { label: "枠内期待値", homeKey: "homeInGoalExpStat", awayKey: "awayInGoalExpStat" },
+  { label: "ポゼッション値", homeKey: "homeDonationStat", awayKey: "awayDonationStat" },
+  { label: "総シュート", homeKey: "homeShootAllStat", awayKey: "awayShootAllStat" },
+  { label: "枠内シュート", homeKey: "homeShootInStat", awayKey: "awayShootInStat" },
+  { label: "枠外シュート", homeKey: "homeShootOutStat", awayKey: "awayShootOutStat" },
+  { label: "ブロックシュート", homeKey: "homeBlockShootStat", awayKey: "awayBlockShootStat" },
+  { label: "ビッグチャンス", homeKey: "homeBigChanceStat", awayKey: "awayBigChanceStat" },
+  { label: "コーナーキック", homeKey: "homeCornerStat", awayKey: "awayCornerStat" },
+  { label: "PA内シュート", homeKey: "homeBoxShootInStat", awayKey: "awayBoxShootInStat" },
+  { label: "PA外シュート", homeKey: "homeBoxShootOutStat", awayKey: "awayBoxShootOutStat" },
+  { label: "ポスト直撃", homeKey: "homeGoalPostStat", awayKey: "awayGoalPostStat" },
+  { label: "ヘディング得点", homeKey: "homeGoalHeadStat", awayKey: "awayGoalHeadStat" },
+  { label: "GKセーブ", homeKey: "homeKeeperSaveStat", awayKey: "awayKeeperSaveStat" },
+  { label: "FK", homeKey: "homeFreeKickStat", awayKey: "awayFreeKickStat" },
+  { label: "オフサイド", homeKey: "homeOffsideStat", awayKey: "awayOffsideStat" },
+  { label: "ファウル", homeKey: "homeFoulStat", awayKey: "awayFoulStat" },
+  { label: "黄カード", homeKey: "homeYellowCardStat", awayKey: "awayYellowCardStat" },
+  { label: "赤カード", homeKey: "homeRedCardStat", awayKey: "awayRedCardStat" },
+  { label: "スローイン", homeKey: "homeSlowInStat", awayKey: "awaySlowInStat" },
+  { label: "PAタッチ", homeKey: "homeBoxTouchStat", awayKey: "awayBoxTouchStat" },
+  { label: "パス本数", homeKey: "homePassCountStat", awayKey: "awayPassCountStat" },
+  { label: "ロングパス本数", homeKey: "homeLongPassCountStat", awayKey: "awayLongPassCountStat" },
+  { label: "敵陣3分の1パス", homeKey: "homeFinalThirdPassCountStat", awayKey: "awayFinalThirdPassCountStat" },
+  { label: "クロス", homeKey: "homeCrossCountStat", awayKey: "awayCrossCountStat" },
+  { label: "タックル", homeKey: "homeTackleCountStat", awayKey: "awayTackleCountStat" },
+  { label: "クリア", homeKey: "homeClearCountStat", awayKey: "awayClearCountStat" },
+  { label: "デュエル", homeKey: "homeDuelCountStat", awayKey: "awayDuelCountStat" },
+  { label: "インターセプト", homeKey: "homeInterceptCountStat", awayKey: "awayInterceptCountStat" },
+];
+
 // --- LiveMatches API (/v1/api/live-matches/{teamEnglish}/{teamHash}) ---
 type LiveMatchResponse = {
   seq: number;
@@ -240,6 +380,24 @@ function rColor(r: number) {
     if (a < 0.6) return "bg-rose-100 text-rose-900 ring-rose-300";
     return "bg-rose-200 text-rose-950 ring-rose-400";
   }
+}
+
+function toNumOrNull(v?: string | null): number | null {
+  const s = String(v ?? "").trim();
+  if (!s) return null;
+  const n = Number(s);
+  return Number.isFinite(n) ? n : null;
+}
+
+function fmtNum(v?: string | null, digits = 2) {
+  const n = toNumOrNull(v);
+  if (n == null) return "—";
+  if (Number.isInteger(n)) return String(n);
+  return n.toFixed(digits).replace(/\.?0+$/, "");
+}
+
+function fetchTextSnippet(text: string, len = 400) {
+  return text ? text.slice(0, len) : "";
 }
 
 function makeCrestText(name?: string, english?: string) {
@@ -604,6 +762,45 @@ function BarsByMatch(props: { rows: Array<{ label: string; gf: number; ga: numbe
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function StatDetailCard(props: { title: string; stat: StatSummaryDTO | null | undefined; tone?: Tone }) {
+  const tone = props.tone ?? "slate";
+  const stat = props.stat;
+
+  const rows: Array<{
+    label: string;
+    value: string;
+    count: string;
+  }> = [
+    { label: "min", value: fmtNum(stat?.min), count: stat?.minCount ?? "" },
+    { label: "max", value: fmtNum(stat?.max), count: stat?.maxCount ?? "" },
+    { label: "avg", value: fmtNum(stat?.avg), count: stat?.avgCount ?? "" },
+    { label: "stddev", value: fmtNum(stat?.stddev), count: stat?.stddevCount ?? "" },
+    { label: "minTime", value: fmtNum(stat?.minTime), count: stat?.minTimeCount ?? "" },
+    { label: "maxTime", value: fmtNum(stat?.maxTime), count: stat?.maxTimeCount ?? "" },
+    { label: "skewness", value: fmtNum(stat?.skewness), count: stat?.skewnessCount ?? "" },
+    { label: "kurtosis", value: fmtNum(stat?.kurtosis), count: stat?.kurtosisCount ?? "" },
+  ];
+
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-4">
+      <div className="mb-3 flex items-center gap-2">
+        <div className="text-sm font-black text-slate-900">{props.title}</div>
+        <Badge tone={tone}>detail</Badge>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {rows.map((r) => (
+          <div key={r.label} className="rounded-xl bg-slate-50 px-3 py-2">
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">{r.label}</div>
+            <div className="mt-1 text-sm font-black text-slate-900">{r.value}</div>
+            <div className="mt-1 text-[11px] text-slate-500">count: {r.count || "—"}</div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -1190,6 +1387,101 @@ export default function TeamDetailMockPage() {
   }, [scoredLostApi, teamApi?.name, TEAM.name]);
 
   // =========================
+  // EACH TEAM SCORE API
+  // =========================
+  const [eachTeamScoreApi, setEachTeamScoreApi] = useState<EachTeamScoreResponseDTO[] | null>(null);
+  const [eachTeamScoreLoading, setEachTeamScoreLoading] = useState(false);
+  const [eachTeamScoreError, setEachTeamScoreError] = useState<string | null>(null);
+
+  const [selectedEachTeamScoreIndex, setSelectedEachTeamScoreIndex] = useState(0);
+  const [selectedEachTeamScoreStatIndex, setSelectedEachTeamScoreStatIndex] = useState(0);
+
+  useEffect(() => {
+    if (!teamEnglish || !teamHash) return;
+    let cancelled = false;
+
+    (async () => {
+      setEachTeamScoreLoading(true);
+      setEachTeamScoreError(null);
+
+      try {
+        const url = `${API_V1}/each-team-score/` + `${encodeURIComponent(teamEnglish)}/` + `${encodeURIComponent(teamHash)}`;
+
+        const res = await fetch(url, {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            Accept: "application/json",
+          },
+        });
+
+        if (res.status === 404) {
+          if (!cancelled) setEachTeamScoreApi([]);
+          return;
+        }
+
+        const ct = res.headers.get("content-type") ?? "";
+        const text = await res.text().catch(() => "");
+
+        if (!res.ok) {
+          throw new Error([`HTTP ${res.status} ${res.statusText}`, `url: ${res.url}`, `content-type: ${ct}`, text ? `body(snippet):\n${fetchTextSnippet(text)}` : ""].filter(Boolean).join("\n"));
+        }
+
+        if (!ct.includes("application/json")) {
+          throw new Error([`Expected JSON but got: ${ct}`, `url: ${res.url}`, text ? `body(snippet):\n${fetchTextSnippet(text)}` : ""].filter(Boolean).join("\n"));
+        }
+
+        const data = JSON.parse(text) as EachTeamScoreResponseDTO[];
+        if (!cancelled) {
+          setEachTeamScoreApi(Array.isArray(data) ? data : []);
+        }
+      } catch (e: any) {
+        if (!cancelled) {
+          setEachTeamScoreError(String(e?.message ?? e));
+          setEachTeamScoreApi(null);
+        }
+      } finally {
+        if (!cancelled) setEachTeamScoreLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [teamEnglish, teamHash]);
+
+  useEffect(() => {
+    setSelectedEachTeamScoreIndex(0);
+    setSelectedEachTeamScoreStatIndex(0);
+  }, [eachTeamScoreApi]);
+
+  const eachTeamScoreRows = useMemo(() => {
+    return eachTeamScoreApi ?? [];
+  }, [eachTeamScoreApi]);
+
+  const selectedEachTeamScore = useMemo(() => {
+    if (!eachTeamScoreRows.length) return null;
+    const idx = Math.min(selectedEachTeamScoreIndex, eachTeamScoreRows.length - 1);
+    return eachTeamScoreRows[idx] ?? null;
+  }, [eachTeamScoreRows, selectedEachTeamScoreIndex]);
+
+  const selectedEachTeamScoreStatPair = useMemo(() => {
+    if (!EACH_TEAM_SCORE_STAT_PAIRS.length) return null;
+    const idx = Math.min(selectedEachTeamScoreStatIndex, EACH_TEAM_SCORE_STAT_PAIRS.length - 1);
+    return EACH_TEAM_SCORE_STAT_PAIRS[idx] ?? null;
+  }, [selectedEachTeamScoreStatIndex]);
+
+  const selectedHomeStat = useMemo(() => {
+    if (!selectedEachTeamScore || !selectedEachTeamScoreStatPair) return null;
+    return selectedEachTeamScore[selectedEachTeamScoreStatPair.homeKey];
+  }, [selectedEachTeamScore, selectedEachTeamScoreStatPair]);
+
+  const selectedAwayStat = useMemo(() => {
+    if (!selectedEachTeamScore || !selectedEachTeamScoreStatPair) return null;
+    return selectedEachTeamScore[selectedEachTeamScoreStatPair.awayKey];
+  }, [selectedEachTeamScore, selectedEachTeamScoreStatPair]);
+
+  // =========================
   // HISTORY API
   // =========================
   const [historyApi, setHistoryApi] = useState<HistoryEnvelope | null>(null);
@@ -1574,6 +1866,135 @@ export default function TeamDetailMockPage() {
                       </div>
                     ))}
                   </div>
+                </Card>
+                <Card
+                  className="lg:col-span-12"
+                  title={
+                    <div className="flex items-center gap-2">
+                      <span>スコア別スタッツ</span>
+                      <Badge tone="indigo">/api/each-team-score</Badge>
+                    </div>
+                  }
+                  right={
+                    <div className="flex items-center gap-2">
+                      {eachTeamScoreLoading && <Badge tone="slate">取得中</Badge>}
+                      {eachTeamScoreError && <Badge tone="rose">取得失敗</Badge>}
+                      <Badge tone="slate">{eachTeamScoreRows.length}件</Badge>
+                    </div>
+                  }
+                >
+                  {eachTeamScoreError && <pre className="mb-4 whitespace-pre-wrap rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-900">{eachTeamScoreError}</pre>}
+
+                  {!eachTeamScoreLoading && eachTeamScoreRows.length === 0 ? (
+                    <div className="text-sm text-slate-600">試合別スタッツデータがありません</div>
+                  ) : (
+                    <div className="grid gap-4 lg:grid-cols-12">
+                      {/* 左: 試合選択 */}
+                      <div className="lg:col-span-4">
+                        <div className="max-h-[520px] space-y-2 overflow-auto pr-1">
+                          {eachTeamScoreRows.map((row, idx) => {
+                            const active = idx === selectedEachTeamScoreIndex;
+                            return (
+                              <button
+                                key={`${row.id}_${idx}`}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedEachTeamScoreIndex(idx);
+                                  setSelectedEachTeamScoreStatIndex(0);
+                                }}
+                                className={cx(
+                                  "w-full rounded-2xl border px-4 py-3 text-left transition",
+                                  active ? "border-indigo-300 bg-indigo-50 shadow-sm" : "border-slate-200 bg-white hover:bg-slate-50",
+                                )}
+                              >
+                                <div className="flex items-center justify-between gap-2">
+                                  <div className="text-sm font-black text-slate-900">{row.situation || `row-${idx + 1}`}</div>
+                                  <Badge tone={active ? "indigo" : "slate"}>{row.score || "score -"}</Badge>
+                                </div>
+
+                                <div className="mt-2 text-xs text-slate-600">
+                                  {row.country} / {row.league}
+                                </div>
+                                <div className="mt-1 text-xs text-slate-500">{row.team}</div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* 右: 選択した試合のスタッツ */}
+                      <div className="lg:col-span-8">
+                        {selectedEachTeamScore ? (
+                          <div className="space-y-4">
+                            <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <Badge tone="indigo">{selectedEachTeamScore.situation || "situation"}</Badge>
+                                <Badge tone="slate">{selectedEachTeamScore.score || "score -"}</Badge>
+                              </div>
+
+                              <div className="mt-3 text-lg font-black text-slate-900">{selectedEachTeamScore.team}</div>
+
+                              <div className="mt-1 text-sm text-slate-600">
+                                {selectedEachTeamScore.country} / {selectedEachTeamScore.league}
+                              </div>
+                            </div>
+
+                            <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+                              <table className="min-w-[980px] w-full text-sm">
+                                <thead className="bg-slate-50 text-slate-600">
+                                  <tr className="[&>th]:px-3 [&>th]:py-2 [&>th]:text-left">
+                                    <th>指標</th>
+                                    <th className="text-right">Home avg</th>
+                                    <th className="text-right">Away avg</th>
+                                    <th className="text-right">Home std</th>
+                                    <th className="text-right">Away std</th>
+                                    <th className="text-right">Home skew</th>
+                                    <th className="text-right">Away skew</th>
+                                    <th className="text-right">Home kurt</th>
+                                    <th className="text-right">Away kurt</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                  {EACH_TEAM_SCORE_STAT_PAIRS.map((pair, idx) => {
+                                    const hs = selectedEachTeamScore[pair.homeKey];
+                                    const as = selectedEachTeamScore[pair.awayKey];
+                                    const active = idx === selectedEachTeamScoreStatIndex;
+
+                                    return (
+                                      <tr key={pair.label} className={cx("cursor-pointer hover:bg-slate-50", active && "bg-indigo-50/60")} onClick={() => setSelectedEachTeamScoreStatIndex(idx)}>
+                                        <td className={cx("px-3 py-2 font-medium", active && "font-black text-slate-900")}>{pair.label}</td>
+                                        <td className="px-3 py-2 text-right">{fmtNum(hs?.avg)}</td>
+                                        <td className="px-3 py-2 text-right">{fmtNum(as?.avg)}</td>
+                                        <td className="px-3 py-2 text-right">{fmtNum(hs?.stddev)}</td>
+                                        <td className="px-3 py-2 text-right">{fmtNum(as?.stddev)}</td>
+                                        <td className="px-3 py-2 text-right">{fmtNum(hs?.skewness)}</td>
+                                        <td className="px-3 py-2 text-right">{fmtNum(as?.skewness)}</td>
+                                        <td className="px-3 py-2 text-right">{fmtNum(hs?.kurtosis)}</td>
+                                        <td className="px-3 py-2 text-right">{fmtNum(as?.kurtosis)}</td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+
+                            {selectedEachTeamScoreStatPair && (
+                              <div className="space-y-3">
+                                <div className="text-sm font-semibold text-slate-900">詳細: {selectedEachTeamScoreStatPair.label}</div>
+
+                                <div className="grid gap-4 lg:grid-cols-2">
+                                  <StatDetailCard title={`HOME - ${selectedEachTeamScoreStatPair.label}`} stat={selectedHomeStat} tone="indigo" />
+                                  <StatDetailCard title={`AWAY - ${selectedEachTeamScoreStatPair.label}`} stat={selectedAwayStat} tone="emerald" />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-sm text-slate-600">表示できるスタッツがありません</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </Card>
               </div>
             </>
