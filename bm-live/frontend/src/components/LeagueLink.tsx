@@ -1,10 +1,58 @@
-// frontend/src/components/LeagueLink.tsx
+// src/components/LeagueLink.tsx
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu } from "lucide-react";
+import { Menu, ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { createPortal } from "react-dom";
-import { fetchLeaguesGrouped, type LeagueGrouped } from "../api/leagues";
+import { fetchLeaguesGrouped, type LeagueGrouped, type LeagueInfo, type SubLeagueInfo } from "../api/leagues";
+
+function normalizeText(v?: string | null) {
+  return (v ?? "").trim();
+}
+
+function normalizeCount(v?: number | null) {
+  return typeof v === "number" && Number.isFinite(v) ? v : 0;
+}
+
+function normalizePath(v?: string | null) {
+  const s = normalizeText(v);
+  return s || "#";
+}
+
+function normalizeSubLeagueLabel(sub?: SubLeagueInfo | null) {
+  const raw = normalizeText(sub?.name) || normalizeText(sub?.rawName) || "未設定";
+  return raw.startsWith("▶︎") ? raw : `▶︎${raw}`;
+}
+
+function buildSubLeaguePath(league: LeagueInfo, sub?: SubLeagueInfo | null) {
+  const subRouting = normalizeText(sub?.routingPath);
+  if (subRouting) return subRouting;
+
+  const base = normalizeText(league.routingPath) || normalizeText(league.path);
+  if (!base) return "#";
+
+  const rawSub = normalizeText(sub?.rawName) || normalizeText(sub?.name).replace(/^▶︎+/, "") || "未設定";
+
+  const separator = base.includes("?") ? "&" : "?";
+  return `${base}${separator}subLeague=${encodeURIComponent(rawSub)}`;
+}
+
+function hasSubLeagues(league: LeagueInfo): boolean {
+  return Array.isArray(league.subLeagues) && league.subLeagues.length > 0;
+}
+
+function LeagueLeafLink(props: { to: string; label: string; meta?: React.ReactNode; onClick: () => void; animationDelayMs?: number }) {
+  const { to, label, meta, onClick, animationDelayMs = 0 } = props;
+
+  return (
+    <Link to={to} onClick={onClick} className="block rounded px-2 py-1 text-sm hover:bg-accent animate-in-left" style={{ animationDelay: `${animationDelayMs}ms` }}>
+      <span className="inline-flex items-center gap-2">
+        <span>{label}</span>
+        {meta}
+      </span>
+    </Link>
+  );
+}
 
 export default function LeagueMenu() {
   const [open, setOpen] = useState(false);
@@ -22,21 +70,26 @@ export default function LeagueMenu() {
     if (open) {
       const id = requestAnimationFrame(() => setReady(true));
       return () => cancelAnimationFrame(id);
-    } else {
-      setReady(false);
     }
+    setReady(false);
   }, [open]);
 
   useEffect(() => {
     if (!open) return;
+
     const onDown = (e: MouseEvent) => {
       if (panelRef.current?.contains(e.target as Node)) return;
       if (btnRef.current?.contains(e.target as Node)) return;
       setOpen(false);
     };
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+
     window.addEventListener("mousedown", onDown);
     window.addEventListener("keyup", onKey);
+
     return () => {
       window.removeEventListener("mousedown", onDown);
       window.removeEventListener("keyup", onKey);
@@ -55,7 +108,7 @@ export default function LeagueMenu() {
   return (
     <div className="relative">
       <button ref={btnRef} onClick={() => setOpen((v) => !v)} className="inline-flex items-center gap-2 rounded-md border px-3 py-2 hover:bg-accent" aria-expanded={open} aria-haspopup="menu">
-        <Menu className="w-4 h-4" />
+        <Menu className="h-4 w-4" />
         リーグ
       </button>
 
@@ -66,7 +119,7 @@ export default function LeagueMenu() {
               <div className="absolute inset-0 bg-black/70" />
               <div
                 className="absolute inset-0 pointer-events-none
-                 bg-[radial-gradient(60%_60%_at_20%_10%,rgba(255,255,255,0.06),transparent_60%),radial-gradient(70%_70%_at_100%_100%,rgba(255,255,255,0.04),transparent_60%)]"
+                bg-[radial-gradient(60%_60%_at_20%_10%,rgba(255,255,255,0.06),transparent_60%),radial-gradient(70%_70%_at_100%_100%,rgba(255,255,255,0.04),transparent_60%)]"
               />
             </div>
 
@@ -75,9 +128,9 @@ export default function LeagueMenu() {
               role="menu"
               aria-modal="true"
               className={`fixed left-0 top-0 z-[1001] h-full w-[min(88vw,380px)]
-                        border-r bg-popover text-foreground shadow-2xl
-                        transition-transform duration-300 will-change-transform
-                        ${ready ? "translate-x-0" : "-translate-x-full"}`}
+              border-r bg-popover text-foreground shadow-2xl
+              transition-transform duration-300 will-change-transform
+              ${ready ? "translate-x-0" : "-translate-x-full"}`}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex h-full flex-col">
@@ -90,6 +143,7 @@ export default function LeagueMenu() {
 
                 <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
                   {isLoading && <div className="p-2 text-sm text-muted-foreground">Loading...</div>}
+
                   {error && <div className="p-2 text-sm text-destructive">読み込みに失敗しました</div>}
 
                   {data?.map((g, gi) => (
@@ -100,35 +154,70 @@ export default function LeagueMenu() {
 
                       <ul className="ml-2 mt-1 space-y-1">
                         {g.leagues.map((l, li) => {
-                          // ✅ routingPath 優先（なければ path）
-                          const to = l.path; // ★ここを固定（アプリ内に遷移）
+                          const leagueTo = normalizePath(l.routingPath || l.path);
+                          const leagueKey = `${g.country}__${l.name}__${leagueTo}__${li}`;
+                          const teamCount = normalizeCount(l.teamCount);
+                          const variantCount = normalizeCount(l.variantCount);
 
-                          // ✅ key を必ずユニークにする（country + name だけだと衝突する）
-                          const key = `${g.country}__${l.name}__${to}`;
-
-                          const hasVariants = (l.variantCount ?? 0) >= 2;
+                          if (!hasSubLeagues(l)) {
+                            return (
+                              <li key={leagueKey}>
+                                <LeagueLeafLink
+                                  to={leagueTo}
+                                  onClick={() => setOpen(false)}
+                                  label={l.name}
+                                  animationDelayMs={gi * 45 + li * 25}
+                                  meta={
+                                    <>
+                                      <span className="ml-1 opacity-60">({teamCount})</span>
+                                      {variantCount > 0 ? <span className="text-xs opacity-60">({variantCount})</span> : null}
+                                    </>
+                                  }
+                                />
+                              </li>
+                            );
+                          }
 
                           return (
-                            <li key={key}>
-                              <Link
-                                to={to}
-                                onClick={() => setOpen(false)}
-                                className="block rounded px-2 py-1 text-sm hover:bg-accent animate-in-left"
-                                style={{ animationDelay: `${gi * 45 + li * 25}ms` }}
-                              >
-                                <span className="inline-flex items-center gap-2">
-                                  <span>{l.name}</span>
-                                  {hasVariants ? <span className="text-xs opacity-70">▶</span> : null}
-                                  <span className="ml-1 opacity-60">({l.teamCount})</span>
-                                  {hasVariants ? <span className="text-xs opacity-60">({l.variantCount})</span> : null}
-                                </span>
-                              </Link>
+                            <li key={leagueKey}>
+                              <details className="group/league">
+                                <summary className="cursor-pointer list-none rounded px-2 py-1 text-sm hover:bg-accent animate-in-left" style={{ animationDelay: `${gi * 45 + li * 25}ms` }}>
+                                  <span className="inline-flex items-center gap-2">
+                                    <ChevronRight className="h-4 w-4 shrink-0 transition-transform group-open/league:rotate-90" />
+                                    <span>{l.name}</span>
+                                    <span className="ml-1 opacity-60">({teamCount})</span>
+                                    {variantCount > 0 ? <span className="text-xs opacity-60">({variantCount})</span> : null}
+                                  </span>
+                                </summary>
+
+                                <ul className="ml-5 mt-1 space-y-1 border-l border-border pl-2">
+                                  {l.subLeagues!.map((s, si) => {
+                                    const subTo = buildSubLeaguePath(l, s);
+                                    const subKey = `${leagueKey}__${normalizeText(s.rawName || s.name || String(si))}`;
+
+                                    return (
+                                      <li key={subKey}>
+                                        <LeagueLeafLink
+                                          to={subTo}
+                                          onClick={() => setOpen(false)}
+                                          label={normalizeSubLeagueLabel(s)}
+                                          animationDelayMs={gi * 45 + li * 25 + si * 20}
+                                          meta={<span className="ml-1 opacity-60">({normalizeCount(s.teamCount)})</span>}
+                                        />
+                                      </li>
+                                    );
+                                  })}
+                                </ul>
+                              </details>
                             </li>
                           );
                         })}
                       </ul>
                     </details>
                   ))}
+
+                  {!isLoading && !error && (!data || data.length === 0) && <div className="p-2 text-sm text-muted-foreground">データがありません</div>}
+
                   <div className="h-2" />
                 </div>
               </div>
