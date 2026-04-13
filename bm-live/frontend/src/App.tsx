@@ -21,6 +21,7 @@ import TeamColorPage from "./pages/admin/color/TeamColorPage";
 import IngestedDataReferencePage from "./pages/admin/ingest/IngestedDataReferencePage";
 import AdminMatchKeySavePage from "./pages/admin/matchKey/AdminMatchKeySavePage";
 import AdminSubInputPage from "./pages/admin/csvSelect/AdminSubInputPage";
+import SubLeagueManualUpdatePage from "./pages/admin/subLeague/SubLeagueManualUpdatePage";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -60,6 +61,7 @@ export default function App() {
             <Route path="ingested" element={<IngestedDataReferencePage />} />
             <Route path="match-key-save" element={<AdminMatchKeySavePage />} />
             <Route path="sub-input" element={<AdminSubInputPage />} />
+            <Route path="sub-league" element={<SubLeagueManualUpdatePage />} />
           </Route>
 
           <Route path="/top" element={<Dashboard />} />

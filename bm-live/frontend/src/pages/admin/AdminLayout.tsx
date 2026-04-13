@@ -53,6 +53,9 @@ export default function AdminLayout() {
           <NavLink to="sub-input" style={linkStyle}>
             CSV等選択肢登録
           </NavLink>
+          <NavLink to="sub-league" style={linkStyle}>
+            サブリーグ設定
+          </NavLink>
         </div>
       </aside>
 
