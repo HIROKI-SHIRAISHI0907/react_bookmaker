@@ -223,7 +223,7 @@ const EACH_TEAM_SCORE_STAT_PAIRS: EachTeamScoreStatPair[] = [
 ];
 
 // --- LiveMatches API (/v1/api/live-matches/{teamEnglish}/{teamHash}) ---
-type LiveMatchResponse = {
+type LiveMatchDTO = {
   seq: number;
   dataCategory: string;
   times: string;
@@ -244,6 +244,11 @@ type LiveMatchResponse = {
 
   homeSlug: string | null;
   awaySlug: string | null;
+};
+
+type MultiLiveMatchesResponse = {
+  matches: LiveMatchDTO[];
+  count: number;
 };
 
 type LiveBannerModel = {
@@ -1172,7 +1177,7 @@ export default function TeamDetailMockPage() {
   // =========================
   // LIVE API
   // =========================
-  const [liveApi, setLiveApi] = useState<LiveMatchResponse[] | null>(null);
+  const [liveApi, setLiveApi] = useState<MultiLiveMatchesResponse | null>(null);
   const [liveApiLoading, setLiveApiLoading] = useState(false);
   const [liveApiError, setLiveApiError] = useState<string | null>(null);
 
@@ -1185,7 +1190,7 @@ export default function TeamDetailMockPage() {
       setLiveApiError(null);
       try {
         const url = `${API_V1}/live-matches/${encodeURIComponent(teamEnglish)}/${encodeURIComponent(teamHash)}`;
-        const data = await fetchJsonStrict<LiveMatchResponse[]>(url, { method: "GET" });
+        const data = await fetchJsonStrict<MultiLiveMatchesResponse>(url, { method: "GET" });
         if (!cancelled) setLiveApi(data);
       } catch (e: any) {
         if (!cancelled) {
@@ -1219,14 +1224,17 @@ export default function TeamDetailMockPage() {
 
   const liveBanner: LiveBannerModel | null = useMemo(() => {
     if (!teamEnglish) return null;
-    if (!liveApi || liveApi.length === 0) return null;
 
-    let hit = liveApi.find((r) => r.homeSlug === teamEnglish || r.awaySlug === teamEnglish) ?? null;
+    const liveMatches = liveApi?.matches ?? [];
+    if (liveMatches.length === 0) return null;
+
+    let hit = liveMatches.find((r) => r.homeSlug === teamEnglish || r.awaySlug === teamEnglish) ?? null;
 
     if (!hit && teamApi?.name) {
       const nm = teamApi.name;
-      hit = liveApi.find((r) => r.homeTeamName === nm || r.awayTeamName === nm) ?? null;
+      hit = liveMatches.find((r) => r.homeTeamName === nm || r.awayTeamName === nm) ?? null;
     }
+
     if (!hit) return null;
 
     return {

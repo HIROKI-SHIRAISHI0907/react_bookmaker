@@ -62,12 +62,21 @@ export type LeagueVariantItem = {
 export type TeamsInLeague = {
   country: string;
   league: string; // 親なら "J2・J3リーグ"、子なら "J2・J3リーグ - WEST A"
+  subLeague?: string | null;
   variants?: LeagueVariantItem[];
   teams?: TeamItem[];
 };
 
-export async function fetchTeamsInLeague(country: string, league: string): Promise<TeamsInLeague> {
-  const url = `/v1/api/leagues/${encodeURIComponent(country)}/${encodeURIComponent(league)}`;
+export async function fetchTeamsInLeague(country: string, league: string, subLeague?: string | null): Promise<TeamsInLeague> {
+  const params = new URLSearchParams();
+
+  if (subLeague && subLeague.trim()) {
+    params.set("subLeague", subLeague.trim());
+  }
+
+  const query = params.toString();
+  const url = `/v1/api/leagues/${encodeURIComponent(country)}/${encodeURIComponent(league)}` + (query ? `?${query}` : "");
+
   const res = await fetch(url, { credentials: "include" });
 
   if (!res.ok) {
