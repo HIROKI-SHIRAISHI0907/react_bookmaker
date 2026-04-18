@@ -3,8 +3,8 @@ module.exports = {
   darkMode: ["class"],
   content: [
     "./index.html",
-    "./src/**/*.{ts,tsx,js,jsx}",
-    "./components/**/*.{ts,tsx,js,jsx}", // srcの外にcomponentsがあるなら残す
+    "./src/**/*.{tsx,ts,js,jsx}",
+    "./components/**/*.{tsx,ts,js,jsx}", // srcの外にcomponentsがあるなら残す
   ],
   theme: {
     extend: {
