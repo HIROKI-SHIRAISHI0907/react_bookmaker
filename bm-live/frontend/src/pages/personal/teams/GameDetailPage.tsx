@@ -45,10 +45,8 @@ function toScoreText(value: unknown): string {
 }
 
 function toCount(value: unknown): number {
-  if (value == null) return 0;
-  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
-  const n = Number(String(value).replace(/[^\d.-]/g, ""));
-  return Number.isFinite(n) ? n : 0;
+  const n = toNumeric(value);
+  return n == null ? 0 : Math.round(n);
 }
 
 function toNumeric(value: unknown): number | null {
@@ -58,9 +56,19 @@ function toNumeric(value: unknown): number | null {
   const raw = String(value).trim();
   if (!raw) return null;
 
-  const normalized = raw.replace(/[%％,]/g, "").trim();
-  const n = Number(normalized);
-  return Number.isFinite(n) ? n : null;
+  const percentMatch = raw.match(/([0-9]+(?:\.[0-9]+)?)\s*[%％]/);
+  if (percentMatch) {
+    const n = Number(percentMatch[1]);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  const firstNumberMatch = raw.match(/([0-9]+(?:\.[0-9]+)?)/);
+  if (firstNumberMatch) {
+    const n = Number(firstNumberMatch[1]);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  return null;
 }
 
 function formatDateTime(value: unknown): string {
@@ -96,9 +104,19 @@ function formatNumber(value: unknown): string {
 
 function formatPercent(value: unknown): string {
   if (isNil(value)) return "-";
+
+  if (typeof value === "string") {
+    const raw = value.trim();
+    if (!raw) return "-";
+    return raw;
+  }
+
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? `${value}%` : "-";
+  }
+
   const raw = String(value).trim();
-  if (!raw) return "-";
-  return raw.endsWith("%") ? raw : `${raw}%`;
+  return raw ? raw : "-";
 }
 
 function formatMatchTime(value: unknown): string {
@@ -181,6 +199,22 @@ function TeamCardSummary({ yellow, red, align = "center" }: TeamCardSummaryProps
       <CardBadge color="yellow" count={yellow} />
       <CardBadge color="red" count={red} />
     </div>
+  );
+}
+
+function isEmptyDetail(detail: GameDetail | null | undefined): boolean {
+  if (!detail) return true;
+
+  return (
+    isNil(detail.competition) &&
+    isNil(detail.roundNo) &&
+    isNil(detail.recordedAt) &&
+    isNil(detail.winner) &&
+    isNil(detail.link) &&
+    isNil(detail.times) &&
+    isNil(detail.home) &&
+    isNil(detail.away) &&
+    isNil(detail.venue)
   );
 }
 
@@ -379,6 +413,20 @@ export default function GameDetailPage() {
     );
   }
 
+  if (isEmptyDetail(detail)) {
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-8">
+        <div className="mb-4">
+          <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center text-sm font-medium text-sky-700 hover:text-sky-900">
+            ← 前の画面へ戻る
+          </button>
+        </div>
+
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-800">該当する試合詳細データが見つかりませんでした。保存している seq が data.seq ではない可能性があります。</div>
+      </div>
+    );
+  }
+
   const isLive = String(detail.winner ?? "").toUpperCase() === "LIVE" || isLiveTimes(detail.times);
 
   const homeName = toText(detail.home?.name);
@@ -386,10 +434,13 @@ export default function GameDetailPage() {
   const homeScore = toScoreText(detail.home?.score);
   const awayScore = toScoreText(detail.away?.score);
 
-  const homeCardYellow = (detail.home as Record<string, unknown> | undefined) ? readValue(detail.home as Record<string, unknown>, ["yc", "yellowCard", "yellowCards"]) : null;
-  const homeCardRed = (detail.home as Record<string, unknown> | undefined) ? readValue(detail.home as Record<string, unknown>, ["rc", "redCard", "redCards"]) : null;
-  const awayCardYellow = (detail.away as Record<string, unknown> | undefined) ? readValue(detail.away as Record<string, unknown>, ["yc", "yellowCard", "yellowCards"]) : null;
-  const awayCardRed = (detail.away as Record<string, unknown> | undefined) ? readValue(detail.away as Record<string, unknown>, ["rc", "redCard", "redCards"]) : null;
+  const homeRecord = toRecord(detail.home);
+  const awayRecord = toRecord(detail.away);
+
+  const homeCardYellow = readValue(homeRecord, ["yc", "yellowCard", "yellowCards"]);
+  const homeCardRed = readValue(homeRecord, ["rc", "redCard", "redCards"]);
+  const awayCardYellow = readValue(awayRecord, ["yc", "yellowCard", "yellowCards"]);
+  const awayCardRed = readValue(awayRecord, ["rc", "redCard", "redCards"]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">

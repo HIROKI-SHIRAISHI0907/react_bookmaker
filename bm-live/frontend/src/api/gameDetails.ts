@@ -87,21 +87,22 @@ type GameDetailResponse = {
 };
 
 export async function fetchGameDetail(seq: number): Promise<GameDetail> {
-  const res = await fetch("/v1/api/games/detail", {
+  const response = await fetch("/v1/api/games/detail", {
     method: "POST",
-    credentials: "include",
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
     },
+    credentials: "include",
     body: JSON.stringify({ seq }),
   });
 
-  if (!res.ok) {
-    const txt = await res.text().catch(() => "");
-    throw new Error(`game detail fetch failed: ${res.status} ${txt}`);
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`game detail fetch failed: ${response.status} ${text}`);
   }
 
-  const json = (await res.json()) as GameDetailResponse;
-  return json.detail;
+  const json = await response.json();
+  return json.detail ?? json;
 }
+
