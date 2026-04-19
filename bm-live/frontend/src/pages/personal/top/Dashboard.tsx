@@ -82,31 +82,6 @@ function getLeagueLabel(dataCategory?: string) {
   return s;
 }
 
-const {
-  data: allLiveMatches,
-  isLoading: allLiveLoading,
-  error: allLiveError,
-} = useQuery<MultiLiveMatchesResponse, Error>({
-  queryKey: ["all-live-matches"],
-  queryFn: async () => {
-    const res = await fetch("/api/live-matches/all", {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        Accept: "application/json",
-      },
-    });
-
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status} ${res.statusText}`);
-    }
-
-    return res.json();
-  },
-  staleTime: 30_000,
-  refetchInterval: 30_000,
-});
-
 const MOCK_MATCH: MatchDetails = {
   match: {
     id: "match1",
@@ -134,6 +109,31 @@ const MOCK_MATCH: MatchDetails = {
 
 export default function Dashboard() {
   const [selectedMatchId, setSelectedMatchId] = useState("match1");
+
+  const {
+    data: allLiveMatches,
+    isLoading: allLiveLoading,
+    error: allLiveError,
+  } = useQuery<MultiLiveMatchesResponse, Error>({
+    queryKey: ["all-live-matches"],
+    queryFn: async () => {
+      const res = await fetch("/v1/api/live-matches/all", {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status} ${res.statusText}`);
+      }
+
+      return res.json();
+    },
+    staleTime: 30_000,
+    refetchInterval: 30_000,
+  });
 
   const {
     data: matchDetails,
