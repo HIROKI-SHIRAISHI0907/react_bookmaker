@@ -1,15 +1,18 @@
 // frontend/src/pages/personal/top/Dashboard.tsx
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "../../../lib/queryClient";
 import MatchHeader from "../../../components/MatchHeader";
 import StatsGrid from "../../../components/StatsGrid";
-import ThemeToggle from "../../../components/ThemeToggle";
 import { Button } from "../../../components/ui/button";
 import { Skeleton } from "../../../components/ui/skeleton";
 import AppHeader from "../../../components/layout/AppHeader";
 import { RefreshCw } from "lucide-react";
 import NoticeRibbon from "../../../pages/personal/component/notice/NoticeRibbon";
+
+// =========================
+// 型定義
+// =========================
 
 // 全試合ライブ情報
 type LiveMatchDTO = {
@@ -40,13 +43,13 @@ type LeagueLiveGroup = {
   matches: LiveMatchDTO[];
 };
 
-// --- デザイン確認用: 型定義 & モック --------------------
+// デザイン確認用: モック
 type TeamPair = { home: number; away: number };
 
 type MatchStats = {
   shotsOnTarget: TeamPair;
   totalShots: TeamPair;
-  possession: TeamPair; // 例: パーセント
+  possession: TeamPair;
   passes: TeamPair;
   dribbles: TeamPair;
   tackles: TeamPair;
@@ -66,9 +69,12 @@ type MatchDetails = {
     homeScore?: number;
     awayScore?: number;
   };
-  stats: MatchStats; // ← 配列ではなくオブジェクト
+  stats: MatchStats;
 };
 
+// =========================
+// Utils
+// =========================
 function getLeagueLabel(dataCategory?: string) {
   const s = (dataCategory ?? "").trim();
   if (!s) return "その他";
@@ -82,6 +88,19 @@ function getLeagueLabel(dataCategory?: string) {
   return s;
 }
 
+function formatTimeOnly(iso?: string | null) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleTimeString("ja-JP", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+// =========================
+// Mock
+// =========================
 const MOCK_MATCH: MatchDetails = {
   match: {
     id: "match1",
@@ -105,11 +124,15 @@ const MOCK_MATCH: MatchDetails = {
     offsides: { home: 2, away: 1 },
   },
 };
-// --------------------------------------------------------
 
+// =========================
+// Page
+// =========================
 export default function Dashboard() {
-  const [selectedMatchId, setSelectedMatchId] = useState("match1");
+  const selectedMatchId = "match1";
+  const [selectedLeagueTab, setSelectedLeagueTab] = useState<string>("");
 
+  // 全ライブ取得
   const {
     data: allLiveMatches,
     isLoading: allLiveLoading,
@@ -135,6 +158,7 @@ export default function Dashboard() {
     refetchInterval: 30_000,
   });
 
+  // 既存のダッシュボード表示用モック
   const {
     data: matchDetails,
     isLoading,
@@ -148,7 +172,7 @@ export default function Dashboard() {
     staleTime: 30_000,
   });
 
-  // Refresh mutation for manual updates
+  // Refresh
   const refreshMutation = useMutation({
     mutationFn: async () => {
       await Promise.all([
@@ -164,21 +188,7 @@ export default function Dashboard() {
 
   const handleRefresh = () => refreshMutation.mutate();
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-xl font-bold mb-2">Error Loading Match Data</h2>
-          <p className="text-muted-foreground mb-4">Failed to load match information</p>
-          <Button onClick={handleRefresh} variant="outline">
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Try Again
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
+  // ライブ試合をリーグごとにまとめる
   const groupedLiveMatches = useMemo<LeagueLiveGroup[]>(() => {
     const matches = allLiveMatches?.matches ?? [];
     if (!matches.length) return [];
@@ -206,9 +216,41 @@ export default function Dashboard() {
       .sort((a, b) => a.leagueLabel.localeCompare(b.leagueLabel, "ja"));
   }, [allLiveMatches]);
 
-  {
-    /* 正常トップページ */
+  // タブの初期選択 / データ変更追従
+  useEffect(() => {
+    if (groupedLiveMatches.length === 0) {
+      setSelectedLeagueTab("");
+      return;
+    }
+
+    const exists = groupedLiveMatches.some((g) => g.leagueLabel === selectedLeagueTab);
+
+    if (!exists) {
+      setSelectedLeagueTab(groupedLiveMatches[0].leagueLabel);
+    }
+  }, [groupedLiveMatches, selectedLeagueTab]);
+
+  // 選択中タブの試合一覧
+  const activeLiveGroup = useMemo(() => {
+    if (!selectedLeagueTab) return null;
+    return groupedLiveMatches.find((g) => g.leagueLabel === selectedLeagueTab) ?? null;
+  }, [groupedLiveMatches, selectedLeagueTab]);
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-bold mb-2">Error Loading Match Data</h2>
+          <p className="text-muted-foreground mb-4">Failed to load match information</p>
+          <Button onClick={handleRefresh} variant="outline">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
   }
+
   return (
     <div className="min-h-screen bg-background">
       <AppHeader
@@ -224,8 +266,8 @@ export default function Dashboard() {
 
       <NoticeRibbon />
 
-      {/* LIVE 一覧 */}
       <main className="container mx-auto px-4 py-6">
+        {/* LIVE 一覧 */}
         <section className="mb-6 rounded-xl border bg-card p-4 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -254,15 +296,40 @@ export default function Dashboard() {
             <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">現在ライブ中の試合はありません</div>
           ) : (
             <div className="space-y-4">
-              {groupedLiveMatches.map((group) => (
-                <div key={group.leagueLabel} className="rounded-lg border bg-background p-4">
+              {/* タブ一覧 */}
+              <div className="overflow-x-auto">
+                <div className="flex min-w-max gap-2 pb-1">
+                  {groupedLiveMatches.map((group) => {
+                    const active = selectedLeagueTab === group.leagueLabel;
+
+                    return (
+                      <button
+                        key={group.leagueLabel}
+                        type="button"
+                        onClick={() => setSelectedLeagueTab(group.leagueLabel)}
+                        className={[
+                          "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition",
+                          active ? "border-red-200 bg-red-50 text-red-700" : "border-border bg-background text-foreground hover:bg-muted",
+                        ].join(" ")}
+                      >
+                        <span>{group.leagueLabel}</span>
+                        <span className={["rounded-full px-2 py-0.5 text-xs", active ? "bg-red-100 text-red-700" : "bg-muted text-muted-foreground"].join(" ")}>{group.matches.length}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 選択中リーグの試合一覧 */}
+              {activeLiveGroup && (
+                <div className="rounded-lg border bg-background p-4">
                   <div className="mb-3 flex items-center justify-between">
-                    <div className="font-semibold text-foreground">{group.leagueLabel}</div>
-                    <div className="text-xs text-muted-foreground">{group.matches.length}試合</div>
+                    <div className="font-semibold text-foreground">{activeLiveGroup.leagueLabel}</div>
+                    <div className="text-xs text-muted-foreground">{activeLiveGroup.matches.length}試合</div>
                   </div>
 
                   <div className="space-y-2">
-                    {group.matches.map((match) => (
+                    {activeLiveGroup.matches.map((match) => (
                       <div key={match.seq} className="flex items-center justify-between rounded-lg border bg-card px-4 py-3">
                         <div className="min-w-0">
                           <div className="mb-1 flex items-center gap-2">
@@ -279,24 +346,18 @@ export default function Dashboard() {
                           <div className="text-lg font-bold text-foreground">
                             {match.homeScore ?? 0} - {match.awayScore ?? 0}
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            {match.recordTime
-                              ? new Date(match.recordTime).toLocaleTimeString("ja-JP", {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })
-                              : ""}
-                          </div>
+                          <div className="text-xs text-muted-foreground">{formatTimeOnly(match.recordTime)}</div>
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
-              ))}
+              )}
             </div>
           )}
         </section>
 
+        {/* 既存ダッシュボード */}
         {isLoading ? (
           <div className="space-y-6">
             {/* Match Header Skeleton */}
