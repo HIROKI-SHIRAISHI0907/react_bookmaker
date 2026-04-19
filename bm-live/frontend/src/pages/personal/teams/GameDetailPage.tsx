@@ -3,10 +3,27 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchGameDetail, type GameDetail } from "../../../api/gameDetails";
 
+type CardBadgeProps = {
+  color: "yellow" | "red";
+  count?: unknown;
+};
+
+type TeamCardSummaryProps = {
+  yellow?: unknown;
+  red?: unknown;
+  align?: "left" | "center" | "right";
+};
+
 type StatRow = {
   label: string;
   home: string;
   away: string;
+  homeValue: number | null;
+  awayValue: number | null;
+};
+
+type StatBarRowProps = {
+  row: StatRow;
 };
 
 const GAME_DETAIL_SEQ_KEY = "game-detail-seq";
@@ -25,6 +42,25 @@ function toScoreText(value: unknown): string {
   if (isNil(value)) return "-";
   const text = String(value).trim();
   return text === "" ? "-" : text;
+}
+
+function toCount(value: unknown): number {
+  if (value == null) return 0;
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+  const n = Number(String(value).replace(/[^\d.-]/g, ""));
+  return Number.isFinite(n) ? n : 0;
+}
+
+function toNumeric(value: unknown): number | null {
+  if (value == null) return null;
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+
+  const raw = String(value).trim();
+  if (!raw) return null;
+
+  const normalized = raw.replace(/[%％,]/g, "").trim();
+  const n = Number(normalized);
+  return Number.isFinite(n) ? n : null;
 }
 
 function formatDateTime(value: unknown): string {
@@ -124,63 +160,127 @@ function readValue(record: Record<string, unknown>, keys: string[]): unknown {
   return null;
 }
 
+function CardBadge({ color, count }: CardBadgeProps) {
+  const safeCount = toCount(count);
+
+  const cardClass = color === "yellow" ? "bg-yellow-400 border-yellow-500" : "bg-red-500 border-red-600";
+
+  return (
+    <div className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-1 shadow-sm">
+      <span className={`inline-block h-4 w-3 rounded-[2px] border ${cardClass}`} aria-hidden="true" />
+      <span className="text-xs font-semibold text-slate-700">{safeCount}</span>
+    </div>
+  );
+}
+
+function TeamCardSummary({ yellow, red, align = "center" }: TeamCardSummaryProps) {
+  const justify = align === "left" ? "justify-start" : align === "right" ? "justify-end" : "justify-center";
+
+  return (
+    <div className={`flex items-center gap-2 ${justify}`}>
+      <CardBadge color="yellow" count={yellow} />
+      <CardBadge color="red" count={red} />
+    </div>
+  );
+}
+
+function StatBarRow({ row }: StatBarRowProps) {
+  const homeVal = row.homeValue ?? 0;
+  const awayVal = row.awayValue ?? 0;
+  const total = homeVal + awayVal;
+
+  const homeRate = total > 0 ? (homeVal / total) * 100 : 50;
+  const awayRate = total > 0 ? (awayVal / total) * 100 : 50;
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="mb-3 grid grid-cols-[64px_1fr_64px] items-center gap-2 text-sm">
+        <div className="text-left text-base font-bold text-slate-900">{row.home}</div>
+        <div className="text-center text-xs font-semibold text-slate-500">{row.label}</div>
+        <div className="text-right text-base font-bold text-slate-900">{row.away}</div>
+      </div>
+
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+        <div className="flex justify-end">
+          <div className="h-3 w-full max-w-[240px] overflow-hidden rounded-full bg-slate-100">
+            <div className="ml-auto h-full rounded-full bg-emerald-500 transition-all" style={{ width: `${homeRate}%` }} />
+          </div>
+        </div>
+
+        <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">VS</div>
+
+        <div className="flex justify-start">
+          <div className="h-3 w-full max-w-[240px] overflow-hidden rounded-full bg-slate-100">
+            <div className="h-full rounded-full bg-blue-500 transition-all" style={{ width: `${awayRate}%` }} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function toRecord(value: unknown): Record<string, unknown> {
+  if (value && typeof value === "object") {
+    return value as Record<string, unknown>;
+  }
+  return {};
+}
+
 function buildStatRows(detail: GameDetail): StatRow[] {
-  const home = (detail.home ?? {}) as Record<string, unknown>;
-  const away = (detail.away ?? {}) as Record<string, unknown>;
+  const home = toRecord(detail.home);
+  const away = toRecord(detail.away);
 
-  const defs: Array<{
-    label: string;
-    keys: string[];
-    formatter?: (value: unknown) => string;
-  }> = [
-    { label: "xG", keys: ["xg"], formatter: toText },
-    { label: "枠内xG", keys: ["inGoalXg"], formatter: toText },
-    { label: "支配率", keys: ["possession"], formatter: formatPercent },
-    { label: "総シュート", keys: ["shots"], formatter: toText },
-    { label: "枠内シュート", keys: ["shotsOn"], formatter: toText },
-    { label: "枠外シュート", keys: ["shotsOff"], formatter: toText },
-    { label: "ブロックシュート", keys: ["blocks"], formatter: toText },
-    { label: "ビッグチャンス", keys: ["bigChances"], formatter: toText },
-    { label: "CK", keys: ["corners"], formatter: toText },
-    { label: "PA内シュート", keys: ["boxShotsIn"], formatter: toText },
-    { label: "PA外シュート", keys: ["boxShotsOut"], formatter: toText },
-    { label: "ポスト直撃", keys: ["goalPost"], formatter: toText },
-    { label: "ヘディングゴール", keys: ["headGoals"], formatter: toText },
-    { label: "GKセーブ", keys: ["saves"], formatter: toText },
-    { label: "FK", keys: ["freeKicks"], formatter: toText },
-    { label: "オフサイド", keys: ["offsides"], formatter: toText },
-    { label: "ファウル", keys: ["fouls"], formatter: toText },
-    { label: "警告", keys: ["yc"], formatter: toText },
-    { label: "退場", keys: ["rc"], formatter: toText },
-    { label: "スローイン", keys: ["throwIns"], formatter: toText },
-    { label: "ボックスタッチ", keys: ["boxTouches"], formatter: toText },
-    { label: "パス数", keys: ["passes"], formatter: toText },
-    { label: "ロングパス数", keys: ["longPasses"], formatter: toText },
-    { label: "ファイナルサードパス数", keys: ["finalThirdPasses"], formatter: toText },
-    { label: "クロス数", keys: ["crosses"], formatter: toText },
-    { label: "タックル数", keys: ["tackles"], formatter: toText },
-    { label: "クリア数", keys: ["clearances"], formatter: toText },
-    { label: "デュエル数", keys: ["duels"], formatter: toText },
-    { label: "インターセプト数", keys: ["interceptions"], formatter: toText },
-  ];
+  const defs = [
+    { label: "xG", keys: ["xg", "inGoalXg"] },
+    { label: "支配率", keys: ["possession"] },
+    { label: "シュート", keys: ["shots"] },
+    { label: "枠内シュート", keys: ["shotsOn", "shotsOnTarget"] },
+    { label: "枠外シュート", keys: ["shotsOff"] },
+    { label: "ブロックシュート", keys: ["blocks"] },
+    { label: "PA内シュート", keys: ["boxShotsIn"] },
+    { label: "PA外シュート", keys: ["boxShotsOut"] },
+    { label: "CK", keys: ["corners"] },
+    { label: "オフサイド", keys: ["offsides", "offside"] },
+    { label: "ファウル", keys: ["fouls", "foul"] },
+    { label: "FK", keys: ["freeKicks"] },
+    { label: "スローイン", keys: ["throwIns"] },
+    { label: "ボックスタッチ", keys: ["boxTouches"] },
+    { label: "ビッグチャンス", keys: ["bigChances"] },
+    { label: "GKセーブ", keys: ["saves"] },
+    { label: "パス成功率", keys: ["passSuccess", "passesAcc", "accuratePassesRate"] },
+    { label: "パス数", keys: ["passes"] },
+    { label: "ロングパス", keys: ["longPasses"] },
+    { label: "クロス", keys: ["crosses"] },
+    { label: "タックル", keys: ["tackles"] },
+    { label: "クリア", keys: ["clearances"] },
+    { label: "デュエル", keys: ["duels"] },
+    { label: "インターセプト", keys: ["interceptions"] },
+    { label: "ポスト直撃", keys: ["goalPost"] },
+    { label: "ヘディング得点", keys: ["headGoals"] },
+    { label: "イエロー", keys: ["yc", "yellowCard", "yellowCards"] },
+    { label: "レッド", keys: ["rc", "redCard", "redCards"] },
+  ] as const;
 
-  return defs
-    .map((def) => {
-      const homeValue = readValue(home, def.keys);
-      const awayValue = readValue(away, def.keys);
+  return defs.reduce<StatRow[]>((rows, def) => {
+    const hRaw = readValue(home, [...def.keys]);
+    const aRaw = readValue(away, [...def.keys]);
 
-      if (isNil(homeValue) && isNil(awayValue)) {
-        return null;
-      }
+    if (isNil(hRaw) && isNil(aRaw)) {
+      return rows;
+    }
 
-      const formatter = def.formatter ?? toText;
-      return {
-        label: def.label,
-        home: formatter(homeValue),
-        away: formatter(awayValue),
-      };
-    })
-    .filter((row): row is StatRow => row !== null);
+    const isPercent = def.label === "支配率" || def.label === "パス成功率";
+
+    rows.push({
+      label: def.label,
+      home: isPercent ? formatPercent(hRaw) : toText(hRaw),
+      away: isPercent ? formatPercent(aRaw) : toText(aRaw),
+      homeValue: toNumeric(hRaw),
+      awayValue: toNumeric(aRaw),
+    });
+
+    return rows;
+  }, []);
 }
 
 function LoadingBlock() {
@@ -190,18 +290,18 @@ function LoadingBlock() {
         <div className="h-8 w-48 rounded bg-slate-200" />
         <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
           <div className="mb-4 h-6 w-72 rounded bg-slate-200" />
-          <div className="grid grid-cols-3 items-center gap-4">
-            <div className="h-24 rounded bg-slate-100" />
-            <div className="h-16 rounded bg-slate-100" />
-            <div className="h-24 rounded bg-slate-100" />
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="h-28 rounded bg-slate-100" />
+            <div className="h-20 rounded bg-slate-100" />
+            <div className="h-28 rounded bg-slate-100" />
           </div>
         </div>
         <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
           <div className="h-6 w-40 rounded bg-slate-200" />
           <div className="mt-4 space-y-3">
-            <div className="h-12 rounded bg-slate-100" />
-            <div className="h-12 rounded bg-slate-100" />
-            <div className="h-12 rounded bg-slate-100" />
+            <div className="h-16 rounded bg-slate-100" />
+            <div className="h-16 rounded bg-slate-100" />
+            <div className="h-16 rounded bg-slate-100" />
           </div>
         </div>
       </div>
@@ -286,6 +386,11 @@ export default function GameDetailPage() {
   const homeScore = toScoreText(detail.home?.score);
   const awayScore = toScoreText(detail.away?.score);
 
+  const homeCardYellow = (detail.home as Record<string, unknown> | undefined) ? readValue(detail.home as Record<string, unknown>, ["yc", "yellowCard", "yellowCards"]) : null;
+  const homeCardRed = (detail.home as Record<string, unknown> | undefined) ? readValue(detail.home as Record<string, unknown>, ["rc", "redCard", "redCards"]) : null;
+  const awayCardYellow = (detail.away as Record<string, unknown> | undefined) ? readValue(detail.away as Record<string, unknown>, ["yc", "yellowCard", "yellowCards"]) : null;
+  const awayCardRed = (detail.away as Record<string, unknown> | undefined) ? readValue(detail.away as Record<string, unknown>, ["rc", "redCard", "redCards"]) : null;
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -323,7 +428,13 @@ export default function GameDetailPage() {
         <div className="grid grid-cols-1 items-center gap-6 md:grid-cols-[1fr_auto_1fr]">
           <div className="rounded-2xl bg-slate-50 p-6 text-center">
             <div className="mb-2 text-sm text-slate-500">HOME</div>
+
+            <div className="mb-4">
+              <TeamCardSummary yellow={homeCardYellow} red={homeCardRed} align="center" />
+            </div>
+
             <div className="text-xl font-bold text-slate-900 md:text-2xl">{homeName}</div>
+
             {detail.home?.manager && <div className="mt-2 text-sm text-slate-500">監督: {toText(detail.home.manager)}</div>}
           </div>
 
@@ -337,7 +448,13 @@ export default function GameDetailPage() {
 
           <div className="rounded-2xl bg-slate-50 p-6 text-center">
             <div className="mb-2 text-sm text-slate-500">AWAY</div>
+
+            <div className="mb-4">
+              <TeamCardSummary yellow={awayCardYellow} red={awayCardRed} align="center" />
+            </div>
+
             <div className="text-xl font-bold text-slate-900 md:text-2xl">{awayName}</div>
+
             {detail.away?.manager && <div className="mt-2 text-sm text-slate-500">監督: {toText(detail.away.manager)}</div>}
           </div>
         </div>
@@ -377,18 +494,15 @@ export default function GameDetailPage() {
       </div>
 
       <div className="mt-6 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-        <div className="mb-4 text-lg font-bold text-slate-900">試合スタッツ</div>
+        <div className="mb-1 text-lg font-bold text-slate-900">試合スタッツ</div>
+        <div className="mb-4 text-sm text-slate-500">数値比較をバーグラフで表示しています</div>
 
         {statRows.length === 0 ? (
           <div className="rounded-2xl bg-slate-50 p-6 text-sm text-slate-500">表示できるスタッツがありません。</div>
         ) : (
           <div className="space-y-3">
             {statRows.map((row) => (
-              <div key={row.label} className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3">
-                <div className="text-left text-base font-semibold text-slate-900">{row.home}</div>
-                <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">{row.label}</div>
-                <div className="text-right text-base font-semibold text-slate-900">{row.away}</div>
-              </div>
+              <StatBarRow key={row.label} row={row} />
             ))}
           </div>
         )}
