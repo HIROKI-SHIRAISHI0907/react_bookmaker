@@ -1,205 +1,379 @@
-// frontend/src/pages/teams/GameDetails.tsx
-import { useParams, Link } from "react-router-dom";
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import AppHeader from "../../../components/layout/AppHeader";
-import { Skeleton } from "../../../components/ui/skeleton";
-import { ArrowLeft } from "lucide-react";
 import { fetchGameDetail, type GameDetail } from "../../../api/gameDetails";
 
-export default function GameDetail() {
-  const params = useParams<{ country?: string; league?: string; team?: string; seq?: string }>();
-  const country = decode(params.country ?? "");
-  const league = decode(params.league ?? "");
-  const team = params.team ?? "";
-  const seq = params.seq ?? "";
+type StatRow = {
+  label: string;
+  home: string;
+  away: string;
+};
 
-  const q = useQuery<GameDetail>({
-    queryKey: ["game-detail", country, league, team, seq],
-    queryFn: () => fetchGameDetail(country, league, team, seq),
-    enabled: !!country && !!league && !!team && !!seq,
+const GAME_DETAIL_SEQ_KEY = "game-detail-seq";
+
+function isNil(value: unknown): value is null | undefined {
+  return value === null || value === undefined;
+}
+
+function toText(value: unknown, fallback = "-"): string {
+  if (isNil(value)) return fallback;
+  const text = String(value).trim();
+  return text.length > 0 ? text : fallback;
+}
+
+function toScoreText(value: unknown): string {
+  if (isNil(value)) return "-";
+  const text = String(value).trim();
+  return text === "" ? "-" : text;
+}
+
+function formatDateTime(value: unknown): string {
+  if (isNil(value)) return "-";
+  const raw = String(value).trim();
+  if (!raw) return "-";
+
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) {
+    return raw;
+  }
+
+  return date.toLocaleString("ja-JP", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function formatNumber(value: unknown): string {
+  if (isNil(value)) return "-";
+
+  const num = typeof value === "number" ? value : Number(String(value).replace(/,/g, "").trim());
+
+  if (Number.isNaN(num)) {
+    return toText(value);
+  }
+
+  return num.toLocaleString("ja-JP");
+}
+
+function formatPercent(value: unknown): string {
+  if (isNil(value)) return "-";
+  const raw = String(value).trim();
+  if (!raw) return "-";
+  return raw.endsWith("%") ? raw : `${raw}%`;
+}
+
+function formatMatchTime(value: unknown): string {
+  if (isNil(value)) return "-";
+  const text = String(value).trim();
+  if (!text) return "-";
+  return text;
+}
+
+function getWinnerLabel(winner: unknown): string {
+  const value = String(winner ?? "").toUpperCase();
+  switch (value) {
+    case "HOME":
+      return "ホーム勝利";
+    case "AWAY":
+      return "アウェイ勝利";
+    case "DRAW":
+      return "引き分け";
+    case "LIVE":
+      return "LIVE";
+    default:
+      return "-";
+  }
+}
+
+function getWinnerTone(winner: unknown): string {
+  const value = String(winner ?? "").toUpperCase();
+  switch (value) {
+    case "HOME":
+      return "bg-blue-100 text-blue-700 border-blue-200";
+    case "AWAY":
+      return "bg-emerald-100 text-emerald-700 border-emerald-200";
+    case "DRAW":
+      return "bg-slate-100 text-slate-700 border-slate-200";
+    case "LIVE":
+      return "bg-rose-100 text-rose-700 border-rose-200";
+    default:
+      return "bg-slate-100 text-slate-600 border-slate-200";
+  }
+}
+
+function isLiveTimes(times: unknown): boolean {
+  const text = String(times ?? "").trim();
+  if (!text) return false;
+
+  if (/終了|FT|AET|PEN|ABAN|CANC|POSTPONED/i.test(text)) {
+    return false;
+  }
+  return true;
+}
+
+function readValue(record: Record<string, unknown>, keys: string[]): unknown {
+  for (const key of keys) {
+    const value = record[key];
+    if (!isNil(value) && String(value).trim() !== "") {
+      return value;
+    }
+  }
+  return null;
+}
+
+function buildStatRows(detail: GameDetail): StatRow[] {
+  const home = (detail.home ?? {}) as Record<string, unknown>;
+  const away = (detail.away ?? {}) as Record<string, unknown>;
+
+  const defs: Array<{
+    label: string;
+    keys: string[];
+    formatter?: (value: unknown) => string;
+  }> = [
+    { label: "xG", keys: ["expGoal", "xg", "expectedGoals", "homeExp"], formatter: toText },
+    { label: "シュート", keys: ["shoot", "shots", "totalShots"], formatter: toText },
+    { label: "枠内シュート", keys: ["shootIn", "shotsOnTarget", "homeShootIn"], formatter: toText },
+    { label: "支配率", keys: ["ballPossession", "possession", "possessionRate"], formatter: formatPercent },
+    { label: "CK", keys: ["cornerKick", "corners"], formatter: toText },
+    { label: "ファウル", keys: ["foul", "fouls"], formatter: toText },
+    { label: "オフサイド", keys: ["offside", "offsides"], formatter: toText },
+    { label: "警告", keys: ["yellowCard", "yellowCards"], formatter: toText },
+    { label: "退場", keys: ["redCard", "redCards"], formatter: toText },
+    { label: "パス成功率", keys: ["passSuccess", "passSuccessRate"], formatter: formatPercent },
+  ];
+
+  return defs
+    .map((def) => {
+      const homeValue = readValue(home, def.keys);
+      const awayValue = readValue(away, def.keys);
+
+      if (isNil(homeValue) && isNil(awayValue)) {
+        return null;
+      }
+
+      const formatter = def.formatter ?? toText;
+      return {
+        label: def.label,
+        home: formatter(homeValue),
+        away: formatter(awayValue),
+      };
+    })
+    .filter((row): row is StatRow => row !== null);
+}
+
+function LoadingBlock() {
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-6">
+      <div className="animate-pulse space-y-4">
+        <div className="h-8 w-48 rounded bg-slate-200" />
+        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+          <div className="mb-4 h-6 w-72 rounded bg-slate-200" />
+          <div className="grid grid-cols-3 items-center gap-4">
+            <div className="h-24 rounded bg-slate-100" />
+            <div className="h-16 rounded bg-slate-100" />
+            <div className="h-24 rounded bg-slate-100" />
+          </div>
+        </div>
+        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+          <div className="h-6 w-40 rounded bg-slate-200" />
+          <div className="mt-4 space-y-3">
+            <div className="h-12 rounded bg-slate-100" />
+            <div className="h-12 rounded bg-slate-100" />
+            <div className="h-12 rounded bg-slate-100" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function GameDetailPage() {
+  const navigate = useNavigate();
+
+  const seq = useMemo(() => {
+    const raw = sessionStorage.getItem(GAME_DETAIL_SEQ_KEY);
+    if (!raw) return null;
+
+    const parsed = Number(raw);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  }, []);
+
+  const {
+    data: detail,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isFetching,
+  } = useQuery<GameDetail, Error>({
+    queryKey: ["game-detail", seq],
+    queryFn: () => fetchGameDetail(seq!),
+    enabled: !!seq,
     staleTime: 30_000,
+    refetchOnWindowFocus: false,
   });
 
-  const toBack = `/${encodeURIComponent(country)}/${encodeURIComponent(league)}/${encodeURIComponent(team)}`;
+  const statRows = useMemo(() => {
+    if (!detail) return [];
+    return buildStatRows(detail);
+  }, [detail]);
 
-  const badge = (w: GameDetail["winner"]) =>
-    w === "DRAW" ? (
-      <span className="px-2 py-0.5 text-xs rounded bg-green-50 text-green-700 border">DRAW</span>
-    ) : w === "HOME" ? (
-      <span className="px-2 py-0.5 text-xs rounded bg-red-50 text-red-700 border font-bold">HOME WIN</span>
-    ) : w === "AWAY" ? (
-      <span className="px-2 py-0.5 text-xs rounded bg-blue-50 text-blue-700 border font-bold">AWAY WIN</span>
-    ) : (
-      // LIVE は別UIで扱うのでここでは使わない
-      <span className="hidden" />
-    );
-
-  // times 正規化: "MM:SS" / "MM'" / "MM+X'" → "NN`" に統一
-  const toMinuteTick = (t: string | null | undefined): string | null => {
-    if (!t) return null;
-    const s = t.trim();
-    if (/終了/.test(s)) return null;
-    // 例: 68:09
-    const m1 = s.match(/^(\d{1,3}):\d{2}$/);
-    if (m1) return `${parseInt(m1[1], 10)}\``;
-    // 例: 45+2'
-    const m2 = s.match(/^(\d{1,3})\s*\+\s*(\d{1,2})'?$/);
-    if (m2) return `${parseInt(m2[1], 10) + parseInt(m2[2], 10)}\``;
-    // 例: 68'
-    const m3 = s.match(/^(\d{1,3})'?$/);
-    if (m3) return `${parseInt(m3[1], 10)}\``;
-    // その他は ' → ` に置換して返す
-    return s.replace(/'/g, "`");
-  };
-
-  // 表示用: "ハーフタイム"/"第一ハーフ" はそのまま。
-  // それ以外は "MM:SS" / "MM'" / "MM+X'" → "NN`" に統一。
-  // "終了" を含む場合は null（＝時間非表示）。
-  const toDisplayTime = (t: string | null | undefined): string | null => {
-    if (!t) return null;
-    const s = t.trim();
-    if (/終了/.test(s)) return null;
-
-    // ← 追加ポイント：これらはそのまま表示
-    if (/ハーフタイム|第一ハーフ/.test(s)) return s;
-
-    // 例: 68:09
-    const m1 = s.match(/^(\d{1,3}):\d{2}$/);
-    if (m1) return `${parseInt(m1[1], 10)}\``;
-
-    // 例: 45+2'
-    const m2 = s.match(/^(\d{1,3})\s*\+\s*(\d{1,2})'?$/);
-    if (m2) return `${parseInt(m2[1], 10) + parseInt(m2[2], 10)}\``;
-
-    // 例: 68'
-    const m3 = s.match(/^(\d{1,3})'?$/);
-    if (m3) return `${parseInt(m3[1], 10)}\``;
-
-    // その他は ' → ` 置換だけ
-    return s.replace(/'/g, "`");
-  };
-
-  return (
-    <div className="min-h-screen bg-background">
-      <AppHeader title="試合 詳細" subtitle={`${country} / ${league}`} />
-
-      <main className="container mx-auto px-4 py-6 space-y-6">
-        <div className="mb-2 flex items-center gap-3">
-          <Link to={toBack} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:underline">
-            <ArrowLeft className="w-4 h-4" />
-            戻る
-          </Link>
+  if (!seq) {
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-8">
+        <div className="mb-4">
+          <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center text-sm font-medium text-sky-700 hover:text-sky-900">
+            ← 前の画面へ戻る
+          </button>
         </div>
 
-        {q.isLoading ? (
-          <div className="space-y-3">
-            <Skeleton className="h-8 w-60" />
-            <Skeleton className="h-40 w-full" />
-          </div>
-        ) : q.isError ? (
-          <div className="text-destructive text-sm">詳細の取得に失敗しました。</div>
-        ) : !q.data ? null : (
-          <>
-            {/* スコアヘッダ */}
-            <section className="rounded-2xl border bg-card p-6 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-muted-foreground">
-                  {q.data.competition}
-                  {q.data.round_no != null && <span className="ml-2 font-bold">ラウンド {q.data.round_no}</span>}
-                </div>
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-800">試合情報が見つかりません。ライブ一覧から対象試合を選択して開いてください。</div>
+      </div>
+    );
+  }
 
-                <div className="text-xs text-muted-foreground flex items-center gap-2">
-                  {new Date(q.data.recordedAt).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}
-                  {/* LIVE 中は勝敗バッジの代わりに LIVE + 経過分表示（XX`） */}
-                  {q.data.winner === "LIVE" && (
-                    <span className="ml-2 inline-flex items-center gap-2">
-                      <span className="rounded-full border px-2 py-0.5 text-[11px] leading-none">LIVE</span>
-                      {toDisplayTime(q.data.times) && <span className="text-[11px] text-muted-foreground">{toDisplayTime(q.data.times)}</span>}
-                    </span>
-                  )}
-                </div>
-              </div>
+  if (isLoading) {
+    return <LoadingBlock />;
+  }
 
-              <div className="mt-4 flex items-center justify-between">
-                <div className="flex-1 text-left">
-                  <div className="text-lg font-semibold">{q.data.home.name}</div>
-                </div>
-                <div className="px-4 text-3xl font-bold">
-                  {q.data.home.score} <span className="text-muted-foreground text-xl mx-2">-</span> {q.data.away.score}
-                </div>
-                <div className="flex-1 text-right">
-                  <div className="text-lg font-semibold">{q.data.away.name}</div>
-                </div>
-              </div>
+  if (isError || !detail) {
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-8">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center text-sm font-medium text-sky-700 hover:text-sky-900">
+            ← 前の画面へ戻る
+          </button>
 
-              {/* 試合終了時のみ結果バッジを表示 */}
-              {q.data.winner !== "LIVE" && <div className="mt-3 flex items-center justify-center gap-3">{badge(q.data.winner)}</div>}
-            </section>
+          <button type="button" onClick={() => refetch()} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+            再読み込み
+          </button>
+        </div>
 
-            {/* チーム統計 */}
-            <section className="grid md:grid-cols-2 gap-4">
-              <TeamStatCard title="ホーム" side="home" data={q.data} />
-              <TeamStatCard title="アウェイ" side="away" data={q.data} />
-            </section>
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-rose-800">
+          試合詳細の取得に失敗しました。
+          <div className="mt-2 text-sm opacity-80">{error?.message ?? "unknown error"}</div>
+        </div>
+      </div>
+    );
+  }
 
-            {(q.data.venue.stadium || q.data.venue.audience || q.data.venue.capacity) && (
-              <section className="rounded-2xl border bg-card p-4 shadow-sm">
-                <h3 className="text-base font-semibold mb-2">会場情報</h3>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  {q.data.venue.stadium && <li>スタジアム: {q.data.venue.stadium}</li>}
-                  {q.data.venue.audience && <li>観客数: {q.data.venue.audience}</li>}
-                  {q.data.venue.capacity && <li>収容人数: {q.data.venue.capacity}</li>}
-                </ul>
-              </section>
-            )}
-          </>
-        )}
-      </main>
-    </div>
-  );
-}
+  const isLive = String(detail.winner ?? "").toUpperCase() === "LIVE" || isLiveTimes(detail.times);
 
-function TeamStatCard({ title, side, data }: { title: string; side: "home" | "away"; data: GameDetail }) {
-  const d = data[side];
-  const Line = ({ k, v }: { k: string; v: string }) => (
-    <li className="flex items-center justify-between py-2">
-      <span className="text-muted-foreground">{k}</span>
-      <span className="font-medium">{v}</span>
-    </li>
-  );
-  const fmtNum = (n: number | null | undefined) => (n == null ? "-" : String(n));
-  const fmtPct = (n: number | null | undefined) => (n == null ? "-" : `${n}%`);
+  const homeName = toText(detail.home?.name);
+  const awayName = toText(detail.away?.name);
+  const homeScore = toScoreText(detail.home?.score);
+  const awayScore = toScoreText(detail.away?.score);
 
   return (
-    <div className="rounded-2xl border bg-card p-4 shadow-sm">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-base font-semibold">{title}</h3>
-        <div className="text-xs text-muted-foreground">{d.manager ? `監督: ${d.manager}` : ""}</div>
+    <div className="mx-auto max-w-6xl px-4 py-6">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center text-sm font-medium text-sky-700 hover:text-sky-900">
+          ← 前の画面へ戻る
+        </button>
+
+        <button
+          type="button"
+          onClick={() => refetch()}
+          className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+        >
+          <span className={isFetching ? "animate-spin" : ""}>↻</span>
+          再読み込み
+        </button>
       </div>
-      <div className="text-sm text-muted-foreground mb-3">{d.formation ? `フォーメーション: ${d.formation}` : "-"}</div>
-      <ul className="text-sm divide-y">
-        <Line k="xG" v={fmtNum(d.xg)} />
-        <Line k="ポゼッション" v={fmtPct(d.possession)} />
-        <Line k="シュート(総)" v={fmtNum(d.shots)} />
-        <Line k="枠内シュート" v={fmtNum(d.shotsOn)} />
-        <Line k="枠外シュート" v={fmtNum(d.shotsOff)} />
-        <Line k="ブロック" v={fmtNum(d.blocks)} />
-        <Line k="CK" v={fmtNum(d.corners)} />
-        <Line k="ビッグチャンス" v={fmtNum(d.bigChances)} />
-        <Line k="セーブ" v={fmtNum(d.saves)} />
-        <Line k="警告" v={fmtNum(d.yc)} />
-        <Line k="退場" v={fmtNum(d.rc)} />
-        <Line k="パス成功" v={d.passes ?? "-"} />
-        {d.longPasses && <Line k="ロングパス" v={d.longPasses} />}
-      </ul>
+
+      <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+        <div className="mb-5 flex flex-wrap items-center gap-2">
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">{toText(detail.competition)}</span>
+
+          {detail.roundNo !== null && detail.roundNo !== undefined && <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">Round {detail.roundNo}</span>}
+
+          <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${getWinnerTone(detail.winner)}`}>{getWinnerLabel(detail.winner)}</span>
+
+          {isLive && <span className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">ライブ</span>}
+        </div>
+
+        <div className="mb-6 text-sm text-slate-500">
+          試合時間: <span className="font-medium text-slate-700">{formatMatchTime(detail.times)}</span>
+          <span className="mx-2 text-slate-300">|</span>
+          更新時刻: <span className="font-medium text-slate-700">{formatDateTime(detail.recordedAt)}</span>
+        </div>
+
+        <div className="grid grid-cols-1 items-center gap-6 md:grid-cols-[1fr_auto_1fr]">
+          <div className="rounded-2xl bg-slate-50 p-6 text-center">
+            <div className="mb-2 text-sm text-slate-500">HOME</div>
+            <div className="text-xl font-bold text-slate-900 md:text-2xl">{homeName}</div>
+            {detail.home?.manager && <div className="mt-2 text-sm text-slate-500">監督: {toText(detail.home.manager)}</div>}
+          </div>
+
+          <div className="text-center">
+            <div className="text-4xl font-extrabold tracking-tight text-slate-900 md:text-5xl">
+              {homeScore}
+              <span className="mx-3 text-slate-300">-</span>
+              {awayScore}
+            </div>
+          </div>
+
+          <div className="rounded-2xl bg-slate-50 p-6 text-center">
+            <div className="mb-2 text-sm text-slate-500">AWAY</div>
+            <div className="text-xl font-bold text-slate-900 md:text-2xl">{awayName}</div>
+            {detail.away?.manager && <div className="mt-2 text-sm text-slate-500">監督: {toText(detail.away.manager)}</div>}
+          </div>
+        </div>
+
+        {(detail.link || detail.venue?.stadium || detail.venue?.audience || detail.venue?.capacity) && (
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <div className="rounded-2xl border border-slate-200 p-5">
+              <div className="mb-3 text-sm font-semibold text-slate-700">会場情報</div>
+              <dl className="space-y-2 text-sm">
+                <div className="flex justify-between gap-4">
+                  <dt className="text-slate-500">スタジアム</dt>
+                  <dd className="text-right font-medium text-slate-800">{toText(detail.venue?.stadium)}</dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-slate-500">観客数</dt>
+                  <dd className="text-right font-medium text-slate-800">{formatNumber(detail.venue?.audience)}</dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-slate-500">収容人数</dt>
+                  <dd className="text-right font-medium text-slate-800">{formatNumber(detail.venue?.capacity)}</dd>
+                </div>
+              </dl>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 p-5">
+              <div className="mb-3 text-sm font-semibold text-slate-700">関連リンク</div>
+              {detail.link ? (
+                <a href={detail.link} target="_blank" rel="noreferrer" className="inline-flex items-center text-sm font-medium text-sky-700 hover:text-sky-900">
+                  外部リンクを開く ↗
+                </a>
+              ) : (
+                <div className="text-sm text-slate-500">リンクはありません</div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-6 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+        <div className="mb-4 text-lg font-bold text-slate-900">試合スタッツ</div>
+
+        {statRows.length === 0 ? (
+          <div className="rounded-2xl bg-slate-50 p-6 text-sm text-slate-500">表示できるスタッツがありません。</div>
+        ) : (
+          <div className="space-y-3">
+            {statRows.map((row) => (
+              <div key={row.label} className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3">
+                <div className="text-left text-base font-semibold text-slate-900">{row.home}</div>
+                <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">{row.label}</div>
+                <div className="text-right text-base font-semibold text-slate-900">{row.away}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
-}
-
-function decode(s: string) {
-  try {
-    return decodeURIComponent(s);
-  } catch {
-    return s;
-  }
 }

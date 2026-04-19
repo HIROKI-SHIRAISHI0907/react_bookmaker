@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 type MatchStatus = "SCHEDULED" | "LIVE" | "FINISHED";
 type Tone = "slate" | "indigo" | "emerald" | "amber" | "rose";
@@ -273,7 +273,6 @@ type LiveBannerModel = {
 // --- Future API (/v1/api/future/{teamEnglish}/{teamHash}) ---
 type FuturesResponseDTO = {
   id?: string | null;
-  seq: number;
   gameTeamCategory: string;
   futureTime: string | null;
   homeTeam: string;
@@ -300,6 +299,7 @@ type OverviewSummaryDTO = {
 
 type MatchRow = {
   id: string;
+  seq?: number;
   dateISO: string;
   opponent: string;
   isHome: boolean;
@@ -1302,7 +1302,7 @@ export default function TeamDetailMockPage() {
     const isHome = normalizeName(nextFuture.homeTeam) === teamName;
 
     return {
-      id: `next_${nextFuture.seq}`,
+      id: `next_${nextFuture.id}`,
       dateISO: nextFuture.futureTime,
       opponent: isHome ? nextFuture.awayTeam : nextFuture.homeTeam,
       isHome,

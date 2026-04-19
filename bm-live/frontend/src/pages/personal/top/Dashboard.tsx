@@ -1,5 +1,6 @@
 // frontend/src/pages/personal/top/Dashboard.tsx
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "../../../lib/queryClient";
 import MatchHeader from "../../../components/MatchHeader";
@@ -19,6 +20,7 @@ type LiveMatchDTO = {
   seq: number;
   dataCategory: string;
   times: string;
+  subLeague: string | null;
   homeTeamName: string;
   awayTeamName: string;
   homeScore: number | null;
@@ -31,6 +33,11 @@ type LiveMatchDTO = {
   link: string | null;
   homeSlug: string | null;
   awaySlug: string | null;
+};
+
+type SubLeagueGroup = {
+  subLeagueLabel: string;
+  matches: LiveMatchDTO[];
 };
 
 type MultiLiveMatchesResponse = {
@@ -98,6 +105,8 @@ function formatTimeOnly(iso?: string | null) {
   });
 }
 
+const GAME_DETAIL_SEQ_KEY = "game-detail-seq";
+
 // =========================
 // Mock
 // =========================
@@ -129,8 +138,15 @@ const MOCK_MATCH: MatchDetails = {
 // Page
 // =========================
 export default function Dashboard() {
+  const navigate = useNavigate();
   const selectedMatchId = "match1";
   const [selectedLeagueTab, setSelectedLeagueTab] = useState<string>("");
+
+  const handleOpenGameDetail = (seq: number) => {
+    if (!seq || seq <= 0) return;
+    sessionStorage.setItem(GAME_DETAIL_SEQ_KEY, String(seq));
+    navigate("/gameDetail");
+  };
 
   // 全ライブ取得
   const {
@@ -236,6 +252,33 @@ export default function Dashboard() {
     return groupedLiveMatches.find((g) => g.leagueLabel === selectedLeagueTab) ?? null;
   }, [groupedLiveMatches, selectedLeagueTab]);
 
+  const activeSubLeagueGroups = useMemo<SubLeagueGroup[]>(() => {
+    const matches = activeLiveGroup?.matches ?? [];
+    if (!matches.length) return [];
+
+    const map = new Map<string, LiveMatchDTO[]>();
+
+    for (const match of matches) {
+      const subLeagueLabel = (match.subLeague ?? "").trim() || "全体";
+
+      if (!map.has(subLeagueLabel)) {
+        map.set(subLeagueLabel, []);
+      }
+      map.get(subLeagueLabel)!.push(match);
+    }
+
+    return Array.from(map.entries())
+      .map(([subLeagueLabel, list]) => ({
+        subLeagueLabel,
+        matches: [...list].sort((a, b) => {
+          const ta = a.times ?? "";
+          const tb = b.times ?? "";
+          return ta.localeCompare(tb, "ja");
+        }),
+      }))
+      .sort((a, b) => a.subLeagueLabel.localeCompare(b.subLeagueLabel, "ja"));
+  }, [activeLiveGroup]);
+
   if (error) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -328,25 +371,41 @@ export default function Dashboard() {
                     <div className="text-xs text-muted-foreground">{activeLiveGroup.matches.length}試合</div>
                   </div>
 
-                  <div className="space-y-2">
-                    {activeLiveGroup.matches.map((match) => (
-                      <div key={match.seq} className="flex items-center justify-between rounded-lg border bg-card px-4 py-3">
-                        <div className="min-w-0">
-                          <div className="mb-1 flex items-center gap-2">
-                            <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-semibold text-red-700">ライブ</span>
-                            <span className="text-xs text-muted-foreground">{match.times}</span>
-                          </div>
-
-                          <div className="truncate text-sm font-medium text-foreground">
-                            {match.homeTeamName} <span className="text-muted-foreground">vs</span> {match.awayTeamName}
-                          </div>
+                  <div className="space-y-4">
+                    {activeSubLeagueGroups.map((subGroup) => (
+                      <div key={subGroup.subLeagueLabel} className="rounded-lg border bg-card p-3">
+                        <div className="mb-3 flex items-center justify-between">
+                          <div className="text-sm font-semibold text-foreground">{subGroup.subLeagueLabel}</div>
+                          <div className="text-xs text-muted-foreground">{subGroup.matches.length}試合</div>
                         </div>
 
-                        <div className="ml-4 shrink-0 text-right">
-                          <div className="text-lg font-bold text-foreground">
-                            {match.homeScore ?? 0} - {match.awayScore ?? 0}
-                          </div>
-                          <div className="text-xs text-muted-foreground">{formatTimeOnly(match.recordTime)}</div>
+                        <div className="space-y-2">
+                          {subGroup.matches.map((match) => (
+                            <button
+                              key={match.seq}
+                              type="button"
+                              onClick={() => handleOpenGameDetail(match.seq)}
+                              className="flex w-full items-center justify-between rounded-lg border bg-background px-4 py-3 text-left transition hover:bg-muted/40"
+                            >
+                              <div className="min-w-0">
+                                <div className="mb-1 flex items-center gap-2">
+                                  <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-semibold text-red-700">ライブ</span>
+                                  <span className="text-xs text-muted-foreground">{match.times}</span>
+                                </div>
+
+                                <div className="truncate text-sm font-medium text-foreground">
+                                  {match.homeTeamName} <span className="text-muted-foreground">vs</span> {match.awayTeamName}
+                                </div>
+                              </div>
+
+                              <div className="ml-4 shrink-0 text-right">
+                                <div className="text-lg font-bold text-foreground">
+                                  {match.homeScore ?? 0} - {match.awayScore ?? 0}
+                                </div>
+                                <div className="text-xs text-muted-foreground">{formatTimeOnly(match.recordTime)}</div>
+                              </div>
+                            </button>
+                          ))}
                         </div>
                       </div>
                     ))}

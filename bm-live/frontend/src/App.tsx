@@ -6,7 +6,7 @@ import Dashboard from "./pages/personal/top/Dashboard";
 import LeagueMenuPage from "./pages/humberger/LeagueMenuPage";
 import FavoritePage from "./pages/personal/favorite/FavoritePage";
 import TeamDetailPage from "./pages/personal/teams/TeamDetailPage";
-
+import GameDetailPage from "./pages/personal/teams/GameDetailPage";
 import AdminLayout from "./pages/admin/AdminLayout";
 import PersonalLayout from "./pages/personal/PersonalLayout";
 import ManualScrapePage from "./pages/admin/scrape/ManualScrapePage";
@@ -47,6 +47,7 @@ export default function App() {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/soccer/:countrySlug/:leagueSlug" element={<LeagueMenuPage />} />
           <Route path="/team/:teamEnglish/:teamHash" element={<TeamDetailPage />} />
+          <Route path="/gameDetail" element={<GameDetailPage />} />
 
           <Route path="admin" element={<AdminLayout />}>
             <Route path="force/update" element={<CountryLeagueForceAdminPage />} />
