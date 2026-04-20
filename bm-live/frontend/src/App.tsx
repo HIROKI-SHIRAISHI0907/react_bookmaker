@@ -22,6 +22,7 @@ import IngestedDataReferencePage from "./pages/admin/ingest/IngestedDataReferenc
 import AdminMatchKeySavePage from "./pages/admin/matchKey/AdminMatchKeySavePage";
 import AdminSubInputPage from "./pages/admin/csvSelect/AdminSubInputPage";
 import SubLeagueManualUpdatePage from "./pages/admin/subLeague/SubLeagueManualUpdatePage";
+import PointSettingsPage from "./pages/admin/pointSetting/PointSettingsPage";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -63,6 +64,7 @@ export default function App() {
             <Route path="match-key-save" element={<AdminMatchKeySavePage />} />
             <Route path="sub-input" element={<AdminSubInputPage />} />
             <Route path="sub-league" element={<SubLeagueManualUpdatePage />} />
+            <Route path="point-setting" element={<PointSettingsPage />} />
           </Route>
 
           <Route path="/top" element={<Dashboard />} />

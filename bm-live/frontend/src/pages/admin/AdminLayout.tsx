@@ -56,6 +56,9 @@ export default function AdminLayout() {
           <NavLink to="sub-league" style={linkStyle}>
             サブリーグ設定
           </NavLink>
+          <NavLink to="point-setting" style={linkStyle}>
+            勝ち点設定
+          </NavLink>
         </div>
       </aside>
 
