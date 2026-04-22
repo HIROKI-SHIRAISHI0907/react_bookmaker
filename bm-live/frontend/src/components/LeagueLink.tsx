@@ -1,5 +1,6 @@
 // src/components/LeagueLink.tsx
 import { useEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Menu, ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -17,6 +18,34 @@ function normalizeCount(v?: number | null) {
 function normalizePath(v?: string | null) {
   const s = normalizeText(v);
   return s || "#";
+}
+
+/**
+ * backend の linkEnabled / seasonEnded を優先。
+ * fallback として endSeasonDate も見る。
+ */
+function isLeagueEnded(league?: LeagueInfo | null) {
+  if (typeof league?.seasonEnded === "boolean") {
+    return league.seasonEnded;
+  }
+  if (typeof league?.linkEnabled === "boolean") {
+    return !league.linkEnabled;
+  }
+  return !normalizeText(league?.endSeasonDate);
+}
+
+function isLeagueLinkEnabled(league?: LeagueInfo | null) {
+  if (typeof league?.linkEnabled === "boolean") {
+    return league.linkEnabled;
+  }
+  if (typeof league?.seasonEnded === "boolean") {
+    return !league.seasonEnded;
+  }
+  return !!normalizeText(league?.endSeasonDate);
+}
+
+function getSeasonEndedLabel(league?: LeagueInfo | null) {
+  return normalizeText(league?.seasonEndedLabel) || "シーズン終了";
 }
 
 function normalizeSubLeagueLabel(sub?: SubLeagueInfo | null) {
@@ -41,7 +70,11 @@ function hasSubLeagues(league: LeagueInfo): boolean {
   return Array.isArray(league.subLeagues) && league.subLeagues.length > 0;
 }
 
-function LeagueLeafLink(props: { to: string; label: string; meta?: React.ReactNode; onClick: () => void; animationDelayMs?: number }) {
+function SeasonEndedBadge({ label }: { label?: string | null }) {
+  return <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">{normalizeText(label) || "シーズン終了"}</span>;
+}
+
+function LeagueLeafLink(props: { to: string; label: string; meta?: ReactNode; onClick: () => void; animationDelayMs?: number }) {
   const { to, label, meta, onClick, animationDelayMs = 0 } = props;
 
   return (
@@ -51,6 +84,20 @@ function LeagueLeafLink(props: { to: string; label: string; meta?: React.ReactNo
         {meta}
       </span>
     </Link>
+  );
+}
+
+function DisabledLeafItem(props: { label: string; meta?: ReactNode; badgeLabel?: string | null; animationDelayMs?: number }) {
+  const { label, meta, badgeLabel, animationDelayMs = 0 } = props;
+
+  return (
+    <span className="block rounded px-2 py-1 text-sm text-muted-foreground opacity-60 cursor-not-allowed animate-in-left" style={{ animationDelay: `${animationDelayMs}ms` }} aria-disabled="true">
+      <span className="inline-flex items-center gap-2">
+        <span>{label}</span>
+        {meta}
+        <SeasonEndedBadge label={badgeLabel} />
+      </span>
+    </span>
   );
 }
 
@@ -158,22 +205,39 @@ export default function LeagueMenu() {
                           const leagueKey = `${g.country}__${l.name}__${leagueTo}__${li}`;
                           const teamCount = normalizeCount(l.teamCount);
                           const variantCount = normalizeCount(l.variantCount);
+                          const ended = isLeagueEnded(l);
+                          const linkEnabled = isLeagueLinkEnabled(l);
+                          const endedLabel = getSeasonEndedLabel(l);
 
                           if (!hasSubLeagues(l)) {
                             return (
                               <li key={leagueKey}>
-                                <LeagueLeafLink
-                                  to={leagueTo}
-                                  onClick={() => setOpen(false)}
-                                  label={l.name}
-                                  animationDelayMs={gi * 45 + li * 25}
-                                  meta={
-                                    <>
-                                      <span className="ml-1 opacity-60">({teamCount})</span>
-                                      {variantCount > 0 ? <span className="text-xs opacity-60">({variantCount})</span> : null}
-                                    </>
-                                  }
-                                />
+                                {!linkEnabled ? (
+                                  <DisabledLeafItem
+                                    label={l.name}
+                                    badgeLabel={endedLabel}
+                                    animationDelayMs={gi * 45 + li * 25}
+                                    meta={
+                                      <>
+                                        <span className="ml-1 opacity-60">({teamCount})</span>
+                                        {variantCount > 0 ? <span className="text-xs opacity-60">({variantCount})</span> : null}
+                                      </>
+                                    }
+                                  />
+                                ) : (
+                                  <LeagueLeafLink
+                                    to={leagueTo}
+                                    onClick={() => setOpen(false)}
+                                    label={l.name}
+                                    animationDelayMs={gi * 45 + li * 25}
+                                    meta={
+                                      <>
+                                        <span className="ml-1 opacity-60">({teamCount})</span>
+                                        {variantCount > 0 ? <span className="text-xs opacity-60">({variantCount})</span> : null}
+                                      </>
+                                    }
+                                  />
+                                )}
                               </li>
                             );
                           }
@@ -181,29 +245,42 @@ export default function LeagueMenu() {
                           return (
                             <li key={leagueKey}>
                               <details className="group/league">
-                                <summary className="cursor-pointer list-none rounded px-2 py-1 text-sm hover:bg-accent animate-in-left" style={{ animationDelay: `${gi * 45 + li * 25}ms` }}>
+                                <summary
+                                  className={`cursor-pointer list-none rounded px-2 py-1 text-sm animate-in-left ${ended ? "text-muted-foreground opacity-60" : "hover:bg-accent"}`}
+                                  style={{ animationDelay: `${gi * 45 + li * 25}ms` }}
+                                >
                                   <span className="inline-flex items-center gap-2">
                                     <ChevronRight className="h-4 w-4 shrink-0 transition-transform group-open/league:rotate-90" />
                                     <span>{l.name}</span>
                                     <span className="ml-1 opacity-60">({teamCount})</span>
                                     {variantCount > 0 ? <span className="text-xs opacity-60">({variantCount})</span> : null}
+                                    {ended ? <SeasonEndedBadge label={endedLabel} /> : null}
                                   </span>
                                 </summary>
 
                                 <ul className="ml-5 mt-1 space-y-1 border-l border-border pl-2">
-                                  {l.subLeagues!.map((s, si) => {
+                                  {l.subLeagues!.map((s: SubLeagueInfo, si: number) => {
                                     const subTo = buildSubLeaguePath(l, s);
                                     const subKey = `${leagueKey}__${normalizeText(s.rawName || s.name || String(si))}`;
 
                                     return (
                                       <li key={subKey}>
-                                        <LeagueLeafLink
-                                          to={subTo}
-                                          onClick={() => setOpen(false)}
-                                          label={normalizeSubLeagueLabel(s)}
-                                          animationDelayMs={gi * 45 + li * 25 + si * 20}
-                                          meta={<span className="ml-1 opacity-60">({normalizeCount(s.teamCount)})</span>}
-                                        />
+                                        {!linkEnabled ? (
+                                          <DisabledLeafItem
+                                            label={normalizeSubLeagueLabel(s)}
+                                            badgeLabel={endedLabel}
+                                            animationDelayMs={gi * 45 + li * 25 + si * 20}
+                                            meta={<span className="ml-1 opacity-60">({normalizeCount(s.teamCount)})</span>}
+                                          />
+                                        ) : (
+                                          <LeagueLeafLink
+                                            to={subTo}
+                                            onClick={() => setOpen(false)}
+                                            label={normalizeSubLeagueLabel(s)}
+                                            animationDelayMs={gi * 45 + li * 25 + si * 20}
+                                            meta={<span className="ml-1 opacity-60">({normalizeCount(s.teamCount)})</span>}
+                                          />
+                                        )}
                                       </li>
                                     );
                                   })}

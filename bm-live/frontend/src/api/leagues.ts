@@ -1,22 +1,33 @@
 // src/api/leagues.ts
-// Dashboard.tsx のハンバーガーメニューに表示する記述とリンク
-// SpringBoot bookmakers-web bm_w011
 
 export type SubLeagueInfo = {
   rawName?: string | null;
-  name?: string | null; // "▶︎EAST" など。backend が rawName だけ返しても可
-  path?: string | null; // 必要なら
-  routingPath?: string | null; // /leagues/...?... など
+  name?: string | null;
+  path?: string | null;
+  routingPath?: string | null;
   teamCount?: number | null;
+
+  seasonEnded?: boolean | null;
+  linkEnabled?: boolean | null;
+  seasonEndedLabel?: string | null;
 };
 
 export type LeagueInfo = {
-  name: string; // 親リーグ名: J2・J3リーグ など
-  teamCount?: number | null; // 親なら合計
-  path?: string | null; // アプリ内遷移用
-  routingPath?: string | null; // 予備
-  variantCount?: number | null; // サブリーグ数
-  subLeagues?: SubLeagueInfo[] | null; // ★追加
+  name: string;
+  leagueGroup?: string | null;
+  teamCount?: number | null;
+  path?: string | null;
+  routingPath?: string | null;
+  variantCount?: number | null;
+  subLeagues?: SubLeagueInfo[] | null;
+
+  seasonYear?: string | null;
+  startSeasonDate?: string | null;
+  endSeasonDate?: string | null;
+
+  seasonEnded?: boolean | null;
+  linkEnabled?: boolean | null;
+  seasonEndedLabel?: string | null;
 };
 
 export type LeagueGrouped = {
@@ -43,29 +54,49 @@ export async function fetchLeaguesGrouped(): Promise<LeagueGrouped[]> {
 
 // チーム単位
 export type TeamItem = {
-  name: string; // 表示名
-  english: string; // 英語スラッグ
+  name: string;
+  english: string;
   hash: string;
-  link: string; // /team/<english>/<hash>
-  path: string; // /<country>/<league> (UI用)
-  apiPath: string; // /api/leagues/<country>/<league>/<english>
-  routingPath: string; // /team/xxxx/XXXXXX
+  link: string;
+  path: string;
+  apiPath: string;
+  routingPath: string;
 };
 
 export type LeagueVariantItem = {
-  name: string; // "J2・J3リーグ - WEST A"
+  name: string;
   teamCount: number;
-  path: string; // アプリ内
+  path: string;
   routingPath?: string;
 };
 
 export type TeamsInLeague = {
   country: string;
-  league: string; // 親なら "J2・J3リーグ"、子なら "J2・J3リーグ - WEST A"
+  league: string;
   subLeague?: string | null;
   variants?: LeagueVariantItem[];
   teams?: TeamItem[];
 };
+
+async function readApiErrorMessage(res: Response, fallback: string): Promise<string> {
+  const contentType = res.headers.get("content-type") || "";
+
+  if (contentType.includes("application/json")) {
+    const json = await res.json().catch(() => null);
+    const message = json?.message || json?.error || json?.reason || json?.detail;
+
+    if (typeof message === "string" && message.trim()) {
+      return message.trim();
+    }
+  }
+
+  const text = await res.text().catch(() => "");
+  if (text.trim()) {
+    return text.trim();
+  }
+
+  return fallback;
+}
 
 export async function fetchTeamsInLeague(country: string, league: string, subLeague?: string | null): Promise<TeamsInLeague> {
   const params = new URLSearchParams();
@@ -80,9 +111,8 @@ export async function fetchTeamsInLeague(country: string, league: string, subLea
   const res = await fetch(url, { credentials: "include" });
 
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    console.error("fetchTeamsInLeague failed:", res.status, text);
-    throw new Error(`Failed to fetch teams: ${res.status}`);
+    const message = await readApiErrorMessage(res, "シーズンが終了しています。来シーズンまでお待ちください。");
+    throw new Error(message);
   }
 
   return res.json();
