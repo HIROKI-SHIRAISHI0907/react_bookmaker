@@ -52,7 +52,6 @@ export async function fetchLeaguesGrouped(): Promise<LeagueGrouped[]> {
   return Array.isArray(json) ? json : [];
 }
 
-// チーム単位
 export type TeamItem = {
   name: string;
   english: string;
@@ -118,9 +117,7 @@ export async function fetchTeamsInLeague(country: string, league: string, subLea
 
   const res = await fetch(url, {
     credentials: "include",
-    headers: {
-      Accept: "application/json",
-    },
+    headers: { Accept: "application/json" },
   });
 
   if (!res.ok) {

@@ -50,10 +50,10 @@ function getSeasonEndedLabel(league?: LeagueInfo | null) {
 
 function getSubLeagueValue(sub?: SubLeagueInfo | null) {
   const rawName = normalizeText(sub?.rawName);
-  if (rawName) return rawName;
+  if (rawName && rawName !== "未設定") return rawName;
 
   const name = normalizeText(sub?.name).replace(/^▶︎+/, "").trim();
-  if (name) return name;
+  if (name && name !== "未設定") return name;
 
   return "";
 }
@@ -84,16 +84,6 @@ function getVisibleSubLeagues(league: LeagueInfo): SubLeagueInfo[] {
 
 function hasVisibleSubLeagues(league: LeagueInfo): boolean {
   return getVisibleSubLeagues(league).length > 0;
-}
-
-function isSubLeagueEnded(sub?: SubLeagueInfo | null, league?: LeagueInfo | null) {
-  if (typeof sub?.seasonEnded === "boolean") {
-    return sub.seasonEnded;
-  }
-  if (typeof sub?.linkEnabled === "boolean") {
-    return !sub.linkEnabled;
-  }
-  return isLeagueEnded(league);
 }
 
 function isSubLeagueLinkEnabled(sub?: SubLeagueInfo | null, league?: LeagueInfo | null) {
@@ -131,7 +121,7 @@ function DisabledLeafItem(props: { label: string; meta?: ReactNode; badgeLabel?:
   const { label, meta, badgeLabel, animationDelayMs = 0 } = props;
 
   return (
-    <span className="block rounded px-2 py-1 text-sm text-muted-foreground opacity-60 cursor-not-allowed animate-in-left" style={{ animationDelay: `${animationDelayMs}ms` }} aria-disabled="true">
+    <span className="block cursor-not-allowed rounded px-2 py-1 text-sm text-muted-foreground opacity-60 animate-in-left" style={{ animationDelay: `${animationDelayMs}ms` }} aria-disabled="true">
       <span className="inline-flex items-center gap-2">
         <span>{label}</span>
         {meta}
@@ -202,7 +192,13 @@ export default function LeagueMenu() {
 
   return (
     <div className="relative">
-      <button ref={btnRef} onClick={() => setOpen((v) => !v)} className="inline-flex items-center gap-2 rounded-md border px-3 py-2 hover:bg-accent" aria-expanded={open} aria-haspopup="menu">
+      <button
+        ref={btnRef}
+        onClick={() => setOpen((v) => !v)}
+        className="inline-flex items-center gap-2 rounded-md border bg-background px-3 py-2 hover:bg-accent"
+        aria-expanded={open}
+        aria-haspopup="menu"
+      >
         <Menu className="h-4 w-4" />
         リーグ
       </button>
@@ -213,7 +209,7 @@ export default function LeagueMenu() {
             <div className={`fixed inset-0 z-[1000] transition-opacity duration-250 ${ready ? "opacity-100" : "opacity-0"}`} onClick={() => setOpen(false)} aria-hidden="true">
               <div className="absolute inset-0 bg-black/70" />
               <div
-                className="absolute inset-0 pointer-events-none
+                className="pointer-events-none absolute inset-0
                 bg-[radial-gradient(60%_60%_at_20%_10%,rgba(255,255,255,0.06),transparent_60%),radial-gradient(70%_70%_at_100%_100%,rgba(255,255,255,0.04),transparent_60%)]"
               />
             </div>
@@ -229,7 +225,7 @@ export default function LeagueMenu() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex h-full flex-col">
-                <div className="shrink-0 flex items-center justify-between border-b border-border px-4 py-3">
+                <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
                   <span className="font-semibold">Leagues</span>
                   <button onClick={() => setOpen(false)} className="rounded-md border px-2 py-1 text-sm hover:bg-accent">
                     閉じる
@@ -243,7 +239,7 @@ export default function LeagueMenu() {
 
                   {data?.map((g, gi) => (
                     <details key={g.country} className="group" open={gi === 0}>
-                      <summary className="cursor-pointer list-none rounded px-2 py-1 hover:bg-accent animate-in-left" style={{ animationDelay: `${gi * 45}ms` }}>
+                      <summary className="list-none cursor-pointer rounded px-2 py-1 hover:bg-accent animate-in-left" style={{ animationDelay: `${gi * 45}ms` }}>
                         <span className="font-medium">{g.country}</span>
                       </summary>
 
@@ -256,7 +252,6 @@ export default function LeagueMenu() {
                           const ended = isLeagueEnded(l);
                           const linkEnabled = isLeagueLinkEnabled(l);
                           const endedLabel = getSeasonEndedLabel(l);
-
                           const visibleSubLeagues = getVisibleSubLeagues(l);
 
                           if (!hasVisibleSubLeagues(l)) {
@@ -335,7 +330,6 @@ export default function LeagueMenu() {
                                     const subKey = `${leagueKey}__${normalizeText(s.rawName || s.name || String(si))}`;
                                     const subLinkEnabled = isSubLeagueLinkEnabled(s, l);
                                     const subEndedLabel = getSubLeagueEndedLabel(s, l);
-                                    const subEnded = isSubLeagueEnded(s, l);
 
                                     return (
                                       <li key={subKey}>
@@ -344,12 +338,7 @@ export default function LeagueMenu() {
                                             label={subLabel}
                                             badgeLabel={subEndedLabel}
                                             animationDelayMs={gi * 45 + li * 25 + si * 20}
-                                            meta={
-                                              <>
-                                                <span className="ml-1 opacity-60">({normalizeCount(s.teamCount)})</span>
-                                                {subEnded ? null : null}
-                                              </>
-                                            }
+                                            meta={<span className="ml-1 opacity-60">({normalizeCount(s.teamCount)})</span>}
                                           />
                                         ) : (
                                           <LeagueLeafLink
