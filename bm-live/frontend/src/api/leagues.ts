@@ -98,17 +98,30 @@ async function readApiErrorMessage(res: Response, fallback: string): Promise<str
   return fallback;
 }
 
+function normalizeQuerySubLeague(v?: string | null): string | null {
+  const s = (v ?? "").trim();
+  if (!s) return null;
+  if (s === "未設定") return null;
+  return s;
+}
+
 export async function fetchTeamsInLeague(country: string, league: string, subLeague?: string | null): Promise<TeamsInLeague> {
   const params = new URLSearchParams();
+  const normalizedSubLeague = normalizeQuerySubLeague(subLeague);
 
-  if (subLeague && subLeague.trim()) {
-    params.set("subLeague", subLeague.trim());
+  if (normalizedSubLeague) {
+    params.set("subLeague", normalizedSubLeague);
   }
 
   const query = params.toString();
   const url = `/v1/api/leagues/${encodeURIComponent(country)}/${encodeURIComponent(league)}` + (query ? `?${query}` : "");
 
-  const res = await fetch(url, { credentials: "include" });
+  const res = await fetch(url, {
+    credentials: "include",
+    headers: {
+      Accept: "application/json",
+    },
+  });
 
   if (!res.ok) {
     const message = await readApiErrorMessage(res, "シーズンが終了しています。来シーズンまでお待ちください。");
