@@ -1,5 +1,5 @@
 // src/pages/admin/DataFetchAdminPage.tsx
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 /** ============ Types ============ */
 type StatRequestResource = {
@@ -11,7 +11,6 @@ type StatRequestResource = {
 type StatResponseResource = {
   returnCd?: string;
   taskArn?: string;
-  // 必要なら追加
   [k: string]: any;
 };
 
@@ -22,6 +21,28 @@ type TaskDef = {
   description: string;
   endpoint: string;
   defaultBody?: StatRequestResource;
+};
+
+type BatchFileCheckItemResource = {
+  label?: string;
+  bucket?: string;
+  key?: string | null;
+  kind?: "file" | "folder" | "count" | string;
+  type?: string;
+  exists?: boolean;
+  required?: boolean;
+  count?: number | null;
+};
+
+type BatchFileCheckTaskResource = {
+  taskCode?: string;
+  ready?: boolean;
+  summary?: string;
+  items?: BatchFileCheckItemResource[];
+};
+
+type BatchFileCheckResponseResource = {
+  tasks?: BatchFileCheckTaskResource[];
 };
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
@@ -62,7 +83,6 @@ async function postJsonSafe<T>(url: string, body: unknown): Promise<{ data: T | 
     throw new Error(`HTTP ${res.status} ${res.statusText}${detail ? `:\n${detail}` : ""}`);
   }
 
-  // 204/空レスポンス対策
   if (res.status === 204) return { data: null, rawText: null };
 
   if (ct.includes("application/json")) {
@@ -70,9 +90,87 @@ async function postJsonSafe<T>(url: string, body: unknown): Promise<{ data: T | 
     return { data, rawText: null };
   }
 
-  // JSONじゃない場合も落ちないように（念のため）
   const text = await res.text().catch(() => "");
   return { data: null, rawText: text || null };
+}
+
+async function getJsonSafe<T>(url: string): Promise<T> {
+  const res = await fetch(url, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  const ct = res.headers.get("content-type") ?? "";
+
+  if (!res.ok) {
+    let detail = "";
+    try {
+      if (ct.includes("application/json")) {
+        const j = await res.json();
+        detail = JSON.stringify(j, null, 2);
+      } else {
+        detail = await res.text();
+      }
+    } catch {
+      // ignore
+    }
+    throw new Error(`HTTP ${res.status} ${res.statusText}${detail ? `:\n${detail}` : ""}`);
+  }
+
+  if (!ct.includes("application/json")) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`JSONレスポンスではありません${text ? `:\n${text}` : ""}`);
+  }
+
+  return (await res.json()) as T;
+}
+
+function getTaskFileStatusMap(data: BatchFileCheckResponseResource | null | undefined): Record<string, BatchFileCheckTaskResource> {
+  const map: Record<string, BatchFileCheckTaskResource> = {};
+  for (const task of data?.tasks ?? []) {
+    if (task?.taskCode) {
+      map[task.taskCode] = task;
+    }
+  }
+  return map;
+}
+
+function getFileBadgeTone(task?: BatchFileCheckTaskResource): "gray" | "emerald" | "amber" | "rose" {
+  if (!task) return "gray";
+  if (task.ready) return "emerald";
+  return "rose";
+}
+
+function getFileBadgeLabel(task?: BatchFileCheckTaskResource): string {
+  if (!task) return "未確認";
+  if (task.ready) return "準備OK";
+  return task.summary?.trim() || "必須不足";
+}
+
+function getItemTone(item: BatchFileCheckItemResource): "gray" | "blue" | "emerald" | "amber" | "rose" {
+  if (item.kind === "count") {
+    if (item.required && !item.exists) return "rose";
+    return "blue";
+  }
+  if (item.exists) return "emerald";
+  if (item.required) return "rose";
+  return "gray";
+}
+
+function getItemStatusText(item: BatchFileCheckItemResource): string {
+  if (item.kind === "count") {
+    return `${item.count ?? 0}`;
+  }
+  if (item.exists) return "存在";
+  if (item.required) return "必須不足";
+  return "未存在";
+}
+
+function getItemIcon(item: BatchFileCheckItemResource): string {
+  if (item.kind === "count") return "📊";
+  if (item.exists) return "✅";
+  if (item.required) return "❌";
+  return "⚪";
 }
 
 /** ============ Common UI Components ============ */
@@ -213,12 +311,14 @@ export default function DataFetchAdminPage() {
   const [league, setLeague] = useState("");
   const [season, setSeason] = useState("");
 
-  // タスクごとにローディング（並列実行OK）
   const [running, setRunning] = useState<Set<string>>(new Set());
-
   const [results, setResults] = useState<Record<string, StatResponseResource | null>>({});
   const [errors, setErrors] = useState<Record<string, string | null>>({});
   const [globalMessage, setGlobalMessage] = useState<{ type: AlertType; title: string; message: string } | null>(null);
+
+  const [fileChecks, setFileChecks] = useState<Record<string, BatchFileCheckTaskResource>>({});
+  const [fileChecksLoading, setFileChecksLoading] = useState(false);
+  const [fileChecksError, setFileChecksError] = useState<string | null>(null);
 
   const requestBody = useMemo<StatRequestResource>(() => {
     const body: StatRequestResource = {};
@@ -230,6 +330,25 @@ export default function DataFetchAdminPage() {
     if (s) body.season = s;
     return body;
   }, [country, league, season]);
+
+  const loadFileChecks = async () => {
+    setFileChecksLoading(true);
+    setFileChecksError(null);
+
+    try {
+      const url = `${API_BASE}/v1/api/admin/file-checks`;
+      const data = await getJsonSafe<BatchFileCheckResponseResource>(url);
+      setFileChecks(getTaskFileStatusMap(data));
+    } catch (e: unknown) {
+      setFileChecksError(getErrorMessage(e));
+    } finally {
+      setFileChecksLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadFileChecks();
+  }, []);
 
   const runTask = async (t: TaskDef) => {
     setGlobalMessage(null);
@@ -255,6 +374,8 @@ export default function DataFetchAdminPage() {
         title: `実行完了: ${t.code}`,
         message: `${t.title}\nEndpoint: ${t.endpoint}`,
       });
+
+      await loadFileChecks();
     } catch (e: unknown) {
       const msg = getErrorMessage(e);
       setErrors((p) => ({ ...p, [t.id]: msg }));
@@ -282,18 +403,24 @@ export default function DataFetchAdminPage() {
             </div>
             <div>
               <h1 className="text-3xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">データ取得管理</h1>
-              <p className="text-sm text-gray-600 mt-1">バッチ起動（POST）と結果確認</p>
+              <p className="text-sm text-gray-600 mt-1">バッチ起動（POST）と事前ファイル確認</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
             <Badge tone={API_BASE ? "emerald" : "amber"}>{API_BASE ? `API: ${API_BASE}` : "API_BASE 未設定"}</Badge>
             <Badge tone="blue">タスク数: {tasks.length}</Badge>
+            <Button variant="secondary" icon="🔄" loading={fileChecksLoading} onClick={loadFileChecks} className="px-3 py-2 text-xs">
+              {fileChecksLoading ? "確認中..." : "ファイル状態更新"}
+            </Button>
           </div>
         </div>
 
         {/* Global alert */}
         {globalMessage && <Alert type={globalMessage.type} title={globalMessage.title} message={globalMessage.message} onClose={() => setGlobalMessage(null)} />}
+
+        {/* File-check alert */}
+        {fileChecksError && <Alert type="warning" title="事前ファイル確認の取得に失敗" message={fileChecksError} onClose={() => setFileChecksError(null)} />}
 
         {/* Request params */}
         <Card className="p-6">
@@ -342,8 +469,11 @@ export default function DataFetchAdminPage() {
             const isRunning = running.has(t.id);
             const result = results[t.id];
             const err = errors[t.id];
+            const fileCheck = fileChecks[t.code];
 
-            const tone: "gray" | "blue" | "emerald" | "amber" | "rose" = err ? "rose" : result ? "emerald" : "gray";
+            const runTone: "gray" | "blue" | "emerald" | "amber" | "rose" = err ? "rose" : result ? "emerald" : "gray";
+            const fileTone = getFileBadgeTone(fileCheck);
+            const canRun = !isRunning && !!fileCheck?.ready;
 
             return (
               <Card key={t.id} className="p-6">
@@ -351,7 +481,8 @@ export default function DataFetchAdminPage() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge tone="blue">{t.code}</Badge>
-                      <Badge tone={tone}>{err ? "ERROR" : result ? "DONE" : "IDLE"}</Badge>
+                      <Badge tone={runTone}>{err ? "ERROR" : result ? "DONE" : "IDLE"}</Badge>
+                      <Badge tone={fileTone}>{getFileBadgeLabel(fileCheck)}</Badge>
                     </div>
 
                     <div className="mt-2 text-lg font-extrabold text-gray-900 truncate">{t.title}</div>
@@ -363,7 +494,7 @@ export default function DataFetchAdminPage() {
                   </div>
 
                   <div className="flex flex-col gap-2 shrink-0">
-                    <Button onClick={() => runTask(t)} loading={isRunning} disabled={isRunning} icon={!isRunning ? "▶️" : undefined}>
+                    <Button onClick={() => runTask(t)} loading={isRunning} disabled={!canRun} icon={!isRunning ? "▶️" : undefined}>
                       {isRunning ? "実行中..." : "実行"}
                     </Button>
 
@@ -371,6 +502,47 @@ export default function DataFetchAdminPage() {
                       URLコピー
                     </Button>
                   </div>
+                </div>
+
+                {/* File Check */}
+                <div className="mt-4 rounded-2xl border border-gray-100 bg-slate-50 p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-sm font-bold text-gray-900">事前ファイル確認</div>
+                    <div className="text-xs text-gray-500">{fileCheck?.summary ?? "未確認"}</div>
+                  </div>
+
+                  {fileCheck?.items?.length ? (
+                    <div className="mt-3 space-y-2">
+                      {fileCheck.items.map((item, idx) => (
+                        <div key={`${t.code}-${idx}`} className="rounded-xl border border-gray-100 bg-white p-3">
+                          <div className="flex items-start gap-3">
+                            <div className="text-lg leading-none pt-0.5">{getItemIcon(item)}</div>
+
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-sm font-semibold text-gray-900">{item.label ?? "-"}</span>
+                                <Badge tone={getItemTone(item)}>{getItemStatusText(item)}</Badge>
+                                {item.type && <Badge tone="gray">{item.type}</Badge>}
+                                {item.required && <Badge tone="amber">必須</Badge>}
+                              </div>
+
+                              <div className="mt-2 text-xs text-gray-600 space-y-1 break-all">
+                                {item.bucket && <div>Bucket: {item.bucket}</div>}
+                                {item.key && <div>Key: {item.key}</div>}
+                                {item.kind === "count" && <div>Count: {item.count ?? 0}</div>}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="mt-3 text-xs text-gray-500">確認情報がありません</div>
+                  )}
+
+                  {!fileCheck?.ready && (
+                    <div className="mt-3 text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2">必須条件が満たされていないため、このタスクは実行できません。</div>
+                  )}
                 </div>
 
                 {/* Error */}
