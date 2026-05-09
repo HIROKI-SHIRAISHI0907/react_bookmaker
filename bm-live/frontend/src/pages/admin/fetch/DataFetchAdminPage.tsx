@@ -14,6 +14,8 @@ type StatResponseResource = {
   [k: string]: any;
 };
 
+type PrecheckMode = "required" | "always";
+
 type TaskDef = {
   id: string;
   code: string;
@@ -21,6 +23,7 @@ type TaskDef = {
   description: string;
   endpoint: string;
   defaultBody?: StatRequestResource;
+  precheckMode?: PrecheckMode;
 };
 
 type BatchFileCheckItemResource = {
@@ -173,6 +176,27 @@ function getItemIcon(item: BatchFileCheckItemResource): string {
   return "⚪";
 }
 
+function canRunTask(task: TaskDef, isRunning: boolean, fileCheck?: BatchFileCheckTaskResource): boolean {
+  if (isRunning) return false;
+  if (task.precheckMode === "always") return true;
+  return !!fileCheck?.ready;
+}
+
+function getEffectiveFileBadgeTone(task: TaskDef, fileCheck?: BatchFileCheckTaskResource): "gray" | "emerald" | "amber" | "rose" {
+  if (task.precheckMode === "always") return "emerald";
+  return getFileBadgeTone(fileCheck);
+}
+
+function getEffectiveFileBadgeLabel(task: TaskDef, fileCheck?: BatchFileCheckTaskResource): string {
+  if (task.precheckMode === "always") return "前提条件なし";
+  return getFileBadgeLabel(fileCheck);
+}
+
+function getPrecheckPanelSummary(task: TaskDef, fileCheck?: BatchFileCheckTaskResource): string {
+  if (task.precheckMode === "always") return fileCheck?.summary ?? "必須条件なし";
+  return fileCheck?.summary ?? "未確認";
+}
+
 /** ============ Common UI Components ============ */
 type CardProps = { children: React.ReactNode; className?: string };
 const Card = ({ children, className = "" }: CardProps) => <div className={`bg-white/90 backdrop-blur rounded-2xl shadow-sm border border-gray-100 ${className}`}>{children}</div>;
@@ -289,20 +313,70 @@ const Badge = ({ children, tone = "gray" }: { children: React.ReactNode; tone?: 
 export default function DataFetchAdminPage() {
   const tasks: TaskDef[] = useMemo(
     () => [
-      { id: "B002", code: "B002", title: "選手情報取得", description: "country / league / team / member を収集", endpoint: "/v1/api/admin/exec/task/country-league-team-member" },
-      { id: "B003", code: "B003", title: "国リーグ別シーズン開始情報取得", description: "国×リーグのシーズン開始情報を更新", endpoint: "/v1/api/admin/exec/task/country-league-season" },
-      { id: "B004", code: "B004", title: "チーム名情報取得", description: "国×リーグのチーム情報を更新", endpoint: "/v1/api/admin/exec/task/country-league" },
-      { id: "B005", code: "B005", title: "試合予定データ取得", description: "未来の試合予定を取得", endpoint: "/v1/api/admin/exec/task/future" },
-      { id: "B006", code: "B006", title: "統計CSVデータ取り入れ実行", description: "統計CSVを取り込む", endpoint: "/v1/api/stat" },
-      { id: "B008", code: "B008", title: "開催中データ取得", description: "開催中データを更新", endpoint: "/v1/api/admin/exec/task/bm-data" },
+      {
+        id: "B002",
+        code: "B002",
+        title: "選手情報取得",
+        description: "country / league / team / member を収集",
+        endpoint: "/v1/api/admin/exec/task/country-league-team-member",
+        precheckMode: "required",
+      },
+      {
+        id: "B003",
+        code: "B003",
+        title: "国リーグ別シーズン開始情報取得",
+        description: "国×リーグのシーズン開始情報を更新",
+        endpoint: "/v1/api/admin/exec/task/country-league-season",
+        precheckMode: "required",
+      },
+      {
+        id: "B004",
+        code: "B004",
+        title: "チーム名情報取得",
+        description: "国×リーグのチーム情報を更新",
+        endpoint: "/v1/api/admin/exec/task/country-league",
+        precheckMode: "required",
+      },
+      {
+        id: "B005",
+        code: "B005",
+        title: "試合予定データ取得",
+        description: "未来の試合予定を取得",
+        endpoint: "/v1/api/admin/exec/task/future",
+        precheckMode: "required",
+      },
+      {
+        id: "B006",
+        code: "B006",
+        title: "統計CSVデータ取り入れ実行",
+        description: "統計CSVを取り込む",
+        endpoint: "/v1/api/stat",
+        precheckMode: "required",
+      },
+      {
+        id: "B008",
+        code: "B008",
+        title: "開催中データ取得",
+        description: "開催中データを更新",
+        endpoint: "/v1/api/admin/exec/task/bm-data",
+        precheckMode: "required",
+      },
       {
         id: "B010",
         code: "B010",
         title: "欠損値（未来データ、終了済データ）データ取得",
-        description: "欠損値（未来データ、終了済データ）データを更新",
+        description: "match_key_save 件数取得に成功していれば実行可能",
         endpoint: "/v1/api/admin/exec/task/fin-getting-json",
+        precheckMode: "required",
       },
-      { id: "B011", code: "B011", title: "統計CSVデータ生成", description: "統計CSVを生成", endpoint: "/v1/api/admin/exec/task/stat-csv" },
+      {
+        id: "B011",
+        code: "B011",
+        title: "統計CSVデータ生成",
+        description: "必須情報なし。常時実行可能",
+        endpoint: "/v1/api/admin/exec/task/stat-csv",
+        precheckMode: "always",
+      },
     ],
     [],
   );
@@ -403,7 +477,7 @@ export default function DataFetchAdminPage() {
             </div>
             <div>
               <h1 className="text-3xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">データ取得管理</h1>
-              <p className="text-sm text-gray-600 mt-1">バッチ起動（POST）と事前ファイル確認</p>
+              <p className="text-sm text-gray-600 mt-1">バッチ起動（POST）と事前確認</p>
             </div>
           </div>
 
@@ -411,7 +485,7 @@ export default function DataFetchAdminPage() {
             <Badge tone={API_BASE ? "emerald" : "amber"}>{API_BASE ? `API: ${API_BASE}` : "API_BASE 未設定"}</Badge>
             <Badge tone="blue">タスク数: {tasks.length}</Badge>
             <Button variant="secondary" icon="🔄" loading={fileChecksLoading} onClick={loadFileChecks} className="px-3 py-2 text-xs">
-              {fileChecksLoading ? "確認中..." : "ファイル状態更新"}
+              {fileChecksLoading ? "確認中..." : "状態更新"}
             </Button>
           </div>
         </div>
@@ -420,7 +494,7 @@ export default function DataFetchAdminPage() {
         {globalMessage && <Alert type={globalMessage.type} title={globalMessage.title} message={globalMessage.message} onClose={() => setGlobalMessage(null)} />}
 
         {/* File-check alert */}
-        {fileChecksError && <Alert type="warning" title="事前ファイル確認の取得に失敗" message={fileChecksError} onClose={() => setFileChecksError(null)} />}
+        {fileChecksError && <Alert type="warning" title="事前確認の取得に失敗" message={fileChecksError} onClose={() => setFileChecksError(null)} />}
 
         {/* Request params */}
         <Card className="p-6">
@@ -472,8 +546,8 @@ export default function DataFetchAdminPage() {
             const fileCheck = fileChecks[t.code];
 
             const runTone: "gray" | "blue" | "emerald" | "amber" | "rose" = err ? "rose" : result ? "emerald" : "gray";
-            const fileTone = getFileBadgeTone(fileCheck);
-            const canRun = !isRunning && !!fileCheck?.ready;
+            const fileTone = getEffectiveFileBadgeTone(t, fileCheck);
+            const canRun = canRunTask(t, isRunning, fileCheck);
 
             return (
               <Card key={t.id} className="p-6">
@@ -482,7 +556,7 @@ export default function DataFetchAdminPage() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge tone="blue">{t.code}</Badge>
                       <Badge tone={runTone}>{err ? "ERROR" : result ? "DONE" : "IDLE"}</Badge>
-                      <Badge tone={fileTone}>{getFileBadgeLabel(fileCheck)}</Badge>
+                      <Badge tone={fileTone}>{getEffectiveFileBadgeLabel(t, fileCheck)}</Badge>
                     </div>
 
                     <div className="mt-2 text-lg font-extrabold text-gray-900 truncate">{t.title}</div>
@@ -507,8 +581,8 @@ export default function DataFetchAdminPage() {
                 {/* File Check */}
                 <div className="mt-4 rounded-2xl border border-gray-100 bg-slate-50 p-4">
                   <div className="flex items-center justify-between gap-2">
-                    <div className="text-sm font-bold text-gray-900">事前ファイル確認</div>
-                    <div className="text-xs text-gray-500">{fileCheck?.summary ?? "未確認"}</div>
+                    <div className="text-sm font-bold text-gray-900">{t.precheckMode === "always" ? "実行前確認（参考）" : "事前ファイル確認"}</div>
+                    <div className="text-xs text-gray-500">{getPrecheckPanelSummary(t, fileCheck)}</div>
                   </div>
 
                   {fileCheck?.items?.length ? (
@@ -536,11 +610,13 @@ export default function DataFetchAdminPage() {
                         </div>
                       ))}
                     </div>
+                  ) : t.precheckMode === "always" ? (
+                    <div className="mt-3 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2">このタスクは必須の事前条件なしで実行できます。</div>
                   ) : (
                     <div className="mt-3 text-xs text-gray-500">確認情報がありません</div>
                   )}
 
-                  {!fileCheck?.ready && (
+                  {t.precheckMode !== "always" && !!fileCheck && !fileCheck.ready && (
                     <div className="mt-3 text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2">必須条件が満たされていないため、このタスクは実行できません。</div>
                   )}
                 </div>
