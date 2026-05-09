@@ -329,11 +329,13 @@ export default function IngestedDataReferenceAdminPage() {
     const params = new URLSearchParams();
     params.set("offset", "0");
     params.set("limit", String(FETCH_LIMIT_RAW));
-    if (country.trim()) params.set("country", country.trim());
-    if (keyword.trim()) params.set("keyword", keyword.trim());
-    if (onlyNeedsAttention) params.set("onlyNeedsAttention", "true");
+
+    if (country.trim()) {
+      params.set("country", country.trim());
+    }
+
     return `/v1/api/admin/ingested?${params.toString()}`;
-  }, [country, keyword, onlyNeedsAttention, offset, pageSize]);
+  }, [country]);
 
   const doFetch = async () => {
     abortRef.current?.abort();
