@@ -8,7 +8,6 @@ type SelectedFavoriteItem = {
   team?: string | null;
 };
 
-/** ===== view API types（/v1/api/favorite/view） ===== */
 type FavoriteViewResponse = {
   allowAll: boolean;
   allowedCountries: { country: string }[];
@@ -19,17 +18,12 @@ type FavoriteViewResponse = {
   message: string;
 };
 
-/** ===== upsert API types（/v1/api/favorites） ===== */
 type FavoriteItem = {
   country: string;
   league?: string | null;
   team?: string | null;
 };
 
-/**
- * backend では JWT から userId / operatorId を解決するので
- * frontend では items だけ送ればOK
- */
 type FavoriteInsertRequest = {
   items: FavoriteItem[];
 };
@@ -41,10 +35,11 @@ type FavoriteResponse = {
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
   const token = getAccessToken();
-  const tokenType = getTokenType();
+  const tokenType = getTokenType() || "Bearer";
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
+    Accept: "application/json",
   };
 
   if (token) {
@@ -74,7 +69,6 @@ function makeKey(country: string, league: string) {
 }
 
 export default function FavoritePage() {
-  /** ===== 1) view取得（JWTは Authorization header で送る） ===== */
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
     queryKey: ["favoriteView"],
     queryFn: () => postJson<FavoriteViewResponse>("/v1/api/favorite/view", {}),
@@ -103,16 +97,11 @@ export default function FavoritePage() {
     return map;
   }, [data]);
 
-  /** ===== 2) UI state ===== */
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [selectedLeague, setSelectedLeague] = useState<string | null>(null);
-
-  // key = country__league
   const [selectedTeams, setSelectedTeams] = useState<Record<string, Set<string>>>({});
-
   const [isPending, startTransition] = useTransition();
 
-  /** ===== 3) 初期選択 ===== */
   useEffect(() => {
     if (!data || countries.length === 0) return;
     if (!selectedCountry) setSelectedCountry(countries[0]);
@@ -130,7 +119,6 @@ export default function FavoritePage() {
     }
   }, [selectedCountry, selectedLeague, leaguesByCountry]);
 
-  // お気に入り済みチームをデフォルトチェックに反映
   useEffect(() => {
     if (!data?.selectedItems) return;
 
@@ -141,7 +129,6 @@ export default function FavoritePage() {
       const league = (item.league ?? "").trim();
       const team = (item.team ?? "").trim();
 
-      // チーム登録だけチェックに反映
       if (!country || !league || !team) continue;
 
       const key = `${country}__${league}`;
@@ -205,10 +192,6 @@ export default function FavoritePage() {
     });
   }
 
-  /**
-   * POST /v1/api/favorites
-   * backend が JWT から userId/operatorId を解決する
-   */
   const upsertMutation = useMutation({
     mutationFn: (req: FavoriteInsertRequest) => postJson<FavoriteResponse>("/v1/api/favorites", req),
     onSuccess: async () => {
@@ -216,7 +199,6 @@ export default function FavoritePage() {
     },
   });
 
-  /** selectedTeams → FavoriteItem[] に変換 */
   function buildUpsertItems(): FavoriteItem[] {
     const items: FavoriteItem[] = [];
 
@@ -232,6 +214,7 @@ export default function FavoritePage() {
         });
       }
     }
+
     return items;
   }
 
@@ -244,20 +227,19 @@ export default function FavoritePage() {
     }
 
     try {
-      const res = await upsertMutation.mutateAsync({
-        items,
-      });
+      const res = await upsertMutation.mutateAsync({ items });
 
       if (res.responseCode !== "200") {
         alert(res.message);
         return;
       }
+
+      alert("最新化しました。");
     } catch (e) {
       alert((e as Error).message);
     }
   }
 
-  /** ===== render ===== */
   if (isLoading) return <div style={{ padding: 16 }}>読み込み中…</div>;
 
   if (isError) {
@@ -275,7 +257,6 @@ export default function FavoritePage() {
 
   return (
     <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", gap: 16, padding: 16 }}>
-      {/* 左：国タブ */}
       <aside style={{ border: "1px solid #ddd", borderRadius: 8, overflow: "hidden" }}>
         <div style={{ padding: 12, borderBottom: "1px solid #ddd", fontWeight: 700 }}>国 {isFetching ? "（更新中…）" : ""}</div>
         <div style={{ maxHeight: "70vh", overflow: "auto" }}>
@@ -304,7 +285,6 @@ export default function FavoritePage() {
         </div>
       </aside>
 
-      {/* 右：リーグ/チーム */}
       <main style={{ border: "1px solid #ddd", borderRadius: 8, padding: 12 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <div>
@@ -336,7 +316,6 @@ export default function FavoritePage() {
           </div>
         )}
 
-        {/* リーグ選択 */}
         <div style={{ marginTop: 12 }}>
           <div style={{ fontSize: 12, color: "#666", marginBottom: 6 }}>リーグ</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -365,7 +344,6 @@ export default function FavoritePage() {
           </div>
         </div>
 
-        {/* 全選択/解除 */}
         <div style={{ marginTop: 14, display: "flex", gap: 16, alignItems: "center" }}>
           <label
             style={{
@@ -388,7 +366,6 @@ export default function FavoritePage() {
           </div>
         </div>
 
-        {/* チーム一覧 */}
         <div style={{ marginTop: 12, borderTop: "1px solid #eee", paddingTop: 12 }}>
           {currentTeams.length === 0 ? (
             <div>チームがありません</div>
