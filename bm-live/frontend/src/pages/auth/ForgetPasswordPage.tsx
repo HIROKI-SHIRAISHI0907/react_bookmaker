@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { forgotPasswordApi } from "../../api/auth";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -11,15 +12,15 @@ export default function ForgotPasswordPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
+
     if (!canSubmit) return;
 
     setSubmitting(true);
     try {
-      // TODO: API呼び出しに置き換え
-      await new Promise((r) => setTimeout(r, 600));
-      setMessage("再設定リンクを送信しました（ダミー）。メールをご確認ください。");
-    } catch {
-      setMessage("送信に失敗しました。");
+      const res = await forgotPasswordApi({ email });
+      setMessage(res.responseMessage || "再設定リンクを送信しました。メールをご確認ください。");
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "送信に失敗しました。");
     } finally {
       setSubmitting(false);
     }
@@ -71,7 +72,12 @@ const styles: Record<string, React.CSSProperties> = {
     boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
   },
   title: { margin: "0 0 8px", fontSize: 22 },
-  desc: { margin: "0 0 12px", color: "#4b5563", fontSize: 14, lineHeight: 1.5 },
+  desc: {
+    margin: "0 0 12px",
+    color: "#4b5563",
+    fontSize: 14,
+    lineHeight: 1.5,
+  },
   label: { display: "grid", gap: 6, fontSize: 14 },
   input: {
     width: "100%",
@@ -80,6 +86,7 @@ const styles: Record<string, React.CSSProperties> = {
     border: "1px solid #d7dbe7",
     outline: "none",
     fontSize: 14,
+    boxSizing: "border-box",
   },
   primaryButton: {
     width: "100%",
@@ -103,5 +110,6 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: "space-between",
     marginTop: 14,
     fontSize: 14,
+    gap: 12,
   },
 };

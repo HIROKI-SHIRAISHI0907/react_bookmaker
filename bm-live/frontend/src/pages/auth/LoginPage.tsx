@@ -1,13 +1,22 @@
 import React, { useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { loginApi } from "../../api/auth";
 
 type LoginForm = {
   email: string;
   password: string;
 };
 
+type LocationState = {
+  from?: {
+    pathname?: string;
+  };
+};
+
 export default function LoginPage() {
   const nav = useNavigate();
+  const location = useLocation();
+
   const [form, setForm] = useState<LoginForm>({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -24,18 +33,23 @@ export default function LoginPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
+
     if (!canSubmit) return;
 
     setSubmitting(true);
     try {
-      // TODO: ここでAPI呼び出しに置き換え
-      await new Promise((r) => setTimeout(r, 600));
+      await loginApi({
+        email: form.email,
+        password: form.password,
+      });
 
-      // 例：ログイン後にどこかへ遷移
-      setMessage("ログイン処理（ダミー）が完了しました。");
-      // nav("/dashboard"); // 作ったらここへ
-    } catch {
-      setMessage("ログインに失敗しました。");
+      setMessage("ログインに成功しました。");
+
+      const from = (location.state as LocationState | null)?.from?.pathname ?? "/dashboard";
+
+      nav(from, { replace: true });
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "ログインに失敗しました。");
     } finally {
       setSubmitting(false);
     }
@@ -113,6 +127,7 @@ const styles: Record<string, React.CSSProperties> = {
     border: "1px solid #d7dbe7",
     outline: "none",
     fontSize: 14,
+    boxSizing: "border-box",
   },
   primaryButton: {
     width: "100%",
@@ -144,5 +159,6 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: "space-between",
     marginTop: 14,
     fontSize: 14,
+    gap: 12,
   },
 };

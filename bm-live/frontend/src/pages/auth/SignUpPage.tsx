@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { signupApi } from "../../api/auth";
 
 type SignupForm = {
   name: string;
@@ -10,6 +11,8 @@ type SignupForm = {
 };
 
 export default function SignupPage() {
+  const nav = useNavigate();
+
   const [form, setForm] = useState<SignupForm>({
     name: "",
     email: "",
@@ -29,22 +32,31 @@ export default function SignupPage() {
   const onChange =
     <K extends keyof SignupForm>(key: K) =>
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = key === "agree" ? (e.target as HTMLInputElement).checked : e.target.value;
+      const value = key === "agree" ? e.target.checked : e.target.value;
       setForm((p) => ({ ...p, [key]: value as SignupForm[K] }));
     };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
+
     if (!canSubmit) return;
 
     setSubmitting(true);
     try {
-      // TODO: API呼び出しに置き換え
-      await new Promise((r) => setTimeout(r, 700));
-      setMessage("アカウント作成（ダミー）が完了しました。ログインしてください。");
-    } catch {
-      setMessage("作成に失敗しました。");
+      await signupApi({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+      });
+
+      setMessage("アカウント作成が完了しました。ログイン画面へ移動します。");
+
+      setTimeout(() => {
+        nav("/login");
+      }, 800);
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "作成に失敗しました。");
     } finally {
       setSubmitting(false);
     }
@@ -78,7 +90,14 @@ export default function SignupPage() {
 
           {!passwordMatch && form.confirmPassword.length > 0 && <div style={styles.error}>パスワードが一致しません。</div>}
 
-          <label style={{ ...styles.label, display: "flex", gap: 8, alignItems: "center" }}>
+          <label
+            style={{
+              ...styles.label,
+              display: "flex",
+              gap: 8,
+              alignItems: "center",
+            }}
+          >
             <input type="checkbox" checked={form.agree} onChange={onChange("agree")} />
             <span>利用規約に同意します</span>
           </label>
@@ -125,6 +144,7 @@ const styles: Record<string, React.CSSProperties> = {
     border: "1px solid #d7dbe7",
     outline: "none",
     fontSize: 14,
+    boxSizing: "border-box",
   },
   error: {
     padding: 10,
@@ -155,5 +175,6 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: "space-between",
     marginTop: 14,
     fontSize: 14,
+    gap: 12,
   },
 };

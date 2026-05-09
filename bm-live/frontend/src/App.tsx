@@ -3,6 +3,7 @@ import LoginPage from "./pages/auth/LoginPage";
 import ForgetPasswordPage from "./pages/auth/ForgetPasswordPage";
 import SignupPage from "./pages/auth/SignUpPage";
 import Dashboard from "./pages/personal/top/Dashboard";
+import ProtectedRoute from "./components/ProtectedRoute";
 import LeagueMenuPage from "./pages/humberger/LeagueMenuPage";
 import FavoritePage from "./pages/personal/favorite/FavoritePage";
 import TeamDetailPage from "./pages/personal/teams/TeamDetailPage";
@@ -46,6 +47,9 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgetPasswordPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+          </Route>
           <Route path="/soccer/:countrySlug/:leagueSlug" element={<LeagueMenuPage />} />
           <Route path="/team/:teamEnglish/:teamHash" element={<TeamDetailPage />} />
           <Route path="/gameDetail" element={<GameDetailPage />} />
