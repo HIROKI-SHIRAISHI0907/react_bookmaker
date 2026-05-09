@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState, useTransition } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { getAccessToken, getTokenType } from "../../../utils/authStorage";
 
 type SelectedFavoriteItem = {
   country: string;
@@ -7,7 +8,7 @@ type SelectedFavoriteItem = {
   team?: string | null;
 };
 
-/** ===== view API types（既存の /v1/api/favorite/view ） ===== */
+/** ===== view API types（/v1/api/favorite/view） ===== */
 type FavoriteViewResponse = {
   allowAll: boolean;
   allowedCountries: { country: string }[];
@@ -18,16 +19,18 @@ type FavoriteViewResponse = {
   message: string;
 };
 
-/** ===== upsert API types（あなたの /api/favorites ） ===== */
+/** ===== upsert API types（/v1/api/favorites） ===== */
 type FavoriteItem = {
-  country: string; // 必須
-  league?: string | null; // null OK
-  team?: string | null; // null OK
+  country: string;
+  league?: string | null;
+  team?: string | null;
 };
 
+/**
+ * backend では JWT から userId / operatorId を解決するので
+ * frontend では items だけ送ればOK
+ */
 type FavoriteInsertRequest = {
-  userId: number;
-  operatorId: string;
   items: FavoriteItem[];
 };
 
@@ -37,16 +40,28 @@ type FavoriteResponse = {
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
+  const token = getAccessToken();
+  const tokenType = getTokenType();
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  if (token) {
+    headers.Authorization = `${tokenType} ${token}`;
+  }
+
   const res = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(body),
-    credentials: "include",
   });
+
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     throw new Error(`HTTP ${res.status} ${text}`);
   }
+
   return res.json();
 }
 
@@ -59,14 +74,10 @@ function makeKey(country: string, league: string) {
 }
 
 export default function FavoritePage() {
-  /** 本当はログインユーザーのID/operatorIdをAuthContextなどから取る */
-  const userId = 1;
-  const operatorId = "system";
-
-  /** ===== 1) view取得（画面の国/リーグ/チーム候補を作る） ===== */
+  /** ===== 1) view取得（JWTは Authorization header で送る） ===== */
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
-    queryKey: ["favoriteView", userId],
-    queryFn: () => postJson<FavoriteViewResponse>("/v1/api/favorite/view", { userId }),
+    queryKey: ["favoriteView"],
+    queryFn: () => postJson<FavoriteViewResponse>("/v1/api/favorite/view", {}),
   });
 
   const countries = useMemo(() => {
@@ -130,7 +141,7 @@ export default function FavoritePage() {
       const league = (item.league ?? "").trim();
       const team = (item.team ?? "").trim();
 
-      // チーム登録だけチェックに反映（country/leagueのみは除外）
+      // チーム登録だけチェックに反映
       if (!country || !league || !team) continue;
 
       const key = `${country}__${league}`;
@@ -195,23 +206,17 @@ export default function FavoritePage() {
   }
 
   /**
-   * POST /v1/api/favorites へ FavoriteInsertRequest を送る
+   * POST /v1/api/favorites
+   * backend が JWT から userId/operatorId を解決する
    */
   const upsertMutation = useMutation({
     mutationFn: (req: FavoriteInsertRequest) => postJson<FavoriteResponse>("/v1/api/favorites", req),
-    onSuccess: async (res) => {
-      // 必要ならメッセージ表示
-      // alert(res.message);
-
-      // viewを再取得（最新化）
+    onSuccess: async () => {
       await refetch();
     },
   });
 
-  /** selectedTeams → FavoriteItem[] に変換
-   * - upsert側で親補完するので、ここでは「teamあり」の行だけ送ればOK
-   * - teamありの場合 league必須なので country__league から必ずセットする
-   */
+  /** selectedTeams → FavoriteItem[] に変換 */
   function buildUpsertItems(): FavoriteItem[] {
     const items: FavoriteItem[] = [];
 
@@ -240,26 +245,21 @@ export default function FavoritePage() {
 
     try {
       const res = await upsertMutation.mutateAsync({
-        userId,
-        operatorId,
         items,
       });
 
-      // サーバ側 responseCode が 200/400/404 の設計なので、200以外はここで弾く（任意）
       if (res.responseCode !== "200") {
         alert(res.message);
         return;
       }
-
-      // 成功時メッセージ（任意）
-      // alert(res.message);
     } catch (e) {
       alert((e as Error).message);
     }
   }
 
-  /** ===== 5) render ===== */
+  /** ===== render ===== */
   if (isLoading) return <div style={{ padding: 16 }}>読み込み中…</div>;
+
   if (isError) {
     return (
       <div style={{ padding: 16 }}>
@@ -268,6 +268,7 @@ export default function FavoritePage() {
       </div>
     );
   }
+
   if (!data) return <div style={{ padding: 16 }}>データなし</div>;
 
   const saving = upsertMutation.isPending;
@@ -315,15 +316,25 @@ export default function FavoritePage() {
           </div>
 
           <div style={{ display: "flex", gap: 8 }}>
-            {/* 最新化＝ upsert 呼び出し */}
             <button onClick={onClickLatest} disabled={saving}>
               {saving ? "登録中…" : "最新化"}
             </button>
           </div>
         </div>
 
-        {/* 保存中 Loading */}
-        {saving && <div style={{ marginTop: 12, padding: 10, background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 8 }}>登録しています…</div>}
+        {saving && (
+          <div
+            style={{
+              marginTop: 12,
+              padding: 10,
+              background: "#fff7ed",
+              border: "1px solid #fed7aa",
+              borderRadius: 8,
+            }}
+          >
+            登録しています…
+          </div>
+        )}
 
         {/* リーグ選択 */}
         <div style={{ marginTop: 12 }}>
@@ -356,7 +367,14 @@ export default function FavoritePage() {
 
         {/* 全選択/解除 */}
         <div style={{ marginTop: 14, display: "flex", gap: 16, alignItems: "center" }}>
-          <label style={{ display: "flex", gap: 8, alignItems: "center", cursor: saving ? "not-allowed" : "pointer" }}>
+          <label
+            style={{
+              display: "flex",
+              gap: 8,
+              alignItems: "center",
+              cursor: saving ? "not-allowed" : "pointer",
+            }}
+          >
             <input type="checkbox" checked={allChecked} onChange={(e) => setAll(e.target.checked)} disabled={saving || currentTeams.length === 0} />
             全チーム選択
           </label>
@@ -398,7 +416,6 @@ export default function FavoritePage() {
           )}
         </div>
 
-        {/* 保存エラー表示（任意） */}
         {upsertMutation.isError && <div style={{ marginTop: 12, color: "#b91c1c" }}>登録に失敗: {(upsertMutation.error as Error)?.message}</div>}
       </main>
     </div>
