@@ -1,4 +1,3 @@
-// frontend/src/pages/personal/top/Dashboard.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -14,8 +13,6 @@ import NoticeRibbon from "../../../pages/personal/component/notice/NoticeRibbon"
 // =========================
 // 型定義
 // =========================
-
-// 全試合ライブ情報
 type LiveMatchDTO = {
   seq: number;
   dataCategory: string;
@@ -50,8 +47,10 @@ type LeagueLiveGroup = {
   matches: LiveMatchDTO[];
 };
 
-// デザイン確認用: モック
-type TeamPair = { home: number; away: number };
+type TeamPair = {
+  home: number;
+  away: number;
+};
 
 type MatchStats = {
   shotsOnTarget: TeamPair;
@@ -148,7 +147,7 @@ export default function Dashboard() {
     navigate("/gameDetail");
   };
 
-  // 全ライブ取得
+  // 全ライブ取得（ログイン不要）
   const {
     data: allLiveMatches,
     isLoading: allLiveLoading,
@@ -158,7 +157,6 @@ export default function Dashboard() {
     queryFn: async () => {
       const res = await fetch("/v1/api/live-matches/all", {
         method: "GET",
-        credentials: "include",
         headers: {
           Accept: "application/json",
         },
@@ -174,12 +172,12 @@ export default function Dashboard() {
     refetchInterval: 30_000,
   });
 
-  // 既存のダッシュボード表示用モック
+  // 既存ダッシュボード表示用モック
   const {
     data: matchDetails,
-    isLoading,
-    error,
-  } = useQuery<MatchDetails>({
+    isLoading: matchDetailsLoading,
+    error: matchDetailsError,
+  } = useQuery<MatchDetails, Error>({
     queryKey: ["match-details", selectedMatchId],
     queryFn: async () => {
       await new Promise((r) => setTimeout(r, 400));
@@ -279,7 +277,8 @@ export default function Dashboard() {
       .sort((a, b) => a.subLeagueLabel.localeCompare(b.subLeagueLabel, "ja"));
   }, [activeLiveGroup]);
 
-  if (error) {
+  // 下部の既存ダッシュボードがエラーの場合
+  if (matchDetailsError) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -417,7 +416,7 @@ export default function Dashboard() {
         </section>
 
         {/* 既存ダッシュボード */}
-        {isLoading ? (
+        {matchDetailsLoading ? (
           <div className="space-y-6">
             {/* Match Header Skeleton */}
             <div className="p-6 border rounded-lg">

@@ -7,6 +7,7 @@ export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
+    Accept: "application/json",
   },
 });
 
@@ -27,10 +28,12 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error?.response?.status === 401) {
       clearAuth();
+
       if (window.location.pathname !== "/login") {
-        window.location.href = "/login";
+        window.location.replace("/login");
       }
     }
+
     return Promise.reject(error);
   },
 );

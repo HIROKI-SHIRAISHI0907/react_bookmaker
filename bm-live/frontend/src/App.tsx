@@ -28,7 +28,21 @@ import PointSettingsPage from "./pages/admin/pointSetting/PointSettingsPage";
 function WhereAmI() {
   const loc = useLocation();
   return (
-    <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 99999, background: "rgba(255,0,0,.9)", color: "#fff", padding: 8, fontFamily: "monospace" }}>pathname: {loc.pathname}</div>
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 99999,
+        background: "rgba(255,0,0,.9)",
+        color: "#fff",
+        padding: 8,
+        fontFamily: "monospace",
+      }}
+    >
+      pathname: {loc.pathname}
+    </div>
   );
 }
 
@@ -40,19 +54,22 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/top" replace />} />
 
-          <Route path="/" element={<PersonalLayout />}>
-            <Route path="favorite" element={<FavoritePage />} />
-          </Route>
-
+          {/* 公開ページ */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgetPasswordPage />} />
           <Route path="/signup" element={<SignupPage />} />
-          <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-          </Route>
+          <Route path="/top" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Navigate to="/top" replace />} />
           <Route path="/soccer/:countrySlug/:leagueSlug" element={<LeagueMenuPage />} />
-          <Route path="/team/:teamEnglish/:teamHash" element={<TeamDetailPage />} />
-          <Route path="/gameDetail" element={<GameDetailPage />} />
+
+          {/* 必要なページだけ認証必須 */}
+          <Route element={<ProtectedRoute />}>
+            <Route element={<PersonalLayout />}>
+              <Route path="/favorite" element={<FavoritePage />} />
+              <Route path="/team/:teamEnglish/:teamHash" element={<TeamDetailPage />} />
+              <Route path="/gameDetail" element={<GameDetailPage />} />
+            </Route>
+          </Route>
 
           <Route path="admin" element={<AdminLayout />}>
             <Route path="force/update" element={<CountryLeagueForceAdminPage />} />
@@ -70,8 +87,6 @@ export default function App() {
             <Route path="sub-league" element={<SubLeagueManualUpdatePage />} />
             <Route path="point-setting" element={<PointSettingsPage />} />
           </Route>
-
-          <Route path="/top" element={<Dashboard />} />
 
           <Route path="*" element={<div style={{ padding: 40 }}>NO ROUTE MATCHED</div>} />
         </Routes>

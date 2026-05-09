@@ -45,7 +45,7 @@ export default function LoginPage() {
 
       setMessage("ログインに成功しました。");
 
-      const from = (location.state as LocationState | null)?.from?.pathname ?? "/dashboard";
+      const from = (location.state as LocationState | null)?.from?.pathname ?? "/top";
 
       nav(from, { replace: true });
     } catch (err) {
