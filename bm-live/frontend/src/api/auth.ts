@@ -1,50 +1,85 @@
-// src/utils/auth.ts
-export type AuthSession = {
+import axios from "axios";
+import { apiClient } from "./client";
+import { saveAuth } from "../utils/auth";
+
+export type AuthResponse = {
+  responseCode?: string;
+  responseMessage?: string;
+  message?: string;
+  userId?: number;
   accessToken?: string;
+  authFlg?: number;
   tokenType?: string;
   issuedAtEpochSecond?: number;
   expiresAtEpochSecond?: number;
-  authFlg?: number;
   roles?: string[];
   email?: string;
   name?: string;
 };
 
-const AUTH_STORAGE_KEY = "authSession";
+export type LoginRequest = {
+  email: string;
+  password: string;
+};
 
-export function saveAuthSession(session: AuthSession) {
-  localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
+export type SignUpRequest = {
+  name: string;
+  email: string;
+  password: string;
+};
+
+export type ForgotPasswordRequest = {
+  email: string;
+};
+
+function resolveErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    return error.response?.data?.responseMessage || error.response?.data?.message || error.message || "通信に失敗しました。";
+  }
+  if (error instanceof Error) return error.message;
+  return "通信に失敗しました。";
 }
 
-export function loadAuthSession(): AuthSession | null {
+export async function loginApi(payload: LoginRequest): Promise<AuthResponse> {
   try {
-    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw) as AuthSession;
-  } catch {
-    return null;
+    const { data } = await apiClient.post<AuthResponse>("/v1/api/auth/login", payload);
+
+    if (!data.accessToken) {
+      throw new Error(data.responseMessage || data.message || "アクセストークンが返却されませんでした。");
+    }
+
+    saveAuth({
+      accessToken: data.accessToken,
+      tokenType: data.tokenType ?? "Bearer",
+      issuedAtEpochSecond: data.issuedAtEpochSecond,
+      expiresAtEpochSecond: data.expiresAtEpochSecond,
+      authFlg: data.authFlg,
+      roles: data.roles ?? [],
+      email: data.email,
+      name: data.name,
+      userId: data.userId,
+    });
+
+    return data;
+  } catch (e) {
+    throw new Error(resolveErrorMessage(e));
   }
 }
 
-export function clearAuthSession() {
-  localStorage.removeItem(AUTH_STORAGE_KEY);
+export async function signupApi(payload: SignUpRequest): Promise<AuthResponse> {
+  try {
+    const { data } = await apiClient.post<AuthResponse>("/v1/api/auth/signup", payload);
+    return data;
+  } catch (e) {
+    throw new Error(resolveErrorMessage(e));
+  }
 }
 
-export function isLoggedIn(): boolean {
-  const session = loadAuthSession();
-  return !!session?.accessToken;
-}
-
-export function isAdminUser(): boolean {
-  const session = loadAuthSession();
-  if (!session?.accessToken) return false;
-
-  if (session.authFlg === 1) return true;
-  if (session.roles?.includes("ROLE_ADMIN")) return true;
-
-  return false;
-}
-
-export function getDefaultRouteByRole(): string {
-  return isAdminUser() ? "/admin" : "/top";
+export async function forgotPasswordApi(payload: ForgotPasswordRequest): Promise<AuthResponse> {
+  try {
+    const { data } = await apiClient.post<AuthResponse>("/v1/api/auth/forgot-password", payload);
+    return data;
+  } catch (e) {
+    throw new Error(resolveErrorMessage(e));
+  }
 }

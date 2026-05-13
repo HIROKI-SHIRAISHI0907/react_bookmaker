@@ -1,7 +1,7 @@
 // src/pages/auth/LoginPage.tsx
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { saveAuthSession } from "../../api/auth";
+import { saveAuthSession } from "../../utils/auth";
 
 type LoginResponse = {
   responseCode?: string;
