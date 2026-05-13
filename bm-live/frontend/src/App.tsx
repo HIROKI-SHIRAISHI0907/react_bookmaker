@@ -4,6 +4,8 @@ import ForgetPasswordPage from "./pages/auth/ForgetPasswordPage";
 import SignupPage from "./pages/auth/SignUpPage";
 import Dashboard from "./pages/personal/top/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminProtectedRoute from "./components/AdminProtectedRoute";
+import TopRedirectByRole from "./components/TopRedirectByRole";
 import LeagueMenuPage from "./pages/humberger/LeagueMenuPage";
 import FavoritePage from "./pages/personal/favorite/FavoritePage";
 import TeamDetailPage from "./pages/personal/teams/TeamDetailPage";
@@ -24,6 +26,7 @@ import AdminMatchKeySavePage from "./pages/admin/matchKey/AdminMatchKeySavePage"
 import AdminSubInputPage from "./pages/admin/csvSelect/AdminSubInputPage";
 import SubLeagueManualUpdatePage from "./pages/admin/subLeague/SubLeagueManualUpdatePage";
 import PointSettingsPage from "./pages/admin/pointSetting/PointSettingsPage";
+import AdminUserPage from "./pages/admin/user/AdminUserPage";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -58,11 +61,20 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgetPasswordPage />} />
           <Route path="/signup" element={<SignupPage />} />
-          <Route path="/top" element={<Dashboard />} />
+
+          <Route
+            path="/top"
+            element={
+              <TopRedirectByRole>
+                <Dashboard />
+              </TopRedirectByRole>
+            }
+          />
+
           <Route path="/dashboard" element={<Navigate to="/top" replace />} />
           <Route path="/soccer/:countrySlug/:leagueSlug" element={<LeagueMenuPage />} />
 
-          {/* 必要なページだけ認証必須 */}
+          {/* 一般ユーザー向け認証ページ */}
           <Route element={<ProtectedRoute />}>
             <Route element={<PersonalLayout />}>
               <Route path="/favorite" element={<FavoritePage />} />
@@ -71,21 +83,26 @@ export default function App() {
             </Route>
           </Route>
 
-          <Route path="admin" element={<AdminLayout />}>
-            <Route path="force/update" element={<CountryLeagueForceAdminPage />} />
-            <Route path="scrape/manual" element={<ManualScrapePage />} />
-            <Route path="s3/fileCount" element={<S3FileCountPage />} />
-            <Route path="notices" element={<NoticeAdminPage />} />
-            <Route path="data/fetch" element={<DataFetchAdminPage />} />
-            <Route path="manual/data/target" element={<ManualDataTargetPage />} />
-            <Route path="manual/data/register" element={<ManualDataConsolePage />} />
-            <Route path="manual/data/defect" element={<ManualDataDefectPage />} />
-            <Route path="manual/teamColor" element={<TeamColorPage />} />
-            <Route path="ingested" element={<IngestedDataReferencePage />} />
-            <Route path="match-key-save" element={<AdminMatchKeySavePage />} />
-            <Route path="sub-input" element={<AdminSubInputPage />} />
-            <Route path="sub-league" element={<SubLeagueManualUpdatePage />} />
-            <Route path="point-setting" element={<PointSettingsPage />} />
+          {/* 管理者専用 */}
+          <Route element={<AdminProtectedRoute />}>
+            <Route path="admin" element={<AdminLayout />}>
+              <Route index element={<Navigate to="data/fetch" replace />} />
+              <Route path="force/update" element={<CountryLeagueForceAdminPage />} />
+              <Route path="scrape/manual" element={<ManualScrapePage />} />
+              <Route path="s3/fileCount" element={<S3FileCountPage />} />
+              <Route path="notices" element={<NoticeAdminPage />} />
+              <Route path="data/fetch" element={<DataFetchAdminPage />} />
+              <Route path="manual/data/target" element={<ManualDataTargetPage />} />
+              <Route path="manual/data/register" element={<ManualDataConsolePage />} />
+              <Route path="manual/data/defect" element={<ManualDataDefectPage />} />
+              <Route path="manual/teamColor" element={<TeamColorPage />} />
+              <Route path="ingested" element={<IngestedDataReferencePage />} />
+              <Route path="match-key-save" element={<AdminMatchKeySavePage />} />
+              <Route path="sub-input" element={<AdminSubInputPage />} />
+              <Route path="sub-league" element={<SubLeagueManualUpdatePage />} />
+              <Route path="point-setting" element={<PointSettingsPage />} />
+              <Route path="users" element={<AdminUserPage />} />
+            </Route>
           </Route>
 
           <Route path="*" element={<div style={{ padding: 40 }}>NO ROUTE MATCHED</div>} />

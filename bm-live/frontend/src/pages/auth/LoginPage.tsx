@@ -1,164 +1,205 @@
-import React, { useMemo, useState } from "react";
+// src/pages/auth/LoginPage.tsx
+import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { loginApi } from "../../api/auth";
+import { saveAuthSession } from "../../api/auth";
 
-type LoginForm = {
-  email: string;
-  password: string;
+type LoginResponse = {
+  responseCode?: string;
+  message?: string;
+  accessToken?: string;
+  tokenType?: string;
+  issuedAtEpochSecond?: number;
+  expiresAtEpochSecond?: number;
+  roles?: string[];
+  authFlg?: number;
+  userId?: number;
 };
 
-type LocationState = {
-  from?: {
-    pathname?: string;
-  };
-};
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 
 export default function LoginPage() {
-  const nav = useNavigate();
-  const location = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation() as { state?: { from?: { pathname?: string } } };
 
-  const [form, setForm] = useState<LoginForm>({ email: "", password: "" });
-  const [showPassword, setShowPassword] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const canSubmit = useMemo(() => {
-    return form.email.trim().length > 0 && form.password.length >= 8 && !submitting;
-  }, [form.email, form.password, submitting]);
-
-  const onChange = (key: keyof LoginForm) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm((p) => ({ ...p, [key]: e.target.value }));
-  };
-
-  const onSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMessage(null);
+    setErrorMessage("");
+    setLoading(true);
 
-    if (!canSubmit) return;
-
-    setSubmitting(true);
     try {
-      await loginApi({
-        email: form.email,
-        password: form.password,
+      const res = await fetch(`${API_BASE}/v1/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          email,
+          password,
+        }),
       });
 
-      setMessage("ログインに成功しました。");
+      const data = (await res.json()) as LoginResponse;
 
-      const from = (location.state as LocationState | null)?.from?.pathname ?? "/top";
+      if (!res.ok) {
+        setErrorMessage(data?.message ?? `ログインに失敗しました。(HTTP ${res.status})`);
+        return;
+      }
 
-      nav(from, { replace: true });
+      if (!data?.accessToken) {
+        setErrorMessage("アクセストークンが返却されませんでした。");
+        return;
+      }
+
+      // ログイン情報を保存
+      saveAuthSession({
+        accessToken: data.accessToken,
+        tokenType: data.tokenType,
+        issuedAtEpochSecond: data.issuedAtEpochSecond,
+        expiresAtEpochSecond: data.expiresAtEpochSecond,
+        authFlg: data.authFlg,
+        roles: data.roles ?? [],
+        email: email.trim().toLowerCase(),
+      });
+
+      // 遷移先決定
+      const isAdmin = data.authFlg === 1 || data.roles?.includes("ROLE_ADMIN");
+
+      // login前にアクセスしようとしていた画面
+      const fromPath = location.state?.from?.pathname;
+
+      if (isAdmin) {
+        navigate("/admin", { replace: true });
+        return;
+      }
+
+      // 一般ユーザーは admin に戻さない
+      if (fromPath && fromPath.startsWith("/admin")) {
+        navigate("/top", { replace: true });
+        return;
+      }
+
+      navigate(fromPath || "/top", { replace: true });
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : "ログインに失敗しました。");
+      setErrorMessage(err instanceof Error ? err.message : "ログインに失敗しました。");
     } finally {
-      setSubmitting(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>ログイン</h1>
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "grid",
+        placeItems: "center",
+        background: "#f8fafc",
+        padding: 16,
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 420,
+          background: "white",
+          border: "1px solid #e5e7eb",
+          borderRadius: 16,
+          padding: 24,
+          boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+        }}
+      >
+        <h1 style={{ margin: 0, marginBottom: 8, fontSize: 28, fontWeight: 800 }}>ログイン</h1>
+        <p style={{ marginTop: 0, marginBottom: 20, color: "#6b7280", fontSize: 14 }}>メールアドレスとパスワードを入力してください。</p>
 
-        <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
-          <label style={styles.label}>
-            メールアドレス
-            <input type="email" value={form.email} onChange={onChange("email")} autoComplete="email" required style={styles.input} placeholder="you@example.com" />
-          </label>
+        <form onSubmit={handleSubmit} style={{ display: "grid", gap: 16 }}>
+          <div>
+            <label style={{ display: "block", marginBottom: 6, fontWeight: 700 }}>メールアドレス</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="example@example.com"
+              style={{
+                width: "100%",
+                padding: "12px 14px",
+                borderRadius: 10,
+                border: "1px solid #d1d5db",
+                fontSize: 14,
+                boxSizing: "border-box",
+              }}
+            />
+          </div>
 
-          <label style={styles.label}>
-            パスワード（8文字以上）
-            <div style={{ display: "flex", gap: 8 }}>
-              <input
-                type={showPassword ? "text" : "password"}
-                value={form.password}
-                onChange={onChange("password")}
-                autoComplete="current-password"
-                required
-                minLength={8}
-                style={{ ...styles.input, flex: 1 }}
-                placeholder="********"
-              />
-              <button type="button" onClick={() => setShowPassword((v) => !v)} style={styles.secondaryButton}>
-                {showPassword ? "隠す" : "表示"}
-              </button>
+          <div>
+            <label style={{ display: "block", marginBottom: 6, fontWeight: 700 }}>パスワード</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="********"
+              style={{
+                width: "100%",
+                padding: "12px 14px",
+                borderRadius: 10,
+                border: "1px solid #d1d5db",
+                fontSize: 14,
+                boxSizing: "border-box",
+              }}
+            />
+          </div>
+
+          {errorMessage && (
+            <div
+              style={{
+                background: "#fef2f2",
+                color: "#991b1b",
+                border: "1px solid #fecaca",
+                borderRadius: 10,
+                padding: "10px 12px",
+                fontSize: 14,
+              }}
+            >
+              {errorMessage}
             </div>
-          </label>
+          )}
 
-          <button type="submit" disabled={!canSubmit} style={styles.primaryButton}>
-            {submitting ? "送信中..." : "ログイン"}
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              padding: "12px 16px",
+              borderRadius: 10,
+              border: "none",
+              background: "#2563eb",
+              color: "white",
+              fontWeight: 800,
+              fontSize: 14,
+              cursor: loading ? "default" : "pointer",
+              opacity: loading ? 0.7 : 1,
+            }}
+          >
+            {loading ? "ログイン中..." : "ログイン"}
           </button>
-
-          {message && <div style={styles.message}>{message}</div>}
         </form>
 
-        <div style={styles.links}>
-          <Link to="/forgot-password">パスワードを忘れた方へ</Link>
-          <Link to="/signup">アカウント新規作成</Link>
+        <div
+          style={{
+            marginTop: 18,
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 12,
+            fontSize: 14,
+          }}
+        >
+          <Link to="/signup">新規登録</Link>
+          <Link to="/forgot-password">パスワードを忘れた方</Link>
         </div>
       </div>
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    minHeight: "100vh",
-    display: "grid",
-    placeItems: "center",
-    padding: 24,
-    background: "#f6f7fb",
-  },
-  card: {
-    width: "100%",
-    maxWidth: 420,
-    background: "white",
-    border: "1px solid #e6e8ef",
-    borderRadius: 16,
-    padding: 20,
-    boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
-  },
-  title: { margin: "0 0 12px", fontSize: 22 },
-  label: { display: "grid", gap: 6, fontSize: 14 },
-  input: {
-    width: "100%",
-    padding: "10px 12px",
-    borderRadius: 10,
-    border: "1px solid #d7dbe7",
-    outline: "none",
-    fontSize: 14,
-    boxSizing: "border-box",
-  },
-  primaryButton: {
-    width: "100%",
-    padding: "10px 12px",
-    borderRadius: 10,
-    border: "none",
-    cursor: "pointer",
-    background: "#111827",
-    color: "white",
-    fontWeight: 600,
-  },
-  secondaryButton: {
-    padding: "10px 12px",
-    borderRadius: 10,
-    border: "1px solid #d7dbe7",
-    background: "white",
-    cursor: "pointer",
-    fontWeight: 600,
-  },
-  message: {
-    padding: 10,
-    borderRadius: 10,
-    background: "#f1f5f9",
-    border: "1px solid #e2e8f0",
-    fontSize: 13,
-  },
-  links: {
-    display: "flex",
-    justifyContent: "space-between",
-    marginTop: 14,
-    fontSize: 14,
-    gap: 12,
-  },
-};
