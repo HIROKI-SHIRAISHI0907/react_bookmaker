@@ -1,6 +1,6 @@
 // src/components/AdminProtectedRoute.tsx
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { isLoggedIn, isAdminUser } from "../api/auth";
+import { isLoggedIn, isAdminUser } from "../utils/auth";
 
 export default function AdminProtectedRoute() {
   const location = useLocation();
