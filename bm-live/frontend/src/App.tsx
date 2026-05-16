@@ -26,6 +26,7 @@ import AdminMatchKeySavePage from "./pages/admin/matchKey/AdminMatchKeySavePage"
 import AdminSubInputPage from "./pages/admin/csvSelect/AdminSubInputPage";
 import SubLeagueManualUpdatePage from "./pages/admin/subLeague/SubLeagueManualUpdatePage";
 import PointSettingsPage from "./pages/admin/pointSetting/PointSettingsPage";
+import TodayCreatedCsvPage from "./pages/admin/csv/TodayCreatedCsvPage";
 import AdminUserPage from "./pages/admin/user/AdminUserPage";
 
 function WhereAmI() {
@@ -102,6 +103,7 @@ export default function App() {
               <Route path="sub-league" element={<SubLeagueManualUpdatePage />} />
               <Route path="point-setting" element={<PointSettingsPage />} />
               <Route path="users" element={<AdminUserPage />} />
+              <Route path="csv/today" element={<TodayCreatedCsvPage />} />
             </Route>
           </Route>
 
