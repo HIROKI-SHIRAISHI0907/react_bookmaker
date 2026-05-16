@@ -24,7 +24,7 @@ export default function AdminLayout() {
           { label: "データ取得管理", to: "data/fetch" },
           { label: "スクレイピング実行管理", to: "scrape/manual" },
           { label: "S3ファイル情報取得管理", to: "s3/fileCount" },
-          { label: "本日作成CSV情報", to: "csv/today" },
+          { label: "作成CSV情報", to: "csv/today" },
         ],
       },
       {
