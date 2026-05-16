@@ -11,26 +11,37 @@ type TodayCreatedCsvItem = {
 };
 
 type TodayCreatedCsvListResponse = {
+  targetDate: string;
   count: number;
   items: TodayCreatedCsvItem[];
 };
 
 const API_BASE = "";
 
+function todayString() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 export default function TodayCreatedCsvPage() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [targetDate, setTargetDate] = useState(todayString());
   const [data, setData] = useState<TodayCreatedCsvListResponse>({
+    targetDate: todayString(),
     count: 0,
     items: [],
   });
 
-  const load = async () => {
+  const load = async (date: string) => {
     setLoading(true);
     setErrorMessage("");
 
     try {
-      const response = await fetch(`${API_BASE}/v1/api/admin/csv/today`, {
+      const response = await fetch(`${API_BASE}/v1/api/admin/csv/today?targetDate=${encodeURIComponent(date)}`, {
         method: "GET",
         credentials: "include",
       });
@@ -41,20 +52,25 @@ export default function TodayCreatedCsvPage() {
 
       const json = (await response.json()) as TodayCreatedCsvListResponse;
       setData({
+        targetDate: json.targetDate ?? date,
         count: json.count ?? 0,
         items: json.items ?? [],
       });
     } catch (error) {
       console.error(error);
-      setErrorMessage("本日作成CSV情報の取得に失敗しました。");
+      setErrorMessage("作成CSV情報の取得に失敗しました。");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    load();
+    load(targetDate);
   }, []);
+
+  const onSearch = () => {
+    load(targetDate);
+  };
 
   return (
     <div style={{ display: "grid", gap: 16 }}>
@@ -62,18 +78,48 @@ export default function TodayCreatedCsvPage() {
         style={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
+          alignItems: "flex-start",
           gap: 12,
+          flexWrap: "wrap",
         }}
       >
         <div>
-          <h1 style={{ margin: 0, fontSize: 24 }}>本日作成CSV情報</h1>
-          <p style={{ margin: "8px 0 0", color: "#6b7280" }}>csv_detail_manage の register_time を基準に、本日作成されたCSVを表示します。</p>
+          <h1 style={{ margin: 0, fontSize: 24 }}>作成CSV情報</h1>
+          <p style={{ margin: "8px 0 0", color: "#6b7280" }}>csv_detail_manage の register_time を基準に、指定日の作成CSVを表示します。</p>
+        </div>
+      </div>
+
+      <div
+        style={{
+          border: "1px solid #e5e7eb",
+          borderRadius: 12,
+          padding: 16,
+          background: "#fff",
+          display: "flex",
+          gap: 12,
+          alignItems: "end",
+          flexWrap: "wrap",
+        }}
+      >
+        <div style={{ display: "grid", gap: 6 }}>
+          <label style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>対象日</label>
+          <input
+            type="date"
+            value={targetDate}
+            onChange={(e) => setTargetDate(e.target.value)}
+            style={{
+              border: "1px solid #d1d5db",
+              borderRadius: 10,
+              padding: "10px 12px",
+              fontSize: 14,
+              minWidth: 180,
+            }}
+          />
         </div>
 
         <button
           type="button"
-          onClick={load}
+          onClick={onSearch}
           disabled={loading}
           style={{
             border: "1px solid #d1d5db",
@@ -84,21 +130,62 @@ export default function TodayCreatedCsvPage() {
             fontWeight: 700,
           }}
         >
-          {loading ? "読込中..." : "再取得"}
+          {loading ? "読込中..." : "検索"}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            const today = todayString();
+            setTargetDate(today);
+            load(today);
+          }}
+          disabled={loading}
+          style={{
+            border: "1px solid #d1d5db",
+            background: "#f9fafb",
+            padding: "10px 14px",
+            borderRadius: 10,
+            cursor: loading ? "default" : "pointer",
+            fontWeight: 700,
+          }}
+        >
+          今日
         </button>
       </div>
 
       <div
         style={{
-          border: "1px solid #e5e7eb",
-          borderRadius: 12,
-          padding: 16,
-          background: "#fff",
-          width: 200,
+          display: "flex",
+          gap: 12,
+          flexWrap: "wrap",
         }}
       >
-        <div style={{ fontSize: 12, color: "#6b7280" }}>件数</div>
-        <div style={{ fontSize: 28, fontWeight: 800 }}>{data.count}</div>
+        <div
+          style={{
+            border: "1px solid #e5e7eb",
+            borderRadius: 12,
+            padding: 16,
+            background: "#fff",
+            minWidth: 220,
+          }}
+        >
+          <div style={{ fontSize: 12, color: "#6b7280" }}>対象日</div>
+          <div style={{ fontSize: 20, fontWeight: 800 }}>{data.targetDate}</div>
+        </div>
+
+        <div
+          style={{
+            border: "1px solid #e5e7eb",
+            borderRadius: 12,
+            padding: 16,
+            background: "#fff",
+            minWidth: 180,
+          }}
+        >
+          <div style={{ fontSize: 12, color: "#6b7280" }}>件数</div>
+          <div style={{ fontSize: 28, fontWeight: 800 }}>{data.count}</div>
+        </div>
       </div>
 
       {errorMessage && (
@@ -130,7 +217,7 @@ export default function TodayCreatedCsvPage() {
             fontWeight: 800,
           }}
         >
-          本日作成CSV一覧
+          作成CSV一覧
         </div>
 
         <div style={{ overflowX: "auto" }}>
@@ -150,7 +237,7 @@ export default function TodayCreatedCsvPage() {
               {data.items.length === 0 && !loading ? (
                 <tr>
                   <td colSpan={7} style={{ padding: 24, textAlign: "center", color: "#6b7280" }}>
-                    本日作成データはありません。
+                    指定日に作成されたデータはありません。
                   </td>
                 </tr>
               ) : (
