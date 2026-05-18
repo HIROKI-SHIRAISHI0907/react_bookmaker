@@ -49,16 +49,6 @@ export default function AdminLayout() {
         ],
       },
       {
-        key: "batch",
-        label: "バッチ・取得",
-        items: [
-          { label: "データ取得管理", to: "data/fetch" },
-          { label: "スクレイピング実行管理", to: "scrape/manual" },
-          { label: "S3ファイル情報取得管理", to: "s3/fileCount" },
-          { label: "本日作成CSV情報", to: "csv/today" },
-        ],
-      },
-      {
         key: "user",
         label: "ユーザー・権限",
         items: [{ label: "ユーザー管理", to: "users" }],

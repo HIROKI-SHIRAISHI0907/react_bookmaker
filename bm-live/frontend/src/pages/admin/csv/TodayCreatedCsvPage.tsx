@@ -16,8 +16,6 @@ type TodayCreatedCsvListResponse = {
   items: TodayCreatedCsvItem[];
 };
 
-const API_BASE = "";
-
 function todayString() {
   const now = new Date();
   const y = now.getFullYear();
@@ -41,7 +39,7 @@ export default function TodayCreatedCsvPage() {
     setErrorMessage("");
 
     try {
-      const response = await fetch(`${API_BASE}/v1/api/admin/csv/today?targetDate=${encodeURIComponent(date)}`, {
+      const response = await fetch(`/v1/api/admin/csv/today?targetDate=${encodeURIComponent(date)}`, {
         method: "GET",
         credentials: "include",
       });
