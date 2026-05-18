@@ -28,6 +28,7 @@ import SubLeagueManualUpdatePage from "./pages/admin/subLeague/SubLeagueManualUp
 import PointSettingsPage from "./pages/admin/pointSetting/PointSettingsPage";
 import TodayCreatedCsvPage from "./pages/admin/csv/TodayCreatedCsvPage";
 import AdminUserPage from "./pages/admin/user/AdminUserPage";
+import MatchDataByDatePage from "./pages/admin/matches/MatchDataByDatePage";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -104,6 +105,7 @@ export default function App() {
               <Route path="point-setting" element={<PointSettingsPage />} />
               <Route path="users" element={<AdminUserPage />} />
               <Route path="csv/today" element={<TodayCreatedCsvPage />} />
+              <Route path="matches/by-date" element={<MatchDataByDatePage />} />
             </Route>
           </Route>
 

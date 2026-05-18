@@ -31,6 +31,7 @@ export default function AdminLayout() {
         key: "scraping",
         label: "スクレイピング",
         items: [
+          { label: "登録済み試合データ参照", to: "matches/by-date" },
           { label: "対象データ設定", to: "manual/data/target" },
           { label: "手動登録・更新", to: "manual/data/register" },
           { label: "欠陥値設定", to: "manual/data/defect" },
