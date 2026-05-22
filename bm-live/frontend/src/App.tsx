@@ -29,6 +29,7 @@ import PointSettingsPage from "./pages/admin/pointSetting/PointSettingsPage";
 import TodayCreatedCsvPage from "./pages/admin/csv/TodayCreatedCsvPage";
 import AdminUserPage from "./pages/admin/user/AdminUserPage";
 import MatchDataByDatePage from "./pages/admin/matches/MatchDataByDatePage";
+import DbConnectionPage from "./pages/admin/db/DbConnectionPage";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -106,6 +107,7 @@ export default function App() {
               <Route path="users" element={<AdminUserPage />} />
               <Route path="csv/today" element={<TodayCreatedCsvPage />} />
               <Route path="matches/by-date" element={<MatchDataByDatePage />} />
+              <Route path="db/connections" element={<DbConnectionPage />} />
             </Route>
           </Route>
 

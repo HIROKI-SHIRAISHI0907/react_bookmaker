@@ -62,6 +62,11 @@ export default function AdminLayout() {
           { label: "お知らせ通知管理", to: "notices" },
         ],
       },
+      {
+        key: "db",
+        label: "データベース",
+        items: [{ label: "コネクション管理", to: "db/connections" }],
+      },
     ],
     [],
   );
