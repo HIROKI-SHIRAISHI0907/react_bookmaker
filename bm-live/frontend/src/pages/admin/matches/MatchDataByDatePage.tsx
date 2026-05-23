@@ -13,7 +13,10 @@ type MatchDataByDateItem = {
 
 type MatchDataByDateListResponse = {
   targetDate: string;
+  page: number;
+  size: number;
   count: number;
+  totalPages: number;
   items: MatchDataByDateItem[];
 };
 
@@ -113,34 +116,46 @@ async function getJsonSafe<T>(url: string): Promise<T> {
 }
 
 export default function MatchDataByDatePage() {
+  const PAGE_SIZE = 10;
+
   const [targetDate, setTargetDate] = useState<string>(todayString());
+  const [page, setPage] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [response, setResponse] = useState<MatchDataByDateListResponse>({
     targetDate: todayString(),
+    page: 1,
+    size: PAGE_SIZE,
     count: 0,
+    totalPages: 0,
     items: [],
   });
 
   const items = useMemo(() => response.items ?? [], [response.items]);
 
-  const fetchMatchData = async (date: string) => {
+  const fetchMatchData = async (date: string, nextPage: number) => {
     setLoading(true);
     setErrorMessage("");
 
     try {
-      const data = await getJsonSafe<MatchDataByDateListResponse>(`/v1/api/admin/matches/by-date?targetDate=${encodeURIComponent(date)}`);
+      const data = await getJsonSafe<MatchDataByDateListResponse>(`/v1/api/admin/matches/by-date?targetDate=${encodeURIComponent(date)}&page=${nextPage}&size=${PAGE_SIZE}`);
 
       setResponse({
         targetDate: data.targetDate ?? date,
+        page: data.page ?? nextPage,
+        size: data.size ?? PAGE_SIZE,
         count: data.count ?? 0,
+        totalPages: data.totalPages ?? 0,
         items: Array.isArray(data.items) ? data.items : [],
       });
     } catch (error) {
       console.error(error);
       setResponse({
         targetDate: date,
+        page: nextPage,
+        size: PAGE_SIZE,
         count: 0,
+        totalPages: 0,
         items: [],
       });
       setErrorMessage(error instanceof Error ? error.message : "対戦データの取得に失敗しました。");
@@ -150,18 +165,44 @@ export default function MatchDataByDatePage() {
   };
 
   useEffect(() => {
-    fetchMatchData(targetDate);
+    fetchMatchData(targetDate, 1);
   }, []);
 
   const handleSearch = async () => {
-    await fetchMatchData(targetDate);
+    setPage(1);
+    await fetchMatchData(targetDate, 1);
   };
 
   const handleTodayClick = async () => {
     const today = todayString();
     setTargetDate(today);
-    await fetchMatchData(today);
+    setPage(1);
+    await fetchMatchData(today, 1);
   };
+
+  const handlePageChange = async (nextPage: number) => {
+    if (nextPage < 1) return;
+    if (response.totalPages > 0 && nextPage > response.totalPages) return;
+
+    setPage(nextPage);
+    await fetchMatchData(targetDate, nextPage);
+  };
+
+  const pageNumbers = useMemo(() => {
+    const total = response.totalPages || 0;
+    const current = response.page || 1;
+
+    if (total <= 0) return [];
+
+    const start = Math.max(1, current - 2);
+    const end = Math.min(total, current + 2);
+
+    const nums: number[] = [];
+    for (let i = start; i <= end; i++) {
+      nums.push(i);
+    }
+    return nums;
+  }, [response.page, response.totalPages]);
 
   return (
     <div style={{ display: "grid", gap: 16 }}>
@@ -203,8 +244,13 @@ export default function MatchDataByDatePage() {
         </div>
 
         <div style={summaryCardStyle}>
-          <div style={summaryLabelStyle}>件数</div>
+          <div style={summaryLabelStyle}>総件数</div>
           <div style={summaryValueStyle}>{response.count}</div>
+        </div>
+
+        <div style={summaryCardStyle}>
+          <div style={summaryLabelStyle}>ページ</div>
+          <div style={summaryValueStyle}>{response.totalPages > 0 ? `${response.page} / ${response.totalPages}` : "0 / 0"}</div>
         </div>
       </div>
 
@@ -236,9 +282,15 @@ export default function MatchDataByDatePage() {
             padding: "14px 16px",
             borderBottom: "1px solid #e5e7eb",
             fontWeight: 800,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 12,
+            flexWrap: "wrap",
           }}
         >
-          対戦データ一覧
+          <span>対戦データ一覧</span>
+          <span style={{ color: "#6b7280", fontSize: 13 }}>1ページ {PAGE_SIZE} 件</span>
         </div>
 
         <div style={{ overflowX: "auto" }}>
@@ -279,6 +331,61 @@ export default function MatchDataByDatePage() {
               )}
             </tbody>
           </table>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 12,
+            padding: 16,
+            borderTop: "1px solid #e5e7eb",
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ color: "#6b7280", fontSize: 13 }}>
+            総件数: {response.count} 件 / 1ページ {response.size || PAGE_SIZE} 件
+          </div>
+
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+            <button type="button" onClick={() => handlePageChange((response.page || 1) - 1)} disabled={loading || response.page <= 1} style={paginationButtonStyle}>
+              前へ
+            </button>
+
+            {pageNumbers.map((num) => {
+              const active = num === response.page;
+              return (
+                <button
+                  key={num}
+                  type="button"
+                  onClick={() => handlePageChange(num)}
+                  disabled={loading}
+                  style={{
+                    ...paginationButtonStyle,
+                    ...(active
+                      ? {
+                          background: "#2563eb",
+                          color: "#fff",
+                          borderColor: "#2563eb",
+                        }
+                      : {}),
+                  }}
+                >
+                  {num}
+                </button>
+              );
+            })}
+
+            <button
+              type="button"
+              onClick={() => handlePageChange((response.page || 1) + 1)}
+              disabled={loading || response.totalPages === 0 || response.page >= response.totalPages}
+              style={paginationButtonStyle}
+            >
+              次へ
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -351,4 +458,15 @@ const tdStyle: React.CSSProperties = {
   fontSize: 14,
   color: "#111827",
   verticalAlign: "top",
+};
+
+const paginationButtonStyle: React.CSSProperties = {
+  border: "1px solid #d1d5db",
+  background: "#fff",
+  color: "#111827",
+  padding: "8px 12px",
+  borderRadius: 8,
+  cursor: "pointer",
+  fontWeight: 700,
+  minWidth: 40,
 };
