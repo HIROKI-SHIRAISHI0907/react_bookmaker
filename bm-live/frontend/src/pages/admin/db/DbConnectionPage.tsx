@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 type PoolRuntimeMetrics = {
   poolName: string;
@@ -48,6 +48,8 @@ type CurrentDatabaseMetrics = {
 };
 
 type DbConnectionStatusResponse = {
+  dataSourceKey: string;
+  displayName: string;
   measuredAt: string;
   databaseName: string;
   poolRuntime: PoolRuntimeMetrics;
@@ -56,7 +58,14 @@ type DbConnectionStatusResponse = {
   currentDatabase: CurrentDatabaseMetrics;
 };
 
+type DbConnectionStatusListResponse = {
+  count: number;
+  items: DbConnectionStatusResponse[];
+};
+
 const emptyData: DbConnectionStatusResponse = {
+  dataSourceKey: "",
+  displayName: "",
   measuredAt: "",
   databaseName: "",
   poolRuntime: {
@@ -133,7 +142,6 @@ function getConnectionHealth(data: DbConnectionStatusResponse): ConnectionHealth
   const usageRate = active / maxPool;
   const nearExhaustedThreshold = Math.max(1, Math.floor(maxPool * 0.1));
   const warningThreshold = Math.max(2, Math.floor(maxPool * 0.25));
-
   const idleInTx = (data.currentDatabase.idleInTransactionConnections || 0) + (data.currentDatabase.idleInTransactionAbortedConnections || 0);
 
   if (waitingThreads > 0 || immediateAvailable <= 0 || dbAvailable <= 0) {
@@ -274,7 +282,8 @@ function getConnectionAlerts(data: DbConnectionStatusResponse): ConnectionAlert[
 export default function DbConnectionStatusPage() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [data, setData] = useState<DbConnectionStatusResponse>(emptyData);
+  const [items, setItems] = useState<DbConnectionStatusResponse[]>([]);
+  const [selectedKey, setSelectedKey] = useState("bm");
 
   const load = async () => {
     setLoading(true);
@@ -290,8 +299,13 @@ export default function DbConnectionStatusPage() {
         throw new Error(`HTTP ${response.status}`);
       }
 
-      const json = (await response.json()) as DbConnectionStatusResponse;
-      setData(json);
+      const json = (await response.json()) as DbConnectionStatusListResponse;
+      const nextItems = json.items ?? [];
+      setItems(nextItems);
+
+      if (nextItems.length > 0 && !nextItems.some((item) => item.dataSourceKey === selectedKey)) {
+        setSelectedKey(nextItems[0].dataSourceKey);
+      }
     } catch (error) {
       console.error(error);
       setErrorMessage("DBコネクション監視情報の取得に失敗しました。");
@@ -303,6 +317,10 @@ export default function DbConnectionStatusPage() {
   useEffect(() => {
     load();
   }, []);
+
+  const data = useMemo(() => {
+    return items.find((item) => item.dataSourceKey === selectedKey) ?? items[0] ?? emptyData;
+  }, [items, selectedKey]);
 
   const health = getConnectionHealth(data);
   const alerts = getConnectionAlerts(data);
@@ -342,13 +360,49 @@ export default function DbConnectionStatusPage() {
 
       <div
         style={{
+          display: "flex",
+          gap: 10,
+          flexWrap: "wrap",
+        }}
+      >
+        {items.map((item) => {
+          const itemHealth = getConnectionHealth(item);
+          const active = item.dataSourceKey === data.dataSourceKey;
+
+          return (
+            <button
+              key={item.dataSourceKey}
+              type="button"
+              onClick={() => setSelectedKey(item.dataSourceKey)}
+              style={{
+                border: `1px solid ${active ? itemHealth.borderColor : "#d1d5db"}`,
+                background: active ? itemHealth.background : "#fff",
+                borderRadius: 12,
+                padding: "12px 14px",
+                cursor: "pointer",
+                minWidth: 220,
+                textAlign: "left",
+              }}
+            >
+              <div style={{ fontSize: 12, color: "#6b7280" }}>監視対象</div>
+              <div style={{ marginTop: 4, fontWeight: 800, fontSize: 18 }}>{item.displayName || item.databaseName || item.dataSourceKey}</div>
+              <div style={{ marginTop: 8, fontSize: 13, color: itemHealth.color, fontWeight: 700 }}>
+                {itemHealth.icon} {itemHealth.label}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      <div
+        style={{
           display: "grid",
           gap: 12,
           gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
         }}
       >
         <SummaryCard title="計測日時" value={data.measuredAt || "-"} />
-        <SummaryCard title="DB名" value={data.databaseName || "-"} />
+        <SummaryCard title="DB名" value={data.displayName || data.databaseName || "-"} />
         <SummaryCard
           title="即時利用可能"
           value={String(data.poolRuntime.immediatelyAvailableConnections)}
@@ -367,6 +421,7 @@ export default function DbConnectionStatusPage() {
           tone={data.postgresServer.estimatedAvailableConnections <= 0 ? "danger" : data.postgresServer.estimatedAvailableConnections <= 3 ? "warn" : "good"}
         />
       </div>
+
       <div
         style={{
           border: `1px solid ${health.borderColor}`,
@@ -375,57 +430,18 @@ export default function DbConnectionStatusPage() {
           padding: 16,
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "flex-start",
-            gap: 14,
-            flexWrap: "wrap",
-          }}
-        >
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 14, flexWrap: "wrap" }}>
           <div style={{ fontSize: 34, lineHeight: 1 }}>{health.icon}</div>
 
           <div style={{ flex: 1, minWidth: 240 }}>
-            <div
-              style={{
-                fontSize: 12,
-                fontWeight: 700,
-                color: health.color,
-              }}
-            >
-              コネクション状態
-            </div>
-            <div
-              style={{
-                fontSize: 26,
-                fontWeight: 800,
-                color: health.color,
-                marginTop: 4,
-              }}
-            >
-              {health.label}
-            </div>
-            <div
-              style={{
-                marginTop: 8,
-                color: "#374151",
-                lineHeight: 1.6,
-              }}
-            >
-              {health.message}
-            </div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: health.color }}>コネクション状態</div>
+            <div style={{ fontSize: 26, fontWeight: 800, color: health.color, marginTop: 4 }}>{health.label}</div>
+            <div style={{ marginTop: 8, color: "#374151", lineHeight: 1.6 }}>{health.message}</div>
           </div>
         </div>
 
         {alerts.length > 0 && (
-          <div
-            style={{
-              display: "flex",
-              gap: 8,
-              flexWrap: "wrap",
-              marginTop: 14,
-            }}
-          >
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
             {alerts.map((alert) => (
               <span
                 key={`${alert.icon}-${alert.label}`}
@@ -533,24 +549,12 @@ export default function DbConnectionStatusPage() {
 function SummaryCard({ title, value, tone = "default" }: { title: string; value: string; tone?: "default" | "good" | "warn" | "danger" }) {
   const toneStyle =
     tone === "good"
-      ? {
-          borderColor: "#bbf7d0",
-          background: "#f0fdf4",
-        }
+      ? { borderColor: "#bbf7d0", background: "#f0fdf4" }
       : tone === "warn"
-        ? {
-            borderColor: "#fde68a",
-            background: "#fefce8",
-          }
+        ? { borderColor: "#fde68a", background: "#fefce8" }
         : tone === "danger"
-          ? {
-              borderColor: "#fecaca",
-              background: "#fef2f2",
-            }
-          : {
-              borderColor: "#e5e7eb",
-              background: "#fff",
-            };
+          ? { borderColor: "#fecaca", background: "#fef2f2" }
+          : { borderColor: "#e5e7eb", background: "#fff" };
 
   return (
     <div
@@ -563,16 +567,7 @@ function SummaryCard({ title, value, tone = "default" }: { title: string; value:
       }}
     >
       <div style={{ fontSize: 12, color: "#6b7280" }}>{title}</div>
-      <div
-        style={{
-          fontSize: 22,
-          fontWeight: 800,
-          marginTop: 6,
-          wordBreak: "break-word",
-        }}
-      >
-        {value}
-      </div>
+      <div style={{ fontSize: 22, fontWeight: 800, marginTop: 6, wordBreak: "break-word" }}>{value}</div>
     </div>
   );
 }
