@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 type PoolRuntimeMetrics = {
   poolName: string;
@@ -132,19 +132,48 @@ type ConnectionAlert = {
   background: string;
 };
 
-function getConnectionHealth(data: DbConnectionStatusResponse): ConnectionHealth {
+function getPoolFacts(data: DbConnectionStatusResponse) {
   const maxPool = Math.max(data.poolConfig.maximumPoolSize || 0, 1);
-  const active = data.poolRuntime.activeConnections || 0;
-  const immediateAvailable = data.poolRuntime.immediatelyAvailableConnections || 0;
-  const waitingThreads = data.poolRuntime.threadsAwaitingConnection || 0;
-  const dbAvailable = data.postgresServer.estimatedAvailableConnections || 0;
+  const total = Math.max(data.poolRuntime.totalConnections || 0, 0);
+  const active = Math.max(data.poolRuntime.activeConnections || 0, 0);
+  const idle = Math.max(data.poolRuntime.idleConnections || 0, 0);
+  const immediateAvailable = Math.max(data.poolRuntime.immediatelyAvailableConnections || 0, 0);
+  const waitingThreads = Math.max(data.poolRuntime.threadsAwaitingConnection || 0, 0);
+  const remainingPoolCapacity = Math.max(data.poolRuntime.remainingPoolCapacity || 0, 0);
+  const dbAvailable = Math.max(data.postgresServer.estimatedAvailableConnections || 0, 0);
+
+  const idleInTx = Math.max(data.currentDatabase.idleInTransactionConnections || 0, 0) + Math.max(data.currentDatabase.idleInTransactionAbortedConnections || 0, 0);
 
   const usageRate = active / maxPool;
-  const nearExhaustedThreshold = Math.max(1, Math.floor(maxPool * 0.1));
-  const warningThreshold = Math.max(2, Math.floor(maxPool * 0.25));
-  const idleInTx = (data.currentDatabase.idleInTransactionConnections || 0) + (data.currentDatabase.idleInTransactionAbortedConnections || 0);
+  const existingPoolBusyRate = total > 0 ? active / total : 0;
 
-  if (waitingThreads > 0 || immediateAvailable <= 0 || dbAvailable <= 0) {
+  // 今まだプールを増やせるか
+  const canGrowPool = remainingPoolCapacity > 0 || total < maxPool;
+
+  // 実際に逼迫しているかをざっくり判定
+  const poolPressure = waitingThreads > 0 || (!canGrowPool && immediateAvailable <= 0) || (usageRate >= 0.9 && immediateAvailable <= 1);
+
+  return {
+    maxPool,
+    total,
+    active,
+    idle,
+    immediateAvailable,
+    waitingThreads,
+    remainingPoolCapacity,
+    dbAvailable,
+    idleInTx,
+    usageRate,
+    existingPoolBusyRate,
+    canGrowPool,
+    poolPressure,
+  };
+}
+
+function getConnectionHealth(data: DbConnectionStatusResponse): ConnectionHealth {
+  const { active, immediateAvailable, waitingThreads, dbAvailable, idleInTx, usageRate, existingPoolBusyRate, canGrowPool, poolPressure } = getPoolFacts(data);
+
+  if (waitingThreads > 0 || (!canGrowPool && immediateAvailable <= 0) || dbAvailable <= 0) {
     return {
       level: "exhausted",
       label: "枯渇状態",
@@ -152,23 +181,23 @@ function getConnectionHealth(data: DbConnectionStatusResponse): ConnectionHealth
       color: "#b91c1c",
       background: "#fef2f2",
       borderColor: "#fecaca",
-      message: "接続待ちが発生しているか、即時利用可能な接続がありません。業務影響が出る可能性があります。",
+      message: "接続待ちが発生しているか、これ以上プールを広げられない状態で空き接続がありません。業務影響が出る可能性があります。",
     };
   }
 
-  if (immediateAvailable <= nearExhaustedThreshold || usageRate >= 0.9 || dbAvailable <= 3) {
+  if (dbAvailable <= 3 || (!canGrowPool && immediateAvailable <= 1 && active > 0) || (usageRate >= 0.9 && existingPoolBusyRate >= 0.9) || poolPressure) {
     return {
       level: "near_exhausted",
-      label: "そろそろ枯渇",
+      label: "逼迫寸前",
       icon: "🟠",
       color: "#c2410c",
       background: "#fff7ed",
       borderColor: "#fdba74",
-      message: "接続余力がかなり少ない状態です。少し負荷が上がると枯渇するおそれがあります。",
+      message: "接続使用率が高く、急な負荷増加で待ちが発生するおそれがあります。短時間での推移を重点監視してください。",
     };
   }
 
-  if (immediateAvailable <= warningThreshold || usageRate >= 0.75 || idleInTx >= 3) {
+  if (dbAvailable <= 10 || (usageRate >= 0.75 && active > 0) || (!canGrowPool && immediateAvailable <= 2 && active > 0) || idleInTx >= 3) {
     return {
       level: "warning",
       label: "注意",
@@ -176,7 +205,7 @@ function getConnectionHealth(data: DbConnectionStatusResponse): ConnectionHealth
       color: "#a16207",
       background: "#fefce8",
       borderColor: "#fde68a",
-      message: "接続使用率が高めです。継続すると逼迫に近づくため監視強化をおすすめします。",
+      message: "現時点で直ちに枯渇してはいませんが、接続使用率またはDB側余力に注意が必要です。",
     };
   }
 
@@ -206,13 +235,8 @@ function getConnectionHealth(data: DbConnectionStatusResponse): ConnectionHealth
 function getConnectionAlerts(data: DbConnectionStatusResponse): ConnectionAlert[] {
   const alerts: ConnectionAlert[] = [];
 
-  const maxPool = Math.max(data.poolConfig.maximumPoolSize || 0, 1);
-  const active = data.poolRuntime.activeConnections || 0;
-  const waitingThreads = data.poolRuntime.threadsAwaitingConnection || 0;
-  const immediateAvailable = data.poolRuntime.immediatelyAvailableConnections || 0;
-  const usageRate = active / maxPool;
+  const { active, immediateAvailable, waitingThreads, dbAvailable, idleInTx, usageRate, canGrowPool, remainingPoolCapacity } = getPoolFacts(data);
 
-  const idleInTx = data.currentDatabase.idleInTransactionConnections || 0;
   const idleInTxAborted = data.currentDatabase.idleInTransactionAbortedConnections || 0;
 
   if (waitingThreads > 0) {
@@ -224,10 +248,10 @@ function getConnectionAlerts(data: DbConnectionStatusResponse): ConnectionAlert[
     });
   }
 
-  if (immediateAvailable <= Math.max(1, Math.floor(maxPool * 0.1))) {
+  if (!canGrowPool && immediateAvailable <= 1 && active > 0) {
     alerts.push({
       icon: "🚨",
-      label: `即時利用可能が少ない (${immediateAvailable})`,
+      label: `空き接続が少ない (${immediateAvailable})`,
       color: "#9a3412",
       background: "#fff7ed",
     });
@@ -267,16 +291,68 @@ function getConnectionAlerts(data: DbConnectionStatusResponse): ConnectionAlert[
     });
   }
 
-  if (data.postgresServer.estimatedAvailableConnections <= 3) {
+  if (dbAvailable <= 3) {
     alerts.push({
       icon: "🗄️",
-      label: `DB全体の空き接続が少ない (${data.postgresServer.estimatedAvailableConnections})`,
+      label: `DB全体の空き接続が少ない (${dbAvailable})`,
       color: "#9a3412",
       background: "#fff7ed",
+    });
+  } else if (dbAvailable <= 10) {
+    alerts.push({
+      icon: "🗄️",
+      label: `DB全体の空き接続に注意 (${dbAvailable})`,
+      color: "#854d0e",
+      background: "#fefce8",
+    });
+  }
+
+  if (remainingPoolCapacity <= 0) {
+    alerts.push({
+      icon: "🧱",
+      label: "プール拡張余地なし",
+      color: "#6b7280",
+      background: "#f9fafb",
     });
   }
 
   return alerts;
+}
+
+function getImmediateAvailableTone(data: DbConnectionStatusResponse): "good" | "warn" | "danger" {
+  const { active, immediateAvailable, waitingThreads, dbAvailable, canGrowPool } = getPoolFacts(data);
+
+  if (waitingThreads > 0 || (!canGrowPool && immediateAvailable <= 0) || dbAvailable <= 0) {
+    return "danger";
+  }
+
+  if (!canGrowPool && immediateAvailable <= 1 && active > 0) {
+    return "warn";
+  }
+
+  return "good";
+}
+
+function getDbAvailableTone(value: number): "good" | "warn" | "danger" {
+  if (value <= 0) {
+    return "danger";
+  }
+  if (value <= 10) {
+    return "warn";
+  }
+  return "good";
+}
+
+function formatMeasuredAt(value: string) {
+  if (!value) {
+    return "-";
+  }
+
+  try {
+    return new Date(value).toLocaleString("ja-JP");
+  } catch {
+    return value;
+  }
 }
 
 export default function DbConnectionStatusPage() {
@@ -285,7 +361,7 @@ export default function DbConnectionStatusPage() {
   const [items, setItems] = useState<DbConnectionStatusResponse[]>([]);
   const [selectedKey, setSelectedKey] = useState("bm");
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     setErrorMessage("");
 
@@ -312,11 +388,11 @@ export default function DbConnectionStatusPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedKey]);
 
   useEffect(() => {
-    load();
-  }, []);
+    void load();
+  }, [load]);
 
   const data = useMemo(() => {
     return items.find((item) => item.dataSourceKey === selectedKey) ?? items[0] ?? emptyData;
@@ -343,7 +419,7 @@ export default function DbConnectionStatusPage() {
 
         <button
           type="button"
-          onClick={load}
+          onClick={() => void load()}
           disabled={loading}
           style={{
             border: "1px solid #d1d5db",
@@ -401,25 +477,11 @@ export default function DbConnectionStatusPage() {
           gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
         }}
       >
-        <SummaryCard title="計測日時" value={data.measuredAt || "-"} />
+        <SummaryCard title="計測日時" value={formatMeasuredAt(data.measuredAt)} />
         <SummaryCard title="DB名" value={data.displayName || data.databaseName || "-"} />
-        <SummaryCard
-          title="即時利用可能"
-          value={String(data.poolRuntime.immediatelyAvailableConnections)}
-          tone={
-            data.poolRuntime.immediatelyAvailableConnections <= 0
-              ? "danger"
-              : data.poolRuntime.immediatelyAvailableConnections <= Math.max(1, Math.floor((data.poolConfig.maximumPoolSize || 1) * 0.25))
-                ? "warn"
-                : "good"
-          }
-        />
+        <SummaryCard title="即時利用可能" value={String(data.poolRuntime.immediatelyAvailableConnections)} tone={getImmediateAvailableTone(data)} />
         <SummaryCard title="接続待ちスレッド" value={String(data.poolRuntime.threadsAwaitingConnection)} tone={data.poolRuntime.threadsAwaitingConnection > 0 ? "danger" : "good"} />
-        <SummaryCard
-          title="DB概算空き接続"
-          value={String(data.postgresServer.estimatedAvailableConnections)}
-          tone={data.postgresServer.estimatedAvailableConnections <= 0 ? "danger" : data.postgresServer.estimatedAvailableConnections <= 3 ? "warn" : "good"}
-        />
+        <SummaryCard title="DB概算空き接続" value={String(data.postgresServer.estimatedAvailableConnections)} tone={getDbAvailableTone(data.postgresServer.estimatedAvailableConnections)} />
       </div>
 
       <div
