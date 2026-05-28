@@ -292,6 +292,10 @@ function sortTimesAscWithFinishedLast(list: string[]) {
  * Page
  * ========================= */
 export default function IngestedDataReferenceAdminPage() {
+  const [refreshPressed, setRefreshPressed] = useState(false);
+  const [lastFetchedAt, setLastFetchedAt] = useState<string | null>(null);
+  const refreshPressedTimerRef = useRef<number | null>(null);
+
   // 手入力 matchUrl（groupKey単位で上書き）
   const [manualMatchUrlByGroupKey, setManualMatchUrlByGroupKey] = useState<Record<string, string>>({});
 
@@ -337,6 +341,15 @@ export default function IngestedDataReferenceAdminPage() {
     return `/v1/api/admin/ingested?${params.toString()}`;
   }, [country]);
 
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+      if (refreshPressedTimerRef.current) {
+        window.clearTimeout(refreshPressedTimerRef.current);
+      }
+    };
+  }, []);
+
   const doFetch = async () => {
     abortRef.current?.abort();
     const ac = new AbortController();
@@ -347,6 +360,7 @@ export default function IngestedDataReferenceAdminPage() {
     try {
       const res = await fetchJsonStrict<ApiEnvelope>(apiUrl, ac.signal);
       setEnvelope(res);
+      setLastFetchedAt(new Date().toISOString());
     } catch (e: any) {
       if (e?.name === "AbortError") return;
       setError(e?.message ?? String(e));
@@ -641,6 +655,21 @@ export default function IngestedDataReferenceAdminPage() {
     return (await res.json()) as ExecTaskResponse;
   }
 
+  const handleRefetch = async () => {
+    setOffset(0);
+
+    setRefreshPressed(true);
+    if (refreshPressedTimerRef.current) {
+      window.clearTimeout(refreshPressedTimerRef.current);
+    }
+
+    await doFetch();
+
+    refreshPressedTimerRef.current = window.setTimeout(() => {
+      setRefreshPressed(false);
+    }, 180);
+  };
+
   const runB008 = async () => {
     setExecLoading(true);
     setExecError(null);
@@ -725,21 +754,35 @@ export default function IngestedDataReferenceAdminPage() {
           title="検索条件"
           desc="from/to（登録日時）は使いません。国で取得して、keywordはフロント側で絞り込みます。"
           right={
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setOffset(0);
-                  void doFetch();
-                }}
-                disabled={loading}
-              >
-                {loading ? "更新中..." : "再取得"}
-              </Button>
-              <Button size="sm" onClick={runB008} disabled={loading || execLoading || groupedFiltered.length === 0}>
-                {execLoading ? "B008起動中..." : "B008起動"}
-              </Button>
+            <div className="flex flex-col items-end gap-1">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    void handleRefetch();
+                  }}
+                  disabled={loading}
+                  className={`min-w-[124px] transition-all duration-150 active:scale-95 ${loading || refreshPressed ? "scale-[0.98] shadow-inner" : "hover:shadow-sm"}`}
+                >
+                  <svg
+                    className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : refreshPressed ? "animate-[spin_0.35s_linear]" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v6h6M20 20v-6h-6M20 9a8 8 0 00-13.66-3.66L4 10M20 14l-2.34 4.66A8 8 0 014 14" />
+                  </svg>
+                  {loading ? "再取得中..." : "再取得"}
+                </Button>
+
+                <Button size="sm" onClick={runB008} disabled={loading || execLoading || groupedFiltered.length === 0}>
+                  {execLoading ? "B008起動中..." : "B008起動"}
+                </Button>
+              </div>
+
+              {lastFetchedAt ? <div className="text-[11px] text-muted-foreground">最終取得: {fmtJstFixed(lastFetchedAt, true)}</div> : null}
             </div>
           }
         >
