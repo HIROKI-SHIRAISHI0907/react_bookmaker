@@ -377,6 +377,14 @@ export default function DataFetchAdminPage() {
         endpoint: "/v1/api/admin/exec/task/stat-csv",
         precheckMode: "always",
       },
+      {
+        id: "B014",
+        code: "B014",
+        title: "統計CSVデータ取り入れ実行（国別 / 国リーグ別）",
+        description: "country または country + league を指定して統計CSVを取り込む",
+        endpoint: "/v1/api/stat/each",
+        precheckMode: "required",
+      },
     ],
     [],
   );
@@ -543,7 +551,7 @@ export default function DataFetchAdminPage() {
             const isRunning = running.has(t.id);
             const result = results[t.id];
             const err = errors[t.id];
-            const fileCheck = fileChecks[t.code];
+            const fileCheck = fileChecks[t.code] ?? (t.code === "B014" ? fileChecks["B006"] : undefined);
 
             const runTone: "gray" | "blue" | "emerald" | "amber" | "rose" = err ? "rose" : result ? "emerald" : "gray";
             const fileTone = getEffectiveFileBadgeTone(t, fileCheck);
