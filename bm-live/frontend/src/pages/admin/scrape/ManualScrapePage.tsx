@@ -1,9 +1,28 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+
+type StatExecuteRequest = {
+  country?: string;
+  league?: string;
+  season?: string;
+};
+
+type StatExecuteResponse = {
+  taskArn?: string;
+  batchCd?: string;
+};
+
+type StatCountryLeagueOption = {
+  country: string;
+  leagues: string[];
+};
+
+type StatCountryLeagueOptionsResponse = {
+  countries: StatCountryLeagueOption[];
+};
 
 type EcsRunRequest = {
   batchCd: string;
-  // 必要なら後で追加（例: dryRun?: boolean; など）
 };
 
 type EcsRunResponse = {
@@ -65,14 +84,9 @@ type S3FileListResponse = {
 
 const COUNT_URL = `/v1/api/admin/s3/files/count`;
 const LIST_URL = `/v1/api/admin/s3/files/list`;
-
-async function postNoBody(url: string) {
-  const res = await fetch(url, { method: "POST", credentials: "include" });
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`HTTP ${res.status} ${text}`);
-  }
-}
+const RUN_URL = `/v1/api/admin/scrape/ecs/run`;
+const STAT_EACH_URL = `/v1/api/stat/each`;
+const STAT_OPTIONS_URL = `/v1/api/admin/stat/options`;
 
 async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url, { credentials: "include" });
@@ -223,8 +237,22 @@ function ConfirmModal(props: {
 
 /** ===================== Page ===================== */
 export default function ManualScrapePage() {
-  const batchCodes = ["B002", "B003", "B004", "B005", "B007", "B008", "B009", "B010"];
+  const batchCodes = ["B002", "B003", "B004", "B005", "B007", "B008", "B009", "B010", "B014"];
   const [batchCode, setBatchCode] = useState(batchCodes[0]);
+
+  const isB007 = batchCode === "B007";
+  const isB014 = batchCode === "B014";
+
+  const [lastTaskArn, setLastTaskArn] = useState<string | null>(null);
+
+  // ===== B007 =====
+  const [scope, setScope] = useState<S3PrefixScope>("DEFAULT");
+  const [isMasterModalOpen, setIsMasterModalOpen] = useState(false);
+
+  // ===== B014 =====
+  const [country, setCountry] = useState("");
+  const [league, setLeague] = useState("");
+  const [season, setSeason] = useState("");
 
   // ===== Progress =====
   const progressQuery = useQuery({
@@ -235,26 +263,45 @@ export default function ManualScrapePage() {
 
   const isRunning = useMemo(() => progressQuery.data?.status === "RUNNING", [progressQuery.data]);
 
-  // ===== Run =====
-  const [lastTaskArn, setLastTaskArn] = useState<string | null>(null);
-  const RUN_URL = `/v1/api/admin/scrape/ecs/run`;
-  const runMutation = useMutation({
-    mutationFn: async () => {
-      const body: EcsRunRequest = { batchCd: batchCode };
-      const res = await postJson<EcsRunResponse>(RUN_URL, body);
-      return res;
-    },
-    onSuccess: async (res) => {
-      setLastTaskArn(res?.taskArn ?? null);
-      await progressQuery.refetch();
-    },
+  // ===== B014 options =====
+  const statOptionsQuery = useQuery({
+    queryKey: ["stat-country-league-options"],
+    enabled: isB014,
+    queryFn: () => getJson<StatCountryLeagueOptionsResponse>(STAT_OPTIONS_URL),
+    staleTime: 5 * 60 * 1000,
   });
 
-  // ===== B007 Master Register =====
-  const isB007 = batchCode === "B007";
-  const [scope, setScope] = useState<S3PrefixScope>("DEFAULT");
-  const [isMasterModalOpen, setIsMasterModalOpen] = useState(false);
+  const countryOptions = useMemo(() => statOptionsQuery.data?.countries ?? [], [statOptionsQuery.data]);
 
+  const leagueOptions = useMemo(() => {
+    const selected = countryOptions.find((x) => x.country === country);
+    return selected?.leagues ?? [];
+  }, [countryOptions, country]);
+
+  useEffect(() => {
+    if (!country) {
+      setLeague("");
+      return;
+    }
+    if (!leagueOptions.includes(league)) {
+      setLeague("");
+    }
+  }, [country, leagueOptions, league]);
+
+  useEffect(() => {
+    if (!isB014) {
+      setCountry("");
+      setLeague("");
+      setSeason("");
+    }
+    if (!isB007) {
+      setIsMasterModalOpen(false);
+    }
+  }, [isB014, isB007]);
+
+  const b014CanRun = !isB014 || (country.trim() !== "" && league.trim() !== "" && !statOptionsQuery.isLoading && !statOptionsQuery.isError);
+
+  // ===== B007 request =====
   const countReq = useMemo<S3FileCountRequest>(
     () => ({
       batchCode,
@@ -294,6 +341,27 @@ export default function ManualScrapePage() {
 
   const canRegisterMaster = isB007 && csvItems.length === 1;
 
+  // ===== Run =====
+  const runMutation = useMutation({
+    mutationFn: async () => {
+      if (isB014) {
+        const body: StatExecuteRequest = {
+          country: country.trim() || undefined,
+          league: league.trim() || undefined,
+          season: season.trim() || undefined,
+        };
+        return await postJson<StatExecuteResponse>(STAT_EACH_URL, body);
+      }
+
+      const body: EcsRunRequest = { batchCd: batchCode };
+      return await postJson<EcsRunResponse>(RUN_URL, body);
+    },
+    onSuccess: async (res) => {
+      setLastTaskArn(res?.taskArn ?? null);
+      await progressQuery.refetch();
+    },
+  });
+
   const masterMutation = useMutation({
     mutationFn: async () => {
       await postJson(`/v1/api/admin/exec/task/all-league-scrape-master`, {});
@@ -316,6 +384,20 @@ export default function ManualScrapePage() {
   const s3CountOnDayText = typeof s3CountQuery.data?.countOnDay === "number" ? s3CountQuery.data.countOnDay.toLocaleString() : "-";
   const s3ReturnedText = typeof s3ListQuery.data?.returnedCount === "number" ? s3ListQuery.data.returnedCount.toLocaleString() : "-";
 
+  const runButtonDisabled = runMutation.isPending || isRunning || masterMutation.isPending || !b014CanRun;
+
+  const runButtonTitle = isRunning
+    ? "RUNNING中のため実行できません"
+    : isB014 && statOptionsQuery.isLoading
+      ? "B014 の選択肢を読み込み中です"
+      : isB014 && statOptionsQuery.isError
+        ? "B014 の選択肢取得に失敗しています"
+        : isB014 && !country.trim()
+          ? "B014 は国を選択してください"
+          : isB014 && !league.trim()
+            ? "B014 はリーグを選択してください"
+            : undefined;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-6">
@@ -329,7 +411,7 @@ export default function ManualScrapePage() {
             </div>
             <div>
               <h1 className="text-3xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">スクレイピング管理</h1>
-              <p className="text-sm text-gray-600 mt-1">ECS起動（RUN）と進捗監視、B007はS3成果物からマスタ登録まで</p>
+              <p className="text-sm text-gray-600 mt-1">ECS起動（RUN）と進捗監視、B007はS3成果物からマスタ登録まで、B014は国・リーグ指定実行に対応</p>
             </div>
           </div>
 
@@ -337,6 +419,7 @@ export default function ManualScrapePage() {
             <Badge tone="blue">Batch {batchCode}</Badge>
             <Badge tone={statusTone(progressQuery.data?.status)}>{progressQuery.data?.status ?? "-"}</Badge>
             {busy ? <Badge tone="amber">処理中…</Badge> : <Badge tone="emerald">待機中</Badge>}
+            {lastTaskArn ? <Badge tone="gray">lastTaskArn: {lastTaskArn}</Badge> : null}
           </div>
         </div>
 
@@ -345,16 +428,11 @@ export default function ManualScrapePage() {
           <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
             <div>
               <div className="text-lg font-extrabold text-gray-900">操作</div>
-              <div className="text-sm text-gray-600 mt-1">RUN/更新、B007はS3確認・マスタ登録</div>
+              <div className="text-sm text-gray-600 mt-1">RUN/更新、B007はS3確認・マスタ登録、B014は国とリーグを指定して実行</div>
             </div>
 
             <div className="flex gap-2 flex-wrap">
-              <Button
-                onClick={() => runMutation.mutate()}
-                disabled={runMutation.isPending || isRunning || masterMutation.isPending}
-                loading={runMutation.isPending}
-                title={isRunning ? "RUNNING中のため実行できません" : undefined}
-              >
+              <Button onClick={() => runMutation.mutate()} disabled={runButtonDisabled} loading={runMutation.isPending} title={runButtonTitle}>
                 {isRunning ? "実行中" : "実行"}
               </Button>
 
@@ -429,6 +507,12 @@ export default function ManualScrapePage() {
                 <Badge tone={canRegisterMaster ? "emerald" : "rose"}>判定: {canRegisterMaster ? "OK（csv=1）" : `NG（csv=${csvItems.length}）`}</Badge>
                 <Badge tone="gray">scope: {scope}</Badge>
               </div>
+            ) : isB014 ? (
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge tone={country ? "blue" : "gray"}>country: {country || "-"}</Badge>
+                <Badge tone={league ? "violet" : "gray"}>league: {league || "-"}</Badge>
+                <Badge tone="gray">season: {season || "-"}</Badge>
+              </div>
             ) : (
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge tone="gray">progress poll: 5s</Badge>
@@ -436,11 +520,78 @@ export default function ManualScrapePage() {
             )}
           </div>
 
+          {isB014 ? (
+            <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid gap-2">
+                <label className="text-sm font-extrabold text-gray-900">Country</label>
+                <select
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  disabled={busy || statOptionsQuery.isLoading}
+                  className="w-full px-4 py-3 rounded-xl border bg-white text-sm font-semibold hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">選択してください</option>
+                  {countryOptions.map((c) => (
+                    <option key={c.country} value={c.country}>
+                      {c.country}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid gap-2">
+                <label className="text-sm font-extrabold text-gray-900">League</label>
+                <select
+                  value={league}
+                  onChange={(e) => setLeague(e.target.value)}
+                  disabled={busy || statOptionsQuery.isLoading || !country}
+                  className="w-full px-4 py-3 rounded-xl border bg-white text-sm font-semibold hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">選択してください</option>
+                  {leagueOptions.map((lg) => (
+                    <option key={lg} value={lg}>
+                      {lg}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid gap-2">
+                <label className="text-sm font-extrabold text-gray-900">Season（任意）</label>
+                <input
+                  value={season}
+                  onChange={(e) => setSeason(e.target.value)}
+                  disabled={busy}
+                  placeholder="例: 2025"
+                  className="w-full px-4 py-3 rounded-xl border bg-white text-sm font-semibold hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+          ) : null}
+
           <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
             {runMutation.isError ? <Alert type="error" title="起動エラー" message={(runMutation.error as Error).message} /> : null}
             {progressQuery.isError ? <Alert type="error" title="進捗取得エラー" message={(progressQuery.error as Error).message} /> : null}
             {masterMutation.isError ? <Alert type="error" title="マスタ登録エラー" message={(masterMutation.error as Error).message} /> : null}
           </div>
+
+          {isB014 && statOptionsQuery.isError ? (
+            <div className="mt-4">
+              <Alert type="error" title="B014選択肢取得エラー" message={(statOptionsQuery.error as Error).message} />
+            </div>
+          ) : null}
+
+          {isB014 && !statOptionsQuery.isLoading && !statOptionsQuery.isError && !countryOptions.length ? (
+            <div className="mt-4">
+              <Alert type="warning" title="B014選択肢なし" message="国・リーグの選択肢が取得できませんでした。マスタデータをご確認ください。" />
+            </div>
+          ) : null}
+
+          {isB014 && !b014CanRun && !statOptionsQuery.isLoading && !statOptionsQuery.isError ? (
+            <div className="mt-4">
+              <Alert type="warning" title="B014の実行条件" message="B014を実行するには、国とリーグの両方を選択してください。" />
+            </div>
+          ) : null}
         </Card>
 
         {/* Progress */}
