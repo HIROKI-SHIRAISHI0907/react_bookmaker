@@ -48,7 +48,22 @@ type BatchFileCheckResponseResource = {
   tasks?: BatchFileCheckTaskResource[];
 };
 
+type StatCountryLeagueOptionResource = {
+  country?: string;
+  leagues?: string[];
+};
+
+type StatCountryLeagueOptionsResponseResource = {
+  countries?: StatCountryLeagueOptionResource[];
+};
+
+type SelectOption = {
+  label: string;
+  value: string;
+};
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
+const STAT_OPTIONS_ENDPOINT = "/v1/api/admin/stat/options";
 
 /** ============ Utils ============ */
 function toTrimOrNull(s: string): string | null {
@@ -269,6 +284,41 @@ const Input = ({ label, value, onChange, placeholder = "", hint }: InputProps) =
   </div>
 );
 
+type SelectProps = {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: SelectOption[];
+  placeholder?: string;
+  hint?: string;
+  disabled?: boolean;
+};
+const Select = ({ label, value, onChange, options, placeholder = "選択してください", hint, disabled = false }: SelectProps) => (
+  <div>
+    <label className="block text-sm font-semibold text-gray-800 mb-2">{label}</label>
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      disabled={disabled}
+      className="
+        w-full px-4 py-3 rounded-xl border border-gray-200 bg-white
+        transition-colors duration-200
+        hover:border-gray-300
+        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+        disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed
+      "
+    >
+      <option value="">{placeholder}</option>
+      {options.map((opt) => (
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
+    {hint && <p className="mt-2 text-xs text-gray-500">{hint}</p>}
+  </div>
+);
+
 type AlertType = "info" | "success" | "error" | "warning";
 const Alert = ({ type, title, message, onClose }: { type: AlertType; title: string; message: string; onClose?: () => void }) => {
   const typeClasses: Record<AlertType, string> = {
@@ -393,6 +443,10 @@ export default function DataFetchAdminPage() {
   const [league, setLeague] = useState("");
   const [season, setSeason] = useState("");
 
+  const [statOptions, setStatOptions] = useState<StatCountryLeagueOptionsResponseResource | null>(null);
+  const [statOptionsLoading, setStatOptionsLoading] = useState(false);
+  const [statOptionsError, setStatOptionsError] = useState<string | null>(null);
+
   const [running, setRunning] = useState<Set<string>>(new Set());
   const [results, setResults] = useState<Record<string, StatResponseResource | null>>({});
   const [errors, setErrors] = useState<Record<string, string | null>>({});
@@ -413,6 +467,34 @@ export default function DataFetchAdminPage() {
     return body;
   }, [country, league, season]);
 
+  const countryOptions = useMemo<SelectOption[]>(() => {
+    return (statOptions?.countries ?? [])
+      .filter((x) => !!x.country)
+      .map((x) => ({
+        label: x.country as string,
+        value: x.country as string,
+      }));
+  }, [statOptions]);
+
+  const leagueOptions = useMemo<SelectOption[]>(() => {
+    const selected = (statOptions?.countries ?? []).find((x) => x.country === country);
+    return (selected?.leagues ?? []).map((item) => ({
+      label: item,
+      value: item,
+    }));
+  }, [statOptions, country]);
+
+  const handleCountryChange = (nextCountry: string) => {
+    setCountry(nextCountry);
+
+    const selected = (statOptions?.countries ?? []).find((x) => x.country === nextCountry);
+    const leagues = selected?.leagues ?? [];
+
+    if (!leagues.includes(league)) {
+      setLeague("");
+    }
+  };
+
   const loadFileChecks = async () => {
     setFileChecksLoading(true);
     setFileChecksError(null);
@@ -428,9 +510,41 @@ export default function DataFetchAdminPage() {
     }
   };
 
+  const loadStatOptions = async () => {
+    setStatOptionsLoading(true);
+    setStatOptionsError(null);
+
+    try {
+      const url = `${API_BASE}${STAT_OPTIONS_ENDPOINT}`;
+      const data = await getJsonSafe<StatCountryLeagueOptionsResponseResource>(url);
+      setStatOptions(data);
+    } catch (e: unknown) {
+      setStatOptionsError(getErrorMessage(e));
+    } finally {
+      setStatOptionsLoading(false);
+    }
+  };
+
   useEffect(() => {
     loadFileChecks();
+    loadStatOptions();
   }, []);
+
+  useEffect(() => {
+    if (!country) return;
+
+    const selected = (statOptions?.countries ?? []).find((x) => x.country === country);
+    if (!selected) {
+      setCountry("");
+      setLeague("");
+      return;
+    }
+
+    const leagues = selected.leagues ?? [];
+    if (league && !leagues.includes(league)) {
+      setLeague("");
+    }
+  }, [statOptions, country, league]);
 
   const runTask = async (t: TaskDef) => {
     setGlobalMessage(null);
@@ -472,6 +586,10 @@ export default function DataFetchAdminPage() {
     }
   };
 
+  const statOptionsBadgeTone: "gray" | "emerald" | "amber" | "rose" = statOptionsError ? "rose" : statOptionsLoading ? "amber" : "emerald";
+
+  const statOptionsBadgeLabel = statOptionsError ? "候補取得失敗" : statOptionsLoading ? "候補取得中..." : `候補API OK (${countryOptions.length} countries)`;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-6">
@@ -491,7 +609,13 @@ export default function DataFetchAdminPage() {
 
           <div className="flex items-center gap-2 flex-wrap">
             <Badge tone={API_BASE ? "emerald" : "amber"}>{API_BASE ? `API: ${API_BASE}` : "API_BASE 未設定"}</Badge>
+            <Badge tone={statOptionsBadgeTone}>{statOptionsBadgeLabel}</Badge>
             <Badge tone="blue">タスク数: {tasks.length}</Badge>
+
+            <Button variant="secondary" icon="🗂️" loading={statOptionsLoading} onClick={loadStatOptions} className="px-3 py-2 text-xs">
+              {statOptionsLoading ? "候補読込中..." : "候補更新"}
+            </Button>
+
             <Button variant="secondary" icon="🔄" loading={fileChecksLoading} onClick={loadFileChecks} className="px-3 py-2 text-xs">
               {fileChecksLoading ? "確認中..." : "状態更新"}
             </Button>
@@ -504,15 +628,18 @@ export default function DataFetchAdminPage() {
         {/* File-check alert */}
         {fileChecksError && <Alert type="warning" title="事前確認の取得に失敗" message={fileChecksError} onClose={() => setFileChecksError(null)} />}
 
+        {/* Options alert */}
+        {statOptionsError && <Alert type="warning" title="国・リーグ候補の取得に失敗" message={statOptionsError} onClose={() => setStatOptionsError(null)} />}
+
         {/* Request params */}
         <Card className="p-6">
           <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
             <div>
-              <div className="text-lg font-bold text-gray-900">リクエストパラメータ（任意）</div>
-              <div className="text-sm text-gray-600 mt-1">入力した値は各タスクの request body に入れて送信します</div>
+              <div className="text-lg font-bold text-gray-900">リクエストパラメータ（B014向け連動プルダウン対応）</div>
+              <div className="text-sm text-gray-600 mt-1">country を選ぶと、その国に紐づく league のみ選択できます。入力した値は各タスクの request body に入れて送信します。</div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Button
                 variant="secondary"
                 icon="🧹"
@@ -532,9 +659,27 @@ export default function DataFetchAdminPage() {
           </div>
 
           <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Input label="🏳️ country" value={country} onChange={setCountry} placeholder="例: JP" />
-            <Input label="🏆 league" value={league} onChange={setLeague} placeholder="例: J1" />
-            <Input label="📅 season" value={season} onChange={setSeason} placeholder="例: 2025" />
+            <Select
+              label="🏳️ country"
+              value={country}
+              onChange={handleCountryChange}
+              options={countryOptions}
+              placeholder={statOptionsLoading ? "読込中..." : countryOptions.length > 0 ? "国を選択" : "候補なし"}
+              hint="B014で利用する国を選択"
+              disabled={statOptionsLoading || countryOptions.length === 0}
+            />
+
+            <Select
+              label="🏆 league"
+              value={league}
+              onChange={setLeague}
+              options={leagueOptions}
+              placeholder={!country ? "先に国を選択" : leagueOptions.length > 0 ? "リーグを選択" : "候補なし"}
+              hint="選択した国に紐づくリーグのみ表示"
+              disabled={statOptionsLoading || !country || leagueOptions.length === 0}
+            />
+
+            <Input label="📅 season" value={season} onChange={setSeason} placeholder="例: 2025" hint="必要な場合のみ指定" />
           </div>
 
           <div className="mt-4 text-xs text-gray-500">※ Spring側で env に詰める想定なら「入力 → request body → runner 側で env 反映」の流れにできます。</div>
