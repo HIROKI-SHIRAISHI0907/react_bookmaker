@@ -30,6 +30,8 @@ import TodayCreatedCsvPage from "./pages/admin/csv/TodayCreatedCsvPage";
 import AdminUserPage from "./pages/admin/user/AdminUserPage";
 import MatchDataByDatePage from "./pages/admin/matches/MatchDataByDatePage";
 import DbConnectionPage from "./pages/admin/db/DbConnectionPage";
+import CountryLeagueSeasonMasterReferencePage from "./pages/admin/master/CountryLeagueSeasonMasterReferencePage";
+import CountryLeagueMasterReferencePage from "./pages/admin/master/CountryLeagueMasterReferencePage";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -108,6 +110,8 @@ export default function App() {
               <Route path="csv/today" element={<TodayCreatedCsvPage />} />
               <Route path="matches/by-date" element={<MatchDataByDatePage />} />
               <Route path="db/connections" element={<DbConnectionPage />} />
+              <Route path="season" element={<CountryLeagueSeasonMasterReferencePage />} />
+              <Route path="team" element={<CountryLeagueMasterReferencePage />} />
             </Route>
           </Route>
 

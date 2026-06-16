@@ -47,6 +47,8 @@ export default function AdminLayout() {
           { label: "CSV等選択肢登録", to: "sub-input" },
           { label: "サブリーグ設定", to: "sub-league" },
           { label: "勝ち点設定", to: "point-setting" },
+          { label: "シーズンデータ設定", to: "season" },
+          { label: "チームデータ設定", to: "team" },
         ],
       },
       {
