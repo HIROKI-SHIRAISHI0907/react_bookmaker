@@ -35,7 +35,24 @@ type CountryLeagueSeasonMasterEntity = {
 
 type InitialReadingMasterCsvResponse = {
   masterName?: string;
+  message?: string;
   countryLeagueSeasonMasterEntityList?: CountryLeagueSeasonMasterEntity[];
+};
+
+type InitialReadingMasterCsvUpdateTargetRequest = {
+  country: string;
+  league: string;
+};
+
+type InitialReadingMasterCsvUpdateRequest = {
+  masterName: string;
+  targets: InitialReadingMasterCsvUpdateTargetRequest[];
+};
+
+type InitialReadingMasterCsvUpdateResponse = {
+  message?: string;
+  updateCount?: number;
+  updatedTargets?: InitialReadingMasterCsvUpdateTargetRequest[];
 };
 
 type SelectedTarget = {
@@ -49,6 +66,7 @@ type EditingCell = {
 } | null;
 
 const PAGE_SIZE = 10;
+const MASTER_NAME = "country_league_season_master";
 
 async function fetchJsonStrict<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   const response = await fetch(input, {
@@ -286,6 +304,7 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
   const [editingCell, setEditingCell] = useState<EditingCell>(null);
   const [editingValue, setEditingValue] = useState("");
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
   const hasOpenedOnMountRef = useRef(false);
 
   const closeModal = useCallback(() => {
@@ -299,34 +318,45 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
 
   const fetchNewRows = useCallback(async (target: SelectedTarget): Promise<CountryLeagueSeasonMasterEntity[]> => {
     const params = new URLSearchParams({
-      masterName: "country_league_season_master",
+      masterName: MASTER_NAME,
       country: target.country,
       league: target.league,
     });
 
     const response = await fetchJsonStrict<InitialReadingMasterCsvResponse>(`/v1/api/admin/master/initial/csv?${params.toString()}`);
+
     return response.countryLeagueSeasonMasterEntityList ?? [];
   }, []);
 
   const openModalForTarget = useCallback(
     async (target: SelectedTarget) => {
-      setSelectedTarget(target);
+      setSelectedTarget(null);
       setNewRows([]);
       setNewRowsError(null);
       setEditingCell(null);
       setEditingValue("");
       setInfoMessage(null);
-      setModalOpen(true);
+      setModalOpen(false);
       setNewRowsLoading(true);
 
       try {
         const fetchedRows = await fetchNewRows(target);
-        setNewRows(fetchedRows);
 
         if (fetchedRows.length === 0) {
+          setNewRows([]);
+          setSelectedTarget(null);
+          setModalOpen(false);
           setInfoMessage("新規登録データはありません。");
+          return;
         }
+
+        setSelectedTarget(target);
+        setNewRows(fetchedRows);
+        setModalOpen(true);
       } catch (e) {
+        setSelectedTarget(null);
+        setNewRows([]);
+        setModalOpen(false);
         setNewRowsError(e instanceof Error ? e.message : "新規登録データの取得に失敗しました。");
       } finally {
         setNewRowsLoading(false);
@@ -349,9 +379,11 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
     setLoading(true);
     setError(null);
     setInfoMessage(null);
+
     try {
       const data = await fetchJsonStrict<CountryLeagueSeasonDTO[]>("/v1/api/country-league-season-master");
       const nextRows = Array.isArray(data) ? data : [];
+
       setRows(nextRows);
       setCurrentPage(0);
 
@@ -369,14 +401,15 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
           setNewRows([]);
           setNewRowsError(null);
           setNewRowsLoading(false);
+          setModalOpen(false);
           setInfoMessage("一覧データがありません。");
-          setModalOpen(true);
         }
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "一覧取得に失敗しました。");
       setRows([]);
       setCurrentPage(0);
+      setModalOpen(false);
     } finally {
       setLoading(false);
     }
@@ -393,15 +426,18 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
     document.body.style.overflow = "hidden";
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") closeModal();
+      if (event.key === "Escape" && !updatingStatus) {
+        closeModal();
+      }
     };
 
     window.addEventListener("keydown", onKeyDown);
+
     return () => {
       document.body.style.overflow = originalOverflow;
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [modalOpen, closeModal]);
+  }, [modalOpen, closeModal, updatingStatus]);
 
   const filteredRows = useMemo(() => {
     const q = keyword.trim().toLowerCase();
@@ -415,6 +451,7 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
   }, [rows, keyword]);
 
   const totalPages = Math.ceil(filteredRows.length / PAGE_SIZE);
+
   const pagedRows = useMemo(() => {
     const start = currentPage * PAGE_SIZE;
     return filteredRows.slice(start, start + PAGE_SIZE);
@@ -459,6 +496,52 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
     setEditingValue("");
   };
 
+  const handleConfirmOk = useCallback(async () => {
+    if (newRows.length === 0) {
+      closeModal();
+      return;
+    }
+
+    setUpdatingStatus(true);
+    setNewRowsError(null);
+
+    try {
+      const uniqueTargets = Array.from(
+        new Map(
+          newRows.map((row) => [
+            `${row.country ?? ""}___${row.league ?? ""}`,
+            {
+              country: row.country ?? "",
+              league: row.league ?? "",
+            },
+          ]),
+        ).values(),
+      ).filter((target) => target.country && target.league);
+
+      const requestBody: InitialReadingMasterCsvUpdateRequest = {
+        masterName: MASTER_NAME,
+        targets: uniqueTargets,
+      };
+
+      const response = await fetchJsonStrict<InitialReadingMasterCsvUpdateResponse>("/v1/api/admin/master/initial/csv/update-status", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      closeModal();
+      setInfoMessage(response.message ?? "更新しました。");
+      await load();
+    } catch (e) {
+      setNewRowsError(e instanceof Error ? e.message : "更新に失敗しました。");
+    } finally {
+      setUpdatingStatus(false);
+    }
+  }, [newRows, closeModal, load]);
+
   const modalContent =
     modalOpen && typeof document !== "undefined"
       ? createPortal(
@@ -468,7 +551,7 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
             aria-modal="true"
             aria-labelledby="country-league-season-modal-title"
             onClick={(e) => {
-              if (e.target === e.currentTarget) {
+              if (e.target === e.currentTarget && !updatingStatus) {
                 closeModal();
               }
             }}
@@ -481,22 +564,41 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
                   </h2>
                   <p style={{ margin: "6px 0 0", color: "#475569", fontSize: 12 }}>新規シーズンデータが登録されています。こちらのデータで問題ないでしょうか？</p>
                 </div>
-                <button type="button" style={buttonStyle} onClick={closeModal}>
+                <button type="button" style={updatingStatus ? disabledButtonStyle : buttonStyle} onClick={closeModal} disabled={updatingStatus}>
                   閉じる
                 </button>
               </div>
 
-              <div style={{ marginTop: 12, padding: 10, background: "#eff6ff", color: "#1d4ed8", borderRadius: 8, fontSize: 12 }}>
+              <div
+                style={{
+                  marginTop: 12,
+                  padding: 10,
+                  background: "#eff6ff",
+                  color: "#1d4ed8",
+                  borderRadius: 8,
+                  fontSize: 12,
+                }}
+              >
                 各セルはクリックするとその場で編集できます。Enter またはフォーカスアウトで反映、Esc でキャンセルします。
               </div>
 
-              {infoMessage && <div style={{ marginTop: 12, color: "#1d4ed8", background: "#dbeafe", padding: 10, borderRadius: 8, fontSize: 12 }}>{infoMessage}</div>}
-              {newRowsError && <div style={{ marginTop: 12, color: "#b91c1c", background: "#fee2e2", padding: 10, borderRadius: 8, fontSize: 12 }}>{newRowsError}</div>}
+              {newRowsError && (
+                <div
+                  style={{
+                    marginTop: 12,
+                    color: "#b91c1c",
+                    background: "#fee2e2",
+                    padding: 10,
+                    borderRadius: 8,
+                    fontSize: 12,
+                  }}
+                >
+                  {newRowsError}
+                </div>
+              )}
 
               {newRowsLoading ? (
                 <div style={{ marginTop: 16, fontSize: 12 }}>新規登録データを読み込み中です...</div>
-              ) : newRows.length === 0 ? (
-                <div style={{ marginTop: 16, fontSize: 12 }}>表示できる新規登録データがありません。</div>
               ) : (
                 <div style={tableWrapperStyle}>
                   <table style={tableStyle}>
@@ -558,11 +660,11 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
               )}
 
               <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                <button type="button" style={buttonStyle} onClick={closeModal}>
+                <button type="button" style={updatingStatus ? disabledButtonStyle : buttonStyle} onClick={closeModal} disabled={updatingStatus}>
                   キャンセル
                 </button>
-                <button type="button" style={okButtonStyle} onClick={closeModal}>
-                  OK
+                <button type="button" style={updatingStatus ? disabledButtonStyle : okButtonStyle} onClick={() => void handleConfirmOk()} disabled={updatingStatus}>
+                  {updatingStatus ? "更新中..." : "OK"}
                 </button>
               </div>
             </div>

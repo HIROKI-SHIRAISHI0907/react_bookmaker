@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 
 type CountryLeagueDTO = {
   id?: string;
@@ -27,6 +28,23 @@ type InitialReadingMasterCsvResponse = {
   countryLeagueMasterEntityList?: CountryLeagueMasterEntity[];
 };
 
+type InitialReadingMasterCsvUpdateTargetRequest = {
+  country: string;
+  league: string;
+};
+
+type InitialReadingMasterCsvUpdateRequest = {
+  masterName: string;
+  targets: InitialReadingMasterCsvUpdateTargetRequest[];
+};
+
+type InitialReadingMasterCsvUpdateResponse = {
+  success?: boolean;
+  message?: string;
+  updateCount?: number;
+  updatedTargets?: InitialReadingMasterCsvUpdateTargetRequest[];
+};
+
 type SelectedTarget = {
   country: string;
   league: string;
@@ -36,6 +54,8 @@ type EditingCell = {
   rowIndex: number;
   field: keyof CountryLeagueMasterEntity;
 } | null;
+
+const MASTER_NAME = "country_league_master";
 
 async function fetchJsonStrict<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   const response = await fetch(input, {
@@ -81,7 +101,7 @@ const overlayStyle: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  zIndex: 9999,
+  zIndex: 2147483647,
 };
 
 const modalStyle: React.CSSProperties = {
@@ -197,6 +217,24 @@ function toDisplay(value: unknown): string {
   return String(value);
 }
 
+function uniqueTargetsFromRows(rows: CountryLeagueMasterEntity[]): InitialReadingMasterCsvUpdateTargetRequest[] {
+  const map = new Map<string, InitialReadingMasterCsvUpdateTargetRequest>();
+
+  rows.forEach((row) => {
+    const country = (row.country ?? "").trim();
+    const league = (row.league ?? "").trim();
+
+    if (!country || !league) return;
+
+    const key = `${country}___${league}`;
+    if (!map.has(key)) {
+      map.set(key, { country, league });
+    }
+  });
+
+  return Array.from(map.values());
+}
+
 type EditableCellProps = {
   rowIndex: number;
   field: keyof CountryLeagueMasterEntity;
@@ -271,6 +309,7 @@ const CountryLeagueMasterPage: React.FC = () => {
   const [editingCell, setEditingCell] = useState<EditingCell>(null);
   const [editingValue, setEditingValue] = useState("");
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   const closeModal = useCallback(() => {
     setModalOpen(false);
@@ -278,12 +317,14 @@ const CountryLeagueMasterPage: React.FC = () => {
     setEditingCell(null);
     setEditingValue("");
     setNewRowsError(null);
+    setNewRowsLoading(false);
   }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     setInfoMessage(null);
+
     try {
       const data = await fetchJsonStrict<CountryLeagueDTO[]>("/v1/api/country-league-master");
       setRows(Array.isArray(data) ? data : []);
@@ -299,13 +340,29 @@ const CountryLeagueMasterPage: React.FC = () => {
 
   const fetchNewRows = useCallback(async (target: SelectedTarget): Promise<CountryLeagueMasterEntity[]> => {
     const params = new URLSearchParams({
-      masterName: "country_league_master",
+      masterName: MASTER_NAME,
       country: target.country,
       league: target.league,
     });
 
     const response = await fetchJsonStrict<InitialReadingMasterCsvResponse>(`/v1/api/admin/master/initial/csv?${params.toString()}`);
+
     return response.countryLeagueMasterEntityList ?? [];
+  }, []);
+
+  const updateInitialFlg = useCallback(async (targets: InitialReadingMasterCsvUpdateTargetRequest[]) => {
+    const body: InitialReadingMasterCsvUpdateRequest = {
+      masterName: MASTER_NAME,
+      targets,
+    };
+
+    return fetchJsonStrict<InitialReadingMasterCsvUpdateResponse>("/v1/api/admin/master/initial/csv/update-status", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
   }, []);
 
   useEffect(() => {
@@ -319,15 +376,18 @@ const CountryLeagueMasterPage: React.FC = () => {
     document.body.style.overflow = "hidden";
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") closeModal();
+      if (event.key === "Escape" && !updatingStatus) {
+        closeModal();
+      }
     };
 
     window.addEventListener("keydown", onKeyDown);
+
     return () => {
       document.body.style.overflow = originalOverflow;
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [modalOpen, closeModal]);
+  }, [modalOpen, closeModal, updatingStatus]);
 
   const filteredRows = useMemo(() => {
     const q = keyword.trim().toLowerCase();
@@ -377,6 +437,8 @@ const CountryLeagueMasterPage: React.FC = () => {
       setNewRows([]);
       setEditingCell(null);
       setEditingValue("");
+      setSelectedTarget(null);
+      setModalOpen(false);
       setNewRowsLoading(true);
 
       try {
@@ -384,8 +446,9 @@ const CountryLeagueMasterPage: React.FC = () => {
 
         if (fetchedRows.length === 0) {
           setSelectedTarget(null);
+          setNewRows([]);
           setModalOpen(false);
-          setInfoMessage(`新規登録データはありません。対象: ${target.country} / ${target.league}`);
+          setInfoMessage("新規登録データはありません。");
           return;
         }
 
@@ -394,6 +457,7 @@ const CountryLeagueMasterPage: React.FC = () => {
         setModalOpen(true);
       } catch (e) {
         setSelectedTarget(null);
+        setNewRows([]);
         setModalOpen(false);
         setNewRowsError(e instanceof Error ? e.message : "新規登録データの取得に失敗しました。");
       } finally {
@@ -431,198 +495,328 @@ const CountryLeagueMasterPage: React.FC = () => {
     setEditingValue("");
   };
 
-  return (
-    <div style={pageStyle}>
-      <div style={sectionStyle}>
-        <div style={{ marginBottom: 12 }}>
-          <h1 style={{ margin: 0, fontSize: 22, lineHeight: 1.3 }}>country_league_master 確認</h1>
-          <p style={{ margin: "6px 0 0", color: "#475569", fontSize: 12 }}>APIでは全件一括取得し、画面側で同一リーグごとにページング表示します。</p>
-        </div>
+  const handleOk = useCallback(async () => {
+    if (updatingStatus) return;
 
-        <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12, flexWrap: "wrap" }}>
-          <button type="button" onClick={() => void load()} style={primaryButtonStyle}>
-            {loading ? "読み込み中..." : "再読み込み"}
-          </button>
-          <input
-            value={keyword}
-            onChange={(e) => {
-              setKeyword(e.target.value);
-              setCurrentLeaguePage(0);
+    const targets = uniqueTargetsFromRows(newRows);
+
+    if (targets.length === 0) {
+      closeModal();
+      setInfoMessage("更新対象がないため、そのまま閉じました。");
+      return;
+    }
+
+    setUpdatingStatus(true);
+    setNewRowsError(null);
+
+    try {
+      const response = await updateInitialFlg(targets);
+
+      if (response.success === false) {
+        throw new Error(response.message || "initialFlg更新に失敗しました。");
+      }
+
+      closeModal();
+      setInfoMessage(response.message || `initialFlgを更新しました。更新件数: ${response.updateCount ?? 0}`);
+    } catch (e) {
+      setNewRowsError(e instanceof Error ? e.message : "initialFlg更新に失敗しました。");
+    } finally {
+      setUpdatingStatus(false);
+    }
+  }, [newRows, updateInitialFlg, closeModal, updatingStatus]);
+
+  const modalContent =
+    modalOpen && typeof document !== "undefined"
+      ? createPortal(
+          <div
+            style={overlayStyle}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="country-league-modal-title"
+            onClick={(e) => {
+              if (e.target === e.currentTarget && !updatingStatus) {
+                closeModal();
+              }
             }}
-            placeholder="country / league / team / link / delFlg などで絞り込み"
-            style={{ ...inputStyle, width: 300 }}
-          />
-          <span style={badgeStyle}>総件数: {rows.length}</span>
-          <span style={badgeStyle}>絞込件数: {filteredRows.length}</span>
-          <span style={badgeStyle}>リーグ: {currentLeagueName}</span>
-          <span style={badgeStyle}>
-            ページ: {totalLeaguePages === 0 ? 0 : currentLeaguePage + 1} / {totalLeaguePages}
-          </span>
-        </div>
-
-        <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10, flexWrap: "wrap" }}>
-          <button
-            type="button"
-            style={currentLeaguePage <= 0 ? disabledButtonStyle : buttonStyle}
-            onClick={() => setCurrentLeaguePage((prev) => Math.max(prev - 1, 0))}
-            disabled={currentLeaguePage <= 0}
           >
-            前のリーグ
-          </button>
-          <button
-            type="button"
-            style={currentLeaguePage >= totalLeaguePages - 1 || totalLeaguePages === 0 ? disabledButtonStyle : buttonStyle}
-            onClick={() => setCurrentLeaguePage((prev) => Math.min(prev + 1, totalLeaguePages - 1))}
-            disabled={currentLeaguePage >= totalLeaguePages - 1 || totalLeaguePages === 0}
-          >
-            次のリーグ
-          </button>
-        </div>
+            <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+                <div>
+                  <h2 id="country-league-modal-title" style={{ margin: 0, fontSize: 18, lineHeight: 1.3 }}>
+                    新規リーグデータ確認
+                  </h2>
+                  <p style={{ margin: "6px 0 0", color: "#475569", fontSize: 12 }}>新規リーグデータが登録されています。こちらのデータで問題ないでしょうか？</p>
+                </div>
+                <button type="button" style={buttonStyle} onClick={closeModal} disabled={updatingStatus}>
+                  閉じる
+                </button>
+              </div>
 
-        {error && <div style={{ marginBottom: 10, color: "#b91c1c", background: "#fee2e2", padding: 10, borderRadius: 8, fontSize: 12 }}>{error}</div>}
-        {newRowsError && !modalOpen && <div style={{ marginBottom: 10, color: "#b91c1c", background: "#fee2e2", padding: 10, borderRadius: 8, fontSize: 12 }}>{newRowsError}</div>}
-        {infoMessage && <div style={{ marginBottom: 10, color: "#1d4ed8", background: "#dbeafe", padding: 10, borderRadius: 8, fontSize: 12 }}>{infoMessage}</div>}
-        {newRowsLoading && !modalOpen && <div style={{ marginBottom: 10, color: "#334155", background: "#f8fafc", padding: 10, borderRadius: 8, fontSize: 12 }}>新規登録データを確認中です...</div>}
+              <div
+                style={{
+                  marginTop: 12,
+                  padding: 10,
+                  background: "#eff6ff",
+                  color: "#1d4ed8",
+                  borderRadius: 8,
+                  fontSize: 12,
+                }}
+              >
+                各セルはクリックするとその場で編集できます。Enter またはフォーカスアウトで反映、Esc でキャンセルします。
+              </div>
 
-        <div style={tableWrapperStyle}>
-          <table style={tableStyle}>
-            <thead>
-              <tr>
-                {["No", "country", "league", "team", "link", "delFlg", "確認"].map((label) => (
-                  <th key={label} style={thStyle}>
-                    {label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={7} style={thTdStyle}>
-                    読み込み中です...
-                  </td>
-                </tr>
-              ) : currentRows.length === 0 ? (
-                <tr>
-                  <td colSpan={7} style={thTdStyle}>
-                    表示できるデータがありません。
-                  </td>
-                </tr>
+              {newRowsError && (
+                <div
+                  style={{
+                    marginTop: 12,
+                    color: "#b91c1c",
+                    background: "#fee2e2",
+                    padding: 10,
+                    borderRadius: 8,
+                    fontSize: 12,
+                  }}
+                >
+                  {newRowsError}
+                </div>
+              )}
+
+              {newRowsLoading ? (
+                <div style={{ marginTop: 16, fontSize: 12 }}>新規登録データを読み込み中です...</div>
               ) : (
-                currentRows.map((row, index) => (
-                  <tr key={`${row.country}-${row.league}-${row.team}-${index}`} style={{ background: index % 2 === 0 ? "#ffffff" : "#fcfcfd" }}>
-                    <td style={thTdStyle}>
-                      <MasterCell value={index + 1} />
-                    </td>
-                    <td style={thTdStyle}>
-                      <MasterCell value={row.country} />
-                    </td>
-                    <td style={thTdStyle}>
-                      <MasterCell value={row.league} />
-                    </td>
-                    <td style={thTdStyle}>
-                      <MasterCell value={row.team} />
-                    </td>
-                    <td style={thTdStyle}>
-                      <MasterCell value={row.link} wide />
-                    </td>
-                    <td style={thTdStyle}>
-                      <MasterCell value={row.delFlg} />
-                    </td>
-                    <td style={thTdStyle}>
-                      <button type="button" style={buttonStyle} onClick={() => void openModal(row)}>
-                        確認
-                      </button>
+                <div style={tableWrapperStyle}>
+                  <table style={tableStyle}>
+                    <thead>
+                      <tr>
+                        {["No", "country", "league", "team", "link", "delFlg", "registerId", "registerTime", "updateId", "updateTime"].map((label) => (
+                          <th key={label} style={thStyle}>
+                            {label}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {newRows.map((row, rowIndex) => (
+                        <tr key={`${row.country}-${row.league}-${row.team}-${rowIndex}`} style={{ background: rowIndex % 2 === 0 ? "#ffffff" : "#fcfcfd" }}>
+                          <td style={thTdStyle}>
+                            <MasterCell value={rowIndex + 1} />
+                          </td>
+                          {(["country", "league", "team", "link", "delFlg", "registerId", "registerTime", "updateId", "updateTime"] as (keyof CountryLeagueMasterEntity)[]).map((field) => (
+                            <td key={String(field)} style={thTdStyle}>
+                              <EditableCell
+                                rowIndex={rowIndex}
+                                field={field}
+                                value={row[field]}
+                                wide={field === "link" || field === "registerTime" || field === "updateTime"}
+                                editingCell={editingCell}
+                                editingValue={editingValue}
+                                onStartEdit={startEdit}
+                                onChangeValue={setEditingValue}
+                                onCommit={commitEdit}
+                                onCancel={cancelEdit}
+                              />
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
+                <button type="button" style={buttonStyle} onClick={closeModal} disabled={updatingStatus}>
+                  キャンセル
+                </button>
+                <button type="button" style={updatingStatus ? disabledButtonStyle : okButtonStyle} onClick={() => void handleOk()} disabled={updatingStatus}>
+                  {updatingStatus ? "更新中..." : "OK"}
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )
+      : null;
+
+  return (
+    <>
+      <div style={pageStyle}>
+        <div style={sectionStyle}>
+          <div style={{ marginBottom: 12 }}>
+            <h1 style={{ margin: 0, fontSize: 22, lineHeight: 1.3 }}>country_league_master 確認</h1>
+            <p style={{ margin: "6px 0 0", color: "#475569", fontSize: 12 }}>APIでは全件一括取得し、画面側で同一リーグごとにページング表示します。</p>
+          </div>
+
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12, flexWrap: "wrap" }}>
+            <button type="button" onClick={() => void load()} style={primaryButtonStyle}>
+              {loading ? "読み込み中..." : "再読み込み"}
+            </button>
+
+            <input
+              value={keyword}
+              onChange={(e) => {
+                setKeyword(e.target.value);
+                setCurrentLeaguePage(0);
+              }}
+              placeholder="country / league / team / link / delFlg などで絞り込み"
+              style={{ ...inputStyle, width: 300 }}
+            />
+
+            <span style={badgeStyle}>総件数: {rows.length}</span>
+            <span style={badgeStyle}>絞込件数: {filteredRows.length}</span>
+            <span style={badgeStyle}>リーグ: {currentLeagueName}</span>
+            <span style={badgeStyle}>
+              ページ: {totalLeaguePages === 0 ? 0 : currentLeaguePage + 1} / {totalLeaguePages}
+            </span>
+          </div>
+
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10, flexWrap: "wrap" }}>
+            <button
+              type="button"
+              style={currentLeaguePage <= 0 ? disabledButtonStyle : buttonStyle}
+              onClick={() => setCurrentLeaguePage((prev) => Math.max(prev - 1, 0))}
+              disabled={currentLeaguePage <= 0}
+            >
+              前のリーグ
+            </button>
+
+            <button
+              type="button"
+              style={currentLeaguePage >= totalLeaguePages - 1 || totalLeaguePages === 0 ? disabledButtonStyle : buttonStyle}
+              onClick={() => setCurrentLeaguePage((prev) => Math.min(prev + 1, totalLeaguePages - 1))}
+              disabled={currentLeaguePage >= totalLeaguePages - 1 || totalLeaguePages === 0}
+            >
+              次のリーグ
+            </button>
+          </div>
+
+          {error && (
+            <div
+              style={{
+                marginBottom: 10,
+                color: "#b91c1c",
+                background: "#fee2e2",
+                padding: 10,
+                borderRadius: 8,
+                fontSize: 12,
+              }}
+            >
+              {error}
+            </div>
+          )}
+
+          {newRowsError && !modalOpen && (
+            <div
+              style={{
+                marginBottom: 10,
+                color: "#b91c1c",
+                background: "#fee2e2",
+                padding: 10,
+                borderRadius: 8,
+                fontSize: 12,
+              }}
+            >
+              {newRowsError}
+            </div>
+          )}
+
+          {infoMessage && (
+            <div
+              style={{
+                marginBottom: 10,
+                color: "#1d4ed8",
+                background: "#dbeafe",
+                padding: 10,
+                borderRadius: 8,
+                fontSize: 12,
+              }}
+            >
+              {infoMessage}
+            </div>
+          )}
+
+          {newRowsLoading && !modalOpen && (
+            <div
+              style={{
+                marginBottom: 10,
+                color: "#334155",
+                background: "#f8fafc",
+                padding: 10,
+                borderRadius: 8,
+                fontSize: 12,
+              }}
+            >
+              新規登録データを確認中です...
+            </div>
+          )}
+
+          <div style={tableWrapperStyle}>
+            <table style={tableStyle}>
+              <thead>
+                <tr>
+                  {["No", "country", "league", "team", "link", "delFlg", "確認"].map((label) => (
+                    <th key={label} style={thStyle}>
+                      {label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan={7} style={thTdStyle}>
+                      読み込み中です...
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : currentRows.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} style={thTdStyle}>
+                      表示できるデータがありません。
+                    </td>
+                  </tr>
+                ) : (
+                  currentRows.map((row, index) => (
+                    <tr key={`${row.country}-${row.league}-${row.team}-${index}`} style={{ background: index % 2 === 0 ? "#ffffff" : "#fcfcfd" }}>
+                      <td style={thTdStyle}>
+                        <MasterCell value={index + 1} />
+                      </td>
+                      <td style={thTdStyle}>
+                        <MasterCell value={row.country} />
+                      </td>
+                      <td style={thTdStyle}>
+                        <MasterCell value={row.league} />
+                      </td>
+                      <td style={thTdStyle}>
+                        <MasterCell value={row.team} />
+                      </td>
+                      <td style={thTdStyle}>
+                        <MasterCell value={row.link} wide />
+                      </td>
+                      <td style={thTdStyle}>
+                        <MasterCell value={row.delFlg} />
+                      </td>
+                      <td style={thTdStyle}>
+                        <button
+                          type="button"
+                          style={buttonStyle}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void openModal(row);
+                          }}
+                        >
+                          確認
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      {modalOpen && (
-        <div style={overlayStyle} role="dialog" aria-modal="true" aria-labelledby="country-league-modal-title" onClick={closeModal}>
-          <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
-              <div>
-                <h2 id="country-league-modal-title" style={{ margin: 0, fontSize: 18, lineHeight: 1.3 }}>
-                  新規リーグデータ確認
-                </h2>
-                <p style={{ margin: "6px 0 0", color: "#475569", fontSize: 12 }}>新規リーグデータが登録されています。こちらのデータで問題ないでしょうか？</p>
-                {selectedTarget && (
-                  <p style={{ margin: "6px 0 0", color: "#0f172a", fontSize: 12 }}>
-                    対象: {selectedTarget.country} / {selectedTarget.league}
-                  </p>
-                )}
-              </div>
-              <button type="button" style={buttonStyle} onClick={closeModal}>
-                閉じる
-              </button>
-            </div>
-
-            <div style={{ marginTop: 12, padding: 10, background: "#eff6ff", color: "#1d4ed8", borderRadius: 8, fontSize: 12 }}>
-              各セルはクリックするとその場で編集できます。Enter またはフォーカスアウトで反映、Esc でキャンセルします。
-            </div>
-
-            {newRowsError && <div style={{ marginTop: 12, color: "#b91c1c", background: "#fee2e2", padding: 10, borderRadius: 8, fontSize: 12 }}>{newRowsError}</div>}
-
-            {newRowsLoading ? (
-              <div style={{ marginTop: 16, fontSize: 12 }}>新規登録データを読み込み中です...</div>
-            ) : (
-              <div style={tableWrapperStyle}>
-                <table style={tableStyle}>
-                  <thead>
-                    <tr>
-                      {["No", "country", "league", "team", "link", "delFlg", "registerId", "registerTime", "updateId", "updateTime"].map((label) => (
-                        <th key={label} style={thStyle}>
-                          {label}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {newRows.map((row, rowIndex) => (
-                      <tr key={`${row.country}-${row.league}-${row.team}-${rowIndex}`} style={{ background: rowIndex % 2 === 0 ? "#ffffff" : "#fcfcfd" }}>
-                        <td style={thTdStyle}>
-                          <MasterCell value={rowIndex + 1} />
-                        </td>
-                        {(["country", "league", "team", "link", "delFlg", "registerId", "registerTime", "updateId", "updateTime"] as (keyof CountryLeagueMasterEntity)[]).map((field) => (
-                          <td key={String(field)} style={thTdStyle}>
-                            <EditableCell
-                              rowIndex={rowIndex}
-                              field={field}
-                              value={row[field]}
-                              wide={field === "link" || field === "registerTime" || field === "updateTime"}
-                              editingCell={editingCell}
-                              editingValue={editingValue}
-                              onStartEdit={startEdit}
-                              onChangeValue={setEditingValue}
-                              onCommit={commitEdit}
-                              onCancel={cancelEdit}
-                            />
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-              <button type="button" style={buttonStyle} onClick={closeModal}>
-                キャンセル
-              </button>
-              <button type="button" style={okButtonStyle} onClick={closeModal}>
-                OK
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      {modalContent}
+    </>
   );
 };
 
