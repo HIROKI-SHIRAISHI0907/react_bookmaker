@@ -39,6 +39,17 @@ type InitialReadingMasterCsvResponse = {
   countryLeagueSeasonMasterEntityList?: CountryLeagueSeasonMasterEntity[];
 };
 
+type InitialReadingMasterCsvSaveRequest = {
+  masterName: string;
+  countryLeagueSeasonMasterEntityList: CountryLeagueSeasonMasterEntity[];
+};
+
+type InitialReadingMasterCsvSaveResponse = {
+  success?: boolean;
+  message?: string;
+  saveCount?: number;
+};
+
 type InitialReadingMasterCsvUpdateTargetRequest = {
   country: string;
   league: string;
@@ -50,6 +61,7 @@ type InitialReadingMasterCsvUpdateRequest = {
 };
 
 type InitialReadingMasterCsvUpdateResponse = {
+  success?: boolean;
   message?: string;
   updateCount?: number;
   updatedTargets?: InitialReadingMasterCsvUpdateTargetRequest[];
@@ -230,6 +242,24 @@ function toDisplay(value: unknown): string {
   return String(value);
 }
 
+function uniqueTargetsFromSeasonRows(rows: CountryLeagueSeasonMasterEntity[]): InitialReadingMasterCsvUpdateTargetRequest[] {
+  const map = new Map<string, InitialReadingMasterCsvUpdateTargetRequest>();
+
+  rows.forEach((row) => {
+    const country = (row.country ?? "").trim();
+    const league = (row.league ?? "").trim();
+
+    if (!country || !league) return;
+
+    const key = `${country}___${league}`;
+    if (!map.has(key)) {
+      map.set(key, { country, league });
+    }
+  });
+
+  return Array.from(map.values());
+}
+
 type EditableCellProps = {
   rowIndex: number;
   field: keyof CountryLeagueSeasonMasterEntity;
@@ -324,8 +354,39 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
     });
 
     const response = await fetchJsonStrict<InitialReadingMasterCsvResponse>(`/v1/api/admin/master/initial/csv?${params.toString()}`);
-
     return response.countryLeagueSeasonMasterEntityList ?? [];
+  }, []);
+
+  const saveEditedRows = useCallback(async (rowsToSave: CountryLeagueSeasonMasterEntity[]) => {
+    const body: InitialReadingMasterCsvSaveRequest = {
+      masterName: MASTER_NAME,
+      countryLeagueSeasonMasterEntityList: rowsToSave,
+    };
+
+    return fetchJsonStrict<InitialReadingMasterCsvSaveResponse>("/v1/api/admin/master/initial/csv", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+  }, []);
+
+  const updateInitialFlg = useCallback(async (targets: InitialReadingMasterCsvUpdateTargetRequest[]) => {
+    const body: InitialReadingMasterCsvUpdateRequest = {
+      masterName: MASTER_NAME,
+      targets,
+    };
+
+    return fetchJsonStrict<InitialReadingMasterCsvUpdateResponse>("/v1/api/admin/master/initial/csv/update-status", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(body),
+    });
   }, []);
 
   const openModalForTarget = useCallback(
@@ -497,7 +558,19 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
   };
 
   const handleConfirmOk = useCallback(async () => {
-    if (newRows.length === 0) {
+    const rowsToSubmit =
+      editingCell == null
+        ? newRows
+        : newRows.map((row, index) =>
+            index === editingCell.rowIndex
+              ? {
+                  ...row,
+                  [editingCell.field]: editingValue,
+                }
+              : row,
+          );
+
+    if (rowsToSubmit.length === 0) {
       closeModal();
       return;
     }
@@ -506,41 +579,35 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
     setNewRowsError(null);
 
     try {
-      const uniqueTargets = Array.from(
-        new Map(
-          newRows.map((row) => [
-            `${row.country ?? ""}___${row.league ?? ""}`,
-            {
-              country: row.country ?? "",
-              league: row.league ?? "",
-            },
-          ]),
-        ).values(),
-      ).filter((target) => target.country && target.league);
+      const saveResponse = await saveEditedRows(rowsToSubmit);
 
-      const requestBody: InitialReadingMasterCsvUpdateRequest = {
-        masterName: MASTER_NAME,
-        targets: uniqueTargets,
-      };
+      if (saveResponse.success === false) {
+        throw new Error(saveResponse.message || "編集データの保存に失敗しました。");
+      }
 
-      const response = await fetchJsonStrict<InitialReadingMasterCsvUpdateResponse>("/v1/api/admin/master/initial/csv/update-status", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(requestBody),
-      });
+      const targets = uniqueTargetsFromSeasonRows(rowsToSubmit);
 
-      closeModal();
-      setInfoMessage(response.message ?? "更新しました。");
+      if (targets.length > 0) {
+        const updateResponse = await updateInitialFlg(targets);
+
+        if (updateResponse.success === false) {
+          throw new Error(updateResponse.message || "initialFlg更新に失敗しました。");
+        }
+
+        closeModal();
+        setInfoMessage(saveResponse.message || updateResponse.message || `更新しました。更新件数: ${updateResponse.updateCount ?? 0}`);
+      } else {
+        closeModal();
+        setInfoMessage(saveResponse.message || "更新しました。");
+      }
+
       await load();
     } catch (e) {
       setNewRowsError(e instanceof Error ? e.message : "更新に失敗しました。");
     } finally {
       setUpdatingStatus(false);
     }
-  }, [newRows, closeModal, load]);
+  }, [newRows, editingCell, editingValue, closeModal, load, saveEditedRows, updateInitialFlg]);
 
   const modalContent =
     modalOpen && typeof document !== "undefined"
