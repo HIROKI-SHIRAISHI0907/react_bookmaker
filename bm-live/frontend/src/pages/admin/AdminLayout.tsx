@@ -18,55 +18,53 @@ export default function AdminLayout() {
   const menuGroups: MenuGroup[] = useMemo(
     () => [
       {
-        key: "batch",
-        label: "バッチ・取得",
-        items: [
-          { label: "データ取得管理", to: "data/fetch" },
-          { label: "スクレイピング実行管理", to: "scrape/manual" },
-          { label: "S3ファイル情報取得管理", to: "s3/fileCount" },
-          { label: "作成CSV情報", to: "csv/today" },
-        ],
-      },
-      {
         key: "scraping",
-        label: "スクレイピング",
+        label: "スクレイピング管理",
         items: [
-          { label: "登録済み試合データ参照", to: "matches/by-date" },
-          { label: "対象データ設定", to: "manual/data/target" },
-          { label: "手動登録・更新", to: "manual/data/register" },
-          { label: "欠陥値設定", to: "manual/data/defect" },
-          { label: "MatchKey管理", to: "match-key-save" },
-          { label: "投入済みデータ参照", to: "ingested" },
+          { label: "スクレイピング対象データ取得設定", to: "manual/data/target" },
+          { label: "スクレイピングCSV情報取得管理", to: "scrape/manual" },
+          { label: "スクレイピング生成物数管理", to: "s3/fileCount" },
+          { label: "スクレイピングCSV情報データ登録管理", to: "data/fetch" },
         ],
       },
       {
         key: "master",
-        label: "マスタ・設定",
+        label: "マスタデータ参照",
         items: [
-          { label: "チームカラー設定", to: "manual/teamColor" },
-          { label: "CSV等選択肢登録", to: "sub-input" },
-          { label: "サブリーグ設定", to: "sub-league" },
-          { label: "勝ち点設定", to: "point-setting" },
-          { label: "シーズンデータ設定", to: "season" },
-          { label: "チームデータ設定", to: "team" },
+          { label: "シーズンデータ取得情報", to: "season" },
+          { label: "チームデータ取得情報", to: "team" },
+        ],
+      },
+      {
+        key: "other",
+        label: "その他データ参照",
+        items: [
+          { label: "リアルタイムデータ登録済参照", to: "matches/by-date" },
+          { label: "統計用CSV作成内容参照", to: "csv/today" },
+          { label: "未来データ・リアルタイムデータ紐づき参照", to: "ingested" },
+          { label: "リアルタイムデータ欠陥値matchId参照", to: "match-key-save" },
+        ],
+      },
+      {
+        key: "master",
+        label: "その他設定",
+        items: [
+          { label: "統計用CSV作成前詳細設定", to: "sub-input" },
+          { label: "お気に入り国リーグ情報全体反映設定", to: "force/update" },
+          { label: "リーグ勝ち点情報反映設定", to: "point-setting" },
+          { label: "チームカラー情報反映設定", to: "manual/teamColor" },
+          { label: "サブリーグ名反映設定", to: "sub-league" },
+          { label: "トップメニュー通知情報設定", to: "notices" },
         ],
       },
       {
         key: "user",
-        label: "ユーザー・権限",
-        items: [{ label: "ユーザー管理", to: "users" }],
-      },
-      {
-        key: "admin",
-        label: "管理・通知",
-        items: [
-          { label: "管理者国リーグ強制制御", to: "force/update" },
-          { label: "お知らせ通知管理", to: "notices" },
-        ],
+        label: "利用者情報",
+        items: [{ label: "利用者情報管理", to: "users" }],
       },
       {
         key: "db",
-        label: "データベース",
+        label: "ミドルウェア管理",
         items: [{ label: "コネクション管理", to: "db/connections" }],
       },
     ],
