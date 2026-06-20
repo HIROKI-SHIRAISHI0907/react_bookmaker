@@ -37,6 +37,12 @@ type InitialReadingMasterCsvUpdateRequest = {
   targets: InitialReadingMasterCsvUpdateTargetRequest[];
 };
 
+type InitialReadingMasterCsvUpdateRowRequest = {
+  masterName: string;
+  masterEntities?: CountryLeagueMasterEntity[];
+  seasonMasterEntities?: never[];
+};
+
 type InitialReadingMasterCsvUpdateResponse = {
   success?: boolean;
   message?: string;
@@ -249,6 +255,9 @@ function uniqueTargetsFromRows(rows: CountryLeagueMasterEntity[]): InitialReadin
 }
 
 function masterRowDeleteKey(row: CountryLeagueMasterEntity): string {
+  if (row.id != null && row.id !== "") {
+    return String(row.id);
+  }
   return `${row.country ?? ""}___${row.league ?? ""}___${row.team ?? ""}`;
 }
 
@@ -352,6 +361,22 @@ const CountryLeagueMasterPage: React.FC = () => {
     return response.countryLeagueMasterEntityList ?? [];
   }, []);
 
+  const updateEditedRowsApi = useCallback(async (rowsToUpdate: CountryLeagueMasterEntity[]) => {
+    const body: InitialReadingMasterCsvUpdateRowRequest = {
+      masterName: MASTER_NAME,
+      masterEntities: rowsToUpdate,
+    };
+
+    return fetchJsonStrict<InitialReadingMasterCsvUpdateResponse>("/v1/api/admin/master/initial/csv/update-row", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+  }, []);
+
   const updateInitialFlg = useCallback(async (targets: InitialReadingMasterCsvUpdateTargetRequest[]) => {
     const body: InitialReadingMasterCsvUpdateRequest = {
       masterName: MASTER_NAME,
@@ -374,7 +399,7 @@ const CountryLeagueMasterPage: React.FC = () => {
       masterEntities: rowsToDelete,
     };
 
-    return fetchJsonStrict<InitialReadingMasterCsvUpdateResponse>("/v1/api/admin/master/initial/csv/update-row", {
+    return fetchJsonStrict<InitialReadingMasterCsvUpdateResponse>("/v1/api/admin/master/initial/csv/delete-row", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -632,9 +657,9 @@ const CountryLeagueMasterPage: React.FC = () => {
   const handleOk = useCallback(async () => {
     if (busy) return;
 
-    const targets = uniqueTargetsFromRows(rowsWithPendingEdit);
+    const rowsToSubmit = rowsWithPendingEdit;
 
-    if (targets.length === 0) {
+    if (rowsToSubmit.length === 0) {
       closeModal();
       setInfoMessage("更新対象がないため、そのまま閉じました。");
       return;
@@ -644,23 +669,34 @@ const CountryLeagueMasterPage: React.FC = () => {
     setNewRowsError(null);
 
     try {
-      const updateResponse = await updateInitialFlg(targets);
+      const updateRowResponse = await updateEditedRowsApi(rowsToSubmit);
 
-      if (updateResponse.success === false) {
-        throw new Error(updateResponse.message || "initialFlg更新に失敗しました。");
+      if (updateRowResponse.success === false) {
+        throw new Error(updateRowResponse.message || "行データの更新に失敗しました。");
       }
 
-      const message = updateResponse.message || `更新しました。更新件数: ${updateResponse.updateCount ?? 0}`;
+      const targets = uniqueTargetsFromRows(rowsToSubmit);
+      let finalMessage = updateRowResponse.message || "行データを更新しました。";
+
+      if (targets.length > 0) {
+        const updateStatusResponse = await updateInitialFlg(targets);
+
+        if (updateStatusResponse.success === false) {
+          throw new Error(updateStatusResponse.message || "initialFlg更新に失敗しました。");
+        }
+
+        finalMessage = updateStatusResponse.message || updateRowResponse.message || `更新しました。更新件数: ${updateStatusResponse.updateCount ?? 0}`;
+      }
 
       closeModal();
       await load();
-      setInfoMessage(message);
+      setInfoMessage(finalMessage);
     } catch (e) {
       setNewRowsError(e instanceof Error ? e.message : "更新に失敗しました。");
     } finally {
       setUpdatingStatus(false);
     }
-  }, [busy, rowsWithPendingEdit, updateInitialFlg, closeModal, load]);
+  }, [busy, rowsWithPendingEdit, updateEditedRowsApi, updateInitialFlg, closeModal, load]);
 
   const modalContent =
     modalOpen && typeof document !== "undefined"
@@ -682,7 +718,9 @@ const CountryLeagueMasterPage: React.FC = () => {
                   <h2 id="country-league-modal-title" style={{ margin: 0, fontSize: 18, lineHeight: 1.3 }}>
                     新規リーグデータ確認
                   </h2>
-                  <p style={{ margin: "6px 0 0", color: "#475569", fontSize: 12 }}>不要な行は複数選択して削除できます。問題なければ OK で initialFlg を更新します。</p>
+                  <p style={{ margin: "6px 0 0", color: "#475569", fontSize: 12 }}>
+                    各セルは編集できます。OK を押すと編集内容を更新し、その後 initialFlg を更新します。不要な行は複数選択して削除できます。
+                  </p>
                 </div>
                 <button type="button" style={busy ? disabledButtonStyle : buttonStyle} onClick={closeModal} disabled={busy}>
                   閉じる
@@ -755,7 +793,10 @@ const CountryLeagueMasterPage: React.FC = () => {
                         const checked = selectedDeleteKeys.includes(key);
 
                         return (
-                          <tr key={`${row.country}-${row.league}-${row.team}-${rowIndex}`} style={{ background: checked ? "#fef2f2" : rowIndex % 2 === 0 ? "#ffffff" : "#fcfcfd" }}>
+                          <tr
+                            key={row.id != null && row.id !== "" ? row.id : `${row.country}-${row.league}-${row.team}-${rowIndex}`}
+                            style={{ background: checked ? "#fef2f2" : rowIndex % 2 === 0 ? "#ffffff" : "#fcfcfd" }}
+                          >
                             <td style={{ ...thTdStyle, textAlign: "center" }}>
                               <input type="checkbox" checked={checked} onChange={() => toggleSelectRow(key)} disabled={busy} />
                             </td>

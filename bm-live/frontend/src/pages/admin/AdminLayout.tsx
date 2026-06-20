@@ -46,7 +46,7 @@ export default function AdminLayout() {
         ],
       },
       {
-        key: "master",
+        key: "otherSetting",
         label: "その他設定",
         items: [
           { label: "統計用CSV作成前詳細設定", to: "sub-input" },
