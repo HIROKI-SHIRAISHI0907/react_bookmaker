@@ -35,17 +35,6 @@ type InitialReadingMasterCsvResponse = {
   countryLeagueSeasonMasterEntityList?: CountryLeagueSeasonMasterEntity[];
 };
 
-type InitialReadingMasterCsvSaveRequest = {
-  masterName: string;
-  countryLeagueSeasonMasterEntityList: CountryLeagueSeasonMasterEntity[];
-};
-
-type InitialReadingMasterCsvSaveResponse = {
-  success?: boolean;
-  message?: string;
-  saveCount?: number;
-};
-
 type InitialReadingMasterCsvUpdateTargetRequest = {
   country: string;
   league: string;
@@ -61,6 +50,12 @@ type InitialReadingMasterCsvUpdateResponse = {
   message?: string;
   updateCount?: number;
   updatedTargets?: InitialReadingMasterCsvUpdateTargetRequest[];
+};
+
+type InitialReadingMasterCsvDeleteTargetRequest = {
+  masterName: string;
+  masterEntities?: never[];
+  seasonMasterEntities?: CountryLeagueSeasonMasterEntity[];
 };
 
 type SelectedTarget = {
@@ -204,6 +199,14 @@ const okButtonStyle: React.CSSProperties = {
   minWidth: 80,
 };
 
+const dangerButtonStyle: React.CSSProperties = {
+  ...buttonStyle,
+  background: "#dc2626",
+  color: "#fff",
+  border: "1px solid #dc2626",
+  minWidth: 120,
+};
+
 const disabledButtonStyle: React.CSSProperties = {
   ...buttonStyle,
   opacity: 0.45,
@@ -254,6 +257,13 @@ function uniqueTargetsFromSeasonRows(rows: CountryLeagueSeasonMasterEntity[]): I
   });
 
   return Array.from(map.values());
+}
+
+function seasonRowDeleteKey(row: CountryLeagueSeasonMasterEntity): string {
+  if (row.id != null) {
+    return String(row.id);
+  }
+  return `${row.country ?? ""}___${row.league ?? ""}___${row.seasonYear ?? ""}`;
 }
 
 type EditableCellProps = {
@@ -322,7 +332,6 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
   const [keyword, setKeyword] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
 
-  const [selectedTarget, setSelectedTarget] = useState<SelectedTarget | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [newRows, setNewRows] = useState<CountryLeagueSeasonMasterEntity[]>([]);
   const [newRowsLoading, setNewRowsLoading] = useState(false);
@@ -331,15 +340,19 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
   const [editingValue, setEditingValue] = useState("");
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [deletingRows, setDeletingRows] = useState(false);
+  const [selectedDeleteKeys, setSelectedDeleteKeys] = useState<string[]>([]);
   const hasOpenedOnMountRef = useRef(false);
+
+  const busy = updatingStatus || deletingRows;
 
   const closeModal = useCallback(() => {
     setModalOpen(false);
-    setSelectedTarget(null);
     setEditingCell(null);
     setEditingValue("");
     setNewRowsError(null);
     setNewRowsLoading(false);
+    setSelectedDeleteKeys([]);
   }, []);
 
   const fetchNewRows = useCallback(async (target: SelectedTarget): Promise<CountryLeagueSeasonMasterEntity[]> => {
@@ -351,22 +364,6 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
 
     const response = await fetchJsonStrict<InitialReadingMasterCsvResponse>(`/v1/api/admin/master/initial/csv?${params.toString()}`);
     return response.countryLeagueSeasonMasterEntityList ?? [];
-  }, []);
-
-  const saveEditedRows = useCallback(async (rowsToSave: CountryLeagueSeasonMasterEntity[]) => {
-    const body: InitialReadingMasterCsvSaveRequest = {
-      masterName: MASTER_NAME,
-      countryLeagueSeasonMasterEntityList: rowsToSave,
-    };
-
-    return fetchJsonStrict<InitialReadingMasterCsvSaveResponse>("/v1/api/admin/master/initial/csv", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(body),
-    });
   }, []);
 
   const updateInitialFlg = useCallback(async (targets: InitialReadingMasterCsvUpdateTargetRequest[]) => {
@@ -385,9 +382,24 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
     });
   }, []);
 
+  const deleteSelectedRowsApi = useCallback(async (rowsToDelete: CountryLeagueSeasonMasterEntity[]) => {
+    const body: InitialReadingMasterCsvDeleteTargetRequest = {
+      masterName: MASTER_NAME,
+      seasonMasterEntities: rowsToDelete,
+    };
+
+    return fetchJsonStrict<InitialReadingMasterCsvUpdateResponse>("/v1/api/admin/master/initial/csv/update-row", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+  }, []);
+
   const openModalForTarget = useCallback(
     async (target: SelectedTarget) => {
-      setSelectedTarget(null);
       setNewRows([]);
       setNewRowsError(null);
       setEditingCell(null);
@@ -395,23 +407,21 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
       setInfoMessage(null);
       setModalOpen(false);
       setNewRowsLoading(true);
+      setSelectedDeleteKeys([]);
 
       try {
         const fetchedRows = await fetchNewRows(target);
 
         if (fetchedRows.length === 0) {
           setNewRows([]);
-          setSelectedTarget(null);
           setModalOpen(false);
           setInfoMessage("新規登録データはありません。");
           return;
         }
 
-        setSelectedTarget(target);
         setNewRows(fetchedRows);
         setModalOpen(true);
       } catch (e) {
-        setSelectedTarget(null);
         setNewRows([]);
         setModalOpen(false);
         setNewRowsError(e instanceof Error ? e.message : "新規登録データの取得に失敗しました。");
@@ -454,7 +464,6 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
             league: firstRow.league ?? "",
           });
         } else {
-          setSelectedTarget(null);
           setNewRows([]);
           setNewRowsError(null);
           setNewRowsLoading(false);
@@ -483,7 +492,7 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
     document.body.style.overflow = "hidden";
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !updatingStatus) {
+      if (event.key === "Escape" && !busy) {
         closeModal();
       }
     };
@@ -494,7 +503,7 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
       document.body.style.overflow = originalOverflow;
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [modalOpen, closeModal, updatingStatus]);
+  }, [modalOpen, closeModal, busy]);
 
   const filteredRows = useMemo(() => {
     const q = keyword.trim().toLowerCase();
@@ -551,21 +560,88 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
     setEditingValue("");
   };
 
-  const handleConfirmOk = useCallback(async () => {
-    const rowsToSubmit =
-      editingCell == null
-        ? newRows
-        : newRows.map((row, index) =>
-            index === editingCell.rowIndex
-              ? {
-                  ...row,
-                  [editingCell.field]: editingValue,
-                }
-              : row,
-          );
+  const rowsWithPendingEdit = useMemo(() => {
+    if (editingCell == null) return newRows;
 
-    if (rowsToSubmit.length === 0) {
+    return newRows.map((row, index) =>
+      index === editingCell.rowIndex
+        ? {
+            ...row,
+            [editingCell.field]: editingValue,
+          }
+        : row,
+    );
+  }, [newRows, editingCell, editingValue]);
+
+  const allModalRowsSelected = useMemo(() => {
+    if (rowsWithPendingEdit.length === 0) return false;
+    return rowsWithPendingEdit.every((row) => selectedDeleteKeys.includes(seasonRowDeleteKey(row)));
+  }, [rowsWithPendingEdit, selectedDeleteKeys]);
+
+  const toggleSelectRow = (key: string) => {
+    setSelectedDeleteKeys((prev) => (prev.includes(key) ? prev.filter((v) => v !== key) : [...prev, key]));
+  };
+
+  const toggleSelectAllRows = () => {
+    if (allModalRowsSelected) {
+      setSelectedDeleteKeys([]);
+      return;
+    }
+
+    setSelectedDeleteKeys(rowsWithPendingEdit.map((row) => seasonRowDeleteKey(row)));
+  };
+
+  const handleDeleteSelected = useCallback(async () => {
+    if (busy) return;
+
+    const deleteTargets = rowsWithPendingEdit.filter((row) => selectedDeleteKeys.includes(seasonRowDeleteKey(row)));
+
+    if (deleteTargets.length === 0) {
+      setNewRowsError("削除対象を選択してください。");
+      return;
+    }
+
+    setDeletingRows(true);
+    setNewRowsError(null);
+
+    try {
+      const response = await deleteSelectedRowsApi(deleteTargets);
+
+      if (response.success === false) {
+        throw new Error(response.message || "削除に失敗しました。");
+      }
+
+      const deleteKeySet = new Set(deleteTargets.map((row) => seasonRowDeleteKey(row)));
+      const remainingRows = rowsWithPendingEdit.filter((row) => !deleteKeySet.has(seasonRowDeleteKey(row)));
+      const message = response.message || `${deleteTargets.length}件削除しました。`;
+
+      setNewRows(remainingRows);
+      setSelectedDeleteKeys([]);
+      setEditingCell(null);
+      setEditingValue("");
+
+      await load();
+
+      if (remainingRows.length === 0) {
+        closeModal();
+      }
+
+      setInfoMessage(message);
+    } catch (e) {
+      setNewRowsError(e instanceof Error ? e.message : "削除に失敗しました。");
+    } finally {
+      setDeletingRows(false);
+    }
+  }, [busy, rowsWithPendingEdit, selectedDeleteKeys, deleteSelectedRowsApi, load, closeModal]);
+
+  const handleConfirmOk = useCallback(async () => {
+    if (busy) return;
+
+    const targets = uniqueTargetsFromSeasonRows(rowsWithPendingEdit);
+
+    if (targets.length === 0) {
       closeModal();
+      setInfoMessage("更新対象がないため、そのまま閉じました。");
       return;
     }
 
@@ -573,35 +649,23 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
     setNewRowsError(null);
 
     try {
-      const saveResponse = await saveEditedRows(rowsToSubmit);
+      const updateResponse = await updateInitialFlg(targets);
 
-      if (saveResponse.success === false) {
-        throw new Error(saveResponse.message || "編集データの保存に失敗しました。");
+      if (updateResponse.success === false) {
+        throw new Error(updateResponse.message || "initialFlg更新に失敗しました。");
       }
 
-      const targets = uniqueTargetsFromSeasonRows(rowsToSubmit);
+      const message = updateResponse.message || `更新しました。更新件数: ${updateResponse.updateCount ?? 0}`;
 
-      if (targets.length > 0) {
-        const updateResponse = await updateInitialFlg(targets);
-
-        if (updateResponse.success === false) {
-          throw new Error(updateResponse.message || "initialFlg更新に失敗しました。");
-        }
-
-        closeModal();
-        setInfoMessage(saveResponse.message || updateResponse.message || `更新しました。更新件数: ${updateResponse.updateCount ?? 0}`);
-      } else {
-        closeModal();
-        setInfoMessage(saveResponse.message || "更新しました。");
-      }
-
+      closeModal();
       await load();
+      setInfoMessage(message);
     } catch (e) {
       setNewRowsError(e instanceof Error ? e.message : "更新に失敗しました。");
     } finally {
       setUpdatingStatus(false);
     }
-  }, [newRows, editingCell, editingValue, closeModal, load, saveEditedRows, updateInitialFlg]);
+  }, [busy, rowsWithPendingEdit, updateInitialFlg, closeModal, load]);
 
   const modalContent =
     modalOpen && typeof document !== "undefined"
@@ -612,7 +676,7 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
             aria-modal="true"
             aria-labelledby="country-league-season-modal-title"
             onClick={(e) => {
-              if (e.target === e.currentTarget && !updatingStatus) {
+              if (e.target === e.currentTarget && !busy) {
                 closeModal();
               }
             }}
@@ -623,9 +687,9 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
                   <h2 id="country-league-season-modal-title" style={{ margin: 0, fontSize: 18, lineHeight: 1.3 }}>
                     新規シーズンデータ確認
                   </h2>
-                  <p style={{ margin: "6px 0 0", color: "#475569", fontSize: 12 }}>新規シーズンデータが登録されています。こちらのデータで問題ないでしょうか？</p>
+                  <p style={{ margin: "6px 0 0", color: "#475569", fontSize: 12 }}>不要な行は複数選択して削除できます。問題なければ OK で initialFlg を更新します。</p>
                 </div>
-                <button type="button" style={updatingStatus ? disabledButtonStyle : buttonStyle} onClick={closeModal} disabled={updatingStatus}>
+                <button type="button" style={busy ? disabledButtonStyle : buttonStyle} onClick={closeModal} disabled={busy}>
                   閉じる
                 </button>
               </div>
@@ -642,6 +706,21 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
               >
                 各セルはクリックするとその場で編集できます。Enter またはフォーカスアウトで反映、Esc でキャンセルします。
               </div>
+
+              {selectedDeleteKeys.length > 0 && (
+                <div
+                  style={{
+                    marginTop: 12,
+                    padding: 10,
+                    background: "#fef2f2",
+                    color: "#991b1b",
+                    borderRadius: 8,
+                    fontSize: 12,
+                  }}
+                >
+                  削除選択中: {selectedDeleteKeys.length}件
+                </div>
+              )}
 
               {newRowsError && (
                 <div
@@ -665,68 +744,91 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
                   <table style={tableStyle}>
                     <thead>
                       <tr>
-                        {["No", "country", "league", "seasonYear", "start", "end", "round", "path", "icon", "validFlg", "delFlg", "registerId", "registerTime", "updateId", "updateTime"].map(
-                          (label) => (
-                            <th key={label} style={thStyle}>
-                              {label}
-                            </th>
-                          ),
-                        )}
+                        <th style={{ ...thStyle, width: 44, textAlign: "center" }}>
+                          <input type="checkbox" checked={allModalRowsSelected} onChange={toggleSelectAllRows} disabled={busy || rowsWithPendingEdit.length === 0} />
+                        </th>
+                        {["id", "country", "league", "seasonYear", "start", "end", "round", "validFlg", "delFlg", "registerId", "registerTime", "updateId", "updateTime"].map((label) => (
+                          <th key={label} style={thStyle}>
+                            {label}
+                          </th>
+                        ))}
                       </tr>
                     </thead>
                     <tbody>
-                      {newRows.map((row, rowIndex) => (
-                        <tr key={`${row.country}-${row.league}-${row.seasonYear}-${rowIndex}`} style={{ background: rowIndex % 2 === 0 ? "#ffffff" : "#fcfcfd" }}>
-                          <td style={thTdStyle}>
-                            <SeasonCell value={rowIndex + 1} />
-                          </td>
-                          {(
-                            [
-                              "country",
-                              "league",
-                              "seasonYear",
-                              "startSeasonDate",
-                              "endSeasonDate",
-                              "round",
-                              "path",
-                              "icon",
-                              "validFlg",
-                              "delFlg",
-                              "registerId",
-                              "registerTime",
-                              "updateId",
-                              "updateTime",
-                            ] as (keyof CountryLeagueSeasonMasterEntity)[]
-                          ).map((field) => (
-                            <td key={String(field)} style={thTdStyle}>
-                              <EditableCell
-                                rowIndex={rowIndex}
-                                field={field}
-                                value={row[field]}
-                                wide={field === "registerTime" || field === "updateTime"}
-                                editingCell={editingCell}
-                                editingValue={editingValue}
-                                onStartEdit={startEdit}
-                                onChangeValue={setEditingValue}
-                                onCommit={commitEdit}
-                                onCancel={cancelEdit}
-                              />
+                      {rowsWithPendingEdit.map((row, rowIndex) => {
+                        const key = seasonRowDeleteKey(row);
+                        const checked = selectedDeleteKeys.includes(key);
+
+                        return (
+                          <tr
+                            key={row.id != null ? String(row.id) : `${row.country}-${row.league}-${row.seasonYear}-${rowIndex}`}
+                            style={{ background: checked ? "#fef2f2" : rowIndex % 2 === 0 ? "#ffffff" : "#fcfcfd" }}
+                          >
+                            <td style={{ ...thTdStyle, textAlign: "center" }}>
+                              <input type="checkbox" checked={checked} onChange={() => toggleSelectRow(key)} disabled={busy} />
                             </td>
-                          ))}
-                        </tr>
-                      ))}
+
+                            <td style={thTdStyle}>
+                              <SeasonCell value={row.id} />
+                            </td>
+
+                            {(
+                              [
+                                "country",
+                                "league",
+                                "seasonYear",
+                                "startSeasonDate",
+                                "endSeasonDate",
+                                "round",
+                                "validFlg",
+                                "delFlg",
+                                "registerId",
+                                "registerTime",
+                                "updateId",
+                                "updateTime",
+                              ] as (keyof CountryLeagueSeasonMasterEntity)[]
+                            ).map((field) => (
+                              <td key={String(field)} style={thTdStyle}>
+                                <EditableCell
+                                  rowIndex={rowIndex}
+                                  field={field}
+                                  value={row[field]}
+                                  wide={field === "registerTime" || field === "updateTime"}
+                                  editingCell={editingCell}
+                                  editingValue={editingValue}
+                                  onStartEdit={startEdit}
+                                  onChangeValue={setEditingValue}
+                                  onCommit={commitEdit}
+                                  onCancel={cancelEdit}
+                                />
+                              </td>
+                            ))}
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
               )}
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                <button type="button" style={updatingStatus ? disabledButtonStyle : buttonStyle} onClick={closeModal} disabled={updatingStatus}>
-                  キャンセル
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginTop: 16, flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  style={busy || selectedDeleteKeys.length === 0 ? disabledButtonStyle : dangerButtonStyle}
+                  onClick={() => void handleDeleteSelected()}
+                  disabled={busy || selectedDeleteKeys.length === 0}
+                >
+                  {deletingRows ? "削除中..." : `選択行を削除${selectedDeleteKeys.length > 0 ? ` (${selectedDeleteKeys.length})` : ""}`}
                 </button>
-                <button type="button" style={updatingStatus ? disabledButtonStyle : okButtonStyle} onClick={() => void handleConfirmOk()} disabled={updatingStatus}>
-                  {updatingStatus ? "更新中..." : "OK"}
-                </button>
+
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                  <button type="button" style={busy ? disabledButtonStyle : buttonStyle} onClick={closeModal} disabled={busy}>
+                    キャンセル
+                  </button>
+                  <button type="button" style={busy ? disabledButtonStyle : okButtonStyle} onClick={() => void handleConfirmOk()} disabled={busy}>
+                    {updatingStatus ? "更新中..." : "OK"}
+                  </button>
+                </div>
               </div>
             </div>
           </div>,
@@ -785,7 +887,7 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
             <table style={tableStyle}>
               <thead>
                 <tr>
-                  {["No", "country", "league", "seasonYear", "start", "end", "round", "path", "icon", "validFlg", "delFlg", "確認"].map((label) => (
+                  {["No", "country", "league", "seasonYear", "start", "end", "round", "delFlg", "確認"].map((label) => (
                     <th key={label} style={thStyle}>
                       {label}
                     </th>
@@ -795,13 +897,13 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={12} style={thTdStyle}>
+                    <td colSpan={9} style={thTdStyle}>
                       読み込み中です...
                     </td>
                   </tr>
                 ) : pagedRows.length === 0 ? (
                   <tr>
-                    <td colSpan={12} style={thTdStyle}>
+                    <td colSpan={9} style={thTdStyle}>
                       表示できるデータがありません。
                     </td>
                   </tr>
@@ -828,9 +930,6 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
                       </td>
                       <td style={thTdStyle}>
                         <SeasonCell value={row.round} />
-                      </td>
-                      <td style={thTdStyle}>
-                        <SeasonCell value={row.validFlg} />
                       </td>
                       <td style={thTdStyle}>
                         <SeasonCell value={row.delFlg} />
