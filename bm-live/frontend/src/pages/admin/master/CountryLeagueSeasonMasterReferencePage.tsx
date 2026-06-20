@@ -9,8 +9,6 @@ type CountryLeagueSeasonDTO = {
   startSeasonDate?: string;
   endSeasonDate?: string;
   round?: string;
-  path?: string;
-  icon?: string;
   validFlg?: boolean | string | number;
   delFlg?: boolean | string | number;
 };
@@ -23,8 +21,6 @@ type CountryLeagueSeasonMasterEntity = {
   startSeasonDate?: string;
   endSeasonDate?: string;
   round?: string;
-  path?: string;
-  icon?: string;
   validFlg?: boolean | string | number;
   delFlg?: boolean | string | number;
   registerId?: string;
@@ -505,9 +501,7 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
     if (!q) return rows;
 
     return rows.filter((row) =>
-      [row.country, row.league, row.seasonYear, row.startSeasonDate, row.endSeasonDate, row.round, row.path, row.icon, row.validFlg, row.delFlg]
-        .map((v) => String(v ?? "").toLowerCase())
-        .some((v) => v.includes(q)),
+      [row.country, row.league, row.seasonYear, row.startSeasonDate, row.endSeasonDate, row.round, row.validFlg, row.delFlg].map((v) => String(v ?? "").toLowerCase()).some((v) => v.includes(q)),
     );
   }, [rows, keyword]);
 
@@ -709,7 +703,7 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
                                 rowIndex={rowIndex}
                                 field={field}
                                 value={row[field]}
-                                wide={field === "path" || field === "icon" || field === "registerTime" || field === "updateTime"}
+                                wide={field === "registerTime" || field === "updateTime"}
                                 editingCell={editingCell}
                                 editingValue={editingValue}
                                 onStartEdit={startEdit}
@@ -834,12 +828,6 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
                       </td>
                       <td style={thTdStyle}>
                         <SeasonCell value={row.round} />
-                      </td>
-                      <td style={thTdStyle}>
-                        <SeasonCell value={row.path} wide />
-                      </td>
-                      <td style={thTdStyle}>
-                        <SeasonCell value={row.icon} wide />
                       </td>
                       <td style={thTdStyle}>
                         <SeasonCell value={row.validFlg} />
