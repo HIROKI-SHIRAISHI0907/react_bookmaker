@@ -24,6 +24,7 @@ type TaskDef = {
   endpoint: string;
   defaultBody?: StatRequestResource;
   precheckMode?: PrecheckMode;
+  precheckTaskCode?: string;
 };
 
 type BatchFileCheckItemResource = {
@@ -64,6 +65,12 @@ type SelectOption = {
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 const STAT_OPTIONS_ENDPOINT = "/v1/api/admin/stat/options";
+
+/**
+ * 新B014の実APIパスが未共有のため定数化
+ * 実際のAPIに合わせて必要ならここだけ差し替えてください
+ */
+const B014_SEASON_END_DELETE_ENDPOINT = "/v1/api/admin/exec/task/delete-season-data";
 
 /** ============ Utils ============ */
 function toTrimOrNull(s: string): string | null {
@@ -428,12 +435,21 @@ export default function DataFetchAdminPage() {
         precheckMode: "always",
       },
       {
-        id: "B014",
-        code: "B014",
+        id: "B006_EACH",
+        code: "B006-each",
         title: "統計CSVデータ取り入れ実行（国別 / 国リーグ別）",
         description: "country または country + league を指定して統計CSVを取り込む",
         endpoint: "/v1/api/stat/each",
         precheckMode: "required",
+        precheckTaskCode: "B006",
+      },
+      {
+        id: "B014",
+        code: "B014",
+        title: "シーズン終了後削除処理",
+        description: "シーズン終了後の不要データ削除を実行",
+        endpoint: B014_SEASON_END_DELETE_ENDPOINT,
+        precheckMode: "always",
       },
     ],
     [],
@@ -635,7 +651,7 @@ export default function DataFetchAdminPage() {
         <Card className="p-6">
           <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
             <div>
-              <div className="text-lg font-bold text-gray-900">リクエストパラメータ（B014向け連動プルダウン対応）</div>
+              <div className="text-lg font-bold text-gray-900">リクエストパラメータ（B006-each向け連動プルダウン対応）</div>
               <div className="text-sm text-gray-600 mt-1">country を選ぶと、その国に紐づく league のみ選択できます。入力した値は各タスクの request body に入れて送信します。</div>
             </div>
 
@@ -665,7 +681,7 @@ export default function DataFetchAdminPage() {
               onChange={handleCountryChange}
               options={countryOptions}
               placeholder={statOptionsLoading ? "読込中..." : countryOptions.length > 0 ? "国を選択" : "候補なし"}
-              hint="B014で利用する国を選択"
+              hint="B006-each で利用する国を選択"
               disabled={statOptionsLoading || countryOptions.length === 0}
             />
 
@@ -696,7 +712,7 @@ export default function DataFetchAdminPage() {
             const isRunning = running.has(t.id);
             const result = results[t.id];
             const err = errors[t.id];
-            const fileCheck = fileChecks[t.code] ?? (t.code === "B014" ? fileChecks["B006"] : undefined);
+            const fileCheck = fileChecks[t.precheckTaskCode ?? t.code];
 
             const runTone: "gray" | "blue" | "emerald" | "amber" | "rose" = err ? "rose" : result ? "emerald" : "gray";
             const fileTone = getEffectiveFileBadgeTone(t, fileCheck);
