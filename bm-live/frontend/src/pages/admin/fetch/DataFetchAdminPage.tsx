@@ -70,6 +70,7 @@ const STAT_OPTIONS_ENDPOINT = "/v1/api/admin/stat/options";
  * 新B014の実APIパスが未共有のため定数化
  * 実際のAPIに合わせて必要ならここだけ差し替えてください
  */
+const B007_ALL_LEAGUE_ENDPOINT = "/v1/api/admin/exec/task/all-league-scrape-master";
 const B014_SEASON_END_DELETE_ENDPOINT = "/v1/api/admin/exec/task/delete-season-data";
 
 /** ============ Utils ============ */
@@ -408,6 +409,14 @@ export default function DataFetchAdminPage() {
         title: "統計CSVデータ取り入れ実行",
         description: "統計CSVを取り込む",
         endpoint: "/v1/api/stat",
+        precheckMode: "required",
+      },
+      {
+        id: "B007",
+        code: "B007",
+        title: "全リーグマスタデータ処理",
+        description: "all_league_master.csv を前提に実行",
+        endpoint: B007_ALL_LEAGUE_ENDPOINT,
         precheckMode: "required",
       },
       {
