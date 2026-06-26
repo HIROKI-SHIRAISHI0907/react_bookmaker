@@ -241,6 +241,18 @@ const badgeStyle: React.CSSProperties = {
   fontSize: 12,
 };
 
+const seasonStatusBadgeBaseStyle: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 6,
+  height: 24,
+  padding: "0 10px",
+  borderRadius: 9999,
+  fontSize: 12,
+  fontWeight: 700,
+  whiteSpace: "nowrap",
+};
+
 function toDisplay(value: unknown): string {
   if (value === null || value === undefined || value === "") return "-";
   if (typeof value === "boolean") return value ? "true" : "false";
@@ -270,6 +282,50 @@ function seasonRowDeleteKey(row: CountryLeagueSeasonMasterEntity): string {
     return String(row.id);
   }
   return `${row.country ?? ""}___${row.league ?? ""}___${row.seasonYear ?? ""}`;
+}
+
+function isSeasonOff(endSeasonDate?: string): boolean {
+  const value = (endSeasonDate ?? "").trim();
+  return value === "" || value === "-";
+}
+
+function getSeasonStatus(endSeasonDate?: string): { label: string; icon: string; style: React.CSSProperties } {
+  if (isSeasonOff(endSeasonDate)) {
+    return {
+      label: "シーズンオフ",
+      icon: "⚪",
+      style: {
+        ...seasonStatusBadgeBaseStyle,
+        background: "#f1f5f9",
+        color: "#475569",
+        border: "1px solid #cbd5e1",
+      },
+    };
+  }
+
+  return {
+    label: "シーズン中",
+    icon: "🟢",
+    style: {
+      ...seasonStatusBadgeBaseStyle,
+      background: "#dcfce7",
+      color: "#166534",
+      border: "1px solid #86efac",
+    },
+  };
+}
+
+function formatTokyoDate(date: Date): string {
+  const parts = new Intl.DateTimeFormat("ja-JP", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    weekday: "short",
+  }).formatToParts(date);
+
+  const map = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${map.year}-${map.month}-${map.day}（${map.weekday}） Asia/Tokyo`;
 }
 
 type EditableCellProps = {
@@ -331,6 +387,17 @@ const SeasonCell: React.FC<{ value: unknown; wide?: boolean }> = ({ value, wide 
   </span>
 );
 
+const SeasonStatusBadge: React.FC<{ endSeasonDate?: string }> = ({ endSeasonDate }) => {
+  const status = getSeasonStatus(endSeasonDate);
+
+  return (
+    <span style={status.style} title={status.label}>
+      <span aria-hidden="true">{status.icon}</span>
+      <span>{status.label}</span>
+    </span>
+  );
+};
+
 const CountryLeagueSeasonMasterPage: React.FC = () => {
   const [rows, setRows] = useState<CountryLeagueSeasonDTO[]>([]);
   const [loading, setLoading] = useState(false);
@@ -348,6 +415,7 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [deletingRows, setDeletingRows] = useState(false);
   const [selectedDeleteKeys, setSelectedDeleteKeys] = useState<string[]>([]);
+  const [tokyoNowText, setTokyoNowText] = useState("");
   const hasOpenedOnMountRef = useRef(false);
 
   const busy = updatingStatus || deletingRows;
@@ -506,6 +574,20 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    const updateTokyoNow = () => {
+      setTokyoNowText(formatTokyoDate(new Date()));
+    };
+
+    updateTokyoNow();
+
+    const timerId = window.setInterval(updateTokyoNow, 60 * 1000);
+
+    return () => {
+      window.clearInterval(timerId);
+    };
+  }, []);
 
   useEffect(() => {
     if (!modalOpen) return;
@@ -782,11 +864,13 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
                         <th style={{ ...thStyle, width: 44, textAlign: "center" }}>
                           <input type="checkbox" checked={allModalRowsSelected} onChange={toggleSelectAllRows} disabled={busy || rowsWithPendingEdit.length === 0} />
                         </th>
-                        {["id", "country", "league", "seasonYear", "start", "end", "round", "validFlg", "delFlg", "registerId", "registerTime", "updateId", "updateTime"].map((label) => (
-                          <th key={label} style={thStyle}>
-                            {label}
-                          </th>
-                        ))}
+                        {["id", "country", "league", "seasonYear", "start", "end", "シーズン状態", "round", "validFlg", "delFlg", "registerId", "registerTime", "updateId", "updateTime"].map(
+                          (label) => (
+                            <th key={label} style={thStyle}>
+                              {label}
+                            </th>
+                          ),
+                        )}
                       </tr>
                     </thead>
                     <tbody>
@@ -807,22 +891,81 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
                               <SeasonCell value={row.id} />
                             </td>
 
-                            {(
-                              [
-                                "country",
-                                "league",
-                                "seasonYear",
-                                "startSeasonDate",
-                                "endSeasonDate",
-                                "round",
-                                "validFlg",
-                                "delFlg",
-                                "registerId",
-                                "registerTime",
-                                "updateId",
-                                "updateTime",
-                              ] as (keyof CountryLeagueSeasonMasterEntity)[]
-                            ).map((field) => (
+                            <td style={thTdStyle}>
+                              <EditableCell
+                                rowIndex={rowIndex}
+                                field="country"
+                                value={row.country}
+                                editingCell={editingCell}
+                                editingValue={editingValue}
+                                onStartEdit={startEdit}
+                                onChangeValue={setEditingValue}
+                                onCommit={commitEdit}
+                                onCancel={cancelEdit}
+                              />
+                            </td>
+
+                            <td style={thTdStyle}>
+                              <EditableCell
+                                rowIndex={rowIndex}
+                                field="league"
+                                value={row.league}
+                                editingCell={editingCell}
+                                editingValue={editingValue}
+                                onStartEdit={startEdit}
+                                onChangeValue={setEditingValue}
+                                onCommit={commitEdit}
+                                onCancel={cancelEdit}
+                              />
+                            </td>
+
+                            <td style={thTdStyle}>
+                              <EditableCell
+                                rowIndex={rowIndex}
+                                field="seasonYear"
+                                value={row.seasonYear}
+                                editingCell={editingCell}
+                                editingValue={editingValue}
+                                onStartEdit={startEdit}
+                                onChangeValue={setEditingValue}
+                                onCommit={commitEdit}
+                                onCancel={cancelEdit}
+                              />
+                            </td>
+
+                            <td style={thTdStyle}>
+                              <EditableCell
+                                rowIndex={rowIndex}
+                                field="startSeasonDate"
+                                value={row.startSeasonDate}
+                                editingCell={editingCell}
+                                editingValue={editingValue}
+                                onStartEdit={startEdit}
+                                onChangeValue={setEditingValue}
+                                onCommit={commitEdit}
+                                onCancel={cancelEdit}
+                              />
+                            </td>
+
+                            <td style={thTdStyle}>
+                              <EditableCell
+                                rowIndex={rowIndex}
+                                field="endSeasonDate"
+                                value={row.endSeasonDate}
+                                editingCell={editingCell}
+                                editingValue={editingValue}
+                                onStartEdit={startEdit}
+                                onChangeValue={setEditingValue}
+                                onCommit={commitEdit}
+                                onCancel={cancelEdit}
+                              />
+                            </td>
+
+                            <td style={thTdStyle}>
+                              <SeasonStatusBadge endSeasonDate={row.endSeasonDate} />
+                            </td>
+
+                            {(["round", "validFlg", "delFlg", "registerId", "registerTime", "updateId", "updateTime"] as (keyof CountryLeagueSeasonMasterEntity)[]).map((field) => (
                               <td key={String(field)} style={thTdStyle}>
                                 <EditableCell
                                   rowIndex={rowIndex}
@@ -875,9 +1018,34 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
     <>
       <div style={pageStyle}>
         <div style={sectionStyle}>
-          <div style={{ marginBottom: 12 }}>
-            <h1 style={{ margin: 0, fontSize: 22, lineHeight: 1.3 }}>country_league_season_master 確認</h1>
-            <p style={{ margin: "6px 0 0", color: "#475569", fontSize: 12 }}>このページに遷移した瞬間にモーダルを表示し、APIでは全件一括取得、画面側で10件ずつページング表示します。</p>
+          <div
+            style={{
+              marginBottom: 12,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 12,
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <h1 style={{ margin: 0, fontSize: 22, lineHeight: 1.3 }}>country_league_season_master 確認</h1>
+              <p style={{ margin: "6px 0 0", color: "#475569", fontSize: 12 }}>このページに遷移した瞬間にモーダルを表示し、APIでは全件一括取得、画面側で10件ずつページング表示します。</p>
+            </div>
+
+            <div
+              style={{
+                fontSize: 12,
+                color: "#334155",
+                background: "#f8fafc",
+                border: "1px solid #e2e8f0",
+                borderRadius: 8,
+                padding: "8px 10px",
+                whiteSpace: "nowrap",
+              }}
+            >
+              現在日時: {tokyoNowText || "-"}
+            </div>
           </div>
 
           <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12, flexWrap: "wrap" }}>
@@ -922,7 +1090,7 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
             <table style={tableStyle}>
               <thead>
                 <tr>
-                  {["No", "country", "league", "seasonYear", "start", "end", "round", "delFlg", "確認"].map((label) => (
+                  {["No", "country", "league", "seasonYear", "start", "end", "シーズン状態", "round", "delFlg", "確認"].map((label) => (
                     <th key={label} style={thStyle}>
                       {label}
                     </th>
@@ -932,13 +1100,13 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={9} style={thTdStyle}>
+                    <td colSpan={10} style={thTdStyle}>
                       読み込み中です...
                     </td>
                   </tr>
                 ) : pagedRows.length === 0 ? (
                   <tr>
-                    <td colSpan={9} style={thTdStyle}>
+                    <td colSpan={10} style={thTdStyle}>
                       表示できるデータがありません。
                     </td>
                   </tr>
@@ -962,6 +1130,9 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
                       </td>
                       <td style={thTdStyle}>
                         <SeasonCell value={row.endSeasonDate} />
+                      </td>
+                      <td style={thTdStyle}>
+                        <SeasonStatusBadge endSeasonDate={row.endSeasonDate} />
                       </td>
                       <td style={thTdStyle}>
                         <SeasonCell value={row.round} />
