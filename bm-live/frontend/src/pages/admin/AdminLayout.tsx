@@ -65,7 +65,10 @@ export default function AdminLayout() {
       {
         key: "db",
         label: "ミドルウェア管理",
-        items: [{ label: "コネクション管理", to: "db/connections" }],
+        items: [
+          { label: "コネクション管理", to: "db/connections" },
+          { label: "非稼働ECS管理", to: "noecs" },
+        ],
       },
     ],
     [],

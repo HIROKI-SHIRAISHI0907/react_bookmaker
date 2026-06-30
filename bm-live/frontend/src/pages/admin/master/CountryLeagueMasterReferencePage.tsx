@@ -325,7 +325,7 @@ const CountryLeagueMasterPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [keyword, setKeyword] = useState("");
-  const [currentLeaguePage, setCurrentLeaguePage] = useState(0);
+  const [currentCountryLeaguePage, setCurrentCountryLeaguePage] = useState(0);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [newRows, setNewRows] = useState<CountryLeagueMasterEntity[]>([]);
@@ -453,7 +453,7 @@ const CountryLeagueMasterPage: React.FC = () => {
       const nextRows = Array.isArray(data) ? data : [];
 
       setRows(nextRows);
-      setCurrentLeaguePage(0);
+      setCurrentCountryLeaguePage(0);
 
       if (!hasOpenedOnMountRef.current) {
         hasOpenedOnMountRef.current = true;
@@ -475,7 +475,7 @@ const CountryLeagueMasterPage: React.FC = () => {
     } catch (e) {
       setError(e instanceof Error ? e.message : "一覧取得に失敗しました。");
       setRows([]);
-      setCurrentLeaguePage(0);
+      setCurrentCountryLeaguePage(0);
       setModalOpen(false);
     } finally {
       setLoading(false);
@@ -523,34 +523,53 @@ const CountryLeagueMasterPage: React.FC = () => {
     return rows.filter((row) => [row.country, row.league, row.team, row.delFlg].map((v) => String(v ?? "").toLowerCase()).some((v) => v.includes(q)));
   }, [rows, keyword]);
 
-  const leaguePages = useMemo(() => {
-    const pageMap = new Map<string, CountryLeagueDTO[]>();
+  const countryLeaguePages = useMemo(() => {
+    const pageMap = new Map<
+      string,
+      {
+        country: string;
+        league: string;
+        items: CountryLeagueDTO[];
+      }
+    >();
 
     filteredRows.forEach((row) => {
-      const leagueKey = (row.league ?? "未設定リーグ").trim() || "未設定リーグ";
-      const current = pageMap.get(leagueKey) ?? [];
-      current.push(row);
-      pageMap.set(leagueKey, current);
+      const country = (row.country ?? "").trim() || "未設定国";
+      const league = (row.league ?? "").trim() || "未設定リーグ";
+      const key = `${country}___${league}`;
+
+      const current = pageMap.get(key);
+      if (current) {
+        current.items.push(row);
+        return;
+      }
+
+      pageMap.set(key, {
+        country,
+        league,
+        items: [row],
+      });
     });
 
-    return Array.from(pageMap.entries()).map(([league, items]) => ({ league, items }));
+    return Array.from(pageMap.values());
   }, [filteredRows]);
 
   useEffect(() => {
-    if (leaguePages.length === 0) {
-      if (currentLeaguePage !== 0) setCurrentLeaguePage(0);
+    if (countryLeaguePages.length === 0) {
+      if (currentCountryLeaguePage !== 0) setCurrentCountryLeaguePage(0);
       return;
     }
 
-    if (currentLeaguePage > leaguePages.length - 1) {
-      setCurrentLeaguePage(0);
+    if (currentCountryLeaguePage > countryLeaguePages.length - 1) {
+      setCurrentCountryLeaguePage(0);
     }
-  }, [leaguePages, currentLeaguePage]);
+  }, [countryLeaguePages, currentCountryLeaguePage]);
 
-  const currentPageData = leaguePages[currentLeaguePage];
+  const currentPageData = countryLeaguePages[currentCountryLeaguePage];
   const currentRows = currentPageData?.items ?? [];
+  const currentCountryName = currentPageData?.country ?? "-";
   const currentLeagueName = currentPageData?.league ?? "-";
-  const totalLeaguePages = leaguePages.length;
+  const totalCountryLeaguePages = countryLeaguePages.length;
 
   const startEdit = (rowIndex: number, field: keyof CountryLeagueMasterEntity, currentValue: unknown) => {
     setEditingCell({ rowIndex, field });
@@ -860,7 +879,7 @@ const CountryLeagueMasterPage: React.FC = () => {
         <div style={sectionStyle}>
           <div style={{ marginBottom: 12 }}>
             <h1 style={{ margin: 0, fontSize: 22, lineHeight: 1.3 }}>country_league_master 確認</h1>
-            <p style={{ margin: "6px 0 0", color: "#475569", fontSize: 12 }}>このページに遷移した瞬間にモーダルを表示し、APIでは全件一括取得、画面側で同一リーグごとにページング表示します。</p>
+            <p style={{ margin: "6px 0 0", color: "#475569", fontSize: 12 }}>このページに遷移した瞬間にモーダルを表示し、APIでは全件一括取得、画面側で同一の国＋リーグごとにページング表示します。</p>
           </div>
 
           <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12, flexWrap: "wrap" }}>
@@ -872,7 +891,7 @@ const CountryLeagueMasterPage: React.FC = () => {
               value={keyword}
               onChange={(e) => {
                 setKeyword(e.target.value);
-                setCurrentLeaguePage(0);
+                setCurrentCountryLeaguePage(0);
               }}
               placeholder="country / league / team / delFlg などで絞り込み"
               style={{ ...inputStyle, width: 300 }}
@@ -880,29 +899,30 @@ const CountryLeagueMasterPage: React.FC = () => {
 
             <span style={badgeStyle}>総件数: {rows.length}</span>
             <span style={badgeStyle}>絞込件数: {filteredRows.length}</span>
+            <span style={badgeStyle}>国: {currentCountryName}</span>
             <span style={badgeStyle}>リーグ: {currentLeagueName}</span>
             <span style={badgeStyle}>
-              ページ: {totalLeaguePages === 0 ? 0 : currentLeaguePage + 1} / {totalLeaguePages}
+              ページ: {totalCountryLeaguePages === 0 ? 0 : currentCountryLeaguePage + 1} / {totalCountryLeaguePages}
             </span>
           </div>
 
           <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10, flexWrap: "wrap" }}>
             <button
               type="button"
-              style={currentLeaguePage <= 0 ? disabledButtonStyle : buttonStyle}
-              onClick={() => setCurrentLeaguePage((prev) => Math.max(prev - 1, 0))}
-              disabled={currentLeaguePage <= 0}
+              style={currentCountryLeaguePage <= 0 ? disabledButtonStyle : buttonStyle}
+              onClick={() => setCurrentCountryLeaguePage((prev) => Math.max(prev - 1, 0))}
+              disabled={currentCountryLeaguePage <= 0}
             >
-              前のリーグ
+              前の国リーグ
             </button>
 
             <button
               type="button"
-              style={currentLeaguePage >= totalLeaguePages - 1 || totalLeaguePages === 0 ? disabledButtonStyle : buttonStyle}
-              onClick={() => setCurrentLeaguePage((prev) => Math.min(prev + 1, totalLeaguePages - 1))}
-              disabled={currentLeaguePage >= totalLeaguePages - 1 || totalLeaguePages === 0}
+              style={currentCountryLeaguePage >= totalCountryLeaguePages - 1 || totalCountryLeaguePages === 0 ? disabledButtonStyle : buttonStyle}
+              onClick={() => setCurrentCountryLeaguePage((prev) => Math.min(prev + 1, totalCountryLeaguePages - 1))}
+              disabled={currentCountryLeaguePage >= totalCountryLeaguePages - 1 || totalCountryLeaguePages === 0}
             >
-              次のリーグ
+              次の国リーグ
             </button>
           </div>
 

@@ -32,6 +32,7 @@ import MatchDataByDatePage from "./pages/admin/matches/MatchDataByDatePage";
 import DbConnectionPage from "./pages/admin/db/DbConnectionPage";
 import CountryLeagueSeasonMasterReferencePage from "./pages/admin/master/CountryLeagueSeasonMasterReferencePage";
 import CountryLeagueMasterReferencePage from "./pages/admin/master/CountryLeagueMasterReferencePage";
+import NoEcsSlotsPage from "./pages/admin/noecs/NoEcsSlotsPage";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -112,6 +113,7 @@ export default function App() {
               <Route path="db/connections" element={<DbConnectionPage />} />
               <Route path="season" element={<CountryLeagueSeasonMasterReferencePage />} />
               <Route path="team" element={<CountryLeagueMasterReferencePage />} />
+              <Route path="noecs" element={<NoEcsSlotsPage />} />
             </Route>
           </Route>
 
