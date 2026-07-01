@@ -237,7 +237,7 @@ function ConfirmModal(props: {
 
 /** ===================== Page ===================== */
 export default function ManualScrapePage() {
-  const batchCodes = ["B002", "B003", "B004", "B005", "B007", "B008", "B009", "B010", "B014"];
+  const batchCodes = ["B002", "B003", "B004", "B005", "B007", "B008", "B009", "B010", "B014", "B015"];
   const [batchCode, setBatchCode] = useState(batchCodes[0]);
 
   const isB007 = batchCode === "B007";

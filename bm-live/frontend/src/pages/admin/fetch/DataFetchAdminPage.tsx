@@ -72,6 +72,7 @@ const STAT_OPTIONS_ENDPOINT = "/v1/api/admin/stat/options";
  */
 const B007_ALL_LEAGUE_ENDPOINT = "/v1/api/admin/exec/task/all-league-scrape-master";
 const B014_SEASON_END_DELETE_ENDPOINT = "/v1/api/admin/exec/task/delete-season-data";
+const B012_ENDPOINT = "/v1/api/admin/exec/task/geografic";
 
 /** ============ Utils ============ */
 function toTrimOrNull(s: string): string | null {
@@ -442,6 +443,14 @@ export default function DataFetchAdminPage() {
         description: "必須情報なし。常時実行可能",
         endpoint: "/v1/api/admin/exec/task/stat-csv",
         precheckMode: "always",
+      },
+      {
+        id: "B012",
+        code: "B012",
+        title: "地理情報データ処理",
+        description: "b015_team_location.csv を前提に実行",
+        endpoint: B012_ENDPOINT,
+        precheckMode: "required",
       },
       {
         id: "B006_EACH",
