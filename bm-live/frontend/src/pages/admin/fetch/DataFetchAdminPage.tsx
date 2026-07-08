@@ -6,6 +6,7 @@ type StatRequestResource = {
   country?: string;
   league?: string;
   season?: string;
+  readyFlg?: boolean;
 };
 
 type StatResponseResource = {
@@ -73,6 +74,9 @@ const STAT_OPTIONS_ENDPOINT = "/v1/api/admin/stat/options";
 const B007_ALL_LEAGUE_ENDPOINT = "/v1/api/admin/exec/task/all-league-scrape-master";
 const B013_SEASON_END_DELETE_ENDPOINT = "/v1/api/admin/exec/task/delete-season-data";
 const B014_ENDPOINT = "/v1/api/admin/exec/task/geografic";
+
+const B014_TRUE_STATE_KEY = "B014T";
+const B014_FALSE_STATE_KEY = "B014F";
 
 /** ============ Utils ============ */
 function toTrimOrNull(s: string): string | null {
@@ -580,14 +584,34 @@ export default function DataFetchAdminPage() {
     }
   }, [statOptions, country, league]);
 
-  const runTask = async (t: TaskDef) => {
+  const runTask = async (
+    t: TaskDef,
+    options?: {
+      stateKey?: string;
+      extraBody?: Partial<StatRequestResource>;
+      successCode?: string;
+      successTitle?: string;
+      errorCode?: string;
+      errorTitle?: string;
+    },
+  ) => {
+    const stateKey = options?.stateKey ?? t.id;
+    const successCode = options?.successCode ?? t.code;
+    const successTitle = options?.successTitle ?? t.title;
+    const errorCode = options?.errorCode ?? t.code;
+    const errorTitle = options?.errorTitle ?? t.title;
+    const body: StatRequestResource = {
+      ...requestBody,
+      ...(options?.extraBody ?? {}),
+    };
+
     setGlobalMessage(null);
-    setErrors((p) => ({ ...p, [t.id]: null }));
-    setRunning((p) => new Set(p).add(t.id));
+    setErrors((p) => ({ ...p, [stateKey]: null }));
+    setRunning((p) => new Set(p).add(stateKey));
 
     try {
       const url = `${API_BASE}${t.endpoint}`;
-      const { data, rawText } = await postJsonSafe<StatResponseResource>(url, requestBody);
+      const { data, rawText } = await postJsonSafe<StatResponseResource>(url, body);
 
       const payload: StatResponseResource =
         data ??
@@ -597,24 +621,24 @@ export default function DataFetchAdminPage() {
           _note: rawText ? `Non-JSON response: ${rawText}` : "No content",
         } as any);
 
-      setResults((p) => ({ ...p, [t.id]: payload }));
+      setResults((p) => ({ ...p, [stateKey]: payload }));
 
       setGlobalMessage({
         type: "success",
-        title: `実行完了: ${t.code}`,
-        message: `${t.title}\nEndpoint: ${t.endpoint}`,
+        title: `実行完了: ${successCode}`,
+        message: `${successTitle}\nEndpoint: ${t.endpoint}`,
       });
 
       await loadFileChecks();
     } catch (e: unknown) {
       const msg = getErrorMessage(e);
-      setErrors((p) => ({ ...p, [t.id]: msg }));
-      setResults((p) => ({ ...p, [t.id]: null }));
-      setGlobalMessage({ type: "error", title: `実行失敗: ${t.code}`, message: msg });
+      setErrors((p) => ({ ...p, [stateKey]: msg }));
+      setResults((p) => ({ ...p, [stateKey]: null }));
+      setGlobalMessage({ type: "error", title: `実行失敗: ${errorCode}`, message: `${errorTitle}\n${msg}` });
     } finally {
       setRunning((p) => {
         const next = new Set(p);
-        next.delete(t.id);
+        next.delete(stateKey);
         return next;
       });
     }
@@ -623,6 +647,91 @@ export default function DataFetchAdminPage() {
   const statOptionsBadgeTone: "gray" | "emerald" | "amber" | "rose" = statOptionsError ? "rose" : statOptionsLoading ? "amber" : "emerald";
 
   const statOptionsBadgeLabel = statOptionsError ? "候補取得失敗" : statOptionsLoading ? "候補取得中..." : `候補API OK (${countryOptions.length} countries)`;
+
+  const renderFileCheckPanel = (task: TaskDef, fileCheck?: BatchFileCheckTaskResource) => {
+    return (
+      <div className="mt-4 rounded-2xl border border-gray-100 bg-slate-50 p-4">
+        <div className="flex items-center justify-between gap-2">
+          <div className="text-sm font-bold text-gray-900">{task.precheckMode === "always" ? "実行前確認（参考）" : "事前ファイル確認"}</div>
+          <div className="text-xs text-gray-500">{getPrecheckPanelSummary(task, fileCheck)}</div>
+        </div>
+
+        {fileCheck?.items?.length ? (
+          <div className="mt-3 space-y-2">
+            {fileCheck.items.map((item, idx) => (
+              <div key={`${task.code}-${idx}`} className="rounded-xl border border-gray-100 bg-white p-3">
+                <div className="flex items-start gap-3">
+                  <div className="text-lg leading-none pt-0.5">{getItemIcon(item)}</div>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-semibold text-gray-900">{item.label ?? "-"}</span>
+                      <Badge tone={getItemTone(item)}>{getItemStatusText(item)}</Badge>
+                      {item.type && <Badge tone="gray">{item.type}</Badge>}
+                      {item.required && <Badge tone="amber">必須</Badge>}
+                    </div>
+
+                    <div className="mt-2 text-xs text-gray-600 space-y-1 break-all">
+                      {item.bucket && <div>Bucket: {item.bucket}</div>}
+                      {item.key && <div>Key: {item.key}</div>}
+                      {item.kind === "count" && <div>Count: {item.count ?? 0}</div>}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : task.precheckMode === "always" ? (
+          <div className="mt-3 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2">このタスクは必須の事前条件なしで実行できます。</div>
+        ) : (
+          <div className="mt-3 text-xs text-gray-500">確認情報がありません</div>
+        )}
+
+        {task.precheckMode !== "always" && !!fileCheck && !fileCheck.ready && (
+          <div className="mt-3 text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2">必須条件が満たされていないため、このタスクは実行できません。</div>
+        )}
+      </div>
+    );
+  };
+
+  const renderResultPanel = (result?: StatResponseResource | null) => {
+    if (!result) return null;
+
+    return (
+      <div className="mt-4 rounded-2xl border border-gray-100 bg-gray-50 p-4">
+        <div className="flex items-center justify-between gap-2">
+          <div className="text-sm font-bold text-gray-900">結果</div>
+          <div className="flex gap-2">
+            <Button variant="secondary" icon="📋" onClick={() => navigator.clipboard.writeText(JSON.stringify(result, null, 2))} className="px-3 py-2 text-xs">
+              JSONコピー
+            </Button>
+          </div>
+        </div>
+
+        <div className="mt-3 grid gap-2 text-sm text-gray-800">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-gray-500">returnCd</span>
+            <code className="px-2 py-1 rounded-lg bg-white border border-gray-200">{result.returnCd ?? "-"}</code>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-gray-500">taskArn</span>
+            <code className="px-2 py-1 rounded-lg bg-white border border-gray-200 break-all">{result.taskArn ?? "-"}</code>
+            {result.taskArn && (
+              <Button variant="secondary" icon="📋" onClick={() => navigator.clipboard.writeText(String(result.taskArn))} className="px-3 py-2 text-xs">
+                コピー
+              </Button>
+            )}
+          </div>
+
+          <details className="mt-2">
+            <summary className="cursor-pointer text-xs font-semibold text-gray-700 select-none">詳細JSONを表示</summary>
+            <pre className="mt-2 text-xs whitespace-pre-wrap text-gray-700">{JSON.stringify(result, null, 2)}</pre>
+          </details>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-4 md:p-8">
@@ -727,14 +836,99 @@ export default function DataFetchAdminPage() {
         {/* Tasks */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {tasks.map((t) => {
-            const isRunning = running.has(t.id);
-            const result = results[t.id];
-            const err = errors[t.id];
-            const fileCheck = fileChecks[t.precheckTaskCode ?? t.code];
+            if (t.code !== "B014") {
+              const isRunning = running.has(t.id);
+              const result = results[t.id];
+              const err = errors[t.id];
+              const fileCheck = fileChecks[t.precheckTaskCode ?? t.code];
 
-            const runTone: "gray" | "blue" | "emerald" | "amber" | "rose" = err ? "rose" : result ? "emerald" : "gray";
-            const fileTone = getEffectiveFileBadgeTone(t, fileCheck);
-            const canRun = canRunTask(t, isRunning, fileCheck);
+              const runTone: "gray" | "blue" | "emerald" | "amber" | "rose" = err ? "rose" : result ? "emerald" : "gray";
+              const fileTone = getEffectiveFileBadgeTone(t, fileCheck);
+              const canRun = canRunTask(t, isRunning, fileCheck);
+
+              return (
+                <Card key={t.id} className="p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge tone="blue">{t.code}</Badge>
+                        <Badge tone={runTone}>{err ? "ERROR" : result ? "DONE" : "IDLE"}</Badge>
+                        <Badge tone={fileTone}>{getEffectiveFileBadgeLabel(t, fileCheck)}</Badge>
+                      </div>
+
+                      <div className="mt-2 text-lg font-extrabold text-gray-900 truncate">{t.title}</div>
+                      <div className="mt-1 text-sm text-gray-600">{t.description}</div>
+
+                      <div className="mt-3 text-xs text-gray-500">
+                        Endpoint: <code className="px-2 py-1 rounded-lg bg-gray-100 border border-gray-200">{t.endpoint}</code>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2 shrink-0">
+                      <Button onClick={() => runTask(t)} loading={isRunning} disabled={!canRun} icon={!isRunning ? "▶️" : undefined}>
+                        {isRunning ? "実行中..." : "実行"}
+                      </Button>
+
+                      <Button variant="secondary" icon="📎" onClick={() => navigator.clipboard.writeText(`${API_BASE}${t.endpoint}`)}>
+                        URLコピー
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* File Check */}
+                  {renderFileCheckPanel(t, fileCheck)}
+
+                  {/* Error */}
+                  {err && (
+                    <div className="mt-4">
+                      <Alert type="error" title="エラー" message={err} />
+                    </div>
+                  )}
+
+                  {/* Result */}
+                  {renderResultPanel(result)}
+                </Card>
+              );
+            }
+
+            const b014TrueTask: TaskDef = {
+              ...t,
+              id: B014_TRUE_STATE_KEY,
+              code: B014_TRUE_STATE_KEY,
+              title: `${t.title}（readyFlg=true）`,
+              description: "前提条件なしで実行",
+              precheckMode: "always",
+            };
+
+            const b014FalseTask: TaskDef = {
+              ...t,
+              id: B014_FALSE_STATE_KEY,
+              code: B014_FALSE_STATE_KEY,
+              title: `${t.title}（readyFlg=false）`,
+              description: t.description,
+              precheckMode: "required",
+            };
+
+            const trueRunning = running.has(B014_TRUE_STATE_KEY);
+            const falseRunning = running.has(B014_FALSE_STATE_KEY);
+
+            const trueResult = results[B014_TRUE_STATE_KEY];
+            const falseResult = results[B014_FALSE_STATE_KEY];
+
+            const trueError = errors[B014_TRUE_STATE_KEY];
+            const falseError = errors[B014_FALSE_STATE_KEY];
+
+            const trueFileCheck = fileChecks[B014_TRUE_STATE_KEY];
+            const falseFileCheck = fileChecks[B014_FALSE_STATE_KEY];
+
+            const trueRunTone: "gray" | "blue" | "emerald" | "amber" | "rose" = trueError ? "rose" : trueResult ? "emerald" : "gray";
+            const falseRunTone: "gray" | "blue" | "emerald" | "amber" | "rose" = falseError ? "rose" : falseResult ? "emerald" : "gray";
+
+            const trueFileTone = getEffectiveFileBadgeTone(b014TrueTask, trueFileCheck);
+            const falseFileTone = getEffectiveFileBadgeTone(b014FalseTask, falseFileCheck);
+
+            const canRunTrue = canRunTask(b014TrueTask, trueRunning, trueFileCheck);
+            const canRunFalse = canRunTask(b014FalseTask, falseRunning, falseFileCheck);
 
             return (
               <Card key={t.id} className="p-6">
@@ -742,8 +936,6 @@ export default function DataFetchAdminPage() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge tone="blue">{t.code}</Badge>
-                      <Badge tone={runTone}>{err ? "ERROR" : result ? "DONE" : "IDLE"}</Badge>
-                      <Badge tone={fileTone}>{getEffectiveFileBadgeLabel(t, fileCheck)}</Badge>
                     </div>
 
                     <div className="mt-2 text-lg font-extrabold text-gray-900 truncate">{t.title}</div>
@@ -755,101 +947,105 @@ export default function DataFetchAdminPage() {
                   </div>
 
                   <div className="flex flex-col gap-2 shrink-0">
-                    <Button onClick={() => runTask(t)} loading={isRunning} disabled={!canRun} icon={!isRunning ? "▶️" : undefined}>
-                      {isRunning ? "実行中..." : "実行"}
-                    </Button>
-
                     <Button variant="secondary" icon="📎" onClick={() => navigator.clipboard.writeText(`${API_BASE}${t.endpoint}`)}>
                       URLコピー
                     </Button>
                   </div>
                 </div>
 
-                {/* File Check */}
-                <div className="mt-4 rounded-2xl border border-gray-100 bg-slate-50 p-4">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="text-sm font-bold text-gray-900">{t.precheckMode === "always" ? "実行前確認（参考）" : "事前ファイル確認"}</div>
-                    <div className="text-xs text-gray-500">{getPrecheckPanelSummary(t, fileCheck)}</div>
-                  </div>
-
-                  {fileCheck?.items?.length ? (
-                    <div className="mt-3 space-y-2">
-                      {fileCheck.items.map((item, idx) => (
-                        <div key={`${t.code}-${idx}`} className="rounded-xl border border-gray-100 bg-white p-3">
-                          <div className="flex items-start gap-3">
-                            <div className="text-lg leading-none pt-0.5">{getItemIcon(item)}</div>
-
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-sm font-semibold text-gray-900">{item.label ?? "-"}</span>
-                                <Badge tone={getItemTone(item)}>{getItemStatusText(item)}</Badge>
-                                {item.type && <Badge tone="gray">{item.type}</Badge>}
-                                {item.required && <Badge tone="amber">必須</Badge>}
-                              </div>
-
-                              <div className="mt-2 text-xs text-gray-600 space-y-1 break-all">
-                                {item.bucket && <div>Bucket: {item.bucket}</div>}
-                                {item.key && <div>Key: {item.key}</div>}
-                                {item.kind === "count" && <div>Count: {item.count ?? 0}</div>}
-                              </div>
-                            </div>
-                          </div>
+                <div className="mt-4 grid grid-cols-1 xl:grid-cols-2 gap-4">
+                  {/* B014T */}
+                  <div className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge tone="blue">{b014TrueTask.code}</Badge>
+                          <Badge tone={trueRunTone}>{trueError ? "ERROR" : trueResult ? "DONE" : "IDLE"}</Badge>
+                          <Badge tone={trueFileTone}>{getEffectiveFileBadgeLabel(b014TrueTask, trueFileCheck)}</Badge>
                         </div>
-                      ))}
-                    </div>
-                  ) : t.precheckMode === "always" ? (
-                    <div className="mt-3 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2">このタスクは必須の事前条件なしで実行できます。</div>
-                  ) : (
-                    <div className="mt-3 text-xs text-gray-500">確認情報がありません</div>
-                  )}
 
-                  {t.precheckMode !== "always" && !!fileCheck && !fileCheck.ready && (
-                    <div className="mt-3 text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2">必須条件が満たされていないため、このタスクは実行できません。</div>
-                  )}
-                </div>
+                        <div className="mt-2 text-base font-extrabold text-gray-900 truncate">{b014TrueTask.title}</div>
+                        <div className="mt-1 text-sm text-gray-600">{b014TrueTask.description}</div>
+                      </div>
 
-                {/* Error */}
-                {err && (
-                  <div className="mt-4">
-                    <Alert type="error" title="エラー" message={err} />
-                  </div>
-                )}
-
-                {/* Result */}
-                {result && (
-                  <div className="mt-4 rounded-2xl border border-gray-100 bg-gray-50 p-4">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="text-sm font-bold text-gray-900">結果</div>
-                      <div className="flex gap-2">
-                        <Button variant="secondary" icon="📋" onClick={() => navigator.clipboard.writeText(JSON.stringify(result, null, 2))} className="px-3 py-2 text-xs">
-                          JSONコピー
+                      <div className="flex flex-col gap-2 shrink-0">
+                        <Button
+                          onClick={() =>
+                            runTask(t, {
+                              stateKey: B014_TRUE_STATE_KEY,
+                              extraBody: { readyFlg: true },
+                              successCode: B014_TRUE_STATE_KEY,
+                              successTitle: b014TrueTask.title,
+                              errorCode: B014_TRUE_STATE_KEY,
+                              errorTitle: b014TrueTask.title,
+                            })
+                          }
+                          loading={trueRunning}
+                          disabled={!canRunTrue}
+                          icon={!trueRunning ? "▶️" : undefined}
+                        >
+                          {trueRunning ? "実行中..." : "実行"}
                         </Button>
                       </div>
                     </div>
 
-                    <div className="mt-3 grid gap-2 text-sm text-gray-800">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs text-gray-500">returnCd</span>
-                        <code className="px-2 py-1 rounded-lg bg-white border border-gray-200">{result.returnCd ?? "-"}</code>
-                      </div>
+                    {renderFileCheckPanel(b014TrueTask, trueFileCheck)}
 
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs text-gray-500">taskArn</span>
-                        <code className="px-2 py-1 rounded-lg bg-white border border-gray-200 break-all">{result.taskArn ?? "-"}</code>
-                        {result.taskArn && (
-                          <Button variant="secondary" icon="📋" onClick={() => navigator.clipboard.writeText(String(result.taskArn))} className="px-3 py-2 text-xs">
-                            コピー
-                          </Button>
-                        )}
+                    {trueError && (
+                      <div className="mt-4">
+                        <Alert type="error" title="エラー" message={trueError} />
                       </div>
+                    )}
 
-                      <details className="mt-2">
-                        <summary className="cursor-pointer text-xs font-semibold text-gray-700 select-none">詳細JSONを表示</summary>
-                        <pre className="mt-2 text-xs whitespace-pre-wrap text-gray-700">{JSON.stringify(result, null, 2)}</pre>
-                      </details>
-                    </div>
+                    {renderResultPanel(trueResult)}
                   </div>
-                )}
+
+                  {/* B014F */}
+                  <div className="rounded-2xl border border-amber-100 bg-amber-50/40 p-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge tone="blue">{b014FalseTask.code}</Badge>
+                          <Badge tone={falseRunTone}>{falseError ? "ERROR" : falseResult ? "DONE" : "IDLE"}</Badge>
+                          <Badge tone={falseFileTone}>{getEffectiveFileBadgeLabel(b014FalseTask, falseFileCheck)}</Badge>
+                        </div>
+
+                        <div className="mt-2 text-base font-extrabold text-gray-900 truncate">{b014FalseTask.title}</div>
+                        <div className="mt-1 text-sm text-gray-600">{b014FalseTask.description}</div>
+                      </div>
+
+                      <div className="flex flex-col gap-2 shrink-0">
+                        <Button
+                          onClick={() =>
+                            runTask(t, {
+                              stateKey: B014_FALSE_STATE_KEY,
+                              extraBody: { readyFlg: false },
+                              successCode: B014_FALSE_STATE_KEY,
+                              successTitle: b014FalseTask.title,
+                              errorCode: B014_FALSE_STATE_KEY,
+                              errorTitle: b014FalseTask.title,
+                            })
+                          }
+                          loading={falseRunning}
+                          disabled={!canRunFalse}
+                          icon={!falseRunning ? "▶️" : undefined}
+                        >
+                          {falseRunning ? "実行中..." : "実行"}
+                        </Button>
+                      </div>
+                    </div>
+
+                    {renderFileCheckPanel(b014FalseTask, falseFileCheck)}
+
+                    {falseError && (
+                      <div className="mt-4">
+                        <Alert type="error" title="エラー" message={falseError} />
+                      </div>
+                    )}
+
+                    {renderResultPanel(falseResult)}
+                  </div>
+                </div>
               </Card>
             );
           })}
