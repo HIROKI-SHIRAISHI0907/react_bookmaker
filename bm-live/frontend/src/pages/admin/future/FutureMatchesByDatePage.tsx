@@ -1,13 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 type FutureMatch = {
+  id?: string;
   seq?: number;
   gameTeamCategory?: string;
   futureTime?: string;
-  homeTeamName?: string;
-  awayTeamName?: string;
-  gameLink?: string;
-  startFlg?: string;
+  homeTeam?: string;
+  awayTeam?: string;
+  link?: string;
+  roundNo?: number;
+  status?: string; // "SCHEDULED" / "LIVE"
 };
 
 type FutureMatchesResponse = {
@@ -72,17 +74,21 @@ function formatDateTimeJst(value?: string): string {
   }).format(date);
 }
 
-function getStartFlgLabel(value?: string): string {
-  const v = String(value ?? "").trim();
-  if (v === "1") return "開始済";
-  if (v === "0") return "開始前";
+function getStatusLabel(value?: string): string {
+  const v = String(value ?? "")
+    .trim()
+    .toUpperCase();
+  if (v === "LIVE") return "ライブ";
+  if (v === "SCHEDULED") return "予定";
   return v || "-";
 }
 
-function getStartFlgTone(value?: string): "gray" | "emerald" | "amber" | "rose" {
-  const v = String(value ?? "").trim();
-  if (v === "1") return "emerald";
-  if (v === "0") return "amber";
+function getStatusTone(value?: string): "gray" | "emerald" | "amber" | "rose" {
+  const v = String(value ?? "")
+    .trim()
+    .toUpperCase();
+  if (v === "LIVE") return "rose";
+  if (v === "SCHEDULED") return "emerald";
   return "gray";
 }
 
@@ -390,17 +396,18 @@ const FutureMatchesByDatePage: React.FC = () => {
               <tr>
                 <th style={thStyle}>seq</th>
                 <th style={thStyle}>カテゴリ</th>
+                <th style={thStyle}>ラウンド</th>
                 <th style={thStyle}>試合開始日時</th>
                 <th style={thStyle}>ホーム</th>
                 <th style={thStyle}>アウェイ</th>
-                <th style={thStyle}>開始状態</th>
+                <th style={thStyle}>状態</th>
                 <th style={thStyle}>リンク</th>
               </tr>
             </thead>
             <tbody>
               {matches.length === 0 ? (
                 <tr>
-                  <td colSpan={7} style={thTdStyle}>
+                  <td colSpan={8} style={thTdStyle}>
                     対象データがありません。
                   </td>
                 </tr>
@@ -409,16 +416,17 @@ const FutureMatchesByDatePage: React.FC = () => {
                   <tr key={`${match.seq ?? "seq"}-${index}`}>
                     <td style={thTdStyle}>{toDisplay(match.seq)}</td>
                     <td style={thTdStyle}>{toDisplay(match.gameTeamCategory)}</td>
+                    <td style={thTdStyle}>{toDisplay(match.roundNo)}</td>
                     <td style={thTdStyle}>{formatDateTimeJst(match.futureTime)}</td>
-                    <td style={thTdStyle}>{toDisplay(match.homeTeamName)}</td>
-                    <td style={thTdStyle}>{toDisplay(match.awayTeamName)}</td>
+                    <td style={thTdStyle}>{toDisplay(match.homeTeam)}</td>
+                    <td style={thTdStyle}>{toDisplay(match.awayTeam)}</td>
                     <td style={thTdStyle}>
-                      <span style={getStatusPillStyle(getStartFlgTone(match.startFlg))}>{getStartFlgLabel(match.startFlg)}</span>
+                      <span style={getStatusPillStyle(getStatusTone(match.status))}>{getStatusLabel(match.status)}</span>
                     </td>
                     <td style={thTdStyle}>
-                      {match.gameLink ? (
+                      {match.link ? (
                         <a
-                          href={match.gameLink}
+                          href={match.link}
                           target="_blank"
                           rel="noopener noreferrer"
                           style={{
@@ -473,22 +481,26 @@ const FutureMatchesByDatePage: React.FC = () => {
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
                   <div style={{ flex: "1 1 420px" }}>
                     <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>
-                      seq: {toDisplay(match.seq)} / {toDisplay(match.gameTeamCategory)}
+                      id: {toDisplay(match.id)} / seq: {toDisplay(match.seq)}
+                    </div>
+
+                    <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>
+                      {toDisplay(match.gameTeamCategory)} / round: {toDisplay(match.roundNo)}
                     </div>
 
                     <div style={{ fontSize: 18, fontWeight: 700, lineHeight: 1.4 }}>
-                      {toDisplay(match.homeTeamName)} vs {toDisplay(match.awayTeamName)}
+                      {toDisplay(match.homeTeam)} vs {toDisplay(match.awayTeam)}
                     </div>
 
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
                       <span style={badgeStyle}>試合開始: {formatDateTimeJst(match.futureTime)}</span>
-                      <span style={getStatusPillStyle(getStartFlgTone(match.startFlg))}>{getStartFlgLabel(match.startFlg)}</span>
+                      <span style={getStatusPillStyle(getStatusTone(match.status))}>{getStatusLabel(match.status)}</span>
                     </div>
 
-                    {match.gameLink && (
+                    {match.link && (
                       <div style={{ marginTop: 10 }}>
                         <a
-                          href={match.gameLink}
+                          href={match.link}
                           target="_blank"
                           rel="noopener noreferrer"
                           style={{
