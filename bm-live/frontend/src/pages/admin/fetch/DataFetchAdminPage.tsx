@@ -66,10 +66,10 @@ type SelectOption = {
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 const STAT_OPTIONS_ENDPOINT = "/v1/api/admin/stat/options";
+const FILE_CHECKS_ENDPOINT = "/v1/api/admin/file-checks";
 
 /**
- * 新B014の実APIパスが未共有のため定数化
- * 実際のAPIに合わせて必要ならここだけ差し替えてください
+ * 新B014の実APIパス
  */
 const B007_ALL_LEAGUE_ENDPOINT = "/v1/api/admin/exec/task/all-league-scrape-master";
 const B013_SEASON_END_DELETE_ENDPOINT = "/v1/api/admin/exec/task/delete-season-data";
@@ -89,11 +89,22 @@ function getErrorMessage(e: unknown): string {
   return String(e ?? "unknown error");
 }
 
+function withCacheBuster(url: string): string {
+  const sep = url.indexOf("?") >= 0 ? "&" : "?";
+  return `${url}${sep}_ts=${Date.now()}`;
+}
+
 async function postJsonSafe<T>(url: string, body: unknown): Promise<{ data: T | null; rawText: string | null }> {
-  const res = await fetch(url, {
+  const res = await fetch(withCacheBuster(url), {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json, text/plain, */*",
+      "Cache-Control": "no-cache, no-store, max-age=0",
+      Pragma: "no-cache",
+    },
     credentials: "include",
+    cache: "no-store",
     body: JSON.stringify(body ?? {}),
   });
 
@@ -126,9 +137,15 @@ async function postJsonSafe<T>(url: string, body: unknown): Promise<{ data: T | 
 }
 
 async function getJsonSafe<T>(url: string): Promise<T> {
-  const res = await fetch(url, {
+  const res = await fetch(withCacheBuster(url), {
     method: "GET",
     credentials: "include",
+    cache: "no-store",
+    headers: {
+      Accept: "application/json, text/plain, */*",
+      "Cache-Control": "no-cache, no-store, max-age=0",
+      Pragma: "no-cache",
+    },
   });
 
   const ct = res.headers.get("content-type") ?? "";
@@ -154,6 +171,24 @@ async function getJsonSafe<T>(url: string): Promise<T> {
   }
 
   return (await res.json()) as T;
+}
+
+/**
+ * APIレスポンスをそのまま画面に反映する。
+ * B014F は Java 側が正なので、React側で output/ 等への補正は行わない。
+ */
+function normalizeBatchFileChecksResponse(data: BatchFileCheckResponseResource | null | undefined): BatchFileCheckResponseResource | null | undefined {
+  if (!data?.tasks?.length) return data;
+
+  return {
+    ...data,
+    tasks: (data.tasks ?? []).map((task) => ({
+      ...task,
+      items: (task.items ?? []).map((item) => ({
+        ...item,
+      })),
+    })),
+  };
 }
 
 function getTaskFileStatusMap(data: BatchFileCheckResponseResource | null | undefined): Record<string, BatchFileCheckTaskResource> {
@@ -538,9 +573,10 @@ export default function DataFetchAdminPage() {
     setFileChecksError(null);
 
     try {
-      const url = `${API_BASE}/v1/api/admin/file-checks`;
+      const url = `${API_BASE}${FILE_CHECKS_ENDPOINT}`;
       const data = await getJsonSafe<BatchFileCheckResponseResource>(url);
-      setFileChecks(getTaskFileStatusMap(data));
+      const normalized = normalizeBatchFileChecksResponse(data);
+      setFileChecks(getTaskFileStatusMap(normalized));
     } catch (e: unknown) {
       setFileChecksError(getErrorMessage(e));
     } finally {
@@ -875,17 +911,14 @@ export default function DataFetchAdminPage() {
                     </div>
                   </div>
 
-                  {/* File Check */}
                   {renderFileCheckPanel(t, fileCheck)}
 
-                  {/* Error */}
                   {err && (
                     <div className="mt-4">
                       <Alert type="error" title="エラー" message={err} />
                     </div>
                   )}
 
-                  {/* Result */}
                   {renderResultPanel(result)}
                 </Card>
               );
