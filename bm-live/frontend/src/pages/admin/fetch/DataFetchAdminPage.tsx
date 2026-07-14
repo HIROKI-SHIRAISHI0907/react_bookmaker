@@ -569,20 +569,24 @@ export default function DataFetchAdminPage() {
   };
 
   const loadFileChecks = async () => {
-    setFileChecksLoading(true);
-    setFileChecksError(null);
+     setFileChecksLoading(true);
+     setFileChecksError(null);
 
-    try {
-      const url = `${API_BASE}${FILE_CHECKS_ENDPOINT}`;
-      const data = await getJsonSafe<BatchFileCheckResponseResource>(url);
-      const normalized = normalizeBatchFileChecksResponse(data);
-      setFileChecks(getTaskFileStatusMap(normalized));
-    } catch (e: unknown) {
-      setFileChecksError(getErrorMessage(e));
-    } finally {
-      setFileChecksLoading(false);
-    }
-  };
+     try {
+       const url = `${API_BASE}${FILE_CHECKS_ENDPOINT}`;
+       console.log("[file-checks] url =", url);
+
+       const data = await getJsonSafe<BatchFileCheckResponseResource>(url);
+       console.log("[file-checks] response =", data);
+
+       const normalized = normalizeBatchFileChecksResponse(data);
+       setFileChecks(getTaskFileStatusMap(normalized));
+     } catch (e: unknown) {
+       setFileChecksError(getErrorMessage(e));
+     } finally {
+       setFileChecksLoading(false);
+     }
+   };
 
   const loadStatOptions = async () => {
     setStatOptionsLoading(true);
