@@ -5,6 +5,20 @@ import { Skeleton } from "../../../components/ui/skeleton";
 /** =========================
  * Types
  * ========================= */
+type FinGettingRequest = {
+  matches: Array<{
+    matchDate: string; // YYYY-MM-DD
+    matchId: string;
+    matchUrl?: string;
+  }>;
+};
+
+type ExecTaskResponse = {
+  returnCd?: string;
+  taskArn?: string;
+  message?: string;
+};
+
 type ApiResponse = {
   from?: string | null;
   to?: string | null;
@@ -110,6 +124,25 @@ async function fetchJsonStrict<T>(url: string, signal?: AbortSignal): Promise<T>
   return (await res.json()) as T;
 }
 
+async function postFinGettingJson(req: FinGettingRequest, signal?: AbortSignal): Promise<ExecTaskResponse> {
+  const res = await fetch("/v1/api/admin/fin-getting-json", {
+    method: "POST",
+    signal,
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify(req),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`HTTP ${res.status} ${res.statusText}${text ? `: ${text}` : ""}`);
+  }
+
+  return (await res.json()) as ExecTaskResponse;
+}
+
 function fmtJstFixed(iso: string | null | undefined, withSeconds = false) {
   if (!iso) return "-";
   const d = new Date(iso);
@@ -128,6 +161,32 @@ function fmtJstFixed(iso: string | null | undefined, withSeconds = false) {
 
 function safeText(v: unknown) {
   return typeof v === "string" ? v : "";
+}
+
+function extractMidFromUrl(url: string | null | undefined): string | null {
+  const s = (url ?? "").trim();
+  if (!s) return null;
+  const m = s.match(/[?&]mid=([A-Za-z0-9]+)/);
+  return m?.[1] ?? null;
+}
+
+function isoToJstDateKey(iso: string): string | null {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+
+  const parts = new Intl.DateTimeFormat("ja-JP", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(d);
+
+  const y = parts.find((p) => p.type === "year")?.value;
+  const m = parts.find((p) => p.type === "month")?.value;
+  const dd = parts.find((p) => p.type === "day")?.value;
+
+  if (!y || !m || !dd) return null;
+  return `${y}-${m}-${dd}`;
 }
 
 function getRowHome(row: IngestedRowDTO) {
@@ -150,6 +209,60 @@ function getRowFutureTime(row: IngestedRowDTO) {
   return safeText(row.future?.futureTime) || "";
 }
 
+function buildFinGettingRequestFromRows(rows: IngestedRowDTO[]): FinGettingRequest {
+  type Group = {
+    matchDate: string | null;
+    matchId: string | null;
+    matchUrl: string | null;
+  };
+
+  const grouped = new Map<string, Group>();
+
+  for (const row of rows) {
+    const gameLink = getRowGameLink(row) || null;
+    const futureTime = getRowFutureTime(row) || null;
+
+    const matchDate = futureTime ? isoToJstDateKey(futureTime) : null;
+    const matchId = (row.matchKey ?? "").trim() || extractMidFromUrl(gameLink) || (row.data?.gameId ?? "").trim() || null;
+
+    const groupKey = matchId || extractMidFromUrl(gameLink) || `${row.table}:${row.seq}`;
+
+    const existing = grouped.get(groupKey);
+    if (!existing) {
+      grouped.set(groupKey, {
+        matchDate,
+        matchId,
+        matchUrl: gameLink,
+      });
+      continue;
+    }
+
+    if (!existing.matchDate && matchDate) existing.matchDate = matchDate;
+    if (!existing.matchId && matchId) existing.matchId = matchId;
+    if (!existing.matchUrl && gameLink) existing.matchUrl = gameLink;
+  }
+
+  const matches: FinGettingRequest["matches"] = [];
+
+  for (const [, g] of grouped) {
+    if (!g.matchDate || !g.matchId) continue;
+
+    const row: { matchDate: string; matchId: string; matchUrl?: string } = {
+      matchDate: g.matchDate,
+      matchId: g.matchId,
+    };
+
+    if (g.matchUrl) {
+      row.matchUrl = g.matchUrl;
+    }
+
+    matches.push(row);
+  }
+
+  matches.sort((a, b) => (a.matchDate + a.matchId).localeCompare(b.matchDate + b.matchId));
+  return { matches };
+}
+
 /** =========================
  * Page
  * ========================= */
@@ -162,11 +275,16 @@ export default function IngestedDataReferenceAdminPage() {
 
   const [offset, setOffset] = useState(0);
   const [pageSize, setPageSize] = useState(100);
+  const [searchVersion, setSearchVersion] = useState(0);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [response, setResponse] = useState<ApiResponse | null>(null);
   const [lastFetchedAt, setLastFetchedAt] = useState<string | null>(null);
+
+  const [execLoading, setExecLoading] = useState(false);
+  const [execError, setExecError] = useState<string | null>(null);
+  const [execResult, setExecResult] = useState<ExecTaskResponse | null>(null);
 
   const [expandedKeys, setExpandedKeys] = useState<Record<string, boolean>>({});
 
@@ -179,12 +297,10 @@ export default function IngestedDataReferenceAdminPage() {
       params.set("country", country.trim());
     }
 
-    // controller の @RequestParam 名に合わせる
     params.set("onlyNeedsAttention", String(onlyNeedsAttention));
     params.set("limit", String(pageSize));
     params.set("offset", String(offset));
 
-    // context-path が /v1 のままならこのまま
     return `/v1/api/admin/ingested?${params.toString()}`;
   }, [country, onlyNeedsAttention, pageSize, offset]);
 
@@ -218,7 +334,7 @@ export default function IngestedDataReferenceAdminPage() {
   useEffect(() => {
     void doFetch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiUrl]);
+  }, [apiUrl, searchVersion]);
 
   const rows = response?.rows ?? [];
   const total = response?.total ?? 0;
@@ -246,10 +362,38 @@ export default function IngestedDataReferenceAdminPage() {
     setOffset(0);
     setCountry(countryInput);
     setOnlyNeedsAttention(onlyNeedsAttentionInput);
+    setSearchVersion((v) => v + 1);
   };
 
   const toggleExpand = (key: string) => {
     setExpandedKeys((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const runB008 = async () => {
+    setExecLoading(true);
+    setExecError(null);
+    setExecResult(null);
+
+    try {
+      const req = buildFinGettingRequestFromRows(rows);
+
+      if (req.matches.length === 0) {
+        setExecError("B008対象が0件です（futureTime または matchId が取れる行がありません）。");
+        return;
+      }
+
+      if (req.matches.length > 300) {
+        setExecError(`対象が多すぎます（${req.matches.length}件）。検索条件を絞ってください。`);
+        return;
+      }
+
+      const res = await postFinGettingJson(req);
+      setExecResult(res);
+    } catch (e: any) {
+      setExecError(e?.message ?? String(e));
+    } finally {
+      setExecLoading(false);
+    }
   };
 
   return (
@@ -277,6 +421,17 @@ export default function IngestedDataReferenceAdminPage() {
           </div>
         </div>
 
+        {execError ? <Alert type="error" title="B008起動に失敗しました" message={execError} onClose={() => setExecError(null)} /> : null}
+
+        {execResult ? (
+          <Alert
+            type="success"
+            title="B008を起動しました"
+            message={`returnCd: ${execResult.returnCd ?? "-"}${execResult.taskArn ? `\ntaskArn: ${execResult.taskArn}` : ""}${execResult.message ? `\nmessage: ${execResult.message}` : ""}`}
+            onClose={() => setExecResult(null)}
+          />
+        ) : null}
+
         {error ? <Alert type="error" title="取得に失敗しました" message={error} onClose={() => setError(null)} /> : null}
 
         <Panel
@@ -284,9 +439,16 @@ export default function IngestedDataReferenceAdminPage() {
           desc="チェックボックスの状態を変えたあと、検索ボタンでAPIを再実行します。"
           right={
             <div className="flex flex-col items-end gap-1">
-              <Button onClick={handleSearch} disabled={loading}>
-                {loading ? "検索中..." : "検索"}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button onClick={handleSearch} disabled={loading}>
+                  {loading ? "検索中..." : "検索"}
+                </Button>
+
+                <Button size="sm" onClick={runB008} disabled={loading || execLoading || rows.length === 0}>
+                  {execLoading ? "B008起動中..." : "B008起動"}
+                </Button>
+              </div>
+
               {lastFetchedAt ? <div className="text-[11px] text-muted-foreground">最終取得: {fmtJstFixed(lastFetchedAt, true)}</div> : null}
             </div>
           }
@@ -341,7 +503,7 @@ export default function IngestedDataReferenceAdminPage() {
           right={
             <div className="flex items-center gap-2">
               <Badge tone="gray">
-                {Math.min(offset + 1, total)} - {Math.min(offset + pageSize, total)} / {total}
+                {total === 0 ? 0 : offset + 1} - {Math.min(offset + pageSize, total)} / {total}
               </Badge>
               <Button variant="outline" size="sm" disabled={!canPrev || loading} onClick={() => setOffset((v) => Math.max(0, v - pageSize))}>
                 Prev
@@ -363,7 +525,8 @@ export default function IngestedDataReferenceAdminPage() {
           ) : (
             <div className="grid grid-cols-1 gap-3">
               {rows.map((row) => {
-                const expanded = Boolean(expandedKeys[`${row.table}:${row.seq}`]);
+                const rowKey = `${row.table}:${row.seq}`;
+                const expanded = Boolean(expandedKeys[rowKey]);
                 const home = getRowHome(row);
                 const away = getRowAway(row);
                 const category = getRowCategory(row);
@@ -371,8 +534,8 @@ export default function IngestedDataReferenceAdminPage() {
                 const futureTime = getRowFutureTime(row);
 
                 return (
-                  <div key={`${row.table}:${row.seq}`} className="rounded-2xl border bg-white hover:shadow-sm transition-shadow p-4">
-                    <button type="button" className="w-full text-left" onClick={() => toggleExpand(`${row.table}:${row.seq}`)}>
+                  <div key={rowKey} className="rounded-2xl border bg-white hover:shadow-sm transition-shadow p-4">
+                    <button type="button" className="w-full text-left" onClick={() => toggleExpand(rowKey)}>
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0">
                           <div className="text-lg font-extrabold text-gray-900 truncate">
