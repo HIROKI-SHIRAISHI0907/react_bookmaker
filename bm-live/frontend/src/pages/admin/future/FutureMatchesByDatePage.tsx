@@ -9,7 +9,7 @@ type FutureMatch = {
   awayTeam?: string;
   link?: string;
   roundNo?: number;
-  status?: string; // "SCHEDULED" / "LIVE"
+  status?: string; // "SCHEDULED" / "FINISHED"
 };
 
 type FutureMatchesResponse = {
@@ -78,8 +78,13 @@ function getStatusLabel(value?: string): string {
   const v = String(value ?? "")
     .trim()
     .toUpperCase();
-  if (v === "LIVE") return "ライブ";
+
   if (v === "SCHEDULED") return "予定";
+  if (v === "FINISHED") return "終了済";
+
+  // 旧データ互換
+  if (v === "LIVE") return "ライブ";
+
   return v || "-";
 }
 
@@ -87,8 +92,13 @@ function getStatusTone(value?: string): "gray" | "emerald" | "amber" | "rose" {
   const v = String(value ?? "")
     .trim()
     .toUpperCase();
-  if (v === "LIVE") return "rose";
+
   if (v === "SCHEDULED") return "emerald";
+  if (v === "FINISHED") return "amber";
+
+  // 旧データ互換
+  if (v === "LIVE") return "rose";
+
   return "gray";
 }
 
@@ -450,7 +460,15 @@ const FutureMatchesByDatePage: React.FC = () => {
       </div>
 
       <div style={sectionStyle}>
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 12,
+            flexWrap: "wrap",
+            marginBottom: 12,
+          }}
+        >
           <div>
             <h2 style={{ margin: 0, fontSize: 18 }}>カード表示</h2>
             <p style={{ margin: "6px 0 0", fontSize: 12, color: "#475569" }}>管理画面で見やすいように試合ごとにカード表示しています。</p>
