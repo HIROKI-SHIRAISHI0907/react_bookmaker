@@ -33,13 +33,13 @@ export default function AdminLayout() {
         items: [
           { label: "シーズンデータ取得情報", to: "season" },
           { label: "チームデータ取得情報", to: "team" },
+          { label: "試合予定データ取得情報", to: "future/matches" },
         ],
       },
       {
         key: "other",
         label: "その他データ参照",
         items: [
-          { label: "試合予定データ参照", to: "future/matches" },
           { label: "リアルタイムデータ登録済参照", to: "matches/by-date" },
           { label: "統計用CSV作成内容参照", to: "csv/today" },
           { label: "未来データ・リアルタイムデータ紐づき参照", to: "ingested" },
