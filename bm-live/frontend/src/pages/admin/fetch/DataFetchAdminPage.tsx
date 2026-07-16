@@ -470,8 +470,8 @@ export default function DataFetchAdminPage() {
       {
         id: "B010",
         code: "B010",
-        title: "欠損値（未来データ、終了済データ）データ取得",
-        description: "match_key_save 件数取得に成功していれば実行可能",
+        title: "欠損値（未来データ・終了済データ）取得",
+        description: "aws-s3-outputs-fin-csv の json / fin 以外の直フォルダが1件以上あれば実行可能",
         endpoint: "/v1/api/admin/exec/task/fin-getting-json",
         precheckMode: "required",
       },
@@ -569,24 +569,24 @@ export default function DataFetchAdminPage() {
   };
 
   const loadFileChecks = async () => {
-     setFileChecksLoading(true);
-     setFileChecksError(null);
+    setFileChecksLoading(true);
+    setFileChecksError(null);
 
-     try {
-       const url = `${API_BASE}${FILE_CHECKS_ENDPOINT}`;
-       console.log("[file-checks] url =", url);
+    try {
+      const url = `${API_BASE}${FILE_CHECKS_ENDPOINT}`;
+      console.log("[file-checks] url =", url);
 
-       const data = await getJsonSafe<BatchFileCheckResponseResource>(url);
-       console.log("[file-checks] response =", data);
+      const data = await getJsonSafe<BatchFileCheckResponseResource>(url);
+      console.log("[file-checks] response =", data);
 
-       const normalized = normalizeBatchFileChecksResponse(data);
-       setFileChecks(getTaskFileStatusMap(normalized));
-     } catch (e: unknown) {
-       setFileChecksError(getErrorMessage(e));
-     } finally {
-       setFileChecksLoading(false);
-     }
-   };
+      const normalized = normalizeBatchFileChecksResponse(data);
+      setFileChecks(getTaskFileStatusMap(normalized));
+    } catch (e: unknown) {
+      setFileChecksError(getErrorMessage(e));
+    } finally {
+      setFileChecksLoading(false);
+    }
+  };
 
   const loadStatOptions = async () => {
     setStatOptionsLoading(true);
