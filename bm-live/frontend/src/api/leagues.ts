@@ -7,7 +7,6 @@ export type SubLeagueInfo = {
   path?: string | null;
   routingPath?: string | null;
   teamCount?: number | null;
-
   seasonEnded?: boolean | null;
   linkEnabled?: boolean | null;
   seasonEndedLabel?: string | null;
@@ -21,11 +20,9 @@ export type LeagueInfo = {
   routingPath?: string | null;
   variantCount?: number | null;
   subLeagues?: SubLeagueInfo[] | null;
-
   seasonYear?: string | null;
   startSeasonDate?: string | null;
   endSeasonDate?: string | null;
-
   seasonEnded?: boolean | null;
   linkEnabled?: boolean | null;
   seasonEndedLabel?: string | null;
@@ -82,6 +79,16 @@ export class UnauthorizedError extends Error {
   }
 }
 
+export class ApiHttpError extends Error {
+  status: number;
+
+  constructor(status: number, message: string) {
+    super(message || `HTTP ${status}`);
+    this.name = "ApiHttpError";
+    this.status = status;
+  }
+}
+
 function buildAuthHeaders(extra?: HeadersInit): Headers {
   const token = getAccessToken().trim();
 
@@ -115,16 +122,40 @@ async function readApiErrorMessage(res: Response, fallback: string): Promise<str
   return fallback;
 }
 
+function isUnauthorizedLike(status: number, message: string): boolean {
+  const m = (message || "").toLowerCase();
+
+  if (status === 401 || status === 403) {
+    return true;
+  }
+
+  return (
+    m.includes("401 unauthorized") ||
+    m.includes("unauthorized") ||
+    m.includes("jwt token is invalid") ||
+    m.includes("jwt token is missing") ||
+    m.includes("authorization header is missing") ||
+    m.includes("invalid authorization header") ||
+    m.includes("jwt subject is missing") ||
+    m.includes("user not found")
+  );
+}
+
 async function fetchWithAuth(input: string, init?: RequestInit): Promise<Response> {
   const res = await fetch(input, {
     ...init,
     headers: buildAuthHeaders(init?.headers),
   });
 
-  if (res.status === 401) {
-    clearAuthSession();
-    const message = await readApiErrorMessage(res, "ログインが必要です");
-    throw new UnauthorizedError(message);
+  if (!res.ok) {
+    const message = await readApiErrorMessage(res.clone(), `HTTP ${res.status}`);
+
+    if (isUnauthorizedLike(res.status, message)) {
+      clearAuthSession();
+      throw new UnauthorizedError("ログインが必要です");
+    }
+
+    throw new ApiHttpError(res.status, message);
   }
 
   return res;
@@ -134,11 +165,6 @@ export async function fetchLeaguesGrouped(): Promise<LeagueGrouped[]> {
   const res = await fetchWithAuth("/v1/api/leagues/grouped", {
     method: "GET",
   });
-
-  if (!res.ok) {
-    const message = await readApiErrorMessage(res, `Failed to fetch leagues: ${res.status}`);
-    throw new Error(message);
-  }
 
   const json = await res.json();
   return Array.isArray(json) ? json : [];
@@ -162,29 +188,37 @@ export async function fetchTeamsInLeague(country: string, league: string, subLea
   const query = params.toString();
   const url = `/v1/api/leagues/${encodeURIComponent(country)}/${encodeURIComponent(league)}` + (query ? `?${query}` : "");
 
-  const res = await fetchWithAuth(url, {
-    method: "GET",
-  });
-
-  if (!res.ok) {
-    const message = await readApiErrorMessage(res, "シーズンが終了しています。来シーズンまでお待ちください。");
-    throw new Error(message);
+  try {
+    const res = await fetchWithAuth(url, {
+      method: "GET",
+    });
+    return res.json();
+  } catch (err) {
+    if (err instanceof UnauthorizedError) {
+      throw err;
+    }
+    if (err instanceof ApiHttpError) {
+      throw new Error(err.message || "シーズンが終了しています。来シーズンまでお待ちください。");
+    }
+    throw err;
   }
-
-  return res.json();
 }
 
 export async function fetchTeamDetail(teamEnglish: string, teamHash: string): Promise<TeamDetail> {
   const url = `/v1/api/leagues/${encodeURIComponent(teamEnglish)}/${encodeURIComponent(teamHash)}/teamDetail`;
 
-  const res = await fetchWithAuth(url, {
-    method: "GET",
-  });
-
-  if (!res.ok) {
-    const message = await readApiErrorMessage(res, `Failed to fetch team detail: ${res.status}`);
-    throw new Error(message);
+  try {
+    const res = await fetchWithAuth(url, {
+      method: "GET",
+    });
+    return res.json();
+  } catch (err) {
+    if (err instanceof UnauthorizedError) {
+      throw err;
+    }
+    if (err instanceof ApiHttpError) {
+      throw new Error(err.message || "チーム詳細の取得に失敗しました。");
+    }
+    throw err;
   }
-
-  return res.json();
 }
