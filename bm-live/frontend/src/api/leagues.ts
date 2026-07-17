@@ -1,4 +1,5 @@
 // src/api/leagues.ts
+import { getAccessToken, clearAuthSession } from "../utils/auth";
 
 export type SubLeagueInfo = {
   rawName?: string | null;
@@ -35,23 +36,6 @@ export type LeagueGrouped = {
   leagues: LeagueInfo[];
 };
 
-export async function fetchLeaguesGrouped(): Promise<LeagueGrouped[]> {
-  const res = await fetch("/v1/api/leagues/grouped", {
-    credentials: "include",
-    headers: {
-      Accept: "application/json",
-    },
-  });
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Failed to fetch leagues: ${res.status} ${text}`);
-  }
-
-  const json = await res.json();
-  return Array.isArray(json) ? json : [];
-}
-
 export type TeamItem = {
   name: string;
   english: string;
@@ -77,6 +61,40 @@ export type TeamsInLeague = {
   teams?: TeamItem[];
 };
 
+export type TeamDetail = {
+  id: number;
+  country: string;
+  league: string;
+  name: string;
+  english: string;
+  hash: string;
+  link: string;
+  paths: {
+    leaguePage: string;
+    apiSelf: string;
+  };
+};
+
+export class UnauthorizedError extends Error {
+  constructor(message = "ログインが必要です") {
+    super(message);
+    this.name = "UnauthorizedError";
+  }
+}
+
+function buildAuthHeaders(extra?: HeadersInit): Headers {
+  const token = getAccessToken().trim();
+
+  if (!token) {
+    throw new UnauthorizedError("ログインが必要です");
+  }
+
+  const headers = new Headers(extra ?? {});
+  headers.set("Accept", "application/json");
+  headers.set("Authorization", `Bearer ${token}`);
+  return headers;
+}
+
 async function readApiErrorMessage(res: Response, fallback: string): Promise<string> {
   const contentType = res.headers.get("content-type") || "";
 
@@ -97,6 +115,35 @@ async function readApiErrorMessage(res: Response, fallback: string): Promise<str
   return fallback;
 }
 
+async function fetchWithAuth(input: string, init?: RequestInit): Promise<Response> {
+  const res = await fetch(input, {
+    ...init,
+    headers: buildAuthHeaders(init?.headers),
+  });
+
+  if (res.status === 401) {
+    clearAuthSession();
+    const message = await readApiErrorMessage(res, "ログインが必要です");
+    throw new UnauthorizedError(message);
+  }
+
+  return res;
+}
+
+export async function fetchLeaguesGrouped(): Promise<LeagueGrouped[]> {
+  const res = await fetchWithAuth("/v1/api/leagues/grouped", {
+    method: "GET",
+  });
+
+  if (!res.ok) {
+    const message = await readApiErrorMessage(res, `Failed to fetch leagues: ${res.status}`);
+    throw new Error(message);
+  }
+
+  const json = await res.json();
+  return Array.isArray(json) ? json : [];
+}
+
 function normalizeQuerySubLeague(v?: string | null): string | null {
   const s = (v ?? "").trim();
   if (!s) return null;
@@ -115,9 +162,8 @@ export async function fetchTeamsInLeague(country: string, league: string, subLea
   const query = params.toString();
   const url = `/v1/api/leagues/${encodeURIComponent(country)}/${encodeURIComponent(league)}` + (query ? `?${query}` : "");
 
-  const res = await fetch(url, {
-    credentials: "include",
-    headers: { Accept: "application/json" },
+  const res = await fetchWithAuth(url, {
+    method: "GET",
   });
 
   if (!res.ok) {
@@ -128,31 +174,16 @@ export async function fetchTeamsInLeague(country: string, league: string, subLea
   return res.json();
 }
 
-export type TeamDetail = {
-  id: number;
-  country: string;
-  league: string;
-  name: string;
-  english: string;
-  hash: string;
-  link: string;
-  paths: {
-    leaguePage: string;
-    apiSelf: string;
-  };
-};
-
 export async function fetchTeamDetail(teamEnglish: string, teamHash: string): Promise<TeamDetail> {
   const url = `/v1/api/leagues/${encodeURIComponent(teamEnglish)}/${encodeURIComponent(teamHash)}/teamDetail`;
 
-  const res = await fetch(url, {
-    credentials: "include",
-    headers: { Accept: "application/json" },
+  const res = await fetchWithAuth(url, {
+    method: "GET",
   });
 
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Failed to fetch team detail: ${res.status} ${text}`);
+    const message = await readApiErrorMessage(res, `Failed to fetch team detail: ${res.status}`);
+    throw new Error(message);
   }
 
   return res.json();

@@ -1,11 +1,11 @@
 // src/components/LeagueLink.tsx
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { createPortal } from "react-dom";
-import { fetchLeaguesGrouped, type LeagueGrouped, type LeagueInfo, type SubLeagueInfo } from "../api/leagues";
+import { fetchLeaguesGrouped, type LeagueGrouped, type LeagueInfo, type SubLeagueInfo, UnauthorizedError } from "../api/leagues";
 
 function normalizeText(v?: string | null) {
   return (v ?? "").trim();
@@ -137,12 +137,25 @@ export default function LeagueMenu() {
   const [expandedLeagueMap, setExpandedLeagueMap] = useState<Record<string, boolean>>({});
   const panelRef = useRef<HTMLDivElement | null>(null);
   const btnRef = useRef<HTMLButtonElement | null>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const { data, isLoading, error } = useQuery<LeagueGrouped[]>({
+  const { data, isLoading, error } = useQuery<LeagueGrouped[], Error>({
     queryKey: ["leagues-grouped"],
     queryFn: fetchLeaguesGrouped,
     staleTime: 60_000,
+    retry: false,
   });
+
+  useEffect(() => {
+    if (error instanceof UnauthorizedError) {
+      setOpen(false);
+      navigate("/login", {
+        replace: true,
+        state: { from: location.pathname + location.search + location.hash },
+      });
+    }
+  }, [error, navigate, location.pathname, location.search, location.hash]);
 
   useEffect(() => {
     if (open) {
@@ -190,6 +203,8 @@ export default function LeagueMenu() {
     }));
   };
 
+  const showGenericError = !!error && !(error instanceof UnauthorizedError);
+
   return (
     <div className="relative">
       <button
@@ -235,7 +250,7 @@ export default function LeagueMenu() {
                 <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
                   {isLoading && <div className="p-2 text-sm text-muted-foreground">Loading...</div>}
 
-                  {error && <div className="p-2 text-sm text-destructive">読み込みに失敗しました</div>}
+                  {showGenericError && <div className="p-2 text-sm text-destructive">読み込みに失敗しました</div>}
 
                   {data?.map((g, gi) => (
                     <details key={g.country} className="group" open={gi === 0}>
@@ -361,7 +376,7 @@ export default function LeagueMenu() {
                     </details>
                   ))}
 
-                  {!isLoading && !error && (!data || data.length === 0) && <div className="p-2 text-sm text-muted-foreground">データがありません</div>}
+                  {!isLoading && !showGenericError && (!data || data.length === 0) && <div className="p-2 text-sm text-muted-foreground">データがありません</div>}
 
                   <div className="h-2" />
                 </div>

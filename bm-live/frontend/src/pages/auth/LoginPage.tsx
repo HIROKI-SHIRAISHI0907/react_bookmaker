@@ -15,11 +15,15 @@ type LoginResponse = {
   userId?: number;
 };
 
+type LoginLocationState = {
+  from?: string | { pathname?: string };
+};
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const location = useLocation() as { state?: { from?: { pathname?: string } } };
+  const location = useLocation() as { state?: LoginLocationState };
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -36,6 +40,7 @@ export default function LoginPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Accept: "application/json",
         },
         credentials: "include",
         body: JSON.stringify({
@@ -56,7 +61,6 @@ export default function LoginPage() {
         return;
       }
 
-      // ログイン情報を保存
       saveAuthSession({
         accessToken: data.accessToken,
         tokenType: data.tokenType,
@@ -65,20 +69,19 @@ export default function LoginPage() {
         authFlg: data.authFlg,
         roles: data.roles ?? [],
         email: email.trim().toLowerCase(),
+        userId: data.userId,
       });
 
-      // 遷移先決定
       const isAdmin = data.authFlg === 1 || data.roles?.includes("ROLE_ADMIN");
 
-      // login前にアクセスしようとしていた画面
-      const fromPath = location.state?.from?.pathname;
+      const rawFrom = location.state?.from;
+      const fromPath = typeof rawFrom === "string" ? rawFrom : rawFrom?.pathname;
 
       if (isAdmin) {
         navigate("/admin", { replace: true });
         return;
       }
 
-      // 一般ユーザーは admin に戻さない
       if (fromPath && fromPath.startsWith("/admin")) {
         navigate("/top", { replace: true });
         return;
@@ -114,7 +117,16 @@ export default function LoginPage() {
         }}
       >
         <h1 style={{ margin: 0, marginBottom: 8, fontSize: 28, fontWeight: 800 }}>ログイン</h1>
-        <p style={{ marginTop: 0, marginBottom: 20, color: "#6b7280", fontSize: 14 }}>メールアドレスとパスワードを入力してください。</p>
+        <p
+          style={{
+            marginTop: 0,
+            marginBottom: 20,
+            color: "#6b7280",
+            fontSize: 14,
+          }}
+        >
+          メールアドレスとパスワードを入力してください。
+        </p>
 
         <form onSubmit={handleSubmit} style={{ display: "grid", gap: 16 }}>
           <div>
@@ -124,6 +136,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="example@example.com"
+              autoComplete="email"
               style={{
                 width: "100%",
                 padding: "12px 14px",
@@ -142,6 +155,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="********"
+              autoComplete="current-password"
               style={{
                 width: "100%",
                 padding: "12px 14px",
