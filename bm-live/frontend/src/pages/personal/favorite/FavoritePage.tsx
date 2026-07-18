@@ -319,11 +319,6 @@ export default function FavoritePage() {
   async function onClickLatest() {
     const items = buildUpsertItems();
 
-    if (items.length === 0) {
-      alert("チームが選択されていません。");
-      return;
-    }
-
     try {
       const res = await upsertMutation.mutateAsync({ items });
 
@@ -332,7 +327,11 @@ export default function FavoritePage() {
         return;
       }
 
-      alert("最新化しました。");
+      if (items.length === 0) {
+        alert("お気に入りをすべて解除しました。");
+      } else {
+        alert("最新化しました。");
+      }
     } catch (e) {
       if (e instanceof UnauthorizedError) {
         navigate("/login", {
