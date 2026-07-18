@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState, useTransition } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import AppHeader from "../../../components/layout/AppHeader";
-import { getAccessToken, getTokenType } from "../../../utils/authStorage";
+import { getAccessToken, clearAuthSession, isAuthenticated } from "../../../utils/auth";
 
 type SelectedFavoriteItem = {
   country: string;
@@ -42,14 +42,8 @@ class UnauthorizedError extends Error {
   }
 }
 
-const AUTH_STORAGE_KEY = "authSession";
-
-function clearLocalAuthSession() {
-  localStorage.removeItem(AUTH_STORAGE_KEY);
-}
-
 function isLoggedIn() {
-  return !!getAccessToken()?.trim();
+  return isAuthenticated();
 }
 
 function uniqSorted(arr: string[]) {
@@ -98,16 +92,16 @@ async function readErrorMessage(res: Response, fallback: string) {
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
   const token = getAccessToken();
-  const tokenType = getTokenType() || "Bearer";
 
   if (!token?.trim()) {
+    clearAuthSession();
     throw new UnauthorizedError("ログインが必要です");
   }
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     Accept: "application/json",
-    Authorization: `${tokenType} ${token}`,
+    Authorization: `Bearer ${token}`,
   };
 
   const res = await fetch(url, {
@@ -120,7 +114,7 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
     const message = await readErrorMessage(res.clone(), `HTTP ${res.status}`);
 
     if (isUnauthorizedLike(res.status, message)) {
-      clearLocalAuthSession();
+      clearAuthSession();
       throw new UnauthorizedError("ログインが必要です");
     }
 
