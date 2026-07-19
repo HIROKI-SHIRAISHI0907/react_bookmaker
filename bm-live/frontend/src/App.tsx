@@ -11,7 +11,6 @@ import FavoritePage from "./pages/personal/favorite/FavoritePage";
 import TeamDetailPage from "./pages/personal/teams/TeamDetailPage";
 import GameDetailPage from "./pages/personal/teams/GameDetailPage";
 import AdminLayout from "./pages/admin/AdminLayout";
-import PersonalLayout from "./pages/personal/PersonalLayout";
 import ManualScrapePage from "./pages/admin/scrape/ManualScrapePage";
 import S3FileCountPage from "./pages/admin/s3/S3FileCountPage";
 import CountryLeagueForceAdminPage from "./pages/admin/force/CountryLeagueForceAdminPage";
@@ -82,11 +81,9 @@ export default function App() {
 
           {/* 一般ユーザー向け認証ページ */}
           <Route element={<ProtectedRoute />}>
-            <Route element={<PersonalLayout />}>
-              <Route path="/favorite" element={<FavoritePage />} />
-              <Route path="/team/:teamEnglish/:teamHash" element={<TeamDetailPage />} />
-              <Route path="/gameDetail" element={<GameDetailPage />} />
-            </Route>
+            <Route path="/favorite" element={<FavoritePage />} />
+            <Route path="/team/:teamEnglish/:teamHash" element={<TeamDetailPage />} />
+            <Route path="/gameDetail" element={<GameDetailPage />} />
           </Route>
 
           {/* 管理者専用 */}

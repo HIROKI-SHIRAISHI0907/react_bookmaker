@@ -1,39 +1,15 @@
-// src/components/layout/AppHeader.tsx
 import type { ReactNode } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Heart, Home, LogIn, LogOut } from "lucide-react";
 import LeagueLink from "../LeagueLink";
 import ThemeToggle from "../../components/ThemeToggle";
+import { clearAuthSession, isAuthenticated } from "../../utils/auth";
 
 type Props = {
   title?: string;
   subtitle?: string;
   rightSlot?: ReactNode;
 };
-
-type AuthSession = {
-  accessToken?: string;
-};
-
-const AUTH_STORAGE_KEY = "authSession";
-
-function loadAuthSession(): AuthSession | null {
-  try {
-    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw) as AuthSession;
-  } catch {
-    return null;
-  }
-}
-
-function isLoggedIn(): boolean {
-  return !!loadAuthSession()?.accessToken;
-}
-
-function clearAuthSession() {
-  localStorage.removeItem(AUTH_STORAGE_KEY);
-}
 
 function navClass(active: boolean) {
   return [
@@ -44,24 +20,24 @@ function navClass(active: boolean) {
 
 export default function AppHeader({ title, subtitle, rightSlot }: Props) {
   const location = useLocation();
-  const navigate = useNavigate();
-  const loggedIn = isLoggedIn();
+  const loggedIn = isAuthenticated();
 
   const currentPath = location.pathname;
   const currentFullPath = location.pathname + location.search + location.hash;
 
+  const redirectTo = (path: string) => {
+    window.location.assign(path);
+  };
+
   const handleLogout = () => {
     clearAuthSession();
-    navigate("/login", { replace: true });
+    window.location.assign("/login");
   };
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur">
       <div className="container mx-auto px-4 py-4">
-        <div style={{ background: "blue", color: "#fff", padding: 4, marginBottom: 8 }}>APP_HEADER_V2</div>
-
         <div className="flex flex-wrap items-center justify-between gap-3">
-          {/* 左 */}
           <div className="flex items-center gap-3">
             <LeagueLink />
             <div>
@@ -70,24 +46,16 @@ export default function AppHeader({ title, subtitle, rightSlot }: Props) {
             </div>
           </div>
 
-          {/* 右 */}
           <div className="flex flex-wrap items-center gap-2">
-            <Link to="/top" className={navClass(currentPath === "/top")}>
+            <button type="button" onClick={() => redirectTo("/top")} className={navClass(currentPath === "/top")}>
               <Home className="h-4 w-4" />
               トップ
-            </Link>
+            </button>
 
-            {loggedIn ? (
-              <Link to="/favorite" className={navClass(currentPath === "/favorite")}>
-                <Heart className="h-4 w-4" />
-                お気に入り
-              </Link>
-            ) : (
-              <Link to="/login" state={{ from: "/favorite" }} className={navClass(false)}>
-                <Heart className="h-4 w-4" />
-                お気に入り
-              </Link>
-            )}
+            <button type="button" onClick={() => redirectTo("/favorite")} className={navClass(currentPath === "/favorite")}>
+              <Heart className="h-4 w-4" />
+              お気に入り
+            </button>
 
             {rightSlot}
 

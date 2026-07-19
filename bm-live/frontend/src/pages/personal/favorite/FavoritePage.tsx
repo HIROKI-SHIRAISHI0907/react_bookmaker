@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useTransition } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import AppHeader from "../../../components/layout/AppHeader";
@@ -131,7 +131,6 @@ export default function FavoritePage() {
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [selectedLeague, setSelectedLeague] = useState<string | null>(null);
   const [selectedTeams, setSelectedTeams] = useState<Record<string, Set<string>>>({});
-  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     if (!loggedIn) {
@@ -187,7 +186,7 @@ export default function FavoritePage() {
 
   useEffect(() => {
     if (!data || countries.length === 0) return;
-    if (!selectedCountry) {
+    if (!selectedCountry || !countries.includes(selectedCountry)) {
       setSelectedCountry(countries[0]);
     }
   }, [data, countries, selectedCountry]);
@@ -247,15 +246,11 @@ export default function FavoritePage() {
   const noneChecked = checkedSet.size === 0;
 
   function switchCountry(country: string) {
-    startTransition(() => {
-      setSelectedCountry(country);
-    });
+    setSelectedCountry(country);
   }
 
   function switchLeague(league: string) {
-    startTransition(() => {
-      setSelectedLeague(league);
-    });
+    setSelectedLeague(league);
   }
 
   function toggleTeam(team: string) {
@@ -332,6 +327,9 @@ export default function FavoritePage() {
       } else {
         alert("最新化しました。");
       }
+
+      // OK押下後にフルリダイレクト
+      window.location.assign("/top");
     } catch (e) {
       if (e instanceof UnauthorizedError) {
         navigate("/login", {
@@ -391,161 +389,154 @@ export default function FavoritePage() {
       <AppHeader title="お気に入り" subtitle="Favorite Settings" />
 
       <main className="container mx-auto px-4 py-6">
-        <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", gap: 16 }}>
-          <aside style={{ border: "1px solid #ddd", borderRadius: 8, overflow: "hidden" }}>
-            <div style={{ padding: 12, borderBottom: "1px solid #ddd", fontWeight: 700 }}>国 {isFetching ? "（更新中…）" : ""}</div>
-            <div style={{ maxHeight: "70vh", overflow: "auto" }}>
-              {countries.map((c) => {
-                const active = c === selectedCountry;
+        <section style={{ border: "1px solid #ddd", borderRadius: 8, padding: 12 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <div style={{ fontSize: 12, color: "#666" }}>選択中</div>
+              <div style={{ fontWeight: 800 }}>
+                {selectedCountry ?? "-"} / {selectedLeague ?? "-"}
+                {isFetching ? "（更新中…）" : ""}
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={onClickLatest} disabled={saving}>
+                {saving ? "登録中…" : "最新化"}
+              </button>
+            </div>
+          </div>
+
+          {saving && (
+            <div
+              style={{
+                marginTop: 12,
+                padding: 10,
+                background: "#fff7ed",
+                border: "1px solid #fed7aa",
+                borderRadius: 8,
+              }}
+            >
+              登録しています…
+            </div>
+          )}
+
+          <div style={{ marginTop: 16 }}>
+            <div style={{ fontSize: 12, color: "#666", marginBottom: 6 }}>国</div>
+            <select
+              value={selectedCountry ?? ""}
+              onChange={(e) => switchCountry(e.target.value)}
+              disabled={saving || countries.length === 0}
+              style={{
+                minWidth: 240,
+                padding: "8px 10px",
+                borderRadius: 8,
+                border: "1px solid #ddd",
+                background: "white",
+              }}
+            >
+              {countries.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div style={{ marginTop: 16 }}>
+            <div style={{ fontSize: 12, color: "#666", marginBottom: 6 }}>リーグ</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {currentLeagues.map((lg) => {
+                const active = lg === selectedLeague;
                 return (
                   <button
-                    key={c}
-                    onClick={() => switchCountry(c)}
+                    key={lg}
+                    onClick={() => switchLeague(lg)}
                     disabled={saving}
                     style={{
-                      width: "100%",
-                      textAlign: "left",
-                      padding: "10px 12px",
-                      border: "none",
-                      borderBottom: "1px solid #eee",
-                      background: active ? "#f3f4f6" : "white",
+                      padding: "6px 10px",
+                      borderRadius: 999,
+                      border: "1px solid #ddd",
+                      background: active ? "#111827" : "white",
+                      color: active ? "white" : "black",
                       cursor: saving ? "not-allowed" : "pointer",
                       opacity: saving ? 0.6 : 1,
                     }}
                   >
-                    {c}
+                    {lg}
                   </button>
                 );
               })}
+              {currentLeagues.length === 0 && <div>リーグがありません</div>}
             </div>
-          </aside>
+          </div>
 
-          <section style={{ border: "1px solid #ddd", borderRadius: 8, padding: 12 }}>
-            <div
+          <div style={{ marginTop: 14, display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
+            <label
               style={{
                 display: "flex",
+                gap: 8,
                 alignItems: "center",
-                justifyContent: "space-between",
-                gap: 12,
+                cursor: saving ? "not-allowed" : "pointer",
               }}
             >
-              <div>
-                <div style={{ fontSize: 12, color: "#666" }}>選択中</div>
-                <div style={{ fontWeight: 800 }}>
-                  {selectedCountry ?? "-"} / {selectedLeague ?? "-"}
-                  {isPending ? "（切替中…）" : ""}
-                </div>
-              </div>
+              <input type="checkbox" checked={allChecked} onChange={(e) => setAll(e.target.checked)} disabled={saving || currentTeams.length === 0} />
+              全チーム選択
+            </label>
 
-              <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={onClickLatest} disabled={saving}>
-                  {saving ? "登録中…" : "最新化"}
-                </button>
-              </div>
+            <button onClick={() => setAll(false)} disabled={saving || noneChecked || currentTeams.length === 0}>
+              全チーム非選択
+            </button>
+
+            <div style={{ marginLeft: "auto", fontSize: 12, color: "#666" }}>
+              選択: {checkedSet.size} / {currentTeams.length}
             </div>
+          </div>
 
-            {saving && (
+          <div style={{ marginTop: 12, borderTop: "1px solid #eee", paddingTop: 12 }}>
+            {currentTeams.length === 0 ? (
+              <div>チームがありません</div>
+            ) : (
               <div
                 style={{
-                  marginTop: 12,
-                  padding: 10,
-                  background: "#fff7ed",
-                  border: "1px solid #fed7aa",
-                  borderRadius: 8,
-                }}
-              >
-                登録しています…
-              </div>
-            )}
-
-            <div style={{ marginTop: 12 }}>
-              <div style={{ fontSize: 12, color: "#666", marginBottom: 6 }}>リーグ</div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {currentLeagues.map((lg) => {
-                  const active = lg === selectedLeague;
-                  return (
-                    <button
-                      key={lg}
-                      onClick={() => switchLeague(lg)}
-                      disabled={saving}
-                      style={{
-                        padding: "6px 10px",
-                        borderRadius: 999,
-                        border: "1px solid #ddd",
-                        background: active ? "#111827" : "white",
-                        color: active ? "white" : "black",
-                        cursor: saving ? "not-allowed" : "pointer",
-                        opacity: saving ? 0.6 : 1,
-                      }}
-                    >
-                      {lg}
-                    </button>
-                  );
-                })}
-                {currentLeagues.length === 0 && <div>リーグがありません</div>}
-              </div>
-            </div>
-
-            <div style={{ marginTop: 14, display: "flex", gap: 16, alignItems: "center" }}>
-              <label
-                style={{
-                  display: "flex",
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
                   gap: 8,
-                  alignItems: "center",
-                  cursor: saving ? "not-allowed" : "pointer",
                 }}
               >
-                <input type="checkbox" checked={allChecked} onChange={(e) => setAll(e.target.checked)} disabled={saving || currentTeams.length === 0} />
-                全チーム選択
-              </label>
-
-              <button onClick={() => setAll(false)} disabled={saving || noneChecked || currentTeams.length === 0}>
-                全チーム非選択
-              </button>
-
-              <div style={{ marginLeft: "auto", fontSize: 12, color: "#666" }}>
-                選択: {checkedSet.size} / {currentTeams.length}
+                {uniqSorted(currentTeams).map((t) => (
+                  <label
+                    key={t}
+                    style={{
+                      display: "flex",
+                      gap: 8,
+                      alignItems: "center",
+                      padding: "8px 10px",
+                      border: "1px solid #eee",
+                      borderRadius: 8,
+                      cursor: saving ? "not-allowed" : "pointer",
+                      opacity: saving ? 0.7 : 1,
+                    }}
+                  >
+                    <input type="checkbox" checked={checkedSet.has(t)} onChange={() => toggleTeam(t)} disabled={saving} />
+                    <span>{t}</span>
+                  </label>
+                ))}
               </div>
-            </div>
-
-            <div style={{ marginTop: 12, borderTop: "1px solid #eee", paddingTop: 12 }}>
-              {currentTeams.length === 0 ? (
-                <div>チームがありません</div>
-              ) : (
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                    gap: 8,
-                  }}
-                >
-                  {uniqSorted(currentTeams).map((t) => (
-                    <label
-                      key={t}
-                      style={{
-                        display: "flex",
-                        gap: 8,
-                        alignItems: "center",
-                        padding: "8px 10px",
-                        border: "1px solid #eee",
-                        borderRadius: 8,
-                        cursor: saving ? "not-allowed" : "pointer",
-                        opacity: saving ? 0.7 : 1,
-                      }}
-                    >
-                      <input type="checkbox" checked={checkedSet.has(t)} onChange={() => toggleTeam(t)} disabled={saving} />
-                      <span>{t}</span>
-                    </label>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {upsertMutation.isError && !(upsertMutation.error instanceof UnauthorizedError) && (
-              <div style={{ marginTop: 12, color: "#b91c1c" }}>登録に失敗: {(upsertMutation.error as Error)?.message}</div>
             )}
-          </section>
-        </div>
+          </div>
+
+          {upsertMutation.isError && !(upsertMutation.error instanceof UnauthorizedError) && (
+            <div style={{ marginTop: 12, color: "#b91c1c" }}>登録に失敗: {(upsertMutation.error as Error)?.message}</div>
+          )}
+        </section>
       </main>
     </div>
   );
