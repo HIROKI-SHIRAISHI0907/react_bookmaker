@@ -284,33 +284,83 @@ function seasonRowDeleteKey(row: CountryLeagueSeasonMasterEntity): string {
   return `${row.country ?? ""}___${row.league ?? ""}___${row.seasonYear ?? ""}`;
 }
 
-function isSeasonOff(endSeasonDate?: string): boolean {
-  const value = (endSeasonDate ?? "").trim();
-  return value === "" || value === "-";
+function getTokyoTodayDateOnly(): string {
+  return new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
 }
 
-function getSeasonStatus(endSeasonDate?: string): { label: string; icon: string; style: React.CSSProperties } {
-  if (isSeasonOff(endSeasonDate)) {
+function normalizeDateOnly(value?: string): string | null {
+  const raw = (value ?? "").trim();
+  if (!raw || raw === "-") {
+    return null;
+  }
+
+  const match = raw.match(/^(\d{4}-\d{2}-\d{2})/);
+  if (match) {
+    return match[1];
+  }
+
+  return null;
+}
+
+function isCurrentSeason(seasonYear?: string): boolean {
+  const value = (seasonYear ?? "").trim();
+  if (!value) {
+    return false;
+  }
+
+  const currentYear = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+  }).format(new Date());
+
+  return value.includes(currentYear);
+}
+
+function getSeasonStatus(params: { seasonYear?: string; startSeasonDate?: string; endSeasonDate?: string }): { label: string; icon: string; style: React.CSSProperties } {
+  const today = getTokyoTodayDateOnly();
+  const start = normalizeDateOnly(params.startSeasonDate);
+  const end = normalizeDateOnly(params.endSeasonDate);
+  const currentSeason = isCurrentSeason(params.seasonYear);
+
+  if (currentSeason && start && today < start) {
     return {
-      label: "シーズンオフ",
-      icon: "⚪",
+      label: "シーズン開始前",
+      icon: "🟡",
       style: {
         ...seasonStatusBadgeBaseStyle,
-        background: "#f1f5f9",
-        color: "#475569",
-        border: "1px solid #cbd5e1",
+        background: "#fef3c7",
+        color: "#92400e",
+        border: "1px solid #fcd34d",
+      },
+    };
+  }
+
+  if (start && end && today >= start && today <= end) {
+    return {
+      label: "シーズン中",
+      icon: "🟢",
+      style: {
+        ...seasonStatusBadgeBaseStyle,
+        background: "#dcfce7",
+        color: "#166534",
+        border: "1px solid #86efac",
       },
     };
   }
 
   return {
-    label: "シーズン中",
-    icon: "🟢",
+    label: "シーズンオフ",
+    icon: "⚪",
     style: {
       ...seasonStatusBadgeBaseStyle,
-      background: "#dcfce7",
-      color: "#166534",
-      border: "1px solid #86efac",
+      background: "#f1f5f9",
+      color: "#475569",
+      border: "1px solid #cbd5e1",
     },
   };
 }
@@ -387,8 +437,16 @@ const SeasonCell: React.FC<{ value: unknown; wide?: boolean }> = ({ value, wide 
   </span>
 );
 
-const SeasonStatusBadge: React.FC<{ endSeasonDate?: string }> = ({ endSeasonDate }) => {
-  const status = getSeasonStatus(endSeasonDate);
+const SeasonStatusBadge: React.FC<{
+  seasonYear?: string;
+  startSeasonDate?: string;
+  endSeasonDate?: string;
+}> = ({ seasonYear, startSeasonDate, endSeasonDate }) => {
+  const status = getSeasonStatus({
+    seasonYear,
+    startSeasonDate,
+    endSeasonDate,
+  });
 
   return (
     <span style={status.style} title={status.label}>
@@ -962,7 +1020,7 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
                             </td>
 
                             <td style={thTdStyle}>
-                              <SeasonStatusBadge endSeasonDate={row.endSeasonDate} />
+                              <SeasonStatusBadge seasonYear={row.seasonYear} startSeasonDate={row.startSeasonDate} endSeasonDate={row.endSeasonDate} />
                             </td>
 
                             {(["round", "validFlg", "delFlg", "registerId", "registerTime", "updateId", "updateTime"] as (keyof CountryLeagueSeasonMasterEntity)[]).map((field) => (
@@ -1132,7 +1190,7 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
                         <SeasonCell value={row.endSeasonDate} />
                       </td>
                       <td style={thTdStyle}>
-                        <SeasonStatusBadge endSeasonDate={row.endSeasonDate} />
+                        <SeasonStatusBadge seasonYear={row.seasonYear} startSeasonDate={row.startSeasonDate} endSeasonDate={row.endSeasonDate} />
                       </td>
                       <td style={thTdStyle}>
                         <SeasonCell value={row.round} />
