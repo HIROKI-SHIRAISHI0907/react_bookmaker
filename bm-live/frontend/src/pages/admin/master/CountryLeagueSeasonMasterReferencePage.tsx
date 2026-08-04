@@ -1148,7 +1148,7 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
             <table style={tableStyle}>
               <thead>
                 <tr>
-                  {["No", "country", "league", "seasonYear", "start", "end", "シーズン状態", "round", "delFlg", "確認"].map((label) => (
+                  {["No", "country", "league", "seasonYear", "start", "end", "シーズン状態", "round", "確認"].map((label) => (
                     <th key={label} style={thStyle}>
                       {label}
                     </th>
@@ -1194,9 +1194,6 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
                       </td>
                       <td style={thTdStyle}>
                         <SeasonCell value={row.round} />
-                      </td>
-                      <td style={thTdStyle}>
-                        <SeasonCell value={row.delFlg} />
                       </td>
                       <td style={thTdStyle}>
                         <button
