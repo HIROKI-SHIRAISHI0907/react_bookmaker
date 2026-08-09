@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
+type FutureMatchStatus = "SCHEDULED" | "LIVE" | "FINISHED" | "POSTPONED" | "DELAYED" | "INTERRUPTED";
+
 type FutureMatch = {
   id?: string;
   seq?: number;
@@ -9,7 +11,7 @@ type FutureMatch = {
   awayTeam?: string;
   link?: string;
   roundNo?: number;
-  status?: string; // "SCHEDULED" / "FINISHED"
+  status?: FutureMatchStatus | string;
 };
 
 type FutureMatchesResponse = {
@@ -20,6 +22,7 @@ type FutureMatchesResponse = {
 };
 
 type ViewMode = "table" | "card";
+type StatusTone = "gray" | "blue" | "emerald" | "amber" | "rose";
 
 async function fetchJsonStrict<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   const response = await fetch(input, {
@@ -61,6 +64,7 @@ function getTodayJstString(): string {
 
 function formatDateTimeJst(value?: string): string {
   if (!value) return "-";
+
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
 
@@ -76,32 +80,40 @@ function formatDateTimeJst(value?: string): string {
   }).format(date);
 }
 
-function getStatusLabel(value?: string): string {
-  const v = String(value ?? "")
+function normalizeStatus(value?: string): string {
+  return String(value ?? "")
     .trim()
     .toUpperCase();
+}
+
+function getStatusLabel(value?: string): string {
+  const v = normalizeStatus(value);
 
   if (v === "SCHEDULED") return "予定";
-  if (v === "FINISHED") return "終了済";
-
-  // 旧データ互換
   if (v === "LIVE") return "ライブ";
+  if (v === "FINISHED") return "終了済";
+  if (v === "POSTPONED") return "延期";
+  if (v === "DELAYED") return "遅延";
+  if (v === "INTERRUPTED") return "中断";
 
   return v || "-";
 }
 
-function getStatusTone(value?: string): "gray" | "emerald" | "amber" | "rose" {
-  const v = String(value ?? "")
-    .trim()
-    .toUpperCase();
+function getStatusTone(value?: string): StatusTone {
+  const v = normalizeStatus(value);
 
-  if (v === "SCHEDULED") return "emerald";
-  if (v === "FINISHED") return "amber";
-
-  // 旧データ互換
+  if (v === "SCHEDULED") return "blue";
   if (v === "LIVE") return "rose";
+  if (v === "FINISHED") return "emerald";
+  if (v === "DELAYED") return "amber";
+  if (v === "INTERRUPTED") return "amber";
+  if (v === "POSTPONED") return "gray";
 
   return "gray";
+}
+
+function getMatchKey(match: FutureMatch, index: number): string {
+  return String(match.id ?? match.seq ?? `${match.gameTeamCategory ?? ""}-${match.homeTeam ?? ""}-${match.awayTeam ?? ""}-${match.futureTime ?? ""}-${index}`);
 }
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
@@ -278,7 +290,16 @@ function getTabStyle(active: boolean): React.CSSProperties {
       };
 }
 
-function getStatusPillStyle(tone: "gray" | "emerald" | "amber" | "rose"): React.CSSProperties {
+function getStatusPillStyle(tone: StatusTone): React.CSSProperties {
+  if (tone === "blue") {
+    return {
+      ...statusPillBaseStyle,
+      background: "#dbeafe",
+      color: "#1d4ed8",
+      border: "1px solid #bfdbfe",
+    };
+  }
+
   if (tone === "emerald") {
     return {
       ...statusPillBaseStyle,
@@ -287,6 +308,7 @@ function getStatusPillStyle(tone: "gray" | "emerald" | "amber" | "rose"): React.
       border: "1px solid #bbf7d0",
     };
   }
+
   if (tone === "amber") {
     return {
       ...statusPillBaseStyle,
@@ -295,6 +317,7 @@ function getStatusPillStyle(tone: "gray" | "emerald" | "amber" | "rose"): React.
       border: "1px solid #fde68a",
     };
   }
+
   if (tone === "rose") {
     return {
       ...statusPillBaseStyle,
@@ -303,6 +326,7 @@ function getStatusPillStyle(tone: "gray" | "emerald" | "amber" | "rose"): React.
       border: "1px solid #fecaca",
     };
   }
+
   return {
     ...statusPillBaseStyle,
     background: "#e2e8f0",
@@ -495,7 +519,7 @@ const FutureMatchesByDatePage: React.FC = () => {
                     </tr>
                   ) : (
                     matches.map((match, index) => (
-                      <tr key={`${match.seq ?? "seq"}-${index}`}>
+                      <tr key={getMatchKey(match, index)}>
                         <td style={thTdStyle}>{toDisplay(match.seq)}</td>
                         <td style={thTdStyle}>{toDisplay(match.gameTeamCategory)}</td>
                         <td style={thTdStyle}>{formatDateTimeJst(match.futureTime)}</td>
@@ -549,7 +573,7 @@ const FutureMatchesByDatePage: React.FC = () => {
             ) : (
               <div style={{ display: "grid", gap: 12 }}>
                 {matches.map((match, index) => (
-                  <div key={`${match.seq ?? "card"}-${index}`} style={matchCardStyle}>
+                  <div key={getMatchKey(match, index)} style={matchCardStyle}>
                     <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
                       <div style={{ flex: "1 1 420px" }}>
                         <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>
