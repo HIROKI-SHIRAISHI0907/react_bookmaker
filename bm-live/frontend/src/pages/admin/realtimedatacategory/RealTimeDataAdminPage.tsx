@@ -28,11 +28,17 @@ type RealTimeDataDTO = {
   cnt?: number | null;
 };
 
-type RealTimeDataRequest = {
+/** 更新1件分(dev.web.api.bm_a025.RealTimeDataSubDTO に対応) */
+type RealTimeDataSubDTO = {
   id?: string;
   dataCategory: string;
   homeTeamName: string;
   awayTeamName: string;
+};
+
+/** 更新リクエスト。requestDTO に複数件まとめて渡すとバックエンド側で一括更新される。 */
+type RealTimeDataRequest = {
+  requestDTO: RealTimeDataSubDTO[];
 };
 
 type RealTimeDataResponse = {
@@ -228,6 +234,13 @@ export default function RealTimeDataAdminPage() {
   /** グループごとの更新処理状態 */
   const [updateState, setUpdateState] = useState<Record<string, { loading: boolean; error?: string; success?: string }>>({});
 
+  /** 一括更新用: 選択中のグループキー(ページをまたいで保持) */
+  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
+  /** 一括更新用: 選択したグループ全てに適用する新しい dataCategory */
+  const [bulkValue, setBulkValue] = useState("");
+  /** 一括更新の処理状態 */
+  const [bulkState, setBulkState] = useState<{ loading: boolean; error?: string; success?: string }>({ loading: false });
+
   const abortRef = useRef<AbortController | null>(null);
 
   const isFiltered = homeFilter.trim().length > 0 && awayFilter.trim().length > 0;
@@ -270,6 +283,8 @@ export default function RealTimeDataAdminPage() {
 
   useEffect(() => {
     setPage(1);
+    setSelectedKeys(new Set());
+    setBulkState({ loading: false });
     void doFetch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiUrl, searchVersion]);
@@ -296,6 +311,38 @@ export default function RealTimeDataAdminPage() {
 
   const handlePrevPage = () => setPage((p) => Math.max(1, p - 1));
   const handleNextPage = () => setPage((p) => Math.min(totalPages, p + 1));
+
+  /** このページの全グループが選択済みか */
+  const allOnPageSelected = pagedGroups.length > 0 && pagedGroups.every((g) => selectedKeys.has(g.key));
+
+  const toggleSelectGroup = (key: string) => {
+    setSelectedKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAllOnPage = () => {
+    setSelectedKeys((prev) => {
+      const next = new Set(prev);
+      if (allOnPageSelected) {
+        pagedGroups.forEach((g) => next.delete(g.key));
+      } else {
+        pagedGroups.forEach((g) => next.add(g.key));
+      }
+      return next;
+    });
+  };
+
+  const handleClearSelection = () => {
+    setSelectedKeys(new Set());
+    setBulkState({ loading: false });
+  };
 
   const handleSearch = () => {
     setHomeFilter(homeInput);
@@ -327,9 +374,13 @@ export default function RealTimeDataAdminPage() {
 
     try {
       const req: RealTimeDataRequest = {
-        dataCategory: newCategory,
-        homeTeamName: group.homeTeamName,
-        awayTeamName: group.awayTeamName,
+        requestDTO: [
+          {
+            dataCategory: newCategory,
+            homeTeamName: group.homeTeamName,
+            awayTeamName: group.awayTeamName,
+          },
+        ],
       };
 
       const res = await postRealTimeDataUpdate(req);
@@ -342,6 +393,48 @@ export default function RealTimeDataAdminPage() {
       }
     } catch (e: any) {
       setUpdateState((prev) => ({ ...prev, [group.key]: { loading: false, error: e?.message ?? String(e) } }));
+    }
+  };
+
+  /** 選択中のグループ全てに同じ dataCategory を適用し、1回のAPI呼び出しで一括更新する */
+  const handleBulkUpdate = async () => {
+    const newCategory = bulkValue.trim();
+
+    if (!newCategory) {
+      setBulkState({ loading: false, error: "dataCategoryを入力してください。" });
+      return;
+    }
+
+    const targets = groups.filter((g) => selectedKeys.has(g.key));
+
+    if (targets.length === 0) {
+      setBulkState({ loading: false, error: "更新対象が選択されていません。" });
+      return;
+    }
+
+    setBulkState({ loading: true });
+
+    try {
+      const req: RealTimeDataRequest = {
+        requestDTO: targets.map((g) => ({
+          dataCategory: newCategory,
+          homeTeamName: g.homeTeamName,
+          awayTeamName: g.awayTeamName,
+        })),
+      };
+
+      const res = await postRealTimeDataUpdate(req);
+
+      if (res.responseCode === "200") {
+        setBulkState({ loading: false, success: res.message ?? `${targets.length}件を一括更新しました。` });
+        setSelectedKeys(new Set());
+        setBulkValue("");
+        void doFetch();
+      } else {
+        setBulkState({ loading: false, error: res.message ?? `一括更新に失敗しました。(code: ${res.responseCode ?? "-"})` });
+      }
+    } catch (e: any) {
+      setBulkState({ loading: false, error: e?.message ?? String(e) });
     }
   };
 
@@ -407,7 +500,39 @@ export default function RealTimeDataAdminPage() {
           </div>
         </Panel>
 
-        <Panel title="一覧" desc="ホーム vs アウェーごとに、紐づく dataCategory の状況と更新フォームを表示します。">
+        <Panel title="一覧" desc="ホーム vs アウェーごとに、紐づく dataCategory の状況と更新フォームを表示します。チェックボックスで複数選択すると一括更新できます。">
+          {!loading && groups.length > 0 ? (
+            <div className="mb-4 rounded-2xl border border-violet-200 bg-violet-50/60 p-4">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <label className="flex items-center gap-2 text-sm font-semibold text-gray-800 cursor-pointer">
+                  <input type="checkbox" className="h-4 w-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500" checked={allOnPageSelected} onChange={toggleSelectAllOnPage} />
+                  このページを全選択
+                </label>
+                <Badge tone="violet">{selectedKeys.size}件選択中</Badge>
+              </div>
+
+              {selectedKeys.size > 0 ? (
+                <div className="mt-3 flex items-center gap-2 flex-wrap">
+                  <input
+                    className="flex-1 min-w-[240px] rounded-xl border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    value={bulkValue}
+                    onChange={(e) => setBulkValue(e.target.value)}
+                    placeholder="選択した項目に一括反映する dataCategory (例: 日本: J1リーグ - ラウンド 5)"
+                  />
+                  <Button size="sm" onClick={() => void handleBulkUpdate()} disabled={bulkState.loading}>
+                    {bulkState.loading ? "一括更新中..." : `選択した${selectedKeys.size}件を一括更新`}
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={handleClearSelection} disabled={bulkState.loading}>
+                    選択解除
+                  </Button>
+                </div>
+              ) : null}
+
+              {bulkState.error ? <div className="mt-2 text-xs font-semibold text-rose-700 whitespace-pre-wrap">{bulkState.error}</div> : null}
+              {bulkState.success ? <div className="mt-2 text-xs font-semibold text-emerald-700">{bulkState.success}</div> : null}
+            </div>
+          ) : null}
+
           {loading ? (
             <div className="space-y-3">
               <Skeleton className="h-6 w-full" />
@@ -422,53 +547,64 @@ export default function RealTimeDataAdminPage() {
                 const state = updateState[group.key];
                 const editValue = editValues[group.key] ?? (group.categories.length === 1 ? group.categories[0].dataCategory : "");
 
+                const isSelected = selectedKeys.has(group.key);
+
                 return (
-                  <div key={group.key} className="rounded-2xl border bg-white hover:shadow-sm transition-shadow p-4">
+                  <div key={group.key} className={`rounded-2xl border bg-white hover:shadow-sm transition-shadow p-4 ${isSelected ? "ring-2 ring-violet-300 border-violet-300" : ""}`}>
                     <div className="flex items-start justify-between gap-4 flex-col md:flex-row">
-                      <div className="min-w-0">
-                        <div className="text-lg font-extrabold text-gray-900 truncate">
-                          {group.homeTeamName} vs {group.awayTeamName}
-                        </div>
+                      <div className="min-w-0 flex items-start gap-3">
+                        <input
+                          type="checkbox"
+                          className="mt-1.5 h-4 w-4 shrink-0 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
+                          checked={isSelected}
+                          onChange={() => toggleSelectGroup(group.key)}
+                          aria-label={`${group.homeTeamName} vs ${group.awayTeamName} を一括更新の対象として選択`}
+                        />
+                        <div className="min-w-0">
+                          <div className="text-lg font-extrabold text-gray-900 truncate">
+                            {group.homeTeamName} vs {group.awayTeamName}
+                          </div>
 
-                        <div className="mt-2 flex items-center gap-2 flex-wrap">
-                          {group.categoryFormatIcon === "混在" ? (
-                            <Badge tone="amber">混在</Badge>
-                          ) : group.categoryFormatIcon === "同一カテゴリ名" ? (
-                            <Badge tone="emerald">同一カテゴリ名</Badge>
-                          ) : (
-                            <Badge tone="gray">-</Badge>
-                          )}
-                        </div>
+                          <div className="mt-2 flex items-center gap-2 flex-wrap">
+                            {group.categoryFormatIcon === "混在" ? (
+                              <Badge tone="amber">混在</Badge>
+                            ) : group.categoryFormatIcon === "同一カテゴリ名" ? (
+                              <Badge tone="emerald">同一カテゴリ名</Badge>
+                            ) : (
+                              <Badge tone="gray">-</Badge>
+                            )}
+                          </div>
 
-                        <div className="mt-3 flex flex-col gap-1.5">
-                          {group.categories.length === 0 ? (
-                            <div className="text-sm text-muted-foreground">dataCategory なし</div>
-                          ) : (
-                            group.categories.map((c, idx) => (
-                              <div key={`${group.key}-${idx}`} className="flex items-center gap-2 text-sm text-gray-700">
-                                {c.formattedDataCategory ? <Badge tone="blue">形式一致</Badge> : <Badge tone="rose">形式不一致</Badge>}
-                                <span className="truncate">{c.dataCategory}</span>
-                                {c.cnt != null ? <span className="text-xs text-muted-foreground">({c.cnt}件)</span> : null}
-                              </div>
-                            ))
-                          )}
-                        </div>
+                          <div className="mt-3 flex flex-col gap-1.5">
+                            {group.categories.length === 0 ? (
+                              <div className="text-sm text-muted-foreground">dataCategory なし</div>
+                            ) : (
+                              group.categories.map((c, idx) => (
+                                <div key={`${group.key}-${idx}`} className="flex items-center gap-2 text-sm text-gray-700">
+                                  {c.formattedDataCategory ? <Badge tone="blue">形式一致</Badge> : <Badge tone="rose">形式不一致</Badge>}
+                                  <span className="truncate">{c.dataCategory}</span>
+                                  {c.cnt != null ? <span className="text-xs text-muted-foreground">({c.cnt}件)</span> : null}
+                                </div>
+                              ))
+                            )}
+                          </div>
 
-                        {/* ホーム vs アウェー の表示の下に dataCategory 更新フォームを配置 */}
-                        <div className="mt-4 flex items-center gap-2 flex-wrap">
-                          <input
-                            className="flex-1 min-w-[240px] rounded-xl border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            value={editValue}
-                            onChange={(e) => handleEditChange(group.key, e.target.value)}
-                            placeholder="新しい dataCategory (例: 日本: J1リーグ - ラウンド 5)"
-                          />
-                          <Button size="sm" onClick={() => handleUpdate(group)} disabled={state?.loading}>
-                            {state?.loading ? "更新中..." : "更新"}
-                          </Button>
-                        </div>
+                          {/* ホーム vs アウェー の表示の下に dataCategory 更新フォームを配置 */}
+                          <div className="mt-4 flex items-center gap-2 flex-wrap">
+                            <input
+                              className="flex-1 min-w-[240px] rounded-xl border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              value={editValue}
+                              onChange={(e) => handleEditChange(group.key, e.target.value)}
+                              placeholder="新しい dataCategory (例: 日本: J1リーグ - ラウンド 5)"
+                            />
+                            <Button size="sm" onClick={() => handleUpdate(group)} disabled={state?.loading}>
+                              {state?.loading ? "更新中..." : "更新"}
+                            </Button>
+                          </div>
 
-                        {state?.error ? <div className="mt-2 text-xs font-semibold text-rose-700">{state.error}</div> : null}
-                        {state?.success ? <div className="mt-2 text-xs font-semibold text-emerald-700">{state.success}</div> : null}
+                          {state?.error ? <div className="mt-2 text-xs font-semibold text-rose-700">{state.error}</div> : null}
+                          {state?.success ? <div className="mt-2 text-xs font-semibold text-emerald-700">{state.success}</div> : null}
+                        </div>
                       </div>
                     </div>
                   </div>
