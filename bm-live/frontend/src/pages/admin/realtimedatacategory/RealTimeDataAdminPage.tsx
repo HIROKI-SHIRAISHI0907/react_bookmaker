@@ -3,6 +3,13 @@ import { Button } from "../../../components/ui/button";
 import { Skeleton } from "../../../components/ui/skeleton";
 
 /** =========================
+ * API base path
+ * バックエンド側の context-path (/v1) を含めた基点。
+ * パスを変更する場合はここだけ直せば全箇所に反映される。
+ * ========================= */
+const API_BASE = "/v1/api/real-time-data";
+
+/** =========================
  * Types
  * (dev.web.api.bm_a025.RealTimeDataDTO / RealTimeDataRequest / RealTimeDataResponse に対応)
  * ========================= */
@@ -99,6 +106,24 @@ function Alert({ type, title, message, onClose }: { type: "info" | "success" | "
 /** =========================
  * Utils
  * ========================= */
+
+/** レスポンスが JSON かどうかを Content-Type で確認してからパースする。
+ * SPA フォールバック等で HTML が返ってきた場合に
+ * "Unexpected token '<'" という分かりにくいエラーではなく、
+ * 原因の特定がしやすいエラーメッセージを出す。
+ */
+async function parseJsonOrThrow<T>(res: Response): Promise<T> {
+  const contentType = res.headers.get("content-type") ?? "";
+
+  if (!contentType.includes("application/json")) {
+    const text = await res.text().catch(() => "");
+    const snippet = text.slice(0, 200);
+    throw new Error(`想定外のレスポンス形式です (status: ${res.status}, content-type: ${contentType || "unknown"})。` + `APIのパスやプロキシ設定を確認してください。\n${snippet}`);
+  }
+
+  return (await res.json()) as T;
+}
+
 async function fetchJsonStrict<T>(url: string, signal?: AbortSignal): Promise<T> {
   const res = await fetch(url, {
     method: "GET",
@@ -111,11 +136,11 @@ async function fetchJsonStrict<T>(url: string, signal?: AbortSignal): Promise<T>
     throw new Error(`HTTP ${res.status} ${res.statusText}${text ? `: ${text}` : ""}`);
   }
 
-  return (await res.json()) as T;
+  return parseJsonOrThrow<T>(res);
 }
 
 async function postRealTimeDataUpdate(req: RealTimeDataRequest, signal?: AbortSignal): Promise<RealTimeDataResponse> {
-  const res = await fetch("/v1/api/real-time-data/update", {
+  const res = await fetch(`${API_BASE}/update`, {
     method: "POST",
     signal,
     headers: {
@@ -125,10 +150,12 @@ async function postRealTimeDataUpdate(req: RealTimeDataRequest, signal?: AbortSi
     body: JSON.stringify(req),
   });
 
-  const body = (await res.json().catch(() => null)) as RealTimeDataResponse | null;
+  const contentType = res.headers.get("content-type") ?? "";
+  const body = contentType.includes("application/json") ? ((await res.json().catch(() => null)) as RealTimeDataResponse | null) : null;
 
   if (!res.ok && !body) {
-    throw new Error(`HTTP ${res.status} ${res.statusText}`);
+    const text = await res.text().catch(() => "");
+    throw new Error(`HTTP ${res.status} ${res.statusText}${text ? `: ${text.slice(0, 200)}` : ""}`);
   }
 
   return body ?? { responseCode: String(res.status), message: res.statusText };
@@ -204,9 +231,9 @@ export default function RealTimeDataAdminPage() {
       const params = new URLSearchParams();
       params.set("homeTeamName", homeFilter.trim());
       params.set("awayTeamName", awayFilter.trim());
-      return `/api/real-time-data/search?${params.toString()}`;
+      return `${API_BASE}/search?${params.toString()}`;
     }
-    return "/api/real-time-data";
+    return API_BASE;
   }, [isFiltered, homeFilter, awayFilter]);
 
   useEffect(() => {
