@@ -115,7 +115,7 @@ async function fetchJsonStrict<T>(url: string, signal?: AbortSignal): Promise<T>
 }
 
 async function postRealTimeDataUpdate(req: RealTimeDataRequest, signal?: AbortSignal): Promise<RealTimeDataResponse> {
-  const res = await fetch("/api/real-time-data/update", {
+  const res = await fetch("/v1/api/real-time-data/update", {
     method: "POST",
     signal,
     headers: {
