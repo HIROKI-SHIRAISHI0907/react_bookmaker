@@ -9,6 +9,9 @@ import { Skeleton } from "../../../components/ui/skeleton";
  * ========================= */
 const API_BASE = "/v1/api/real-time-data";
 
+/** 一覧の1ページあたりの表示件数 */
+const PAGE_SIZE = 10;
+
 /** =========================
  * Types
  * (dev.web.api.bm_a025.RealTimeDataDTO / RealTimeDataRequest / RealTimeDataResponse に対応)
@@ -217,6 +220,9 @@ export default function RealTimeDataAdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [rows, setRows] = useState<RealTimeDataDTO[]>([]);
 
+  /** 一覧のページング(1ページ10件) */
+  const [page, setPage] = useState(1);
+
   /** グループごとの入力中テキスト(dataCategoryの新しい値) */
   const [editValues, setEditValues] = useState<Record<string, string>>({});
   /** グループごとの更新処理状態 */
@@ -263,6 +269,7 @@ export default function RealTimeDataAdminPage() {
   };
 
   useEffect(() => {
+    setPage(1);
     void doFetch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiUrl, searchVersion]);
@@ -274,6 +281,21 @@ export default function RealTimeDataAdminPage() {
     const mixedCount = groups.filter((g) => g.categoryFormatIcon === "混在").length;
     return { groupCount: groups.length, sameCount, mixedCount };
   }, [groups]);
+
+  const totalPages = Math.max(1, Math.ceil(groups.length / PAGE_SIZE));
+
+  /** 更新後の再取得などで件数が減り、現在ページが範囲外になった場合に補正する */
+  useEffect(() => {
+    setPage((p) => Math.min(p, totalPages));
+  }, [totalPages]);
+
+  const pagedGroups = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return groups.slice(start, start + PAGE_SIZE);
+  }, [groups, page]);
+
+  const handlePrevPage = () => setPage((p) => Math.max(1, p - 1));
+  const handleNextPage = () => setPage((p) => Math.min(totalPages, p + 1));
 
   const handleSearch = () => {
     setHomeFilter(homeInput);
@@ -396,7 +418,7 @@ export default function RealTimeDataAdminPage() {
             <div className="text-sm text-muted-foreground">データがありません。</div>
           ) : (
             <div className="grid grid-cols-1 gap-3">
-              {groups.map((group) => {
+              {pagedGroups.map((group) => {
                 const state = updateState[group.key];
                 const editValue = editValues[group.key] ?? (group.categories.length === 1 ? group.categories[0].dataCategory : "");
 
@@ -454,6 +476,25 @@ export default function RealTimeDataAdminPage() {
               })}
             </div>
           )}
+
+          {!loading && groups.length > 0 ? (
+            <div className="mt-4 flex items-center justify-between gap-4 flex-col sm:flex-row">
+              <div className="text-xs text-muted-foreground">
+                全{groups.length}件中 {(page - 1) * PAGE_SIZE + 1}〜{Math.min(page * PAGE_SIZE, groups.length)}件を表示
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={handlePrevPage} disabled={page <= 1}>
+                  前へ
+                </Button>
+                <span className="text-sm font-semibold text-gray-700">
+                  {page} / {totalPages} ページ
+                </span>
+                <Button variant="outline" size="sm" onClick={handleNextPage} disabled={page >= totalPages}>
+                  次へ
+                </Button>
+              </div>
+            </div>
+          ) : null}
         </Panel>
       </div>
     </div>
