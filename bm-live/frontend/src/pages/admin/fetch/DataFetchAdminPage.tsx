@@ -449,7 +449,7 @@ export default function DataFetchAdminPage() {
         title: "統計CSVデータ取り入れ実行",
         description: "統計CSVを取り込む",
         endpoint: "/v1/api/stat",
-        precheckMode: "required",
+        precheckMode: "always",
       },
       {
         id: "B007",
@@ -489,7 +489,7 @@ export default function DataFetchAdminPage() {
         title: "統計CSVデータ取り入れ実行（国別 / 国リーグ別）",
         description: "country または country + league を指定して統計CSVを取り込む",
         endpoint: "/v1/api/stat/each",
-        precheckMode: "required",
+        precheckMode: "always",
         precheckTaskCode: "B006",
       },
       {
