@@ -420,7 +420,7 @@ const gameCardStyle: React.CSSProperties = {
 
 const NoEcsSlotsPage: React.FC = () => {
   const [batchCode, setBatchCode] = useState("B009");
-  const [day, setDay] = useState("2026-06-30");
+  const [day, setDay] = useState<string>(() => getTodayJstString());
   const [response, setResponse] = useState<NoEcsSlotsResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
