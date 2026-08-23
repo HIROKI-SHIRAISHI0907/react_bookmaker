@@ -10,7 +10,7 @@ import { Skeleton } from "../../../components/ui/skeleton";
 const API_BASE = "/v1/api/real-time-data";
 
 /** 一覧の1ページあたりの表示件数 */
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 5;
 
 /** =========================
  * Types
@@ -74,22 +74,22 @@ function Badge({ children, tone = "gray" }: { children: React.ReactNode; tone?: 
     violet: "bg-violet-100 text-violet-800 ring-violet-200",
   };
 
-  return <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ring-1 ring-inset ${cls[tone]}`}>{children}</span>;
+  return <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ring-1 ring-inset ${cls[tone]}`}>{children}</span>;
 }
 
 function Panel({ title, desc, right, children }: { title: string; desc?: string; right?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border bg-white/80 backdrop-blur shadow-sm">
-      <div className="px-5 py-4 border-b bg-gradient-to-r from-white to-gray-50 rounded-t-2xl">
-        <div className="flex items-start justify-between gap-4 flex-col md:flex-row">
+    <div className="rounded-xl border bg-white/80 backdrop-blur shadow-sm">
+      <div className="px-4 py-3 border-b bg-gradient-to-r from-white to-gray-50 rounded-t-xl">
+        <div className="flex items-start justify-between gap-3 flex-col md:flex-row">
           <div>
-            <div className="text-base font-extrabold text-gray-900">{title}</div>
-            {desc ? <div className="text-sm text-muted-foreground mt-1">{desc}</div> : null}
+            <div className="text-sm font-extrabold text-gray-900">{title}</div>
+            {desc ? <div className="text-xs text-muted-foreground mt-0.5">{desc}</div> : null}
           </div>
           {right ? <div className="shrink-0">{right}</div> : null}
         </div>
       </div>
-      <div className="p-5">{children}</div>
+      <div className="p-4">{children}</div>
     </div>
   );
 }
@@ -98,10 +98,10 @@ function Alert({ type, title, message, onClose }: { type: "info" | "success" | "
   const cls = type === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : type === "error" ? "border-rose-200 bg-rose-50 text-rose-900" : "border-blue-200 bg-blue-50 text-blue-900";
 
   return (
-    <div className={`rounded-2xl border p-4 flex items-start gap-3 ${cls}`}>
+    <div className={`rounded-xl border p-3 flex items-start gap-3 ${cls}`}>
       <div className="min-w-0 flex-1">
-        <div className="text-sm font-extrabold">{title}</div>
-        <pre className="mt-1 text-xs whitespace-pre-wrap leading-relaxed">{message}</pre>
+        <div className="text-xs font-extrabold">{title}</div>
+        <pre className="mt-1 text-[11px] whitespace-pre-wrap leading-relaxed">{message}</pre>
       </div>
       {onClose ? (
         <button onClick={onClose} className="text-gray-500 hover:text-gray-800 transition-colors" type="button">
@@ -174,6 +174,12 @@ function safeText(v: unknown) {
   return typeof v === "string" ? v : "";
 }
 
+/** グループ内のいずれかの dataCategory に「ラウンド」が付いていない場合 true（＝更新が必要 = 優先表示） */
+function groupNeedsRoundUpdate(group: MatchGroup): boolean {
+  if (group.categories.length === 0) return true;
+  return group.categories.some((c) => !(c.dataCategory || "").includes("ラウンド"));
+}
+
 /** dataCategory × home × away の一覧を home/away 単位のグループにまとめる */
 function groupByMatch(rows: RealTimeDataDTO[]): MatchGroup[] {
   const map = new Map<string, MatchGroup>();
@@ -208,7 +214,15 @@ function groupByMatch(rows: RealTimeDataDTO[]): MatchGroup[] {
     }
   }
 
-  return Array.from(map.values()).sort((a, b) => (a.homeTeamName + a.awayTeamName).localeCompare(b.homeTeamName + b.awayTeamName));
+  // 「ラウンド」が付いていない（＝更新が必要な）グループを先に、
+  // 「ラウンド」が付いている（＝更新不要な）グループは後ろに表示する。
+  // 同じ優先度内はチーム名の五十音/アルファベット順。
+  return Array.from(map.values()).sort((a, b) => {
+    const aPriority = groupNeedsRoundUpdate(a) ? 0 : 1;
+    const bPriority = groupNeedsRoundUpdate(b) ? 0 : 1;
+    if (aPriority !== bPriority) return aPriority - bPriority;
+    return (a.homeTeamName + a.awayTeamName).localeCompare(b.homeTeamName + b.awayTeamName);
+  });
 }
 
 /** =========================
@@ -226,7 +240,7 @@ export default function RealTimeDataAdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [rows, setRows] = useState<RealTimeDataDTO[]>([]);
 
-  /** 一覧のページング(1ページ10件) */
+  /** 一覧のページング(1ページ5件) */
   const [page, setPage] = useState(1);
 
   /** グループごとの入力中テキスト(dataCategoryの新しい値) */
@@ -440,17 +454,17 @@ export default function RealTimeDataAdminPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
-      <div className="container mx-auto px-4 py-6 max-w-6xl space-y-6">
-        <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
-          <div className="flex items-center gap-4">
-            <div className="bg-gradient-to-r from-violet-600 to-blue-600 text-white p-3 rounded-2xl shadow-lg">
-              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <div className="container mx-auto px-4 py-4 max-w-5xl space-y-4">
+        <div className="flex items-start md:items-center justify-between gap-3 flex-col md:flex-row">
+          <div className="flex items-center gap-3">
+            <div className="bg-gradient-to-r from-violet-600 to-blue-600 text-white p-2.5 rounded-xl shadow-lg">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4h16v16H4zM7 8h10M7 12h10M7 16h10" />
               </svg>
             </div>
             <div>
-              <h1 className="text-3xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">リアルタイムデータ管理</h1>
-              <p className="text-sm text-muted-foreground mt-1">home/away の組み合わせ単位で dataCategory を確認・上書きします。</p>
+              <h1 className="text-xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">リアルタイムデータ管理</h1>
+              <p className="text-xs text-muted-foreground mt-0.5">home/away の組み合わせ単位で dataCategory を確認・上書きします。</p>
             </div>
           </div>
 
@@ -477,21 +491,21 @@ export default function RealTimeDataAdminPage() {
             </div>
           }
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <div className="text-sm font-semibold text-gray-800">ホームチーム名</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <div className="text-xs font-semibold text-gray-800">ホームチーム名</div>
               <input
-                className="w-full rounded-xl border bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-lg border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={homeInput}
                 onChange={(e) => setHomeInput(e.target.value)}
                 placeholder="例）FC東京"
               />
             </div>
 
-            <div className="space-y-2">
-              <div className="text-sm font-semibold text-gray-800">アウェーチーム名</div>
+            <div className="space-y-1.5">
+              <div className="text-xs font-semibold text-gray-800">アウェーチーム名</div>
               <input
-                className="w-full rounded-xl border bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-lg border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={awayInput}
                 onChange={(e) => setAwayInput(e.target.value)}
                 placeholder="例）浦和レッズ"
@@ -500,21 +514,21 @@ export default function RealTimeDataAdminPage() {
           </div>
         </Panel>
 
-        <Panel title="一覧" desc="ホーム vs アウェーごとに、紐づく dataCategory の状況と更新フォームを表示します。チェックボックスで複数選択すると一括更新できます。">
+        <Panel title="一覧" desc="「ラウンド」が付いていない（更新が必要な）組み合わせを先に表示します。チェックボックスで複数選択すると一括更新できます。">
           {!loading && groups.length > 0 ? (
-            <div className="mb-4 rounded-2xl border border-violet-200 bg-violet-50/60 p-4">
+            <div className="mb-3 rounded-xl border border-violet-200 bg-violet-50/60 p-3">
               <div className="flex items-center justify-between gap-3 flex-wrap">
-                <label className="flex items-center gap-2 text-sm font-semibold text-gray-800 cursor-pointer">
-                  <input type="checkbox" className="h-4 w-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500" checked={allOnPageSelected} onChange={toggleSelectAllOnPage} />
+                <label className="flex items-center gap-2 text-xs font-semibold text-gray-800 cursor-pointer">
+                  <input type="checkbox" className="h-3.5 w-3.5 rounded border-gray-300 text-violet-600 focus:ring-violet-500" checked={allOnPageSelected} onChange={toggleSelectAllOnPage} />
                   このページを全選択
                 </label>
                 <Badge tone="violet">{selectedKeys.size}件選択中</Badge>
               </div>
 
               {selectedKeys.size > 0 ? (
-                <div className="mt-3 flex items-center gap-2 flex-wrap">
+                <div className="mt-2.5 flex items-center gap-2 flex-wrap">
                   <input
-                    className="flex-1 min-w-[240px] rounded-xl border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    className="flex-1 min-w-[220px] rounded-lg border bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
                     value={bulkValue}
                     onChange={(e) => setBulkValue(e.target.value)}
                     placeholder="選択した項目に一括反映する dataCategory (例: 日本: J1リーグ - ラウンド 5)"
@@ -528,44 +542,46 @@ export default function RealTimeDataAdminPage() {
                 </div>
               ) : null}
 
-              {bulkState.error ? <div className="mt-2 text-xs font-semibold text-rose-700 whitespace-pre-wrap">{bulkState.error}</div> : null}
-              {bulkState.success ? <div className="mt-2 text-xs font-semibold text-emerald-700">{bulkState.success}</div> : null}
+              {bulkState.error ? <div className="mt-2 text-[11px] font-semibold text-rose-700 whitespace-pre-wrap">{bulkState.error}</div> : null}
+              {bulkState.success ? <div className="mt-2 text-[11px] font-semibold text-emerald-700">{bulkState.success}</div> : null}
             </div>
           ) : null}
 
           {loading ? (
-            <div className="space-y-3">
-              <Skeleton className="h-6 w-full" />
-              <Skeleton className="h-6 w-full" />
-              <Skeleton className="h-6 w-2/3" />
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-full" />
+              <Skeleton className="h-5 w-full" />
+              <Skeleton className="h-5 w-2/3" />
             </div>
           ) : groups.length === 0 ? (
             <div className="text-sm text-muted-foreground">データがありません。</div>
           ) : (
-            <div className="grid grid-cols-1 gap-3">
+            <div className="grid grid-cols-1 gap-2">
               {pagedGroups.map((group) => {
                 const state = updateState[group.key];
                 const editValue = editValues[group.key] ?? (group.categories.length === 1 ? group.categories[0].dataCategory : "");
 
                 const isSelected = selectedKeys.has(group.key);
+                const needsUpdate = groupNeedsRoundUpdate(group);
 
                 return (
-                  <div key={group.key} className={`rounded-2xl border bg-white hover:shadow-sm transition-shadow p-4 ${isSelected ? "ring-2 ring-violet-300 border-violet-300" : ""}`}>
-                    <div className="flex items-start justify-between gap-4 flex-col md:flex-row">
-                      <div className="min-w-0 flex items-start gap-3">
+                  <div key={group.key} className={`rounded-xl border bg-white hover:shadow-sm transition-shadow p-3 ${isSelected ? "ring-2 ring-violet-300 border-violet-300" : ""}`}>
+                    <div className="flex items-start justify-between gap-3 flex-col md:flex-row">
+                      <div className="min-w-0 flex items-start gap-2.5">
                         <input
                           type="checkbox"
-                          className="mt-1.5 h-4 w-4 shrink-0 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
+                          className="mt-1 h-3.5 w-3.5 shrink-0 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
                           checked={isSelected}
                           onChange={() => toggleSelectGroup(group.key)}
                           aria-label={`${group.homeTeamName} vs ${group.awayTeamName} を一括更新の対象として選択`}
                         />
                         <div className="min-w-0">
-                          <div className="text-lg font-extrabold text-gray-900 truncate">
+                          <div className="text-sm font-extrabold text-gray-900 truncate">
                             {group.homeTeamName} vs {group.awayTeamName}
                           </div>
 
-                          <div className="mt-2 flex items-center gap-2 flex-wrap">
+                          <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
+                            {needsUpdate ? <Badge tone="rose">要更新</Badge> : <Badge tone="gray">更新不要</Badge>}
                             {group.categoryFormatIcon === "混在" ? (
                               <Badge tone="amber">混在</Badge>
                             ) : group.categoryFormatIcon === "同一カテゴリ名" ? (
@@ -575,24 +591,24 @@ export default function RealTimeDataAdminPage() {
                             )}
                           </div>
 
-                          <div className="mt-3 flex flex-col gap-1.5">
+                          <div className="mt-2 flex flex-col gap-1">
                             {group.categories.length === 0 ? (
-                              <div className="text-sm text-muted-foreground">dataCategory なし</div>
+                              <div className="text-xs text-muted-foreground">dataCategory なし</div>
                             ) : (
                               group.categories.map((c, idx) => (
-                                <div key={`${group.key}-${idx}`} className="flex items-center gap-2 text-sm text-gray-700">
+                                <div key={`${group.key}-${idx}`} className="flex items-center gap-1.5 text-xs text-gray-700">
                                   {c.formattedDataCategory ? <Badge tone="blue">形式一致</Badge> : <Badge tone="rose">形式不一致</Badge>}
                                   <span className="truncate">{c.dataCategory}</span>
-                                  {c.cnt != null ? <span className="text-xs text-muted-foreground">({c.cnt}件)</span> : null}
+                                  {c.cnt != null ? <span className="text-[11px] text-muted-foreground">({c.cnt}件)</span> : null}
                                 </div>
                               ))
                             )}
                           </div>
 
                           {/* ホーム vs アウェー の表示の下に dataCategory 更新フォームを配置 */}
-                          <div className="mt-4 flex items-center gap-2 flex-wrap">
+                          <div className="mt-3 flex items-center gap-2 flex-wrap">
                             <input
-                              className="flex-1 min-w-[240px] rounded-xl border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="flex-1 min-w-[220px] rounded-lg border bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                               value={editValue}
                               onChange={(e) => handleEditChange(group.key, e.target.value)}
                               placeholder="新しい dataCategory (例: 日本: J1リーグ - ラウンド 5)"
@@ -602,8 +618,8 @@ export default function RealTimeDataAdminPage() {
                             </Button>
                           </div>
 
-                          {state?.error ? <div className="mt-2 text-xs font-semibold text-rose-700">{state.error}</div> : null}
-                          {state?.success ? <div className="mt-2 text-xs font-semibold text-emerald-700">{state.success}</div> : null}
+                          {state?.error ? <div className="mt-1.5 text-[11px] font-semibold text-rose-700">{state.error}</div> : null}
+                          {state?.success ? <div className="mt-1.5 text-[11px] font-semibold text-emerald-700">{state.success}</div> : null}
                         </div>
                       </div>
                     </div>
@@ -614,15 +630,15 @@ export default function RealTimeDataAdminPage() {
           )}
 
           {!loading && groups.length > 0 ? (
-            <div className="mt-4 flex items-center justify-between gap-4 flex-col sm:flex-row">
-              <div className="text-xs text-muted-foreground">
+            <div className="mt-3 flex items-center justify-between gap-3 flex-col sm:flex-row">
+              <div className="text-[11px] text-muted-foreground">
                 全{groups.length}件中 {(page - 1) * PAGE_SIZE + 1}〜{Math.min(page * PAGE_SIZE, groups.length)}件を表示
               </div>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={handlePrevPage} disabled={page <= 1}>
                   前へ
                 </Button>
-                <span className="text-sm font-semibold text-gray-700">
+                <span className="text-xs font-semibold text-gray-700">
                   {page} / {totalPages} ページ
                 </span>
                 <Button variant="outline" size="sm" onClick={handleNextPage} disabled={page >= totalPages}>
