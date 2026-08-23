@@ -111,6 +111,11 @@ async function postJson<T>(url: string, body?: unknown): Promise<T> {
   return res.json();
 }
 
+/** "B010（FinGetting）" -> "B010" のように、括弧（全角/半角）以降を取り除いた「素の」batchCodeを返す */
+function toPureBatchCode(code: string): string {
+  return code.replace(/[（(].*$/, "").trim();
+}
+
 /** ===================== UI（小さめ部品） ===================== */
 type Tone = "gray" | "blue" | "emerald" | "amber" | "rose" | "violet";
 
@@ -254,6 +259,9 @@ export default function ManualScrapePage() {
   const isB007 = batchCode === "B007（AllLeague）";
   const isB014 = batchCode === "B014";
 
+  // API（URL・リクエストボディ）へ渡す際は、表示用の括弧書きを取り除いた「素の」コードを使う
+  const pureBatchCode = useMemo(() => toPureBatchCode(batchCode), [batchCode]);
+
   const [lastTaskArn, setLastTaskArn] = useState<string | null>(null);
 
   // ===== B007 =====
@@ -268,7 +276,7 @@ export default function ManualScrapePage() {
   // ===== Progress =====
   const progressQuery = useQuery({
     queryKey: ["progress", batchCode],
-    queryFn: () => getJson<ProgressRes>(`/v1/api/admin/scrape/ecs/${batchCode}/latest/progress`),
+    queryFn: () => getJson<ProgressRes>(`/v1/api/admin/scrape/ecs/${pureBatchCode}/latest/progress`),
     refetchInterval: 5000,
   });
 
@@ -315,20 +323,20 @@ export default function ManualScrapePage() {
   // ===== B007 request =====
   const countReq = useMemo<S3FileCountRequest>(
     () => ({
-      batchCode,
+      batchCode: pureBatchCode,
       scope,
       day: null,
     }),
-    [batchCode, scope],
+    [pureBatchCode, scope],
   );
 
   const listReq = useMemo<S3FileListRequest>(
     () => ({
-      batchCode,
+      batchCode: pureBatchCode,
       scope,
       limit: 100,
     }),
-    [batchCode, scope],
+    [pureBatchCode, scope],
   );
 
   const s3CountQuery = useQuery({
@@ -364,7 +372,7 @@ export default function ManualScrapePage() {
         return await postJson<StatExecuteResponse>(STAT_EACH_URL, body);
       }
 
-      const body: EcsRunRequest = { batchCd: batchCode };
+      const body: EcsRunRequest = { batchCd: pureBatchCode };
       return await postJson<EcsRunResponse>(RUN_URL, body);
     },
     onSuccess: async (res) => {
