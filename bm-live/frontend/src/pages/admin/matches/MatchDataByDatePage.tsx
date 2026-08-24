@@ -8,6 +8,7 @@ type MatchDataByDateItem = {
   homeTeamName: string;
   awayTeamName: string;
   addManualFlg: string;
+  csvStatus: string; // "CREATED" | "TARGET" | "NOT_TARGET"
   recordTime: string;
 };
 
@@ -28,50 +29,27 @@ function todayString() {
   return `${y}-${m}-${d}`;
 }
 
-function buildTargetBadge(addManualFlg?: string) {
-  const flag = String(addManualFlg ?? "");
+const csvStatusBadgeBase: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 6,
+  padding: "4px 10px",
+  borderRadius: 999,
+  fontWeight: 700,
+  fontSize: 12,
+  whiteSpace: "nowrap",
+};
 
-  if (flag === "1") {
-    return (
-      <span
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 6,
-          padding: "4px 10px",
-          borderRadius: 999,
-          background: "#fef3c7",
-          color: "#92400e",
-          border: "1px solid #fcd34d",
-          fontWeight: 700,
-          fontSize: 12,
-          whiteSpace: "nowrap",
-        }}
-      >
-        🖐 手動スクレイピング対象
-      </span>
-    );
+function buildCsvStatusBadge(csvStatus?: string) {
+  if (csvStatus === "CREATED") {
+    return <span style={{ ...csvStatusBadgeBase, background: "#dcfce7", color: "#166534", border: "1px solid #86efac" }}>✅ CSV作成済</span>;
   }
 
-  return (
-    <span
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 6,
-        padding: "4px 10px",
-        borderRadius: 999,
-        background: "#dbeafe",
-        color: "#1d4ed8",
-        border: "1px solid #93c5fd",
-        fontWeight: 700,
-        fontSize: 12,
-        whiteSpace: "nowrap",
-      }}
-    >
-      📄 CSV作成対象
-    </span>
-  );
+  if (csvStatus === "TARGET") {
+    return <span style={{ ...csvStatusBadgeBase, background: "#dbeafe", color: "#1d4ed8", border: "1px solid #93c5fd" }}>📄 CSV作成対象</span>;
+  }
+
+  return <span style={{ ...csvStatusBadgeBase, background: "#f3f4f6", color: "#4b5563", border: "1px solid #d1d5db" }}>🚫 CSV作成非対象</span>;
 }
 
 async function getJsonSafe<T>(url: string): Promise<T> {
@@ -319,7 +297,7 @@ export default function MatchDataByDatePage() {
                 items.map((item, index) => (
                   <tr key={`${item.matchKey || "row"}-${index}`} style={{ borderTop: "1px solid #f3f4f6" }}>
                     <td style={tdStyle}>{item.recordTime || "-"}</td>
-                    <td style={tdStyle}>{buildTargetBadge(item.addManualFlg)}</td>
+                    <td style={tdStyle}>{buildCsvStatusBadge(item.addManualFlg)}</td>
                     <td style={tdStyle}>{item.matchId || "-"}</td>
                     <td style={tdStyle}>{item.gameId || "-"}</td>
                     <td style={tdStyle}>{item.dataCategory || "-"}</td>
