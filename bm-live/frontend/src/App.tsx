@@ -116,7 +116,7 @@ export default function App() {
               <Route path="noecs" element={<NoEcsSlotsPage />} />
               <Route path="future/matches" element={<FutureMatchesByDatePage />} />
               <Route path="data-category" element={<RealTimeDataAdminPage />} />
-              <Route path="mail-info" element={<MailInfoListPage />} />
+              <Route path="mailinfo" element={<MailInfoListPage />} />
               <Route path="mailinfo/new" element={<MailInfoRegisterPage />} />
               <Route path="mailinfo/:mailId/edit" element={<MailInfoUpdatePage />} />
             </Route>
