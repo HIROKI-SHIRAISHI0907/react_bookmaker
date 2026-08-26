@@ -34,6 +34,8 @@ import NoEcsSlotsPage from "./pages/admin/noecs/NoEcsSlotsPage";
 import FutureMatchesByDatePage from "./pages/admin/future/FutureMatchesByDatePage";
 import RealTimeDataAdminPage from "./pages/admin/realtimedatacategory/RealTimeDataAdminPage";
 import MailInfoListPage from "./pages/admin/mail/MailInfoList";
+import MailInfoRegisterPage from "./pages/admin/mail/MailRegisterFormPage";
+import MailInfoUpdatePage from "./pages/admin/mail/MailUpdateFormPage";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -115,6 +117,8 @@ export default function App() {
               <Route path="future/matches" element={<FutureMatchesByDatePage />} />
               <Route path="data-category" element={<RealTimeDataAdminPage />} />
               <Route path="mail-info" element={<MailInfoListPage />} />
+              <Route path="mailinfo/new" element={<MailInfoRegisterPage />} />
+              <Route path="mailinfo/:mailId/edit" element={<MailInfoUpdatePage />} />
             </Route>
           </Route>
 

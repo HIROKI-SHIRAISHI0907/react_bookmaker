@@ -42,7 +42,7 @@ function toApiResponse(error: unknown): MailInfoResponse {
 
 export async function fetchMailInfoListApi(): Promise<MailInfoMasterEntity[]> {
   try {
-    const { data } = await apiClient.get<MailInfoMasterEntity[]>("/v1/api/mailinfo");
+    const { data } = await apiClient.get<MailInfoMasterEntity[]>("/v1/api/admin/mailinfo");
     return data ?? [];
   } catch (e) {
     throw new Error(resolveErrorMessage(e));
@@ -55,7 +55,7 @@ export async function fetchMailInfoListApi(): Promise<MailInfoMasterEntity[]> {
 //   直すことをおすすめします。ここでは直った前提の、パスパラメータのみの呼び出しにしています。
 export async function fetchMailInfoByIdApi(mailId: string): Promise<MailInfoMasterEntity> {
   try {
-    const { data } = await apiClient.get<MailInfoMasterEntity>(`/v1/api/mailinfo/${encodeURIComponent(mailId)}`);
+    const { data } = await apiClient.get<MailInfoMasterEntity>(`/v1/api/admin/mailinfo/${encodeURIComponent(mailId)}`);
     return data;
   } catch (e) {
     throw new Error(resolveErrorMessage(e));
@@ -64,7 +64,7 @@ export async function fetchMailInfoByIdApi(mailId: string): Promise<MailInfoMast
 
 export async function registerMailInfoApi(payload: MailInfoMasterRequest): Promise<MailInfoResponse> {
   try {
-    const { data } = await apiClient.patch<MailInfoResponse>("/v1/api/mailinfo", payload);
+    const { data } = await apiClient.patch<MailInfoResponse>("/v1/api/admin/mailinfo", payload);
     return data;
   } catch (e) {
     return toApiResponse(e);
@@ -73,7 +73,7 @@ export async function registerMailInfoApi(payload: MailInfoMasterRequest): Promi
 
 export async function updateMailInfoApi(payload: MailInfoMasterRequest): Promise<MailInfoResponse> {
   try {
-    const { data } = await apiClient.patch<MailInfoResponse>("/v1/api/mailinfo/update", payload);
+    const { data } = await apiClient.patch<MailInfoResponse>("/v1/api/admin/mailinfo/update", payload);
     return data;
   } catch (e) {
     return toApiResponse(e);

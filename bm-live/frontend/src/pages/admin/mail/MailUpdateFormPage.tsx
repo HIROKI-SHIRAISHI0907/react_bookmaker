@@ -6,8 +6,8 @@ import MailInfoForm, { MailInfoFormValues } from "./MailInfoForm";
 /**
  * メール情報更新画面
  * 一覧画面の「更新」ボタンから mailId を受け取り、
- * GET /v1/api/mailinfo/{mailId} で登録済み内容を取得してフォームに反映する。
- * メールIDは非活性（変更不可）にし、PATCH /v1/api/mailinfo/update で更新する。
+ * GET /v1/api/admin/mailinfo/{mailId} で登録済み内容を取得してフォームに反映する。
+ * メールIDは非活性（変更不可）にし、PATCH /v1/api/admin/mailinfo/update で更新する。
  */
 
 const EMPTY_VALUES: MailInfoFormValues = {

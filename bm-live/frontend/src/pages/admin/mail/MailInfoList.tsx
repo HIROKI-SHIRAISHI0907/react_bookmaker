@@ -5,7 +5,7 @@ import { fetchMailInfoListApi, MailInfoMasterEntity } from "../../../api/mailinf
 /**
  * メール情報一覧画面
  * 現在登録されているメール情報マスタの内容を取得して表示する。
- * 「検索」ボタン押下でGET /v1/api/mailinfoを叩き直す。
+ * 「検索」ボタン押下でGET /v1/api/admin/mailinfoを叩き直す。
  */
 
 function formatBodyPreview(body: string): string {
