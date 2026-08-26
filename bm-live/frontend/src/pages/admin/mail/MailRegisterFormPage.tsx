@@ -58,7 +58,7 @@ export default function MailInfoRegisterPage() {
         <MailInfoForm values={values} mailIdEditable submitting={submitting} submitLabel="登録する" onChange={setValues} onSubmit={onSubmit} message={message} errorMessage={errorMessage} />
 
         <div style={{ marginTop: 14 }}>
-          <Link to="/mailinfo">一覧へ戻る</Link>
+          <Link to="/admin/mailinfo">一覧へ戻る</Link>
         </div>
       </div>
     </div>

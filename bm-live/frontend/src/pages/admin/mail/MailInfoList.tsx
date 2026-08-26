@@ -42,7 +42,7 @@ export default function MailInfoListPage() {
       <div style={styles.card}>
         <div style={styles.headerRow}>
           <h1 style={styles.title}>メール情報一覧</h1>
-          <Link to="/mailinfo/new" style={styles.primaryButtonLink}>
+          <Link to="/admin/mailinfo/new" style={styles.primaryButtonLink}>
             新規登録
           </Link>
         </div>
@@ -79,7 +79,7 @@ export default function MailInfoListPage() {
                   <td style={styles.td}>{item.mailSubject}</td>
                   <td style={styles.td}>{formatBodyPreview(item.mailBody)}</td>
                   <td style={styles.td}>
-                    <Link to={`/mailinfo/${encodeURIComponent(item.mailId)}/edit`} style={styles.linkButton}>
+                    <Link to={`/admin/mailinfo/${encodeURIComponent(item.mailId)}/edit`} style={styles.linkButton}>
                       更新
                     </Link>
                   </td>

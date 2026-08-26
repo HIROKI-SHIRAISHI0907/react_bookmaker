@@ -86,7 +86,7 @@ export default function MailInfoUpdatePage() {
         )}
 
         <div style={{ marginTop: 14 }}>
-          <Link to="/mailinfo">一覧へ戻る</Link>
+          <Link to="/admin/mailinfo">一覧へ戻る</Link>
         </div>
       </div>
     </div>
