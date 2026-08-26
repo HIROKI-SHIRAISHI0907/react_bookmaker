@@ -33,6 +33,7 @@ import CountryLeagueMasterReferencePage from "./pages/admin/master/CountryLeague
 import NoEcsSlotsPage from "./pages/admin/noecs/NoEcsSlotsPage";
 import FutureMatchesByDatePage from "./pages/admin/future/FutureMatchesByDatePage";
 import RealTimeDataAdminPage from "./pages/admin/realtimedatacategory/RealTimeDataAdminPage";
+import MailInfoListPage from "./pages/admin/mail/MailInfoList";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -113,6 +114,7 @@ export default function App() {
               <Route path="noecs" element={<NoEcsSlotsPage />} />
               <Route path="future/matches" element={<FutureMatchesByDatePage />} />
               <Route path="data-category" element={<RealTimeDataAdminPage />} />
+              <Route path="mail-info" element={<MailInfoListPage />} />
             </Route>
           </Route>
 

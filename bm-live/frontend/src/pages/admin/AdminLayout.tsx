@@ -56,6 +56,7 @@ export default function AdminLayout() {
           { label: "サブリーグ名反映設定", to: "sub-league" },
           { label: "トップメニュー通知情報設定", to: "notices" },
           { label: "データカテゴリ変更設定", to: "data-category" },
+          { label: "メール情報登録設定", to: "mail-info" },
         ],
       },
       {
