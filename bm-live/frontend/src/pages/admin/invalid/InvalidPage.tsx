@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
  * パスワード再設定リンクが期限切れ・使用済み・改ざん等、
  * いずれの理由であっても同じ汎用メッセージを表示する。
  */
-export default function ResetPasswordInvalidPage() {
+export default function InvalidPage() {
   return (
     <div style={styles.page}>
       <div style={styles.card}>

@@ -36,6 +36,9 @@ import RealTimeDataAdminPage from "./pages/admin/realtimedatacategory/RealTimeDa
 import MailInfoListPage from "./pages/admin/mail/MailInfoList";
 import MailInfoRegisterPage from "./pages/admin/mail/MailRegisterFormPage";
 import MailInfoUpdatePage from "./pages/admin/mail/MailUpdateFormPage";
+import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
+import ResetPasswordInvalidPage from "./pages/admin/invalid/InvalidPage";
+import InvalidPage from "./pages/admin/invalid/InvalidPage";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -70,6 +73,8 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgetPasswordPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/reset-password/invalid" element={<InvalidPage />} />
 
           <Route
             path="/top"
