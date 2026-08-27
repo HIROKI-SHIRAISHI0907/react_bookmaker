@@ -18,7 +18,7 @@ export default function ForgotPasswordPage() {
     setSubmitting(true);
     try {
       const res = await forgotPasswordApi({ email });
-      setMessage(res.responseMessage || "再設定リンクを送信しました。メールをご確認ください。");
+      setMessage(res.responseMessage || res.message || "パスワード再設定のリンクを送りました。");
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "送信に失敗しました。");
     } finally {

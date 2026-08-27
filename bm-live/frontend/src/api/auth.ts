@@ -120,7 +120,7 @@ export async function signupApi(payload: SignUpRequest): Promise<AuthResponse> {
 
 export async function forgotPasswordApi(payload: ForgotPasswordRequest): Promise<AuthResponse> {
   try {
-    const { data } = await apiClient.post<AuthResponse>("/v1/api/auth/forgot-password", payload);
+    const { data } = await apiClient.patch<AuthResponse>("/v1/api/auth/passwd/reset/view", payload);
     return data;
   } catch (e) {
     throw new Error(resolveErrorMessage(e));
