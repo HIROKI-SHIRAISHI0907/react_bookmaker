@@ -39,6 +39,7 @@ import MailInfoUpdatePage from "./pages/admin/mail/MailUpdateFormPage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import ResetPasswordInvalidPage from "./pages/admin/invalid/InvalidPage";
 import InvalidPage from "./pages/admin/invalid/InvalidPage";
+import Header from "./components/Header";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -65,6 +66,7 @@ export default function App() {
   return (
     <>
       <WhereAmI />
+      <Header />
       <div style={{ paddingTop: 40 }}>
         <Routes>
           <Route path="/" element={<Navigate to="/top" replace />} />
