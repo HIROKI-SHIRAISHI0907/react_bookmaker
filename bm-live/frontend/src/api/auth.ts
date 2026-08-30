@@ -126,3 +126,33 @@ export async function forgotPasswordApi(payload: ForgotPasswordRequest): Promise
     throw new Error(resolveErrorMessage(e));
   }
 }
+
+export type ValidateResetTokenRequest = { key: string };
+export type ResetPasswordRequest = { key: string; newPassword: string };
+
+function toApiResponse(error: unknown): AuthResponse {
+  if (axios.isAxiosError(error) && error.response?.data) {
+    return error.response.data as AuthResponse;
+  }
+  return { responseCode: "500", message: resolveErrorMessage(error) };
+}
+
+export async function validateResetTokenApi(payload: ValidateResetTokenRequest): Promise<AuthResponse> {
+  try {
+    const { data } = await apiClient.get<AuthResponse>("/v1/api/auth/passwd/reset/validate", {
+      params: { key: payload.key },
+    });
+    return data;
+  } catch (e) {
+    return toApiResponse(e);
+  }
+}
+
+export async function resetPasswordApi(payload: ResetPasswordRequest): Promise<AuthResponse> {
+  try {
+    const { data } = await apiClient.patch<AuthResponse>("/v1/api/auth/passwd/reset/confirm", payload);
+    return data;
+  } catch (e) {
+    return toApiResponse(e);
+  }
+}

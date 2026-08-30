@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { resetPasswordApi, validateResetTokenApi } from "../../api/auth";
 
 /**
@@ -11,6 +11,9 @@ import { resetPasswordApi, validateResetTokenApi } from "../../api/auth";
  *  - 使用済み
  *  - 存在しない/改ざんされている
  * のいずれかであれば無効画面（/reset-password/invalid）へ遷移する。
+ *
+ * パスワード再設定（PATCH /passwd/reset/confirm）が200で返ってきたら、
+ * そのままログイン画面（/login）へリダイレクトする。
  *
  * validateResetTokenApi / resetPasswordApi は、失敗時も例外を投げず
  * AuthResponse（responseCode付き）として返ってくる前提。
@@ -27,8 +30,7 @@ export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [resetDone, setResetDone] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!key) {
@@ -66,7 +68,7 @@ export default function ResetPasswordPage() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMessage(null);
+    setErrorMessage(null);
     if (!canSubmit) return;
 
     setSubmitting(true);
@@ -74,11 +76,18 @@ export default function ResetPasswordPage() {
     setSubmitting(false);
 
     if (res.responseCode === "200") {
-      setResetDone(true);
-      setMessage("パスワードを再設定しました。新しいパスワードでログインしてください。");
-    } else {
-      navigate("/reset-password/invalid", { replace: true });
+      // パスワード再設定に成功したら、そのままログイン画面へ
+      navigate("/login", { replace: true });
+      return;
     }
+
+    if (res.responseCode === "409") {
+      // 確認中に他タブ等で既に使用済みになっていた場合
+      navigate("/reset-password/invalid", { replace: true });
+      return;
+    }
+
+    setErrorMessage(res.message || "パスワードの再設定に失敗しました。");
   };
 
   if (validation === "checking") {
@@ -97,36 +106,25 @@ export default function ResetPasswordPage() {
         <h1 style={styles.title}>パスワードの再設定</h1>
         <p style={styles.desc}>新しいパスワードを入力してください。</p>
 
-        {!resetDone && (
-          <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
-            <label style={styles.label}>
-              新しいパスワード
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} style={styles.input} placeholder="8文字以上" />
-            </label>
+        <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
+          <label style={styles.label}>
+            新しいパスワード
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} style={styles.input} placeholder="8文字以上" />
+          </label>
 
-            <label style={styles.label}>
-              新しいパスワード（確認）
-              <input type="password" value={passwordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)} required minLength={8} style={styles.input} placeholder="もう一度入力してください" />
-            </label>
+          <label style={styles.label}>
+            新しいパスワード（確認）
+            <input type="password" value={passwordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)} required minLength={8} style={styles.input} placeholder="もう一度入力してください" />
+          </label>
 
-            {passwordError && <div style={styles.errorText}>{passwordError}</div>}
+          {passwordError && <div style={styles.errorText}>{passwordError}</div>}
 
-            <button type="submit" disabled={!canSubmit} style={styles.primaryButton}>
-              {submitting ? "更新中..." : "パスワードを再設定する"}
-            </button>
+          <button type="submit" disabled={!canSubmit} style={styles.primaryButton}>
+            {submitting ? "更新中..." : "パスワードを再設定する"}
+          </button>
 
-            {message && <div style={styles.message}>{message}</div>}
-          </form>
-        )}
-
-        {resetDone && (
-          <>
-            {message && <div style={styles.message}>{message}</div>}
-            <div style={{ marginTop: 14 }}>
-              <Link to="/login">ログイン画面へ</Link>
-            </div>
-          </>
-        )}
+          {errorMessage && <div style={styles.errorText}>{errorMessage}</div>}
+        </form>
       </div>
     </div>
   );
@@ -175,13 +173,6 @@ const styles: Record<string, React.CSSProperties> = {
     background: "#111827",
     color: "white",
     fontWeight: 600,
-  },
-  message: {
-    padding: 10,
-    borderRadius: 10,
-    background: "#f1f5f9",
-    border: "1px solid #e2e8f0",
-    fontSize: 13,
   },
   errorText: {
     fontSize: 12,
