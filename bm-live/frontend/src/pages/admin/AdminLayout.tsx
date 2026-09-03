@@ -43,6 +43,7 @@ export default function AdminLayout() {
           { label: "リアルタイムデータ登録済参照", to: "matches/by-date" },
           { label: "統計用CSV作成内容参照", to: "csv/today" },
           { label: "未来データ・リアルタイムデータ紐づき参照", to: "ingested" },
+          { label: "アップロード済リアルタイムデータ参照", to: "upload/realtime" },
         ],
       },
       {

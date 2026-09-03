@@ -37,9 +37,9 @@ import MailInfoListPage from "./pages/admin/mail/MailInfoList";
 import MailInfoRegisterPage from "./pages/admin/mail/MailRegisterFormPage";
 import MailInfoUpdatePage from "./pages/admin/mail/MailUpdateFormPage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
-import ResetPasswordInvalidPage from "./pages/admin/invalid/InvalidPage";
 import InvalidPage from "./pages/admin/invalid/InvalidPage";
 import Header from "./components/Header";
+import UploadedRealTimeDataDownloadPage from "./pages/admin/uploadRealData/UploadRealTimeDataZip";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -126,6 +126,7 @@ export default function App() {
               <Route path="mailinfo" element={<MailInfoListPage />} />
               <Route path="mailinfo/new" element={<MailInfoRegisterPage />} />
               <Route path="mailinfo/:mailId/edit" element={<MailInfoUpdatePage />} />
+              <Route path="upload/realtime" element={<UploadedRealTimeDataDownloadPage />} />
             </Route>
           </Route>
 
