@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 type UploadedRealTimeDataDownloadItem = {
   fileName: string;
@@ -9,6 +9,7 @@ type UploadedRealTimeDataDownloadItem = {
 };
 
 const API_BASE = "/v1/api/admin/real-time-data/upload";
+const PAGE_SIZE = 10;
 
 function buildSearchQuery(params: { country: string; league: string; finFlg: boolean; uploadDate: string }) {
   const query = new URLSearchParams();
@@ -39,6 +40,30 @@ export default function UploadedRealTimeDataDownloadPage() {
   const [uploadDate, setUploadDate] = useState("");
 
   const [items, setItems] = useState<UploadedRealTimeDataDownloadItem[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
+
+  const pagedItems = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return items.slice(start, start + PAGE_SIZE);
+  }, [items, currentPage]);
+
+  const visiblePageNumbers = useMemo(() => {
+    const pages: number[] = [];
+    const start = Math.max(1, currentPage - 2);
+    const end = Math.min(totalPages, currentPage + 2);
+
+    for (let i = start; i <= end; i += 1) {
+      pages.push(i);
+    }
+    return pages;
+  }, [currentPage, totalPages]);
+
+  const onMovePage = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+  };
 
   const loadInit = async () => {
     setLoading(true);
@@ -56,6 +81,7 @@ export default function UploadedRealTimeDataDownloadPage() {
 
       const json = (await response.json()) as UploadedRealTimeDataDownloadItem[];
       setItems(json ?? []);
+      setCurrentPage(1);
     } catch (error) {
       console.error(error);
       setErrorMessage("一覧の取得に失敗しました。");
@@ -81,6 +107,7 @@ export default function UploadedRealTimeDataDownloadPage() {
 
       const json = (await response.json()) as UploadedRealTimeDataDownloadItem[];
       setItems(json ?? []);
+      setCurrentPage(1);
     } catch (error) {
       console.error(error);
       setErrorMessage("検索に失敗しました。");
@@ -195,7 +222,9 @@ export default function UploadedRealTimeDataDownloadPage() {
           }}
         >
           <div>アップロード済み一覧</div>
-          <div style={{ fontSize: 13, color: "#6b7280" }}>{items.length} 件</div>
+          <div style={{ fontSize: 13, color: "#6b7280" }}>
+            {items.length} 件（{currentPage} / {totalPages} ページ）
+          </div>
         </div>
 
         <div style={{ overflowX: "auto" }}>
@@ -211,14 +240,14 @@ export default function UploadedRealTimeDataDownloadPage() {
               </tr>
             </thead>
             <tbody>
-              {items.length === 0 && !loading ? (
+              {pagedItems.length === 0 && !loading ? (
                 <tr>
                   <td colSpan={6} style={{ padding: 24, textAlign: "center", color: "#6b7280" }}>
                     該当するデータはありません。
                   </td>
                 </tr>
               ) : (
-                items.map((item, index) => (
+                pagedItems.map((item, index) => (
                   <tr key={`${item.fileName}-${index}`} style={{ borderTop: "1px solid #f3f4f6" }}>
                     <td style={tdStyle}>{item.fileName || "-"}</td>
                     <td style={tdStyle}>{item.gameTeamName || "-"}</td>
@@ -250,6 +279,69 @@ export default function UploadedRealTimeDataDownloadPage() {
             </tbody>
           </table>
         </div>
+
+        <div
+          style={{
+            borderTop: "1px solid #e5e7eb",
+            padding: 16,
+            display: "flex",
+            justifyContent: "center",
+            gap: 8,
+            flexWrap: "wrap",
+            background: "#fff",
+          }}
+        >
+          <button type="button" onClick={() => onMovePage(1)} disabled={loading || currentPage === 1} style={pageButtonStyle}>
+            先頭
+          </button>
+
+          <button type="button" onClick={() => onMovePage(currentPage - 1)} disabled={loading || currentPage === 1} style={pageButtonStyle}>
+            前へ
+          </button>
+
+          {visiblePageNumbers[0] > 1 && (
+            <>
+              <button type="button" onClick={() => onMovePage(1)} disabled={loading} style={pageButtonStyle}>
+                1
+              </button>
+              {visiblePageNumbers[0] > 2 && <span style={{ alignSelf: "center", color: "#6b7280" }}>...</span>}
+            </>
+          )}
+
+          {visiblePageNumbers.map((page) => (
+            <button
+              key={page}
+              type="button"
+              onClick={() => onMovePage(page)}
+              disabled={loading}
+              style={{
+                ...pageButtonStyle,
+                background: page === currentPage ? "#111827" : "#fff",
+                color: page === currentPage ? "#fff" : "#111827",
+                borderColor: page === currentPage ? "#111827" : "#d1d5db",
+              }}
+            >
+              {page}
+            </button>
+          ))}
+
+          {visiblePageNumbers[visiblePageNumbers.length - 1] < totalPages && (
+            <>
+              {visiblePageNumbers[visiblePageNumbers.length - 1] < totalPages - 1 && <span style={{ alignSelf: "center", color: "#6b7280" }}>...</span>}
+              <button type="button" onClick={() => onMovePage(totalPages)} disabled={loading} style={pageButtonStyle}>
+                {totalPages}
+              </button>
+            </>
+          )}
+
+          <button type="button" onClick={() => onMovePage(currentPage + 1)} disabled={loading || currentPage === totalPages} style={pageButtonStyle}>
+            次へ
+          </button>
+
+          <button type="button" onClick={() => onMovePage(totalPages)} disabled={loading || currentPage === totalPages} style={pageButtonStyle}>
+            末尾
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -280,6 +372,16 @@ const secondaryButtonStyle: React.CSSProperties = {
   borderRadius: 10,
   cursor: "pointer",
   fontWeight: 700,
+};
+
+const pageButtonStyle: React.CSSProperties = {
+  border: "1px solid #d1d5db",
+  background: "#fff",
+  padding: "8px 12px",
+  borderRadius: 10,
+  cursor: "pointer",
+  fontWeight: 700,
+  minWidth: 44,
 };
 
 const downloadButtonStyle: React.CSSProperties = {

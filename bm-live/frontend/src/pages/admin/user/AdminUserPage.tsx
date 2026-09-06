@@ -21,7 +21,50 @@ type ActionResponse = {
   message?: string;
 };
 
+type RoleAction = {
+  label: string;
+  color: string;
+  targetAuthFlg: number;
+};
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
+
+// authFlg: 1 = 管理者 / 2 = 担当者(管理者サブ) / それ以外 = 一般ユーザー
+const ACTIONS_BY_ROLE: Record<number, RoleAction[]> = {
+  1: [
+    { label: "担当者にする", color: "#d97706", targetAuthFlg: 2 },
+    { label: "一般ユーザーにする", color: "#6b7280", targetAuthFlg: 3 },
+  ],
+  2: [
+    { label: "管理者にする", color: "#dc2626", targetAuthFlg: 1 },
+    { label: "一般ユーザーにする", color: "#6b7280", targetAuthFlg: 3 },
+  ],
+  3: [
+    { label: "管理者にする", color: "#dc2626", targetAuthFlg: 1 },
+    { label: "担当者にする", color: "#d97706", targetAuthFlg: 2 },
+  ],
+};
+
+function roleKey(authFlg?: number): 1 | 2 | 3 {
+  if (authFlg === 1) return 1;
+  if (authFlg === 2) return 2;
+  return 3;
+}
+
+function actionsFor(user: UserItem): RoleAction[] {
+  return ACTIONS_BY_ROLE[roleKey(user.authFlg)];
+}
+
+function authRoleInfo(authFlg?: number): { label: string; bg: string; fg: string } {
+  switch (roleKey(authFlg)) {
+    case 1:
+      return { label: "管理者", bg: "#fee2e2", fg: "#991b1b" };
+    case 2:
+      return { label: "担当者", bg: "#dcfce7", fg: "#166534" };
+    default:
+      return { label: "一般ユーザー", bg: "#dbeafe", fg: "#1d4ed8" };
+  }
+}
 
 async function getJsonSafe<T>(url: string): Promise<T> {
   const res = await fetch(url, {
@@ -42,11 +85,14 @@ async function postJsonSafe<T>(url: string, body: unknown): Promise<T> {
     credentials: "include",
     body: JSON.stringify(body ?? {}),
   });
+  // レスポンスボディはエラー時も含めてJSONとして読む(バックエンドが409等でも
+  // { responseCode, message } の形で理由を返してくるため、それをそのまま表示に使う)
+  const data = await res.json().catch(() => null);
   if (!res.ok) {
-    const txt = await res.text().catch(() => "");
-    throw new Error(`HTTP ${res.status}${txt ? `: ${txt}` : ""}`);
+    const serverMessage = data && typeof data === "object" && typeof (data as { message?: unknown }).message === "string" ? (data as { message: string }).message : undefined;
+    throw new Error(serverMessage ?? `HTTP ${res.status}`);
   }
-  return (await res.json()) as T;
+  return data as T;
 }
 
 function displayName(user: UserItem): string {
@@ -82,8 +128,8 @@ export default function UserAdminPage() {
   const filteredUsers = useMemo(() => {
     const k = keyword.trim().toLowerCase();
     const sorted = [...users].sort((a, b) => {
-      const aOrder = a.authFlg === 1 ? 0 : 1;
-      const bOrder = b.authFlg === 1 ? 0 : 1;
+      const aOrder = roleKey(a.authFlg);
+      const bOrder = roleKey(b.authFlg);
       if (aOrder !== bOrder) return aOrder - bOrder;
 
       const aName = displayName(a).toLowerCase();
@@ -96,12 +142,14 @@ export default function UserAdminPage() {
 
     if (!k) return sorted;
 
-    return sorted.filter((u) => [u.name ?? "", u.email ?? "", u.authLabel ?? "", u.authFlg === 1 ? "管理者" : "一般ユーザー"].join(" ").toLowerCase().includes(k));
+    return sorted.filter((u) => [u.name ?? "", u.email ?? "", u.authLabel ?? "", authRoleInfo(u.authFlg).label].join(" ").toLowerCase().includes(k));
   }, [users, keyword]);
 
-  const admins = useMemo(() => filteredUsers.filter((u) => u.authFlg === 1), [filteredUsers]);
+  const admins = useMemo(() => filteredUsers.filter((u) => roleKey(u.authFlg) === 1), [filteredUsers]);
 
-  const generalUsers = useMemo(() => filteredUsers.filter((u) => u.authFlg !== 1), [filteredUsers]);
+  const managers = useMemo(() => filteredUsers.filter((u) => roleKey(u.authFlg) === 2), [filteredUsers]);
+
+  const generalUsers = useMemo(() => filteredUsers.filter((u) => roleKey(u.authFlg) === 3), [filteredUsers]);
 
   const updateAuthFlg = async (userId: number, authFlg: number) => {
     setRunningUserId(userId);
@@ -122,7 +170,7 @@ export default function UserAdminPage() {
     <div style={{ display: "grid", gap: 20 }}>
       <div>
         <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 6 }}>ユーザー管理</h1>
-        <div style={{ color: "#6b7280", fontSize: 14 }}>システム利用ユーザーの確認と、管理者権限の切り替えを行います。</div>
+        <div style={{ color: "#6b7280", fontSize: 14 }}>システム利用ユーザーの確認と、権限(管理者/担当者/一般ユーザー)の切り替えを行います。</div>
       </div>
 
       <div
@@ -166,13 +214,19 @@ export default function UserAdminPage() {
 
       <SectionCard title="〜管理者〜" count={admins.length} emptyMessage="管理者ユーザーはいません。">
         {admins.map((u) => (
-          <UserRow key={u.userId} user={u} running={runningUserId === u.userId} actionLabel="一般ユーザーに変更" actionColor="#dc2626" onAction={() => u.userId && updateAuthFlg(u.userId, 2)} />
+          <UserRow key={u.userId} user={u} running={runningUserId === u.userId} actions={actionsFor(u)} onAction={(target) => u.userId && updateAuthFlg(u.userId, target)} />
+        ))}
+      </SectionCard>
+
+      <SectionCard title="〜担当者〜" count={managers.length} emptyMessage="担当者はいません。">
+        {managers.map((u) => (
+          <UserRow key={u.userId} user={u} running={runningUserId === u.userId} actions={actionsFor(u)} onAction={(target) => u.userId && updateAuthFlg(u.userId, target)} />
         ))}
       </SectionCard>
 
       <SectionCard title="〜一般ユーザー〜" count={generalUsers.length} emptyMessage="一般ユーザーはいません。">
         {generalUsers.map((u) => (
-          <UserRow key={u.userId} user={u} running={runningUserId === u.userId} actionLabel="管理者に設定" actionColor="#2563eb" onAction={() => u.userId && updateAuthFlg(u.userId, 1)} />
+          <UserRow key={u.userId} user={u} running={runningUserId === u.userId} actions={actionsFor(u)} onAction={(target) => u.userId && updateAuthFlg(u.userId, target)} />
         ))}
       </SectionCard>
     </div>
@@ -221,7 +275,9 @@ function SectionCard({ title, count, emptyMessage, children }: { title: string; 
   );
 }
 
-function UserRow({ user, running, actionLabel, actionColor, onAction }: { user: UserItem; running: boolean; actionLabel: string; actionColor: string; onAction: () => void }) {
+function UserRow({ user, running, actions, onAction }: { user: UserItem; running: boolean; actions: RoleAction[]; onAction: (targetAuthFlg: number) => void }) {
+  const role = authRoleInfo(user.authFlg);
+
   return (
     <div
       style={{
@@ -252,11 +308,11 @@ function UserRow({ user, running, actionLabel, actionColor, onAction }: { user: 
               borderRadius: 999,
               fontSize: 12,
               fontWeight: 700,
-              background: user.authFlg === 1 ? "#fee2e2" : "#dbeafe",
-              color: user.authFlg === 1 ? "#991b1b" : "#1d4ed8",
+              background: role.bg,
+              color: role.fg,
             }}
           >
-            {user.authFlg === 1 ? "管理者" : "一般ユーザー"}
+            {role.label}
           </span>
         </div>
 
@@ -267,24 +323,27 @@ function UserRow({ user, running, actionLabel, actionColor, onAction }: { user: 
         </div>
       </div>
 
-      <div>
-        <button
-          disabled={running || user.userId == null}
-          onClick={onAction}
-          style={{
-            padding: "10px 14px",
-            borderRadius: 10,
-            border: "none",
-            background: actionColor,
-            color: "white",
-            fontWeight: 700,
-            cursor: running ? "default" : "pointer",
-            opacity: running ? 0.6 : 1,
-            minWidth: 160,
-          }}
-        >
-          {running ? "更新中..." : actionLabel}
-        </button>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
+        {actions.map((a) => (
+          <button
+            key={a.targetAuthFlg}
+            disabled={running || user.userId == null}
+            onClick={() => onAction(a.targetAuthFlg)}
+            style={{
+              padding: "10px 14px",
+              borderRadius: 10,
+              border: "none",
+              background: a.color,
+              color: "white",
+              fontWeight: 700,
+              cursor: running ? "default" : "pointer",
+              opacity: running ? 0.6 : 1,
+              minWidth: 140,
+            }}
+          >
+            {running ? "更新中..." : a.label}
+          </button>
+        ))}
       </div>
     </div>
   );
