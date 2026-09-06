@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { queryClient } from "../../../lib/queryClient";
 import { Button } from "../../../components/ui/button";
@@ -30,6 +30,26 @@ type FutureMatch = {
 };
 
 type FutureMatchesResponse = { matches: FutureMatch[] };
+
+// dev.web.api.bm_a028.AdminApproveItemResponse に対応(このページではNOTICE宛の依頼のみ使う)
+type ApproveRequestItem = {
+  approveId?: string;
+  targetKind?: string; // "NOTICE" | "SCREEN"
+  targetApprovementInfo?: string; // NOTICEの場合はnotice.idの文字列
+  flowStatus?: string; // 申請済 / 承認 / 差し戻し / 取り消し
+  comment?: string;
+  registerTime?: string;
+};
+
+type ApproveListResponse = {
+  responseCode?: string;
+  message?: string;
+  items?: ApproveRequestItem[];
+};
+
+// dev.web.controller.AdminApproveController の @RequestMapping("/api/approve") に対応。
+// 実際に使っているAPIパスの命名規則に合わせて変更してください。
+const APPROVE_API_BASE = "/api/approve";
 
 function toOffsetJst(datetimeLocal: string): string | null {
   if (!datetimeLocal) return null;
@@ -144,7 +164,7 @@ export default function NoticeAdminPage() {
   const [selectedFutureId, setSelectedFutureId] = useState<number | "">("");
 
   // --- “押した感” 用：行ごとの処理中ID ---
-  const [publishingId, setPublishingId] = useState<number | null>(null);
+  const [requestingId, setRequestingId] = useState<number | null>(null);
   const [archivingId, setArchivingId] = useState<number | null>(null);
 
   // toast
@@ -157,6 +177,9 @@ export default function NoticeAdminPage() {
   const refetchFrontActive = async () => {
     await queryClient.refetchQueries({ queryKey: ["notices-active"] });
   };
+  const refetchApproveRequests = async () => {
+    await queryClient.refetchQueries({ queryKey: ["notice-approve-requests"] });
+  };
 
   // --- Queries ---
   const noticesQuery = useQuery<Notice[]>({
@@ -164,6 +187,18 @@ export default function NoticeAdminPage() {
     queryFn: async () => {
       const data = await fetchOrThrow("/v1/api/admin/notices", { headers: { Accept: "application/json" } });
       return Array.isArray(data) ? (data as Notice[]) : [];
+    },
+    staleTime: 10_000,
+    refetchOnWindowFocus: false,
+  });
+
+  // お知らせの公開は「承認依頼→管理者の承認」を経由するため、自分が出した依頼一覧も取得し、
+  // どのお知らせが承認待ち／差し戻しなのかを突き合わせる。
+  const approveRequestsQuery = useQuery<ApproveListResponse>({
+    queryKey: ["notice-approve-requests"],
+    queryFn: async () => {
+      const data = await fetchOrThrow(`${APPROVE_API_BASE}/requests`, { headers: { Accept: "application/json" } });
+      return data && typeof data === "object" ? (data as ApproveListResponse) : { items: [] };
     },
     staleTime: 10_000,
     refetchOnWindowFocus: false,
@@ -201,6 +236,19 @@ export default function NoticeAdminPage() {
     const archived = notices.filter((n) => (n.status ?? "").toUpperCase().includes("ARCHIVE")).length;
     return { total, published, draft, archived };
   }, [notices]);
+
+  // notice.id -> 直近の承認依頼(NOTICE宛のみ)。サーバー側がregister_time DESCで返す前提で、
+  // 同じお知らせに複数回申請していても最初に見つかったもの=最新を採用する。
+  const latestRequestByNoticeId = useMemo(() => {
+    const map = new Map<number, ApproveRequestItem>();
+    for (const r of approveRequestsQuery.data?.items ?? []) {
+      if (r.targetKind !== "NOTICE" || !r.targetApprovementInfo) continue;
+      const noticeId = Number(r.targetApprovementInfo);
+      if (Number.isNaN(noticeId) || map.has(noticeId)) continue;
+      map.set(noticeId, r);
+    }
+    return map;
+  }, [approveRequestsQuery.data]);
 
   // --- Mutations ---
   const createMutation = useMutation({
@@ -245,18 +293,23 @@ export default function NoticeAdminPage() {
     },
   });
 
-  const publishMutation = useMutation({
-    mutationFn: async (id: number) => {
-      await fetchOrThrow(`/v1/api/admin/notices/${id}/publish`, { method: "POST", headers: { Accept: "application/json" } });
+  // 「公開」は直接叩かず、管理者への承認依頼を送る。承認されると自動的にPUBLISHEDになる
+  // (dev.web.api.bm_a028.AdminApproveService#approveRequest 側でnotices.publishを呼んでいる)。
+  const requestApprovalMutation = useMutation({
+    mutationFn: async (noticeId: number) => {
+      return await fetchOrThrow(`${APPROVE_API_BASE}/requests`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ targetKind: "NOTICE", targetApprovementInfo: String(noticeId) }),
+      });
     },
     onSuccess: async () => {
-      await refetchAdminList();
-      await refetchFrontActive();
-      setToast({ type: "success", title: "公開完了", message: "公開しました。" });
+      await refetchApproveRequests();
+      setToast({ type: "success", title: "承認依頼を送信しました", message: "管理者の承認をお待ちください。" });
     },
     onError: (e) => {
-      console.error("[publishMutation] error", e);
-      setToast({ type: "error", title: "公開失敗", message: safeText((e as any)?.message) || "公開に失敗しました" });
+      console.error("[requestApprovalMutation] error", e);
+      setToast({ type: "error", title: "送信失敗", message: safeText((e as any)?.message) || "承認依頼の送信に失敗しました" });
     },
   });
 
@@ -295,7 +348,7 @@ export default function NoticeAdminPage() {
             </div>
             <div>
               <h1 className="text-3xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">お知らせ管理</h1>
-              <p className="text-sm text-muted-foreground mt-1">通常お知らせ / 注目試合お知らせ（future_master）を登録・公開・アーカイブできます。</p>
+              <p className="text-sm text-muted-foreground mt-1">通常お知らせ / 注目試合お知らせ（future_master）を登録できます。公開は管理者への承認依頼を経て行われます。</p>
             </div>
           </div>
 
@@ -497,9 +550,16 @@ export default function NoticeAdminPage() {
         {/* List */}
         <Panel
           title="一覧"
-          desc="行カードの右側から「公開」「アーカイブ」。更新ボタンは常に押せます。"
+          desc="DRAFTのお知らせは「承認依頼を送る」→管理者が承認すると自動的に公開されます。行カードの右側から操作します。"
           right={
-            <Button variant="outline" size="sm" onClick={() => queryClient.refetchQueries({ queryKey: ["admin-notices"] })}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                await refetchAdminList();
+                await refetchApproveRequests();
+              }}
+            >
               {isRefreshing ? "更新中..." : "更新"}
             </Button>
           }
@@ -517,9 +577,15 @@ export default function NoticeAdminPage() {
           ) : (
             <div className="grid grid-cols-1 gap-3">
               {notices.map((n) => {
-                const isPublishing = publishingId === n.id;
+                const isRequesting = requestingId === n.id;
                 const isArchiving = archivingId === n.id;
-                const rowBusy = isPublishing || isArchiving;
+                const rowBusy = isRequesting || isArchiving;
+
+                const relatedRequest = latestRequestByNoticeId.get(n.id);
+                const isPendingRequest = relatedRequest?.flowStatus === "申請済";
+                const isRejectedRequest = relatedRequest?.flowStatus === "差し戻し";
+                const isDraft = (n.status ?? "").toUpperCase() === "DRAFT";
+                const canRequestApproval = isDraft && !isPendingRequest;
 
                 return (
                   <div
@@ -535,10 +601,14 @@ export default function NoticeAdminPage() {
                         <Badge tone={typeTone(n.noticeType)}>{n.noticeType ?? "NORMAL"}</Badge>
                         <Badge tone={statusTone(n.status)}>{n.status}</Badge>
                         {n.featureMatchId ? <Badge tone="violet">featureMatchId {n.featureMatchId}</Badge> : null}
+                        {isPendingRequest ? <Badge tone="blue">承認待ち</Badge> : null}
+                        {isRejectedRequest ? <Badge tone="rose">差し戻し</Badge> : null}
                       </div>
 
                       <div className="mt-2 text-lg font-extrabold text-gray-900">{n.title}</div>
                       <div className="mt-1 text-sm whitespace-pre-wrap text-gray-800">{n.body}</div>
+
+                      {isRejectedRequest && relatedRequest?.comment ? <div className="mt-2 text-xs text-rose-700">差し戻し理由: {relatedRequest.comment}</div> : null}
 
                       <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-2 text-xs text-muted-foreground">
                         <div className="rounded-xl border bg-gray-50 px-3 py-2">
@@ -560,20 +630,26 @@ export default function NoticeAdminPage() {
                     </div>
 
                     <div className="shrink-0 flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        disabled={rowBusy}
-                        onClick={async () => {
-                          setPublishingId(n.id);
-                          try {
-                            await publishMutation.mutateAsync(n.id);
-                          } finally {
-                            setPublishingId(null);
-                          }
-                        }}
-                      >
-                        {isPublishing ? "公開中..." : "公開"}
-                      </Button>
+                      {canRequestApproval ? (
+                        <Button
+                          size="sm"
+                          disabled={rowBusy}
+                          onClick={async () => {
+                            setRequestingId(n.id);
+                            try {
+                              await requestApprovalMutation.mutateAsync(n.id);
+                            } finally {
+                              setRequestingId(null);
+                            }
+                          }}
+                        >
+                          {isRequesting ? "送信中..." : isRejectedRequest ? "再度、承認依頼を送る" : "承認依頼を送る"}
+                        </Button>
+                      ) : isPendingRequest ? (
+                        <Button size="sm" disabled>
+                          承認待ち
+                        </Button>
+                      ) : null}
 
                       <Button
                         size="sm"

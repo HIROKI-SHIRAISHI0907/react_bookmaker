@@ -5,6 +5,7 @@ import SignupPage from "./pages/auth/SignUpPage";
 import Dashboard from "./pages/personal/top/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminProtectedRoute from "./components/AdminProtectedRoute";
+import RequireRole from "./components/RequireRole";
 import TopRedirectByRole from "./components/TopRedirectByRole";
 import LeagueMenuPage from "./pages/humberger/LeagueMenuPage";
 import FavoritePage from "./pages/personal/favorite/FavoritePage";
@@ -40,6 +41,8 @@ import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import InvalidPage from "./pages/admin/invalid/InvalidPage";
 import Header from "./components/Header";
 import UploadedRealTimeDataDownloadPage from "./pages/admin/uploadRealData/UploadRealTimeDataZip";
+import RequestReviewPage from "./pages/admin/approve/RequestReviewPage";
+import InstructionConfirmPage from "./pages/admin/approve/InstructionConfirmPage";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -104,7 +107,15 @@ export default function App() {
               <Route path="force/update" element={<CountryLeagueForceAdminPage />} />
               <Route path="scrape/manual" element={<ManualScrapePage />} />
               <Route path="s3/fileCount" element={<S3FileCountPage />} />
-              <Route path="notices" element={<NoticeAdminPage />} />
+              {/* お知らせの作成・編集は担当者のみ。管理者は申請確認画面から見て承認/差し戻しするだけ。 */}
+              <Route
+                path="notices"
+                element={
+                  <RequireRole role="ADMIN_SUB">
+                    <NoticeAdminPage />
+                  </RequireRole>
+                }
+              />
               <Route path="data/fetch" element={<DataFetchAdminPage />} />
               <Route path="manual/data/target" element={<ManualDataTargetPage />} />
               <Route path="manual/data/register" element={<ManualDataConsolePage />} />
@@ -127,6 +138,24 @@ export default function App() {
               <Route path="mailinfo/new" element={<MailInfoRegisterPage />} />
               <Route path="mailinfo/:mailId/edit" element={<MailInfoUpdatePage />} />
               <Route path="upload/realtime" element={<UploadedRealTimeDataDownloadPage />} />
+
+              {/* 承認フロー */}
+              <Route
+                path="approve/requests"
+                element={
+                  <RequireRole role="ADMIN">
+                    <RequestReviewPage />
+                  </RequireRole>
+                }
+              />
+              <Route
+                path="approve/instructions"
+                element={
+                  <RequireRole role="ADMIN_SUB">
+                    <InstructionConfirmPage />
+                  </RequireRole>
+                }
+              />
             </Route>
           </Route>
 

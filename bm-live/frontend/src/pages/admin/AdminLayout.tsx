@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { useCurrentRole } from "../../hooks/useCurrentRole";
 
 type MenuItem = {
   label: string;
@@ -14,9 +15,10 @@ type MenuGroup = {
 
 export default function AdminLayout() {
   const location = useLocation();
+  const role = useCurrentRole();
 
-  const menuGroups: MenuGroup[] = useMemo(
-    () => [
+  const menuGroups: MenuGroup[] = useMemo(() => {
+    const groups: MenuGroup[] = [
       {
         key: "scraping",
         label: "スクレイピング管理",
@@ -55,9 +57,21 @@ export default function AdminLayout() {
           { label: "リーグ勝ち点情報反映設定", to: "point-setting" },
           { label: "チームカラー情報反映設定", to: "manual/teamColor" },
           { label: "サブリーグ名反映設定", to: "sub-league" },
-          { label: "トップメニュー通知情報設定", to: "notices" },
+          // お知らせの作成・編集ができる画面のため、担当者のみに表示する。
+          // 管理者は「申請確認画面」から内容を見て承認/差し戻しするだけにする。
+          ...(role === "ADMIN_SUB" ? [{ label: "トップメニュー通知情報設定", to: "notices" }] : []),
           { label: "データカテゴリ変更設定", to: "data-category" },
           { label: "メール情報登録設定", to: "mailinfo" },
+        ],
+      },
+      {
+        key: "approveFlow",
+        label: "承認フロー",
+        items: [
+          // 管理者: 担当者から届いた依頼をまとめて確認・承認/差し戻しする画面。
+          ...(role === "ADMIN" ? [{ label: "申請確認画面", to: "approve/requests" }] : []),
+          // 担当者: 管理者から届いた指令を確認する画面。
+          ...(role === "ADMIN_SUB" ? [{ label: "指令確認画面", to: "approve/instructions" }] : []),
         ],
       },
       {
@@ -73,9 +87,11 @@ export default function AdminLayout() {
           { label: "非稼働ECS管理", to: "noecs" },
         ],
       },
-    ],
-    [],
-  );
+    ];
+
+    // ロールによって表示項目が0件になったグループ(承認フローなど)はメニューに出さない。
+    return groups.filter((g) => g.items.length > 0);
+  }, [role]);
 
   const initialOpenState = useMemo(() => {
     const state: Record<string, boolean> = {};
