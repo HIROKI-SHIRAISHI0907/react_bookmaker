@@ -43,6 +43,8 @@ import Header from "./components/Header";
 import UploadedRealTimeDataDownloadPage from "./pages/admin/uploadRealData/UploadRealTimeDataZip";
 import RequestReviewPage from "./pages/admin/approve/RequestReviewPage";
 import InstructionConfirmPage from "./pages/admin/approve/InstructionConfirmPage";
+import WithdrawalConfirmPage from "./pages/admin/withdraw/WithdrawalConfirmPage";
+import WithdrawalCompletePage from "./pages/admin/withdraw/WithdrawalCompletePage";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -153,6 +155,23 @@ export default function App() {
                 element={
                   <RequireRole role="ADMIN_SUB">
                     <InstructionConfirmPage />
+                  </RequireRole>
+                }
+              />
+
+              <Route
+                path="/withdrawal/confirm"
+                element={
+                  <RequireRole role="ADMIN_SUB">
+                    <WithdrawalConfirmPage />
+                  </RequireRole>
+                }
+              />
+              <Route
+                path="/withdrawal/complete"
+                element={
+                  <RequireRole role="ADMIN_SUB">
+                    <WithdrawalCompletePage />
                   </RequireRole>
                 }
               />

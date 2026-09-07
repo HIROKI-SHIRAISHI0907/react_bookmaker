@@ -1,7 +1,7 @@
 import { getAuthFlg, getRoles } from "../utils/auth";
 
 // ログイン中ユーザーの承認フロー上のロール。
-// src/utils/auth.ts の loadAuthSession() (localStorageの "authSession") が実際に
+// src/utils/auth.ts の loadAuthSession()（localStorageの "authSession"）が実際に
 // LoginPage.tsx で使われている保存先だったため、そこから roles / authFlg を読む。
 export type CurrentRole = "ADMIN" | "ADMIN_SUB" | null;
 
