@@ -160,7 +160,7 @@ export default function App() {
               />
 
               <Route
-                path="/withdrawal/confirm"
+                path="withdrawal/confirm"
                 element={
                   <RequireRole role="ADMIN_SUB">
                     <WithdrawalConfirmPage />
@@ -168,7 +168,7 @@ export default function App() {
                 }
               />
               <Route
-                path="/withdrawal/complete"
+                path="withdrawal/complete"
                 element={
                   <RequireRole role="ADMIN_SUB">
                     <WithdrawalCompletePage />
