@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { clearAuthSession, getAccessToken, getTokenType } from "../utils/auth";
-import { useCurrentRole } from "../hooks/useCurrentRole";
+import { clearAuthSession, getAccessToken, getTokenType } from "../../../utils/auth";
+import { useCurrentRole } from "../../../hooks/useCurrentRole";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 
@@ -61,16 +61,9 @@ export default function WithdrawalConfirmPage() {
   return (
     <div style={{ maxWidth: 480, margin: "80px auto", padding: 24 }}>
       <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>退会確認</h1>
-      <p style={{ marginBottom: 8, lineHeight: 1.7 }}>
-        退会すると、以降このアカウントでログインできなくなります。
-      </p>
-      <p style={{ marginBottom: 24, lineHeight: 1.7 }}>
-        あなたが起票した「申請中」の依頼は「保留」に、あなたが確認済みの指令は「未確認」に変更されます。
-        本当に退会しますか？
-      </p>
-      {errorMessage && (
-        <p style={{ color: "#b91c1c", marginBottom: 16 }}>{errorMessage}</p>
-      )}
+      <p style={{ marginBottom: 8, lineHeight: 1.7 }}>退会すると、以降このアカウントでログインできなくなります。</p>
+      <p style={{ marginBottom: 24, lineHeight: 1.7 }}>あなたが起票した「申請中」の依頼は「保留」に、あなたが確認済みの指令は「未確認」に変更されます。 本当に退会しますか？</p>
+      {errorMessage && <p style={{ color: "#b91c1c", marginBottom: 16 }}>{errorMessage}</p>}
       <div style={{ display: "flex", gap: 12 }}>
         <button
           onClick={() => navigate(-1)}
