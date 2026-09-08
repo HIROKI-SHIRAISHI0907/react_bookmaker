@@ -77,7 +77,12 @@ export default function AdminLayout() {
       {
         key: "user",
         label: "利用者情報",
-        items: [{ label: "利用者情報管理", to: "users" }],
+        items: [...(role === "ADMIN" ? [{ label: "利用者情報管理", to: "users" }] : [])],
+      },
+      {
+        key: "cost",
+        label: "利用料金内訳ダウンロード",
+        items: [...(role === "ADMIN" ? [{ label: "利用料金内訳ダウンロード", to: "cost" }] : [])],
       },
       {
         key: "db",

@@ -45,6 +45,7 @@ import RequestReviewPage from "./pages/admin/approve/RequestReviewPage";
 import InstructionConfirmPage from "./pages/admin/approve/InstructionConfirmPage";
 import WithdrawalConfirmPage from "./pages/admin/withdraw/WithdrawalConfirmPage";
 import WithdrawalCompletePage from "./pages/admin/withdraw/WithdrawalCompletePage";
+import AwsCostPage from "./pages/admin/cost/AwsCostPage";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -172,6 +173,15 @@ export default function App() {
                 element={
                   <RequireRole role="ADMIN_SUB">
                     <WithdrawalCompletePage />
+                  </RequireRole>
+                }
+              />
+
+              <Route
+                path="cost"
+                element={
+                  <RequireRole role="ADMIN">
+                    <AwsCostPage />
                   </RequireRole>
                 }
               />
