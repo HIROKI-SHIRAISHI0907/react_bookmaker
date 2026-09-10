@@ -1,7 +1,8 @@
+// src/pages/admin/mail/MailUpdateFormPage.tsx
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { fetchMailInfoByIdApi, updateMailInfoApi } from "../../../api/mailinfo";
-import MailInfoForm, { MailInfoFormValues } from "./MailInfoForm";
+import MailInfoForm, { MailInfoFormValues } from "./MailRegisterFormPage";
 
 /**
  * メール情報更新画面

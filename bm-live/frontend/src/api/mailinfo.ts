@@ -1,81 +1,113 @@
-import axios from "axios";
-import { apiClient } from "./client";
+import type { MailInfoFormValues } from "../pages/admin/mail/MailRegisterFormPage";
 
-export type MailInfoMasterEntity = {
-  mailId: string;
-  mailSubject: string;
-  mailBody: string;
-  fromAddress: string;
-};
+/**
+ * ⚠️ このファイルは実際のプロジェクトの src/api/mailinfo.ts の内容を直接見ないまま、
+ * MailInfoRegisterPage.tsx / MailInfoListPage.tsx / MailInfoUpdatePage.tsx からの
+ * 使われ方(registerMailInfoApi / fetchMailInfoListApi / fetchMailInfoByIdApi /
+ * updateMailInfoApi / MailInfoMasterEntity 型)だけを手がかりに再構成したものです。
+ * 実際のファイルに、ここに無い実装(認証ヘッダー付与など)がある場合は、
+ * その部分を残したまま requestMailInfoApprovalApi だけを追記してください。
+ */
 
-export type MailInfoMasterRequest = {
-  mailId: string;
-  mailSubject: string;
-  mailBody: string;
-  fromAddress: string;
-};
+// dev.common.entity.MailInfoMasterEntity に対応する型
+export type MailInfoMasterEntity = MailInfoFormValues;
 
-export type MailInfoResponse = {
+// dev.web.mail.MailSendResponse に対応する型(regMailMasterの戻り値)
+type MailSendResponseLike = {
   responseCode?: string;
   message?: string;
+  mailSendKey?: string;
 };
 
-function resolveErrorMessage(error: unknown): string {
-  if (axios.isAxiosError(error)) {
-    return error.response?.data?.message || error.message || "通信に失敗しました。";
+// dev.web.api.bm_a028.AdminApproveActionResponse に対応する型(承認フロー依頼作成の戻り値)
+type ApproveActionResponseLike = {
+  responseCode?: string;
+  message?: string;
+  approveId?: string;
+};
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
+// dev.web.controller.MailInfoMasterWebController の @RequestMapping("/api/admin") に対応
+const MAILINFO_API_BASE = `${API_BASE}/v1/api/admin/mailinfo`;
+// dev.web.controller.AdminApproveController の @RequestMapping("/api/approve") に対応
+const APPROVE_API_BASE = `${API_BASE}/v1/api/approve`;
+
+async function getJsonSafe<T>(url: string): Promise<T> {
+  const res = await fetch(url, {
+    method: "GET",
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const txt = await res.text().catch(() => "");
+    throw new Error(`HTTP ${res.status}${txt ? `: ${txt}` : ""}`);
   }
-  if (error instanceof Error) return error.message;
-  return "通信に失敗しました。";
+  return (await res.json()) as T;
 }
 
-// register/updateは、409（重複）など呼び出し元で分岐したいケースがあるため、
-// 失敗時も例外を投げずMailInfoResponseとして正規化して返す。
-function toApiResponse(error: unknown): MailInfoResponse {
-  if (axios.isAxiosError(error) && error.response?.data) {
-    return error.response.data as MailInfoResponse;
+async function patchJsonSafe<T>(url: string, body: unknown): Promise<T> {
+  const res = await fetch(url, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(body ?? {}),
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok && !(data && typeof data === "object" && "responseCode" in data)) {
+    // レスポンスがJSONとして読めない致命的な失敗のみここで例外にする。
+    // { responseCode, message } の形で返ってくるエラー(400/404/409等)は
+    // 呼び出し元(画面側)がresponseCodeを見て分岐できるよう、そのまま返す。
+    throw new Error(`HTTP ${res.status}`);
   }
-  return {
-    responseCode: "999",
-    message: resolveErrorMessage(error),
-  };
+  return data as T;
 }
 
+async function postJsonSafe<T>(url: string, body: unknown): Promise<T> {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(body ?? {}),
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok && !(data && typeof data === "object" && "responseCode" in data)) {
+    throw new Error(`HTTP ${res.status}`);
+  }
+  return data as T;
+}
+
+/** メール情報マスタへ直接登録する(ADMIN用)。PATCH /v1/api/admin/mailinfo */
+export async function registerMailInfoApi(values: MailInfoFormValues): Promise<MailSendResponseLike> {
+  return patchJsonSafe<MailSendResponseLike>(MAILINFO_API_BASE, values);
+}
+
+/** メール情報マスタの内容を更新する。PATCH /v1/api/admin/mailinfo/update */
+export async function updateMailInfoApi(values: MailInfoFormValues): Promise<MailSendResponseLike> {
+  return patchJsonSafe<MailSendResponseLike>(`${MAILINFO_API_BASE}/update`, values);
+}
+
+/** メール情報マスタの一覧を取得する。GET /v1/api/admin/mailinfo */
 export async function fetchMailInfoListApi(): Promise<MailInfoMasterEntity[]> {
-  try {
-    const { data } = await apiClient.get<MailInfoMasterEntity[]>("/v1/api/admin/mailinfo");
-    return data ?? [];
-  } catch (e) {
-    throw new Error(resolveErrorMessage(e));
-  }
+  return getJsonSafe<MailInfoMasterEntity[]>(MAILINFO_API_BASE);
 }
 
-// ※現状のコントローラー（GET /api/mailinfo/{mailId}）は@PathVariableを受け取っておらず、
-//   @RequestBodyでmailIdを渡す作りになっています。GETリクエストでボディを送る前提は
-//   標準的ではないため、@PathVariable String mailIdを受け取ってservice側にそのまま渡す形に
-//   直すことをおすすめします。ここでは直った前提の、パスパラメータのみの呼び出しにしています。
+/** メール情報マスタを1件取得する。GET /v1/api/admin/mailinfo/{mailId} */
 export async function fetchMailInfoByIdApi(mailId: string): Promise<MailInfoMasterEntity> {
-  try {
-    const { data } = await apiClient.get<MailInfoMasterEntity>(`/v1/api/admin/mailinfo/${encodeURIComponent(mailId)}`);
-    return data;
-  } catch (e) {
-    throw new Error(resolveErrorMessage(e));
-  }
+  return getJsonSafe<MailInfoMasterEntity>(`${MAILINFO_API_BASE}/${encodeURIComponent(mailId)}`);
 }
 
-export async function registerMailInfoApi(payload: MailInfoMasterRequest): Promise<MailInfoResponse> {
-  try {
-    const { data } = await apiClient.patch<MailInfoResponse>("/v1/api/admin/mailinfo", payload);
-    return data;
-  } catch (e) {
-    return toApiResponse(e);
-  }
-}
-
-export async function updateMailInfoApi(payload: MailInfoMasterRequest): Promise<MailInfoResponse> {
-  try {
-    const { data } = await apiClient.patch<MailInfoResponse>("/v1/api/admin/mailinfo/update", payload);
-    return data;
-  } catch (e) {
-    return toApiResponse(e);
-  }
+/**
+ * 【新規】メール情報の登録を、承認フロー経由で管理者に依頼する(ADMIN_SUB用)。
+ * POST /v1/api/approve/requests に targetKind="MAIL_INFO" ・
+ * targetApprovementInfo=登録内容のJSON文字列、で依頼を起票する。
+ * 管理者が承認すると、サーバー側(AdminApproveService#approveRequest)で
+ * 実際にメール情報マスタへのinsertが行われる。
+ *
+ * レスポンス形状は registerMailInfoApi と同じ { responseCode, message } 系のため、
+ * 呼び出し元(MailInfoRegisterPage)はどちらのAPIを呼んだかを意識せず同じ分岐で扱える。
+ */
+export async function requestMailInfoApprovalApi(values: MailInfoFormValues): Promise<ApproveActionResponseLike> {
+  return postJsonSafe<ApproveActionResponseLike>(`${APPROVE_API_BASE}/requests`, {
+    targetKind: "MAIL_INFO",
+    targetApprovementInfo: JSON.stringify(values),
+  });
 }

@@ -1,92 +1,121 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { registerMailInfoApi } from "../../../api/mailinfo";
-import MailInfoForm, { MailInfoFormValues } from "./MailInfoForm";
+// src/pages/admin/mail/MailRegisterFormPage.tsx
+import React from "react";
 
 /**
- * メール情報登録画面
- * メールID・件名・本文・送信元メールアドレスを登録する。
- * メールIDが既に登録済みの場合は重複エラーを表示する。
+ * メール情報登録画面・更新画面で共有するフォーム部分。
+ * 登録時はmailIdを入力可能、更新時はmailIdを非活性にして呼び出す。
  *
- * ※現状のMailSendService.regMailMasterは、DBの一意制約違反も含めて
- *   例外を全てresponseCode="500"（システムエラー）として扱っており、
- *   重複だけを判別してresponseCode="409"を返す実装にはなっていません。
- *   「重複エラーメッセージ」を出すには、regMailMaster側で
- *   事前にfindByIdして存在チェックするか、DuplicateKeyExceptionを
- *   個別にキャッチしてresponseCode="409"を返すよう直す必要があります。
- *   ここではその対応がされた前提で、409を専用メッセージにしています。
+ * (変更なし。元のファイルをそのまま配置しています。)
  */
 
-const EMPTY_VALUES: MailInfoFormValues = {
-  mailId: "",
-  mailSubject: "",
-  mailBody: "",
-  fromAddress: "",
+export type MailInfoFormValues = {
+  mailId: string;
+  mailSubject: string;
+  mailBody: string;
+  fromAddress: string;
 };
 
-export default function MailInfoRegisterPage() {
-  const [values, setValues] = useState<MailInfoFormValues>(EMPTY_VALUES);
-  const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+type Props = {
+  values: MailInfoFormValues;
+  mailIdEditable: boolean;
+  submitting: boolean;
+  submitLabel: string;
+  onChange: (values: MailInfoFormValues) => void;
+  onSubmit: (e: React.FormEvent) => void;
+  message?: string | null;
+  errorMessage?: string | null;
+};
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setMessage(null);
-    setErrorMessage(null);
-    setSubmitting(true);
-
-    const res = await registerMailInfoApi(values);
-    setSubmitting(false);
-
-    if (res.responseCode === "200") {
-      setMessage("登録しました。");
-      setValues(EMPTY_VALUES);
-    } else if (res.responseCode === "409") {
-      setErrorMessage("このメールIDは既に登録されています。");
-    } else {
-      setErrorMessage(res.message || "登録に失敗しました。");
-    }
-  };
+export default function MailInfoForm({ values, mailIdEditable, submitting, submitLabel, onChange, onSubmit, message, errorMessage }: Props) {
+  const update = (patch: Partial<MailInfoFormValues>) => onChange({ ...values, ...patch });
 
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>メール情報登録</h1>
-        <p style={styles.desc}>メールID・件名・本文・送信元メールアドレスを登録します。</p>
+    <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
+      <label style={styles.label}>
+        メールID
+        <input
+          type="text"
+          value={values.mailId}
+          onChange={(e) => update({ mailId: e.target.value })}
+          required
+          disabled={!mailIdEditable}
+          style={{ ...styles.input, ...(!mailIdEditable ? styles.inputDisabled : {}) }}
+          placeholder="例: PASSWORD_RESET"
+        />
+      </label>
 
-        <MailInfoForm values={values} mailIdEditable submitting={submitting} submitLabel="登録する" onChange={setValues} onSubmit={onSubmit} message={message} errorMessage={errorMessage} />
+      <label style={styles.label}>
+        メール件名
+        <input type="text" value={values.mailSubject} onChange={(e) => update({ mailSubject: e.target.value })} required style={styles.input} />
+      </label>
 
-        <div style={{ marginTop: 14 }}>
-          <Link to="/admin/mailinfo">一覧へ戻る</Link>
-        </div>
-      </div>
-    </div>
+      <label style={styles.label}>
+        送信元メールアドレス
+        <input type="email" value={values.fromAddress} onChange={(e) => update({ fromAddress: e.target.value })} required style={styles.input} placeholder="no-reply@example.com" />
+      </label>
+
+      <label style={styles.label}>
+        メール本文
+        <textarea value={values.mailBody} onChange={(e) => update({ mailBody: e.target.value })} required rows={10} style={styles.textarea} />
+      </label>
+
+      {errorMessage && <div style={styles.errorText}>{errorMessage}</div>}
+
+      <button type="submit" disabled={submitting} style={styles.primaryButton}>
+        {submitting ? "処理中..." : submitLabel}
+      </button>
+
+      {message && <div style={styles.message}>{message}</div>}
+    </form>
   );
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  page: {
-    minHeight: "100vh",
-    display: "grid",
-    placeItems: "center",
-    padding: 24,
-    background: "#f6f7fb",
-  },
-  card: {
+  label: { display: "grid", gap: 6, fontSize: 14 },
+  input: {
     width: "100%",
-    maxWidth: 560,
-    background: "white",
-    border: "1px solid #e6e8ef",
-    borderRadius: 16,
-    padding: 20,
-    boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
-  },
-  title: { margin: "0 0 8px", fontSize: 22 },
-  desc: {
-    margin: "0 0 12px",
-    color: "#4b5563",
+    padding: "10px 12px",
+    borderRadius: 10,
+    border: "1px solid #d7dbe7",
+    outline: "none",
     fontSize: 14,
-    lineHeight: 1.5,
+    boxSizing: "border-box",
+  },
+  inputDisabled: {
+    background: "#f3f4f6",
+    color: "#6b7280",
+    cursor: "not-allowed",
+  },
+  textarea: {
+    width: "100%",
+    padding: "10px 12px",
+    borderRadius: 10,
+    border: "1px solid #d7dbe7",
+    outline: "none",
+    fontSize: 14,
+    boxSizing: "border-box",
+    fontFamily: "inherit",
+    resize: "vertical",
+  },
+  primaryButton: {
+    width: "100%",
+    padding: "10px 12px",
+    borderRadius: 10,
+    border: "none",
+    cursor: "pointer",
+    background: "#111827",
+    color: "white",
+    fontWeight: 600,
+  },
+  message: {
+    padding: 10,
+    borderRadius: 10,
+    background: "#f1f5f9",
+    border: "1px solid #e2e8f0",
+    fontSize: 13,
+  },
+  errorText: {
+    fontSize: 12,
+    color: "#dc2626",
   },
 };

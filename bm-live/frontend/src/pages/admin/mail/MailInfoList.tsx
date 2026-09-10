@@ -1,3 +1,4 @@
+// src/pages/admin/mail/MailInfoList.tsx
 import React, { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchMailInfoListApi, MailInfoMasterEntity } from "../../../api/mailinfo";

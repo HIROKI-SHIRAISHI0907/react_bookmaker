@@ -52,6 +52,7 @@ const APPROVE_API_BASE = `${API_BASE}/api/approve`;
 const TARGET_KIND_OPTIONS: { value: string; label: string }[] = [
   { value: "SCREEN", label: "画面" },
   { value: "NOTICE", label: "お知らせ" },
+  { value: "MAIL", label: "メール" },
 ];
 
 function targetKindLabel(targetKind?: string): string {
