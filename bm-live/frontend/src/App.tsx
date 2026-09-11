@@ -34,9 +34,6 @@ import CountryLeagueMasterReferencePage from "./pages/admin/master/CountryLeague
 import NoEcsSlotsPage from "./pages/admin/noecs/NoEcsSlotsPage";
 import FutureMatchesByDatePage from "./pages/admin/future/FutureMatchesByDatePage";
 import RealTimeDataAdminPage from "./pages/admin/realtimedatacategory/RealTimeDataAdminPage";
-import MailInfoListPage from "./pages/admin/mail/MailInfoList";
-import MailInfoRegisterPage from "./pages/admin/mail/MailRegisterFormPage";
-import MailInfoUpdatePage from "./pages/admin/mail/MailUpdateFormPage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import InvalidPage from "./pages/admin/invalid/InvalidPage";
 import Header from "./components/Header";
@@ -46,6 +43,9 @@ import InstructionConfirmPage from "./pages/admin/approve/InstructionConfirmPage
 import WithdrawalConfirmPage from "./pages/admin/withdraw/WithdrawalConfirmPage";
 import WithdrawalCompletePage from "./pages/admin/withdraw/WithdrawalCompletePage";
 import AwsCostPage from "./pages/admin/cost/AwsCostPage";
+import MailInfoListPage from "./pages/admin/mail/MailInfoList";
+import MailInfoRegisterPage from "./pages/admin/mail/MailInfoRegisterPage"; // MailRegisterFormPage → MailInfoRegisterPage
+import MailInfoUpdatePage from "./pages/admin/mail/MailUpdateFormPage";
 
 function WhereAmI() {
   const loc = useLocation();
