@@ -60,8 +60,24 @@ export function isAdminUser(): boolean {
   return session.authFlg === 1 || (session.roles ?? []).includes("ROLE_ADMIN");
 }
 
+/**
+ * 管理画面(/admin)へ入るべきロールかどうかを判定する。
+ * ADMIN(authFlg=1)だけでなく、ADMIN_SUB(authFlg=2、担当者)も対象。
+ * ※isAdminUser()は「厳密にADMINかどうか」の判定用に残し、
+ *   ルーティング判定にはこちらを使う。
+ */
+export function isStaffUser(): boolean {
+  const session = loadAuthSession();
+  if (!session) return false;
+  if (session.authFlg === 1 || session.authFlg === 2) {
+    return true;
+  }
+  const roles = session.roles ?? [];
+  return roles.includes("ROLE_ADMIN") || roles.includes("ROLE_ADMIN_SUB");
+}
+
 export function getDefaultRouteByRole(): string {
-  return isAdminUser() ? "/admin" : "/top";
+  return isStaffUser() ? "/admin" : "/top";
 }
 
 export function getAccessToken(): string {
