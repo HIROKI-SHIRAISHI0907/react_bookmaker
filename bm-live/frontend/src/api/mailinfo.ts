@@ -32,10 +32,30 @@ const MAILINFO_API_BASE = `${API_BASE}/v1/api/admin/mailinfo`;
 // dev.web.controller.AdminApproveController の @RequestMapping("/api/approve") に対応
 const APPROVE_API_BASE = `${API_BASE}/v1/api/approve`;
 
+/**
+ * ログイン時にlocalStorageへ保存されているaccessTokenを取得する。
+ * (DevToolsのApplicationタブで確認した実際のキー名 "accessToken" に合わせている。
+ *  AdminApproveController#resolveCurrentUser が Authorization: Bearer <token> を
+ *  必須にしているため、承認フロー系のAPIを呼ぶ際はこれを付与する必要がある)
+ */
+function getAccessToken(): string | null {
+  try {
+    return localStorage.getItem("accessToken");
+  } catch {
+    return null;
+  }
+}
+
+function authHeaders(): Record<string, string> {
+  const token = getAccessToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 async function getJsonSafe<T>(url: string): Promise<T> {
   const res = await fetch(url, {
     method: "GET",
     credentials: "include",
+    headers: { ...authHeaders() },
   });
   if (!res.ok) {
     const txt = await res.text().catch(() => "");
@@ -47,7 +67,7 @@ async function getJsonSafe<T>(url: string): Promise<T> {
 async function patchJsonSafe<T>(url: string, body: unknown): Promise<T> {
   const res = await fetch(url, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authHeaders() },
     credentials: "include",
     body: JSON.stringify(body ?? {}),
   });
@@ -64,7 +84,7 @@ async function patchJsonSafe<T>(url: string, body: unknown): Promise<T> {
 async function postJsonSafe<T>(url: string, body: unknown): Promise<T> {
   const res = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authHeaders() },
     credentials: "include",
     body: JSON.stringify(body ?? {}),
   });
