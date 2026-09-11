@@ -1,15 +1,6 @@
 import type { MailInfoFormValues } from "../pages/admin/mail/MailRegisterFormPage";
+import { getAccessToken, getTokenType } from "../utils/auth";
 
-/**
- * ⚠️ このファイルは実際のプロジェクトの src/api/mailinfo.ts の内容を直接見ないまま、
- * MailInfoRegisterPage.tsx / MailInfoListPage.tsx / MailInfoUpdatePage.tsx からの
- * 使われ方(registerMailInfoApi / fetchMailInfoListApi / fetchMailInfoByIdApi /
- * updateMailInfoApi / MailInfoMasterEntity 型)だけを手がかりに再構成したものです。
- * 実際のファイルに、ここに無い実装(認証ヘッダー付与など)がある場合は、
- * その部分を残したまま requestMailInfoApprovalApi だけを追記してください。
- */
-
-// dev.common.entity.MailInfoMasterEntity に対応する型
 export type MailInfoMasterEntity = MailInfoFormValues;
 
 // dev.web.mail.MailSendResponse に対応する型(regMailMasterの戻り値)
@@ -33,22 +24,13 @@ const MAILINFO_API_BASE = `${API_BASE}/v1/api/admin/mailinfo`;
 const APPROVE_API_BASE = `${API_BASE}/v1/api/approve`;
 
 /**
- * ログイン時にlocalStorageへ保存されているaccessTokenを取得する。
- * (DevToolsのApplicationタブで確認した実際のキー名 "accessToken" に合わせている。
- *  AdminApproveController#resolveCurrentUser が Authorization: Bearer <token> を
- *  必須にしているため、承認フロー系のAPIを呼ぶ際はこれを付与する必要がある)
+ * AdminApproveController#resolveCurrentUser が Authorization: Bearer <token> を
+ * 必須にしているため、承認フロー系のAPIを呼ぶ際はこれを付与する必要がある。
+ * トークンは utils/auth.ts の authSession(localStorage)から取得する。
  */
-function getAccessToken(): string | null {
-  try {
-    return localStorage.getItem("accessToken");
-  } catch {
-    return null;
-  }
-}
-
 function authHeaders(): Record<string, string> {
   const token = getAccessToken();
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  return token ? { Authorization: `${getTokenType()} ${token}` } : {};
 }
 
 async function getJsonSafe<T>(url: string): Promise<T> {

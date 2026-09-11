@@ -14,6 +14,15 @@ export type AuthSession = {
 
 export const AUTH_STORAGE_KEY = "authSession";
 
+/**
+ * 以前のバージョンで、authSessionに統合する前に使われていた個別キー。
+ * 現在のsaveAuthSession()はこれらに書き込まないが、過去のログインで
+ * localStorageに残ったままになっている場合があるため、ログアウト時に
+ * 念のため一緒に削除する。
+ * ("theme"はログイン状態と無関係なUI設定のため、ここには含めない)
+ */
+const LEGACY_AUTH_STORAGE_KEYS = ["accessToken", "roles", "tokenType"] as const;
+
 export function saveAuthSession(session: AuthSession): void {
   localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
 }
@@ -30,6 +39,11 @@ export function loadAuthSession(): AuthSession | null {
 
 export function clearAuthSession(): void {
   localStorage.removeItem(AUTH_STORAGE_KEY);
+  // 古いバージョンの名残りで残っている可能性がある個別キーも、
+  // ログアウト時にlocalStorageに認証情報が残らないよう合わせて削除する。
+  for (const key of LEGACY_AUTH_STORAGE_KEYS) {
+    localStorage.removeItem(key);
+  }
 }
 
 export function isLoggedIn(): boolean {
