@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { getAccessToken, getTokenType } from "../../../utils/auth";
 
 // ------------------------------------------------------------
 // dev.web.api.bm_a028 のレスポンス/リクエストDTOに対応する型
@@ -52,7 +53,6 @@ const APPROVE_API_BASE = `${API_BASE}/api/approve`;
 const TARGET_KIND_OPTIONS: { value: string; label: string }[] = [
   { value: "SCREEN", label: "画面" },
   { value: "NOTICE", label: "お知らせ" },
-  { value: "MAIL", label: "メール" },
 ];
 
 function targetKindLabel(targetKind?: string): string {
@@ -80,10 +80,16 @@ function formatDateTime(value?: string): string {
   return value ?? "-";
 }
 
+function authHeaders(): Record<string, string> {
+  const token = getAccessToken();
+  return token ? { Authorization: `${getTokenType()} ${token}` } : {};
+}
+
 async function getJsonSafe<T>(url: string): Promise<T> {
   const res = await fetch(url, {
     method: "GET",
     credentials: "include",
+    headers: { ...authHeaders() },
   });
   if (!res.ok) {
     const txt = await res.text().catch(() => "");
@@ -95,7 +101,7 @@ async function getJsonSafe<T>(url: string): Promise<T> {
 async function sendJsonSafe<T>(url: string, method: "POST" | "PATCH", body?: unknown): Promise<T> {
   const res = await fetch(url, {
     method,
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authHeaders() },
     credentials: "include",
     body: JSON.stringify(body ?? {}),
   });

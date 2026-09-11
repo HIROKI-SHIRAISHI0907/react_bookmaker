@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { getAccessToken, getTokenType } from "../../../utils/auth";
 
 // dev.web.api.bm_a028 のレスポンスDTOに対応する型（依頼のみ扱う）
 type ApproveItem = {
@@ -6,7 +7,7 @@ type ApproveItem = {
   instructionOrReview?: string; // "依頼"
   fromUserId?: number;
   fromUserName?: string;
-  targetKind?: string; // "NOTICE" | "SCREEN"
+  targetKind?: string; // "NOTICE" | "SCREEN" | "MAIL_INFO"
   targetApprovementInfo?: string;
   flowStatus?: string; // 申請済 / 承認 / 差し戻し / 取り消し
   comment?: string;
@@ -34,6 +35,7 @@ const APPROVE_API_BASE = `${API_BASE}/api/approve`;
 function targetKindLabel(targetKind?: string): string {
   if (targetKind === "NOTICE") return "お知らせ";
   if (targetKind === "SCREEN") return "画面";
+  if (targetKind === "MAIL_INFO") return "メール情報";
   return targetKind ?? "-";
 }
 
@@ -56,8 +58,24 @@ function formatDateTime(value?: string): string {
   return value ?? "-";
 }
 
+/**
+ * AdminApproveController#resolveCurrentUser が Authorization: Bearer <token> を
+ * 必須にしているため、承認フロー系のAPIを呼ぶ際はこれを付与する必要がある。
+ * トークンは utils/auth.ts の authSession(localStorage)から取得する。
+ * (以前はこのファイル内のfetch呼び出しにAuthorizationヘッダーが付いておらず、
+ *  常に401 認証情報が不正です。になっていた)
+ */
+function authHeaders(): Record<string, string> {
+  const token = getAccessToken();
+  return token ? { Authorization: `${getTokenType()} ${token}` } : {};
+}
+
 async function getJsonSafe<T>(url: string): Promise<T> {
-  const res = await fetch(url, { method: "GET", credentials: "include" });
+  const res = await fetch(url, {
+    method: "GET",
+    credentials: "include",
+    headers: { ...authHeaders() },
+  });
   if (!res.ok) {
     const txt = await res.text().catch(() => "");
     throw new Error(`HTTP ${res.status}${txt ? `: ${txt}` : ""}`);
@@ -68,7 +86,7 @@ async function getJsonSafe<T>(url: string): Promise<T> {
 async function patchJsonSafe<T>(url: string, body?: unknown): Promise<T> {
   const res = await fetch(url, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authHeaders() },
     credentials: "include",
     body: JSON.stringify(body ?? {}),
   });

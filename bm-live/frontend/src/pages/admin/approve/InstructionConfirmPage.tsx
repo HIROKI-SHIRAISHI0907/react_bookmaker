@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { getAccessToken, getTokenType } from "../../../utils/auth";
 
 // dev.web.api.bm_a028 のレスポンスDTOに対応する型（指令のみ扱う）
 type ApproveItem = {
@@ -57,8 +58,17 @@ function formatDateTime(value?: string): string {
   return value ?? "-";
 }
 
+function authHeaders(): Record<string, string> {
+  const token = getAccessToken();
+  return token ? { Authorization: `${getTokenType()} ${token}` } : {};
+}
+
 async function getJsonSafe<T>(url: string): Promise<T> {
-  const res = await fetch(url, { method: "GET", credentials: "include" });
+  const res = await fetch(url, {
+    method: "GET",
+    credentials: "include",
+    headers: { ...authHeaders() },
+  });
   if (!res.ok) {
     const txt = await res.text().catch(() => "");
     throw new Error(`HTTP ${res.status}${txt ? `: ${txt}` : ""}`);
@@ -69,7 +79,7 @@ async function getJsonSafe<T>(url: string): Promise<T> {
 async function patchJsonSafe<T>(url: string): Promise<T> {
   const res = await fetch(url, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authHeaders() },
     credentials: "include",
     body: JSON.stringify({}),
   });
