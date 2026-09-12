@@ -1,6 +1,22 @@
 import type { MailInfoFormValues } from "../pages/admin/mail/MailRegisterFormPage";
 import { getAccessToken, getTokenType } from "../utils/auth";
 
+/**
+ * ⚠️ このファイルは実際のプロジェクトの src/api/mailinfo.ts の内容を直接見ないまま、
+ * MailInfoRegisterPage.tsx / MailInfoListPage.tsx / MailInfoUpdatePage.tsx からの
+ * 使われ方(registerMailInfoApi / fetchMailInfoListApi / fetchMailInfoByIdApi /
+ * updateMailInfoApi / MailInfoMasterEntity 型)だけを手がかりに再構成したものです。
+ * 実際のファイルに、ここに無い実装がある場合は、その部分を残したまま
+ * requestMailInfoApprovalApi だけを追記してください。
+ *
+ * ※認証ヘッダーは、独自にlocalStorageの生キー"accessToken"を読むのではなく、
+ *   utils/auth.ts の正規のgetAccessToken()/getTokenType()(authSessionベース)を
+ *   使うようにしています。生キー"accessToken"は現在のログイン処理(saveAuthSession)
+ *   では書き込まれない古い名残りのキーで、ログアウトでも消えないため、
+ *   これを直接読むと最新のログイン状態と食い違う可能性があります。
+ */
+
+// dev.common.entity.MailInfoMasterEntity に対応する型
 export type MailInfoMasterEntity = MailInfoFormValues;
 
 // dev.web.mail.MailSendResponse に対応する型(regMailMasterの戻り値)
@@ -77,6 +93,19 @@ async function postJsonSafe<T>(url: string, body: unknown): Promise<T> {
   return data as T;
 }
 
+async function deleteJsonSafe<T>(url: string): Promise<T> {
+  const res = await fetch(url, {
+    method: "DELETE",
+    headers: { ...authHeaders() },
+    credentials: "include",
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok && !(data && typeof data === "object" && "responseCode" in data)) {
+    throw new Error(`HTTP ${res.status}`);
+  }
+  return data as T;
+}
+
 /** メール情報マスタへ直接登録する(ADMIN用)。PATCH /v1/api/admin/mailinfo */
 export async function registerMailInfoApi(values: MailInfoFormValues): Promise<MailSendResponseLike> {
   return patchJsonSafe<MailSendResponseLike>(MAILINFO_API_BASE, values);
@@ -95,6 +124,15 @@ export async function fetchMailInfoListApi(): Promise<MailInfoMasterEntity[]> {
 /** メール情報マスタを1件取得する。GET /v1/api/admin/mailinfo/{mailId} */
 export async function fetchMailInfoByIdApi(mailId: string): Promise<MailInfoMasterEntity> {
   return getJsonSafe<MailInfoMasterEntity>(`${MAILINFO_API_BASE}/${encodeURIComponent(mailId)}`);
+}
+
+/**
+ * メール情報マスタを削除する。DELETE /v1/api/admin/mailinfo/{mailId}
+ * 既にメール送信管理で使用されている場合、サーバー側で409(responseCode "409")が
+ * 返ってくることがあるため、呼び出し元はresponseCodeを見て文言を出し分けること。
+ */
+export async function deleteMailInfoApi(mailId: string): Promise<MailSendResponseLike> {
+  return deleteJsonSafe<MailSendResponseLike>(`${MAILINFO_API_BASE}/${encodeURIComponent(mailId)}`);
 }
 
 /**

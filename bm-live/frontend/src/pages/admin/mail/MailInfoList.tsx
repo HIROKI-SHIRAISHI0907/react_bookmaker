@@ -1,12 +1,15 @@
 // src/pages/admin/mail/MailInfoList.tsx
 import React, { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { fetchMailInfoListApi, MailInfoMasterEntity } from "../../../api/mailinfo";
+import { deleteMailInfoApi, fetchMailInfoListApi, MailInfoMasterEntity } from "../../../api/mailinfo";
 
 /**
  * メール情報一覧画面
  * 現在登録されているメール情報マスタの内容を取得して表示する。
  * 「検索」ボタン押下でGET /v1/api/admin/mailinfoを叩き直す。
+ *
+ * 削除は誤操作防止のため、ボタン押下で即削除せず、行内に確認表示を出してから
+ * 「削除する」を押した場合のみ DELETE /v1/api/admin/mailinfo/{mailId} を呼ぶ。
  */
 
 function formatBodyPreview(body: string): string {
@@ -19,6 +22,10 @@ export default function MailInfoListPage() {
   const [list, setList] = useState<MailInfoMasterEntity[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleSearch = useCallback(async () => {
     setLoading(true);
@@ -38,6 +45,29 @@ export default function MailInfoListPage() {
     handleSearch();
   }, [handleSearch]);
 
+  const handleDelete = useCallback(
+    async (mailId: string) => {
+      setDeletingId(mailId);
+      setError(null);
+      setMessage(null);
+      try {
+        const res = await deleteMailInfoApi(mailId);
+        if (res.responseCode && res.responseCode !== "200") {
+          setError(res.message ?? "削除に失敗しました。");
+        } else {
+          setMessage(res.message ?? "削除しました。");
+          await handleSearch();
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "削除に失敗しました。");
+      } finally {
+        setDeletingId(null);
+        setConfirmingId(null);
+      }
+    },
+    [handleSearch],
+  );
+
   return (
     <div style={styles.page}>
       <div style={styles.card}>
@@ -55,6 +85,7 @@ export default function MailInfoListPage() {
         </div>
 
         {error && <div style={styles.errorBox}>{error}</div>}
+        {message && <div style={styles.successBox}>{message}</div>}
 
         <div style={styles.tableWrap}>
           <table style={styles.table}>
@@ -74,18 +105,59 @@ export default function MailInfoListPage() {
                   </td>
                 </tr>
               )}
-              {list.map((item) => (
-                <tr key={item.mailId}>
-                  <td style={styles.td}>{item.mailId}</td>
-                  <td style={styles.td}>{item.mailSubject}</td>
-                  <td style={styles.td}>{formatBodyPreview(item.mailBody)}</td>
-                  <td style={styles.td}>
-                    <Link to={`/admin/mailinfo/${encodeURIComponent(item.mailId)}/edit`} style={styles.linkButton}>
-                      更新
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+              {list.map((item) => {
+                const isConfirming = confirmingId === item.mailId;
+                const isDeleting = deletingId === item.mailId;
+                return (
+                  <tr key={item.mailId}>
+                    <td style={styles.td}>{item.mailId}</td>
+                    <td style={styles.td}>{item.mailSubject}</td>
+                    <td style={styles.td}>{formatBodyPreview(item.mailBody)}</td>
+                    <td style={styles.td}>
+                      {isConfirming ? (
+                        <div style={styles.confirmBox}>
+                          <div style={styles.confirmText}>本当に削除しますか？</div>
+                          <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
+                            <button
+                              type="button"
+                              onClick={() => setConfirmingId(null)}
+                              disabled={isDeleting}
+                              style={styles.secondaryButton}
+                            >
+                              キャンセル
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(item.mailId)}
+                              disabled={isDeleting}
+                              style={{ ...styles.dangerButton, opacity: isDeleting ? 0.6 : 1 }}
+                            >
+                              {isDeleting ? "削除中..." : "削除する"}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div style={{ display: "flex", gap: 8, flexWrap: "nowrap" }}>
+                          <Link to={`/admin/mailinfo/${encodeURIComponent(item.mailId)}/edit`} style={styles.linkButton}>
+                            更新
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setError(null);
+                              setMessage(null);
+                              setConfirmingId(item.mailId);
+                            }}
+                            style={styles.dangerLinkButton}
+                          >
+                            削除
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -145,6 +217,15 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 13,
     marginBottom: 16,
   },
+  successBox: {
+    padding: 10,
+    borderRadius: 10,
+    background: "#f0fdf4",
+    border: "1px solid #bbf7d0",
+    color: "#166534",
+    fontSize: 13,
+    marginBottom: 16,
+  },
   tableWrap: {
     overflowX: "auto",
   },
@@ -180,5 +261,41 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 13,
     textDecoration: "none",
     whiteSpace: "nowrap",
+  },
+  dangerLinkButton: {
+    display: "inline-block",
+    padding: "6px 12px",
+    borderRadius: 8,
+    border: "1px solid #fecaca",
+    background: "white",
+    color: "#b91c1c",
+    fontSize: 13,
+    fontWeight: 600,
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+  },
+  dangerButton: {
+    padding: "8px 14px",
+    borderRadius: 8,
+    border: "none",
+    background: "#dc2626",
+    color: "white",
+    fontSize: 13,
+    fontWeight: 700,
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+  },
+  confirmBox: {
+    minWidth: 220,
+    padding: 10,
+    borderRadius: 10,
+    background: "#fef2f2",
+    border: "1px solid #fecaca",
+  },
+  confirmText: {
+    fontSize: 12,
+    color: "#991b1b",
+    fontWeight: 700,
+    marginBottom: 8,
   },
 };
