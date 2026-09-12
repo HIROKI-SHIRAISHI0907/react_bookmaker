@@ -72,6 +72,8 @@ export default function AdminLayout() {
           ...(role === "ADMIN" ? [{ label: "申請確認画面", to: "approve/requests" }] : []),
           // 担当者: 管理者から届いた指令を確認する画面。
           ...(role === "ADMIN_SUB" ? [{ label: "指令確認画面", to: "approve/instructions" }] : []),
+          // 担当者: 担当者で依頼した内容を確認する画面。
+          ...(role === "ADMIN_SUB" ? [{ label: "依頼確認画面", to: "approve/myrequest" }] : []),
         ],
       },
       {

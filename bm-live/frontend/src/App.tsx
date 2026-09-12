@@ -46,6 +46,7 @@ import AwsCostPage from "./pages/admin/cost/AwsCostPage";
 import MailInfoListPage from "./pages/admin/mail/MailInfoList";
 import MailInfoRegisterPage from "./pages/admin/mail/MailInfoRegisterPage"; // MailRegisterFormPage → MailInfoRegisterPage
 import MailInfoUpdatePage from "./pages/admin/mail/MailUpdateFormPage";
+import MyRequestsPage from "./pages/admin/approve/MyRequestsPage";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -156,6 +157,14 @@ export default function App() {
                 element={
                   <RequireRole role="ADMIN_SUB">
                     <InstructionConfirmPage />
+                  </RequireRole>
+                }
+              />
+              <Route
+                path="approve/myrequest"
+                element={
+                  <RequireRole role="ADMIN_SUB">
+                    <MyRequestsPage />
                   </RequireRole>
                 }
               />
