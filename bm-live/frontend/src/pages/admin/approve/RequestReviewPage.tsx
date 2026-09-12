@@ -395,5 +395,7 @@ const modalBoxStyle: React.CSSProperties = {
   padding: 20,
   width: "100%",
   maxWidth: 480,
+  maxHeight: "85vh",
+  overflowY: "auto",
   boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
 };
