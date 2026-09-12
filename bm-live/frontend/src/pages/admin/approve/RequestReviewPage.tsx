@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { getAccessToken, getTokenType } from "../../../utils/auth";
+import { targetKindLabel, targetSummaryTitle, targetSummaryDetail, TargetInfoView } from "./targetInfoView";
 
 // dev.web.api.bm_a028 のレスポンスDTOに対応する型（依頼のみ扱う）
 type ApproveItem = {
@@ -31,13 +32,6 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "/v1";
 // dev.web.controller.AdminApproveController の @RequestMapping("/api/approve") に対応。
 // 実際に使っているAPIパスの命名規則(例: /v1/api/admin/...)に合わせて変更してください。
 const APPROVE_API_BASE = `${API_BASE}/api/approve`;
-
-function targetKindLabel(targetKind?: string): string {
-  if (targetKind === "NOTICE") return "お知らせ";
-  if (targetKind === "SCREEN") return "画面";
-  if (targetKind === "MAIL_INFO") return "メール情報";
-  return targetKind ?? "-";
-}
 
 function statusInfo(flowStatus?: string): { label: string; bg: string; fg: string } {
   switch (flowStatus) {
@@ -236,15 +230,16 @@ export default function RequestReviewPage() {
             sortedRequests.map((item) => {
               const status = statusInfo(item.flowStatus);
               const isPending = item.flowStatus === "申請済";
+              const detail = targetSummaryDetail(item);
               return (
-                <div key={item.approveId} style={rowGridStyle}>
+                <div key={item.approveId} style={{ ...rowGridStyle, cursor: "pointer" }} onClick={() => openReview(item)}>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
-                      <div style={{ fontSize: 16, fontWeight: 700, color: "#111827" }}>
-                        {targetKindLabel(item.targetKind)}: {item.targetApprovementInfo ?? "-"}
-                      </div>
+                      <span style={badgeStyle("#e5e7eb", "#374151")}>{targetKindLabel(item.targetKind)}</span>
+                      <div style={{ fontSize: 16, fontWeight: 700, color: "#111827" }}>{targetSummaryTitle(item)}</div>
                       <span style={badgeStyle(status.bg, status.fg)}>{status.label}</span>
                     </div>
+                    {detail && <div style={{ fontSize: 13, color: "#6b7280", marginBottom: 4 }}>{detail}</div>}
                     <div style={{ fontSize: 14, color: "#374151", marginBottom: 4 }}>申請者: {item.fromUserName ?? item.fromUserId ?? "-"}</div>
                     <div style={{ fontSize: 12, color: "#6b7280" }}>
                       申請日時: {formatDateTime(item.registerTime)} ／ 更新日時: {formatDateTime(item.updateTime)}
@@ -254,15 +249,15 @@ export default function RequestReviewPage() {
 
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
                     <button
-                      disabled={!isPending}
-                      onClick={() => openReview(item)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openReview(item);
+                      }}
                       style={{
-                        ...buttonPrimaryStyle,
-                        opacity: !isPending ? 0.5 : 1,
-                        cursor: !isPending ? "default" : "pointer",
+                        ...(isPending ? buttonPrimaryStyle : buttonSecondaryStyle),
                       }}
                     >
-                      {isPending ? "承認 / 差し戻し" : "対応済み"}
+                      {isPending ? "承認 / 差し戻し" : "詳細を見る"}
                     </button>
                   </div>
                 </div>
@@ -274,28 +269,46 @@ export default function RequestReviewPage() {
 
       {reviewing && (
         <div style={overlayStyle} onClick={closeReview}>
-          <div style={modalBoxStyle} onClick={(e) => e.stopPropagation()}>
-            <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 12 }}>依頼の確認</div>
-
-            <div style={{ fontSize: 14, color: "#374151", marginBottom: 4 }}>
-              対象: {targetKindLabel(reviewing.targetKind)} / {reviewing.targetApprovementInfo ?? "-"}
+          <div style={{ ...modalBoxStyle, maxWidth: 560 }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>依頼の確認</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+              <span style={badgeStyle("#e5e7eb", "#374151")}>{targetKindLabel(reviewing.targetKind)}</span>
+              <span style={badgeStyle(statusInfo(reviewing.flowStatus).bg, statusInfo(reviewing.flowStatus).fg)}>
+                {statusInfo(reviewing.flowStatus).label}
+              </span>
             </div>
+
+            <div style={{ marginBottom: 12 }}>
+              <TargetInfoView item={reviewing} />
+            </div>
+
             <div style={{ fontSize: 14, color: "#374151", marginBottom: 4 }}>申請者: {reviewing.fromUserName ?? reviewing.fromUserId ?? "-"}</div>
             <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 12 }}>申請日時: {formatDateTime(reviewing.registerTime)}</div>
+            {reviewing.comment && <div style={{ fontSize: 13, color: "#991b1b", marginBottom: 12 }}>コメント: {reviewing.comment}</div>}
 
-            <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="コメント（差し戻す場合は必須）" style={textareaStyle} />
+            {reviewing.flowStatus === "申請済" ? (
+              <>
+                <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="コメント（差し戻す場合は必須）" style={textareaStyle} />
 
-            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 16 }}>
-              <button onClick={closeReview} disabled={running} style={buttonSecondaryStyle}>
-                閉じる
-              </button>
-              <button onClick={reject} disabled={running || !comment.trim()} style={{ ...buttonDangerStyle, opacity: running || !comment.trim() ? 0.6 : 1 }}>
-                {running ? "処理中..." : "差し戻す"}
-              </button>
-              <button onClick={approve} disabled={running} style={{ ...buttonPrimaryStyle, opacity: running ? 0.6 : 1 }}>
-                {running ? "処理中..." : "承認する"}
-              </button>
-            </div>
+                <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 16 }}>
+                  <button onClick={closeReview} disabled={running} style={buttonSecondaryStyle}>
+                    閉じる
+                  </button>
+                  <button onClick={reject} disabled={running || !comment.trim()} style={{ ...buttonDangerStyle, opacity: running || !comment.trim() ? 0.6 : 1 }}>
+                    {running ? "処理中..." : "差し戻す"}
+                  </button>
+                  <button onClick={approve} disabled={running} style={{ ...buttonPrimaryStyle, opacity: running ? 0.6 : 1 }}>
+                    {running ? "処理中..." : "承認する"}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
+                <button onClick={closeReview} style={buttonSecondaryStyle}>
+                  閉じる
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

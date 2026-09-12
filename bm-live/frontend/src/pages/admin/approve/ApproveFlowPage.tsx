@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { getAccessToken, getTokenType } from "../../../utils/auth";
+import { targetKindLabel, targetSummaryTitle, targetSummaryDetail, TargetInfoView } from "./targetInfoView";
 
 // ------------------------------------------------------------
 // dev.web.api.bm_a028 のレスポンス/リクエストDTOに対応する型
@@ -17,7 +18,7 @@ type ApproveItem = {
   instructionOrReview?: string; // "指令" | "依頼"
   fromUserId?: number;
   fromUserName?: string;
-  targetKind?: string; // "NOTICE" | "SCREEN"
+  targetKind?: string; // "NOTICE" | "SCREEN" | "MAIL_INFO"
   targetApprovementInfo?: string;
   flowStatus?: string; // 依頼: 申請済/承認/差し戻し/取り消し　指令: 未確認/確認済/差し戻し/取り消し
   comment?: string;
@@ -50,14 +51,12 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "/v1";
 // 実際に使っているAPIパスの命名規則(例: /v1/api/admin/...)に合わせて変更してください。
 const APPROVE_API_BASE = `${API_BASE}/api/approve`;
 
+// 手動で「指令」/「依頼」を起票するときの対象種別。MAIL_INFOはメール情報登録画面経由でしか
+// 作られないため、ここには含めない。
 const TARGET_KIND_OPTIONS: { value: string; label: string }[] = [
   { value: "SCREEN", label: "画面" },
   { value: "NOTICE", label: "お知らせ" },
 ];
-
-function targetKindLabel(targetKind?: string): string {
-  return TARGET_KIND_OPTIONS.find((o) => o.value === targetKind)?.label ?? targetKind ?? "-";
-}
 
 function statusInfo(flowStatus?: string): { label: string; bg: string; fg: string } {
   switch (flowStatus) {
@@ -119,7 +118,7 @@ async function sendJsonSafe<T>(url: string, method: "POST" | "PATCH", body?: unk
 // モーダル
 // ------------------------------------------------------------
 
-type ModalKind = "reviewRequest" | "cancelRequest" | "rejectInstruction" | "cancelInstruction";
+type ModalKind = "reviewRequest" | "cancelRequest" | "rejectInstruction" | "cancelInstruction" | "viewInstruction";
 
 type ModalState = {
   kind: ModalKind;
@@ -131,6 +130,7 @@ const MODAL_TITLE: Record<ModalKind, string> = {
   cancelRequest: "依頼の取り消し",
   rejectInstruction: "指令の差し戻し",
   cancelInstruction: "指令の取り消し",
+  viewInstruction: "指令の内容",
 };
 
 export default function ApproveFlowPage({ role }: { role: CurrentRole }) {
@@ -140,7 +140,6 @@ export default function ApproveFlowPage({ role }: { role: CurrentRole }) {
   const [instructions, setInstructions] = useState<ApproveItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [runningId, setRunningId] = useState<string | null>(null);
 
   const [formTargetKind, setFormTargetKind] = useState<string>("SCREEN");
   const [formTargetInfo, setFormTargetInfo] = useState("");
@@ -222,21 +221,6 @@ export default function ApproveFlowPage({ role }: { role: CurrentRole }) {
     }
   };
 
-  const confirmInstruction = async (item: ApproveItem) => {
-    if (!item.approveId) return;
-    setRunningId(item.approveId);
-    setMessage("");
-    try {
-      const res = await sendJsonSafe<ApproveActionResponse>(`${APPROVE_API_BASE}/instructions/${item.approveId}/confirm`, "PATCH");
-      setMessage(res.message ?? "確認しました。");
-      await loadAll();
-    } catch (e) {
-      setMessage(e instanceof Error ? e.message : String(e));
-    } finally {
-      setRunningId(null);
-    }
-  };
-
   const approveFromModal = async () => {
     if (!modalState?.item.approveId) return;
     setModalRunning(true);
@@ -307,6 +291,23 @@ export default function ApproveFlowPage({ role }: { role: CurrentRole }) {
     }
   };
 
+  /** 指令確認画面(InstructionConfirmPage)と同じく、モーダルの「確認する」から実行する */
+  const confirmInstructionFromModal = async () => {
+    if (!modalState?.item.approveId) return;
+    setModalRunning(true);
+    setMessage("");
+    try {
+      const res = await sendJsonSafe<ApproveActionResponse>(`${APPROVE_API_BASE}/instructions/${modalState.item.approveId}/confirm`, "PATCH");
+      setMessage(res.message ?? "確認しました。");
+      setModalState(null);
+    } catch (e) {
+      setMessage(e instanceof Error ? e.message : String(e));
+    } finally {
+      setModalRunning(false);
+      await loadAll();
+    }
+  };
+
   return (
     <div style={{ display: "grid", gap: 20 }}>
       <div>
@@ -358,13 +359,13 @@ export default function ApproveFlowPage({ role }: { role: CurrentRole }) {
       {isAdmin ? (
         <SectionCard title="〜依頼一覧〜" count={sortedRequests.length} emptyMessage="依頼はありません。">
           {sortedRequests.map((item) => (
-            <RequestRow key={item.approveId} item={item} onOpenReview={() => openModal("reviewRequest", item)} />
+            <RequestRow key={item.approveId} item={item} onOpen={() => openModal("reviewRequest", item)} />
           ))}
         </SectionCard>
       ) : (
         <SectionCard title="〜自分の依頼状況〜" count={sortedRequests.length} emptyMessage="起票した依頼はありません。">
           {sortedRequests.map((item) => (
-            <MyRequestRow key={item.approveId} item={item} onCancel={() => openModal("cancelRequest", item)} />
+            <MyRequestRow key={item.approveId} item={item} onOpen={() => openModal("cancelRequest", item)} />
           ))}
         </SectionCard>
       )}
@@ -374,7 +375,7 @@ export default function ApproveFlowPage({ role }: { role: CurrentRole }) {
           isAdmin ? (
             <AdminInstructionRow key={item.approveId} item={item} onReject={() => openModal("rejectInstruction", item)} onCancel={() => openModal("cancelInstruction", item)} />
           ) : (
-            <StaffInstructionRow key={item.approveId} item={item} running={runningId === item.approveId} onConfirm={() => confirmInstruction(item)} />
+            <StaffInstructionRow key={item.approveId} item={item} onOpen={() => openModal("viewInstruction", item)} />
           ),
         )}
       </SectionCard>
@@ -388,6 +389,7 @@ export default function ApproveFlowPage({ role }: { role: CurrentRole }) {
         onApprove={approveFromModal}
         onReject={rejectRequestFromModal}
         onSingleAction={runSingleActionModal}
+        onConfirmInstruction={confirmInstructionFromModal}
       />
     </div>
   );
@@ -435,19 +437,31 @@ function SectionCard({ title, count, emptyMessage, children }: { title: string; 
   );
 }
 
-function RequestRow({ item, onOpenReview }: { item: ApproveItem; onOpenReview: () => void }) {
+/** 一覧行共通のタイトル部分(バッジ+簡易タイトル+ステータス+概要)。生JSONを出さず、
+ * targetInfoView.tsで整形したタイトル/概要だけを表示する。 */
+function RowSummary({ item, extraBadge }: { item: ApproveItem; extraBadge?: React.ReactNode }) {
   const status = statusInfo(item.flowStatus);
+  const detail = targetSummaryDetail(item);
+  return (
+    <>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
+        <span style={badgeStyle("#e5e7eb", "#374151")}>{targetKindLabel(item.targetKind)}</span>
+        <div style={{ fontSize: 16, fontWeight: 700, color: "#111827" }}>{targetSummaryTitle(item)}</div>
+        <span style={badgeStyle(status.bg, status.fg)}>{status.label}</span>
+        {extraBadge}
+      </div>
+      {detail && <div style={{ fontSize: 13, color: "#6b7280", marginBottom: 4 }}>{detail}</div>}
+    </>
+  );
+}
+
+function RequestRow({ item, onOpen }: { item: ApproveItem; onOpen: () => void }) {
   const isPending = item.flowStatus === "申請済";
 
   return (
-    <div style={rowGridStyle}>
+    <div style={{ ...rowGridStyle, cursor: "pointer" }} onClick={onOpen}>
       <div style={{ minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: "#111827" }}>
-            {targetKindLabel(item.targetKind)}: {item.targetApprovementInfo ?? "-"}
-          </div>
-          <span style={badgeStyle(status.bg, status.fg)}>{status.label}</span>
-        </div>
+        <RowSummary item={item} />
         <div style={{ fontSize: 14, color: "#374151", marginBottom: 4 }}>申請者: {item.fromUserName ?? item.fromUserId ?? "-"}</div>
         <div style={{ fontSize: 12, color: "#6b7280" }}>
           申請日時: {formatDateTime(item.registerTime)} ／ 更新日時: {formatDateTime(item.updateTime)}
@@ -457,34 +471,26 @@ function RequestRow({ item, onOpenReview }: { item: ApproveItem; onOpenReview: (
 
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
         <button
-          disabled={!isPending}
-          onClick={onOpenReview}
-          style={{
-            ...buttonPrimaryStyle,
-            opacity: !isPending ? 0.5 : 1,
-            cursor: !isPending ? "default" : "pointer",
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpen();
           }}
+          style={isPending ? buttonPrimaryStyle : buttonSecondaryStyle}
         >
-          {isPending ? "承認 / 差し戻し" : "対応済み"}
+          {isPending ? "承認 / 差し戻し" : "詳細を見る"}
         </button>
       </div>
     </div>
   );
 }
 
-function MyRequestRow({ item, onCancel }: { item: ApproveItem; onCancel: () => void }) {
-  const status = statusInfo(item.flowStatus);
+function MyRequestRow({ item, onOpen }: { item: ApproveItem; onOpen: () => void }) {
   const canCancel = item.flowStatus === "申請済";
 
   return (
-    <div style={rowGridStyle}>
+    <div style={{ ...rowGridStyle, cursor: "pointer" }} onClick={onOpen}>
       <div style={{ minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: "#111827" }}>
-            {targetKindLabel(item.targetKind)}: {item.targetApprovementInfo ?? "-"}
-          </div>
-          <span style={badgeStyle(status.bg, status.fg)}>{status.label}</span>
-        </div>
+        <RowSummary item={item} />
         <div style={{ fontSize: 12, color: "#6b7280" }}>
           申請日時: {formatDateTime(item.registerTime)} ／ 更新日時: {formatDateTime(item.updateTime)}
         </div>
@@ -492,9 +498,25 @@ function MyRequestRow({ item, onCancel }: { item: ApproveItem; onCancel: () => v
       </div>
 
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
-        {canCancel && (
-          <button onClick={onCancel} style={buttonDangerStyle}>
+        {canCancel ? (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpen();
+            }}
+            style={buttonDangerStyle}
+          >
             取り消す
+          </button>
+        ) : (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpen();
+            }}
+            style={buttonSecondaryStyle}
+          >
+            詳細を見る
           </button>
         )}
       </div>
@@ -503,7 +525,6 @@ function MyRequestRow({ item, onCancel }: { item: ApproveItem; onCancel: () => v
 }
 
 function AdminInstructionRow({ item, onReject, onCancel }: { item: ApproveItem; onReject: () => void; onCancel: () => void }) {
-  const status = statusInfo(item.flowStatus);
   const canAct = item.flowStatus !== "差し戻し" && item.flowStatus !== "取り消し";
   const total = item.totalRecipientCount ?? 0;
   const confirmed = item.confirmedRecipientCount ?? 0;
@@ -511,15 +532,14 @@ function AdminInstructionRow({ item, onReject, onCancel }: { item: ApproveItem; 
   return (
     <div style={rowGridStyle}>
       <div style={{ minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: "#111827" }}>
-            {targetKindLabel(item.targetKind)}: {item.targetApprovementInfo ?? "-"}
-          </div>
-          <span style={badgeStyle(status.bg, status.fg)}>{status.label}</span>
-          <span style={badgeStyle("#e5e7eb", "#374151")}>
-            {confirmed}/{total}人が確認済み
-          </span>
-        </div>
+        <RowSummary
+          item={item}
+          extraBadge={
+            <span style={badgeStyle("#e5e7eb", "#374151")}>
+              {confirmed}/{total}人が確認済み
+            </span>
+          }
+        />
         <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 6 }}>
           発行日時: {formatDateTime(item.registerTime)} ／ 更新日時: {formatDateTime(item.updateTime)}
         </div>
@@ -550,20 +570,13 @@ function AdminInstructionRow({ item, onReject, onCancel }: { item: ApproveItem; 
   );
 }
 
-function StaffInstructionRow({ item, running, onConfirm }: { item: ApproveItem; running: boolean; onConfirm: () => void }) {
-  const status = statusInfo(item.flowStatus);
+function StaffInstructionRow({ item, onOpen }: { item: ApproveItem; onOpen: () => void }) {
   const canConfirm = !item.confirmedByMe && item.flowStatus !== "差し戻し" && item.flowStatus !== "取り消し";
 
   return (
-    <div style={rowGridStyle}>
+    <div style={{ ...rowGridStyle, cursor: "pointer" }} onClick={onOpen}>
       <div style={{ minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: "#111827" }}>
-            {targetKindLabel(item.targetKind)}: {item.targetApprovementInfo ?? "-"}
-          </div>
-          <span style={badgeStyle(status.bg, status.fg)}>{status.label}</span>
-          {item.confirmedByMe && <span style={badgeStyle("#dcfce7", "#166534")}>確認済み</span>}
-        </div>
+        <RowSummary item={item} extraBadge={item.confirmedByMe ? <span style={badgeStyle("#dcfce7", "#166534")}>確認済み</span> : undefined} />
         <div style={{ fontSize: 14, color: "#374151", marginBottom: 4 }}>発行者: {item.fromUserName ?? item.fromUserId ?? "-"}</div>
         <div style={{ fontSize: 12, color: "#6b7280" }}>
           発行日時: {formatDateTime(item.registerTime)} ／ 更新日時: {formatDateTime(item.updateTime)}
@@ -573,15 +586,13 @@ function StaffInstructionRow({ item, running, onConfirm }: { item: ApproveItem; 
 
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
         <button
-          disabled={!canConfirm || running}
-          onClick={onConfirm}
-          style={{
-            ...buttonPrimaryStyle,
-            opacity: !canConfirm ? 0.5 : 1,
-            cursor: !canConfirm || running ? "default" : "pointer",
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpen();
           }}
+          style={canConfirm ? buttonPrimaryStyle : buttonSecondaryStyle}
         >
-          {running ? "処理中..." : item.confirmedByMe ? "確認済み" : "確認する"}
+          {item.confirmedByMe ? "確認済み" : "確認する"}
         </button>
       </div>
     </div>
@@ -597,6 +608,7 @@ function ActionModal({
   onApprove,
   onReject,
   onSingleAction,
+  onConfirmInstruction,
 }: {
   state: ModalState | null;
   comment: string;
@@ -606,53 +618,90 @@ function ActionModal({
   onApprove: () => void;
   onReject: () => void;
   onSingleAction: () => void;
+  onConfirmInstruction: () => void;
 }) {
   if (!state) return null;
   const { kind, item } = state;
   const commentRequired = kind === "rejectInstruction" || kind === "cancelInstruction";
+  const status = statusInfo(item.flowStatus);
+
+  // reviewRequest/cancelRequestは、一覧行を常にクリック可能にしたことで
+  // 「対応済みの依頼」でも開けるようになったため、その場合は閲覧のみ(閉じるだけ)にする。
+  const needsPendingGuard = kind === "reviewRequest" || kind === "cancelRequest";
+  const isActionable = !needsPendingGuard || item.flowStatus === "申請済";
 
   return (
     <div style={overlayStyle} onClick={onClose}>
-      <div style={modalBoxStyle} onClick={(e) => e.stopPropagation()}>
-        <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 12 }}>{MODAL_TITLE[kind]}</div>
+      <div style={{ ...modalBoxStyle, maxWidth: 560 }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>{MODAL_TITLE[kind]}</div>
 
-        <div style={{ fontSize: 14, color: "#374151", marginBottom: 4 }}>
-          対象: {targetKindLabel(item.targetKind)} / {item.targetApprovementInfo ?? "-"}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
+          <span style={badgeStyle("#e5e7eb", "#374151")}>{targetKindLabel(item.targetKind)}</span>
+          <span style={badgeStyle(status.bg, status.fg)}>{status.label}</span>
+          {item.confirmedByMe && <span style={badgeStyle("#dcfce7", "#166534")}>確認済み</span>}
         </div>
+
+        <div style={{ marginBottom: 12 }}>
+          <TargetInfoView item={item} />
+        </div>
+
         {kind === "reviewRequest" && <div style={{ fontSize: 14, color: "#374151", marginBottom: 4 }}>申請者: {item.fromUserName ?? item.fromUserId ?? "-"}</div>}
+        {kind === "viewInstruction" && <div style={{ fontSize: 14, color: "#374151", marginBottom: 4 }}>発行者: {item.fromUserName ?? item.fromUserId ?? "-"}</div>}
         <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 12 }}>申請/発行日時: {formatDateTime(item.registerTime)}</div>
+        {item.comment && <div style={{ fontSize: 13, color: "#991b1b", marginBottom: 12 }}>コメント: {item.comment}</div>}
 
-        <textarea
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          placeholder={kind === "reviewRequest" ? "コメント（差し戻す場合は必須）" : commentRequired ? "コメント（必須）" : "コメント（任意）"}
-          style={textareaStyle}
-        />
-
-        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 16 }}>
-          <button onClick={onClose} disabled={running} style={buttonSecondaryStyle}>
-            閉じる
-          </button>
-
-          {kind === "reviewRequest" ? (
-            <>
-              <button onClick={onReject} disabled={running || !comment.trim()} style={{ ...buttonDangerStyle, opacity: running || !comment.trim() ? 0.6 : 1 }}>
-                {running ? "処理中..." : "差し戻す"}
-              </button>
-              <button onClick={onApprove} disabled={running} style={{ ...buttonPrimaryStyle, opacity: running ? 0.6 : 1 }}>
-                {running ? "処理中..." : "承認する"}
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={onSingleAction}
-              disabled={running || (commentRequired && !comment.trim())}
-              style={{ ...buttonDangerStyle, opacity: running || (commentRequired && !comment.trim()) ? 0.6 : 1 }}
-            >
-              {running ? "処理中..." : kind === "cancelRequest" ? "取り消す" : kind === "rejectInstruction" ? "差し戻す" : "取り消す"}
+        {kind === "viewInstruction" ? (
+          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 4 }}>
+            <button onClick={onClose} disabled={running} style={buttonSecondaryStyle}>
+              閉じる
             </button>
-          )}
-        </div>
+            {!item.confirmedByMe && item.flowStatus !== "差し戻し" && item.flowStatus !== "取り消し" && (
+              <button onClick={onConfirmInstruction} disabled={running} style={{ ...buttonPrimaryStyle, opacity: running ? 0.6 : 1 }}>
+                {running ? "処理中..." : "確認する"}
+              </button>
+            )}
+          </div>
+        ) : !isActionable ? (
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
+            <button onClick={onClose} style={buttonSecondaryStyle}>
+              閉じる
+            </button>
+          </div>
+        ) : (
+          <>
+            <textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder={kind === "reviewRequest" ? "コメント（差し戻す場合は必須）" : commentRequired ? "コメント（必須）" : "コメント（任意）"}
+              style={textareaStyle}
+            />
+
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 16 }}>
+              <button onClick={onClose} disabled={running} style={buttonSecondaryStyle}>
+                閉じる
+              </button>
+
+              {kind === "reviewRequest" ? (
+                <>
+                  <button onClick={onReject} disabled={running || !comment.trim()} style={{ ...buttonDangerStyle, opacity: running || !comment.trim() ? 0.6 : 1 }}>
+                    {running ? "処理中..." : "差し戻す"}
+                  </button>
+                  <button onClick={onApprove} disabled={running} style={{ ...buttonPrimaryStyle, opacity: running ? 0.6 : 1 }}>
+                    {running ? "処理中..." : "承認する"}
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={onSingleAction}
+                  disabled={running || (commentRequired && !comment.trim())}
+                  style={{ ...buttonDangerStyle, opacity: running || (commentRequired && !comment.trim()) ? 0.6 : 1 }}
+                >
+                  {running ? "処理中..." : kind === "cancelRequest" ? "取り消す" : kind === "rejectInstruction" ? "差し戻す" : "取り消す"}
+                </button>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { getAccessToken, getTokenType } from "../../../utils/auth";
+import { targetKindLabel, targetSummaryTitle, targetSummaryDetail, TargetInfoView } from "./targetInfoView";
 
 // dev.web.api.bm_a028 のレスポンスDTOに対応する型（指令のみ扱う）
 type ApproveItem = {
@@ -32,12 +33,6 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "/v1";
 // dev.web.controller.AdminApproveController の @RequestMapping("/api/approve") に対応。
 // 実際に使っているAPIパスの命名規則(例: /v1/api/admin/...)に合わせて変更してください。
 const APPROVE_API_BASE = `${API_BASE}/api/approve`;
-
-function targetKindLabel(targetKind?: string): string {
-  if (targetKind === "NOTICE") return "お知らせ";
-  if (targetKind === "SCREEN") return "画面";
-  return targetKind ?? "-";
-}
 
 function statusInfo(flowStatus?: string): { label: string; bg: string; fg: string } {
   switch (flowStatus) {
@@ -104,6 +99,7 @@ export default function InstructionConfirmPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [runningId, setRunningId] = useState<string | null>(null);
+  const [viewing, setViewing] = useState<ApproveItem | null>(null);
 
   const loadInstructions = async () => {
     setLoading(true);
@@ -139,12 +135,19 @@ export default function InstructionConfirmPage() {
     try {
       const res = await patchJsonSafe<ApproveActionResponse>(`${APPROVE_API_BASE}/instructions/${item.approveId}/confirm`);
       setMessage(res.message ?? "確認しました。");
+      setViewing(null);
     } catch (e) {
       setMessage(e instanceof Error ? e.message : String(e));
     } finally {
       setRunningId(null);
       await loadInstructions();
     }
+  };
+
+  const openView = (item: ApproveItem) => setViewing(item);
+  const closeView = () => {
+    if (runningId) return;
+    setViewing(null);
   };
 
   return (
@@ -199,16 +202,17 @@ export default function InstructionConfirmPage() {
               const status = statusInfo(item.flowStatus);
               const canConfirm = !item.confirmedByMe && item.flowStatus !== "差し戻し" && item.flowStatus !== "取り消し";
               const running = runningId === item.approveId;
+              const detail = targetSummaryDetail(item);
               return (
-                <div key={item.approveId} style={rowGridStyle}>
+                <div key={item.approveId} style={{ ...rowGridStyle, cursor: "pointer" }} onClick={() => openView(item)}>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
-                      <div style={{ fontSize: 16, fontWeight: 700, color: "#111827" }}>
-                        {targetKindLabel(item.targetKind)}: {item.targetApprovementInfo ?? "-"}
-                      </div>
+                      <span style={badgeStyle("#e5e7eb", "#374151")}>{targetKindLabel(item.targetKind)}</span>
+                      <div style={{ fontSize: 16, fontWeight: 700, color: "#111827" }}>{targetSummaryTitle(item)}</div>
                       <span style={badgeStyle(status.bg, status.fg)}>{status.label}</span>
                       {item.confirmedByMe && <span style={badgeStyle("#dcfce7", "#166534")}>確認済み</span>}
                     </div>
+                    {detail && <div style={{ fontSize: 13, color: "#6b7280", marginBottom: 4 }}>{detail}</div>}
                     <div style={{ fontSize: 14, color: "#374151", marginBottom: 4 }}>
                       発行者: {item.fromUserName ?? item.fromUserId ?? "-"}
                     </div>
@@ -220,13 +224,12 @@ export default function InstructionConfirmPage() {
 
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
                     <button
-                      disabled={!canConfirm || running}
-                      onClick={() => confirm(item)}
-                      style={{
-                        ...buttonPrimaryStyle,
-                        opacity: !canConfirm ? 0.5 : 1,
-                        cursor: !canConfirm || running ? "default" : "pointer",
+                      disabled={running}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openView(item);
                       }}
+                      style={canConfirm ? buttonPrimaryStyle : buttonSecondaryStyle}
                     >
                       {running ? "処理中..." : item.confirmedByMe ? "確認済み" : "確認する"}
                     </button>
@@ -237,6 +240,46 @@ export default function InstructionConfirmPage() {
           )}
         </div>
       </div>
+
+      {viewing && (
+        <div style={overlayStyle} onClick={closeView}>
+          <div style={modalBoxStyle} onClick={(e) => e.stopPropagation()}>
+            <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>指令の内容</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
+              <span style={badgeStyle("#e5e7eb", "#374151")}>{targetKindLabel(viewing.targetKind)}</span>
+              <span style={badgeStyle(statusInfo(viewing.flowStatus).bg, statusInfo(viewing.flowStatus).fg)}>
+                {statusInfo(viewing.flowStatus).label}
+              </span>
+              {viewing.confirmedByMe && <span style={badgeStyle("#dcfce7", "#166534")}>確認済み</span>}
+            </div>
+
+            <div style={{ marginBottom: 12 }}>
+              <TargetInfoView item={viewing} />
+            </div>
+
+            <div style={{ fontSize: 14, color: "#374151", marginBottom: 4 }}>発行者: {viewing.fromUserName ?? viewing.fromUserId ?? "-"}</div>
+            <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 12 }}>
+              発行日時: {formatDateTime(viewing.registerTime)} ／ 更新日時: {formatDateTime(viewing.updateTime)}
+            </div>
+            {viewing.comment && <div style={{ fontSize: 13, color: "#991b1b", marginBottom: 12 }}>コメント: {viewing.comment}</div>}
+
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 4 }}>
+              <button onClick={closeView} disabled={runningId === viewing.approveId} style={buttonSecondaryStyle}>
+                閉じる
+              </button>
+              {!viewing.confirmedByMe && viewing.flowStatus !== "差し戻し" && viewing.flowStatus !== "取り消し" && (
+                <button
+                  onClick={() => confirm(viewing)}
+                  disabled={runningId === viewing.approveId}
+                  style={{ ...buttonPrimaryStyle, opacity: runningId === viewing.approveId ? 0.6 : 1 }}
+                >
+                  {runningId === viewing.approveId ? "処理中..." : "確認する"}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -280,4 +323,24 @@ const buttonSecondaryStyle: React.CSSProperties = {
   color: "#111827",
   fontWeight: 700,
   cursor: "pointer",
+};
+
+const overlayStyle: React.CSSProperties = {
+  position: "fixed",
+  inset: 0,
+  background: "rgba(17, 24, 39, 0.5)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  zIndex: 50,
+  padding: 16,
+};
+
+const modalBoxStyle: React.CSSProperties = {
+  background: "white",
+  borderRadius: 16,
+  padding: 20,
+  width: "100%",
+  maxWidth: 560,
+  boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
 };
