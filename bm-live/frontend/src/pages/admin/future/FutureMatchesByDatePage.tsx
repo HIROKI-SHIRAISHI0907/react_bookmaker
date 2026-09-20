@@ -1,7 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-type FutureMatchStatus = "SCHEDULED" | "LIVE" | "FINISHED" | "POSTPONED" | "DELAYED" | "INTERRUPTED";
-
 type FutureMatchSystemData = {
   finishedCount?: number;
   liveCount?: number;
@@ -21,7 +19,7 @@ type FutureMatch = {
   awayTeam?: string;
   link?: string;
   roundNo?: number;
-  status?: FutureMatchStatus | string;
+  status?: string;
   systemData?: FutureMatchSystemData;
   realtimeData?: FutureMatchRealtimeData;
 };
@@ -91,56 +89,30 @@ function formatDateTimeJst(value?: string | null): string {
   }).format(date);
 }
 
-function normalizeStatus(value?: string): string {
-  return String(value ?? "")
-    .trim()
-    .toUpperCase();
+function getSystemDataStatus(match: FutureMatch): { label: string; tone: StatusTone } {
+  const finished = match.systemData?.finishedCount ?? 0;
+  const live = match.systemData?.liveCount ?? 0;
+
+  if (finished > 0) return { label: "終了済", tone: "emerald" };
+  if (live > 0) return { label: "ライブ", tone: "rose" };
+  return { label: "データなし", tone: "gray" };
 }
 
-function getStatusLabel(value?: string): string {
-  const v = normalizeStatus(value);
-
-  if (v === "SCHEDULED") return "予定";
-  if (v === "LIVE") return "ライブ";
-  if (v === "FINISHED") return "終了済";
-  if (v === "POSTPONED") return "延期";
-  if (v === "DELAYED") return "遅延";
-  if (v === "INTERRUPTED") return "中断";
-
-  return v || "-";
+function getSystemDataCount(match: FutureMatch): number {
+  const finished = match.systemData?.finishedCount ?? 0;
+  const live = match.systemData?.liveCount ?? 0;
+  return finished + live;
 }
 
-function getStatusTone(value?: string): StatusTone {
-  const v = normalizeStatus(value);
-
-  if (v === "SCHEDULED") return "blue";
-  if (v === "LIVE") return "rose";
-  if (v === "FINISHED") return "emerald";
-  if (v === "DELAYED") return "amber";
-  if (v === "INTERRUPTED") return "amber";
-  if (v === "POSTPONED") return "gray";
-
-  return "gray";
-}
-
-function getSystemDataLabel(systemData?: FutureMatchSystemData): string {
-  const finished = systemData?.finishedCount ?? 0;
-  const live = systemData?.liveCount ?? 0;
-
-  if (finished > 0) return `終了済 ${finished}件`;
-  if (live > 0) return `ライブ系 ${live}件`;
-  return "データなし";
-}
-
-function getRealtimeLabel(realtimeData?: FutureMatchRealtimeData): string {
-  const count = realtimeData?.currentLiveCount ?? 0;
+function getRealtimeDataStatus(match: FutureMatch): { label: string; tone: StatusTone } {
+  const count = match.realtimeData?.currentLiveCount ?? 0;
 
   if (count > 0) {
-    const updated = realtimeData?.lastUpdatedAt ? `（${formatDateTimeJst(realtimeData.lastUpdatedAt)}更新）` : "";
-    return `更新中 ${count}件${updated}`;
+    const updated = match.realtimeData?.lastUpdatedAt ? `（${formatDateTimeJst(match.realtimeData.lastUpdatedAt)}更新）` : "";
+    return { label: `更新中${updated}`, tone: "rose" };
   }
 
-  return "更新なし";
+  return { label: "更新なし", tone: "gray" };
 }
 
 function getMatchKey(match: FutureMatch, index: number): string {
@@ -537,9 +509,9 @@ const FutureMatchesByDatePage: React.FC = () => {
                     <th style={thStyle}>試合開始日時</th>
                     <th style={thStyle}>ホーム</th>
                     <th style={thStyle}>アウェイ</th>
-                    <th style={thStyle}>状態</th>
-                    <th style={thStyle}>システムデータ</th>
-                    <th style={thStyle}>リアルタイム</th>
+                    <th style={thStyle}>システムデータステータス</th>
+                    <th style={thStyle}>システムデータ件数</th>
+                    <th style={thStyle}>リアルタイムデータステータス</th>
                     <th style={thStyle}>リンク</th>
                   </tr>
                 </thead>
@@ -551,42 +523,45 @@ const FutureMatchesByDatePage: React.FC = () => {
                       </td>
                     </tr>
                   ) : (
-                    matches.map((match, index) => (
-                      <tr key={getMatchKey(match, index)}>
-                        <td style={thTdStyle}>{toDisplay(match.seq)}</td>
-                        <td style={thTdStyle}>{toDisplay(match.gameTeamCategory)}</td>
-                        <td style={thTdStyle}>{formatDateTimeJst(match.futureTime)}</td>
-                        <td style={thTdStyle}>{toDisplay(match.homeTeam)}</td>
-                        <td style={thTdStyle}>{toDisplay(match.awayTeam)}</td>
-                        <td style={thTdStyle}>
-                          <span style={getStatusPillStyle(getStatusTone(match.status))}>{getStatusLabel(match.status)}</span>
-                        </td>
-                        <td style={thTdStyle}>
-                          <span style={badgeStyle}>{getSystemDataLabel(match.systemData)}</span>
-                        </td>
-                        <td style={thTdStyle}>
-                          <span style={badgeStyle}>{getRealtimeLabel(match.realtimeData)}</span>
-                        </td>
-                        <td style={thTdStyle}>
-                          {match.link ? (
-                            <a
-                              href={match.link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{
-                                color: "#2563eb",
-                                textDecoration: "none",
-                                fontWeight: 600,
-                              }}
-                            >
-                              開く
-                            </a>
-                          ) : (
-                            "-"
-                          )}
-                        </td>
-                      </tr>
-                    ))
+                    matches.map((match, index) => {
+                      const systemStatus = getSystemDataStatus(match);
+                      const realtimeStatus = getRealtimeDataStatus(match);
+
+                      return (
+                        <tr key={getMatchKey(match, index)}>
+                          <td style={thTdStyle}>{toDisplay(match.seq)}</td>
+                          <td style={thTdStyle}>{toDisplay(match.gameTeamCategory)}</td>
+                          <td style={thTdStyle}>{formatDateTimeJst(match.futureTime)}</td>
+                          <td style={thTdStyle}>{toDisplay(match.homeTeam)}</td>
+                          <td style={thTdStyle}>{toDisplay(match.awayTeam)}</td>
+                          <td style={thTdStyle}>
+                            <span style={getStatusPillStyle(systemStatus.tone)}>{systemStatus.label}</span>
+                          </td>
+                          <td style={thTdStyle}>{getSystemDataCount(match)}件</td>
+                          <td style={thTdStyle}>
+                            <span style={getStatusPillStyle(realtimeStatus.tone)}>{realtimeStatus.label}</span>
+                          </td>
+                          <td style={thTdStyle}>
+                            {match.link ? (
+                              <a
+                                href={match.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  color: "#2563eb",
+                                  textDecoration: "none",
+                                  fontWeight: 600,
+                                }}
+                              >
+                                開く
+                              </a>
+                            ) : (
+                              "-"
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
@@ -611,50 +586,55 @@ const FutureMatchesByDatePage: React.FC = () => {
               </div>
             ) : (
               <div style={{ display: "grid", gap: 12 }}>
-                {matches.map((match, index) => (
-                  <div key={getMatchKey(match, index)} style={matchCardStyle}>
-                    <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-                      <div style={{ flex: "1 1 420px" }}>
-                        <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>
-                          id: {toDisplay(match.id)} / seq: {toDisplay(match.seq)}
-                        </div>
+                {matches.map((match, index) => {
+                  const systemStatus = getSystemDataStatus(match);
+                  const realtimeStatus = getRealtimeDataStatus(match);
 
-                        <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>
-                          {toDisplay(match.gameTeamCategory)} / round: {toDisplay(match.roundNo)}
-                        </div>
-
-                        <div style={{ fontSize: 18, fontWeight: 700, lineHeight: 1.4 }}>
-                          {toDisplay(match.homeTeam)} vs {toDisplay(match.awayTeam)}
-                        </div>
-
-                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
-                          <span style={badgeStyle}>試合開始: {formatDateTimeJst(match.futureTime)}</span>
-                          <span style={getStatusPillStyle(getStatusTone(match.status))}>{getStatusLabel(match.status)}</span>
-                          <span style={badgeStyle}>システム: {getSystemDataLabel(match.systemData)}</span>
-                          <span style={badgeStyle}>リアルタイム: {getRealtimeLabel(match.realtimeData)}</span>
-                        </div>
-
-                        {match.link && (
-                          <div style={{ marginTop: 10 }}>
-                            <a
-                              href={match.link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{
-                                color: "#2563eb",
-                                textDecoration: "none",
-                                fontSize: 12,
-                                fontWeight: 600,
-                              }}
-                            >
-                              試合ページを開く
-                            </a>
+                  return (
+                    <div key={getMatchKey(match, index)} style={matchCardStyle}>
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                        <div style={{ flex: "1 1 420px" }}>
+                          <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>
+                            id: {toDisplay(match.id)} / seq: {toDisplay(match.seq)}
                           </div>
-                        )}
+
+                          <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>
+                            {toDisplay(match.gameTeamCategory)} / round: {toDisplay(match.roundNo)}
+                          </div>
+
+                          <div style={{ fontSize: 18, fontWeight: 700, lineHeight: 1.4 }}>
+                            {toDisplay(match.homeTeam)} vs {toDisplay(match.awayTeam)}
+                          </div>
+
+                          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
+                            <span style={badgeStyle}>試合開始: {formatDateTimeJst(match.futureTime)}</span>
+                            <span style={getStatusPillStyle(systemStatus.tone)}>システムデータ: {systemStatus.label}</span>
+                            <span style={badgeStyle}>システムデータ件数: {getSystemDataCount(match)}件</span>
+                            <span style={getStatusPillStyle(realtimeStatus.tone)}>リアルタイム: {realtimeStatus.label}</span>
+                          </div>
+
+                          {match.link && (
+                            <div style={{ marginTop: 10 }}>
+                              <a
+                                href={match.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  color: "#2563eb",
+                                  textDecoration: "none",
+                                  fontSize: 12,
+                                  fontWeight: 600,
+                                }}
+                              >
+                                試合ページを開く
+                              </a>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </>

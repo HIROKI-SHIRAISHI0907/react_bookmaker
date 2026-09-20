@@ -376,10 +376,14 @@ function formatTokyoDate(date: Date): string {
     month: "2-digit",
     day: "2-digit",
     weekday: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
   }).formatToParts(date);
 
   const map = Object.fromEntries(parts.map((part) => [part.type, part.value]));
-  return `${map.year}-${map.month}-${map.day}（${map.weekday}） Asia/Tokyo`;
+  return `${map.year}-${map.month}-${map.day}（${map.weekday}） ${map.hour}:${map.minute}:${map.second} Asia/Tokyo`;
 }
 
 type EditableCellProps = {
@@ -644,7 +648,7 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
 
     updateTokyoNow();
 
-    const timerId = window.setInterval(updateTokyoNow, 60 * 1000);
+    const timerId = window.setInterval(updateTokyoNow, 1000);
 
     return () => {
       window.clearInterval(timerId);
