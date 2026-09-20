@@ -2,6 +2,16 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 type FutureMatchStatus = "SCHEDULED" | "LIVE" | "FINISHED" | "POSTPONED" | "DELAYED" | "INTERRUPTED";
 
+type FutureMatchSystemData = {
+  finishedCount?: number;
+  liveCount?: number;
+};
+
+type FutureMatchRealtimeData = {
+  currentLiveCount?: number;
+  lastUpdatedAt?: string | null;
+};
+
 type FutureMatch = {
   id?: string;
   seq?: number;
@@ -12,6 +22,8 @@ type FutureMatch = {
   link?: string;
   roundNo?: number;
   status?: FutureMatchStatus | string;
+  systemData?: FutureMatchSystemData;
+  realtimeData?: FutureMatchRealtimeData;
 };
 
 type FutureMatchesResponse = {
@@ -62,7 +74,7 @@ function getTodayJstString(): string {
   return `${y}-${m}-${d}`;
 }
 
-function formatDateTimeJst(value?: string): string {
+function formatDateTimeJst(value?: string | null): string {
   if (!value) return "-";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
@@ -109,6 +121,26 @@ function getStatusTone(value?: string): StatusTone {
   if (v === "POSTPONED") return "gray";
 
   return "gray";
+}
+
+function getSystemDataLabel(systemData?: FutureMatchSystemData): string {
+  const finished = systemData?.finishedCount ?? 0;
+  const live = systemData?.liveCount ?? 0;
+
+  if (finished > 0) return `終了済 ${finished}件`;
+  if (live > 0) return `ライブ系 ${live}件`;
+  return "データなし";
+}
+
+function getRealtimeLabel(realtimeData?: FutureMatchRealtimeData): string {
+  const count = realtimeData?.currentLiveCount ?? 0;
+
+  if (count > 0) {
+    const updated = realtimeData?.lastUpdatedAt ? `（${formatDateTimeJst(realtimeData.lastUpdatedAt)}更新）` : "";
+    return `更新中 ${count}件${updated}`;
+  }
+
+  return "更新なし";
 }
 
 function getMatchKey(match: FutureMatch, index: number): string {
@@ -506,13 +538,15 @@ const FutureMatchesByDatePage: React.FC = () => {
                     <th style={thStyle}>ホーム</th>
                     <th style={thStyle}>アウェイ</th>
                     <th style={thStyle}>状態</th>
+                    <th style={thStyle}>システムデータ</th>
+                    <th style={thStyle}>リアルタイム</th>
                     <th style={thStyle}>リンク</th>
                   </tr>
                 </thead>
                 <tbody>
                   {matches.length === 0 ? (
                     <tr>
-                      <td colSpan={7} style={thTdStyle}>
+                      <td colSpan={9} style={thTdStyle}>
                         対象データがありません。
                       </td>
                     </tr>
@@ -526,6 +560,12 @@ const FutureMatchesByDatePage: React.FC = () => {
                         <td style={thTdStyle}>{toDisplay(match.awayTeam)}</td>
                         <td style={thTdStyle}>
                           <span style={getStatusPillStyle(getStatusTone(match.status))}>{getStatusLabel(match.status)}</span>
+                        </td>
+                        <td style={thTdStyle}>
+                          <span style={badgeStyle}>{getSystemDataLabel(match.systemData)}</span>
+                        </td>
+                        <td style={thTdStyle}>
+                          <span style={badgeStyle}>{getRealtimeLabel(match.realtimeData)}</span>
                         </td>
                         <td style={thTdStyle}>
                           {match.link ? (
@@ -590,6 +630,8 @@ const FutureMatchesByDatePage: React.FC = () => {
                         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
                           <span style={badgeStyle}>試合開始: {formatDateTimeJst(match.futureTime)}</span>
                           <span style={getStatusPillStyle(getStatusTone(match.status))}>{getStatusLabel(match.status)}</span>
+                          <span style={badgeStyle}>システム: {getSystemDataLabel(match.systemData)}</span>
+                          <span style={badgeStyle}>リアルタイム: {getRealtimeLabel(match.realtimeData)}</span>
                         </div>
 
                         {match.link && (
