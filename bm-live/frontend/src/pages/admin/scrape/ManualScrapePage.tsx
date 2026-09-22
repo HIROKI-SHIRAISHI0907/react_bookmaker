@@ -21,35 +21,23 @@ type StatCountryLeagueOptionsResponse = {
   countries: StatCountryLeagueOption[];
 };
 
-type EcsRunRequest = {
-  batchCd: string;
-};
-
-type EcsRunResponse = {
-  taskArn?: string;
-};
-
-/** API（サーバ）側のrunMode。dev.web.api.bm_w013.StatRequestResource と一致させる */
+/** API（サーバ）側のrunMode。dev.web.api.bm_a009.EcsScrapeTaskProgressRequest と一致させる */
 type FutureRunMode = "WEEK" | "NEXT_DAY_ONLY" | "SPECIFIC_DATE";
 
-/** UI側の選択肢。SPECIFIC_DATE を「未来日」「過去日」で分けて選べるようにするための表示用モード */
-type FutureRunModeUi = "WEEK" | "NEXT_DAY_ONLY" | "SPECIFIC_DATE_FUTURE" | "SPECIFIC_DATE_PAST";
-
-/** dev.web.api.bm_w013.StatRequestResource と同じ形（B014/B005共通の共有DTO） */
-type StatRequestResource = {
-  country?: string;
-  league?: string;
-  season?: string;
-  readyFlg?: boolean;
+type EcsRunRequest = {
+  batchCd: string;
+  // 以降は未来データ取得スクレイピング（B005）用のオプション項目
   runMode?: FutureRunMode;
   targetDate?: string;
 };
 
-/** dev.web.api.bm_w013.StatResponseResource と同じ形 */
-type StatResponseResource = {
+type EcsRunResponse = {
   taskArn?: string;
-  returnCd?: string;
+  batchCd?: string;
 };
+
+/** UI側の選択肢。SPECIFIC_DATE を「未来日」「過去日」で分けて選べるようにするための表示用モード */
+type FutureRunModeUi = "WEEK" | "NEXT_DAY_ONLY" | "SPECIFIC_DATE_FUTURE" | "SPECIFIC_DATE_PAST";
 
 type ProgressRes = {
   taskId?: string;
@@ -109,7 +97,6 @@ const LIST_URL = `/v1/api/admin/s3/files/list`;
 const RUN_URL = `/v1/api/admin/scrape/ecs/run`;
 const STAT_EACH_URL = `/v1/api/stat/each`;
 const STAT_OPTIONS_URL = `/v1/api/admin/stat/options`;
-const FUTURE_EXEC_URL = `/v1/api/admin/exec/task/future`;
 
 async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url, { credentials: "include" });
@@ -321,7 +308,9 @@ export default function ManualScrapePage() {
     }
   };
 
-  const buildFutureRequestBody = (runMode: FutureRunMode, targetDate?: string): StatRequestResource => ({
+  // B005のリクエストボディを組み立てる（他バッチと同じ /ecs/run 宛。batchCd は常に必須）
+  const buildFutureRequestBody = (runMode: FutureRunMode, targetDate?: string): EcsRunRequest => ({
+    batchCd: pureBatchCode,
     runMode,
     targetDate: runMode === "SPECIFIC_DATE" ? targetDate?.trim() || undefined : undefined,
   });
@@ -432,7 +421,7 @@ export default function ManualScrapePage() {
 
       if (isB005) {
         const body = buildFutureRequestBody(toApiRunMode(futureRunMode), futureTargetDate);
-        return await postJson<StatResponseResource>(FUTURE_EXEC_URL, body);
+        return await postJson<EcsRunResponse>(RUN_URL, body);
       }
 
       const body: EcsRunRequest = { batchCd: pureBatchCode };
@@ -448,7 +437,7 @@ export default function ManualScrapePage() {
   const nextDayMutation = useMutation({
     mutationFn: async () => {
       const body = buildFutureRequestBody("NEXT_DAY_ONLY");
-      return await postJson<StatResponseResource>(FUTURE_EXEC_URL, body);
+      return await postJson<EcsRunResponse>(RUN_URL, body);
     },
     onSuccess: async (res) => {
       setLastTaskArn(res?.taskArn ?? null);
