@@ -126,6 +126,14 @@ function toPureBatchCode(code: string): string {
   return code.replace(/[（(].*$/, "").trim();
 }
 
+/** "YYYY-MM-DD" 形式に変換するヘルパー（ローカル日時基準） */
+function toDateInputValue(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
 /** ===================== UI（小さめ部品） ===================== */
 type Tone = "gray" | "blue" | "emerald" | "amber" | "rose" | "violet";
 
@@ -288,10 +296,25 @@ export default function ManualScrapePage() {
   const [futureRunMode, setFutureRunMode] = useState<FutureRunModeUi>("WEEK");
   const [futureTargetDate, setFutureTargetDate] = useState("");
 
+  // 「特定の過去日」モードで選択可能な範囲（今日 〜 7日前）。ブラウザのローカル日時基準。
+  const todayDateStr = useMemo(() => toDateInputValue(new Date()), []);
+  const minPastDateStr = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 7);
+    return toDateInputValue(d);
+  }, []);
+
   // UI上の選択肢（過去日/未来日）→ 実際にAPIへ送るrunMode（どちらもSPECIFIC_DATE）
   const toApiRunMode = (mode: FutureRunModeUi): FutureRunMode => (mode === "SPECIFIC_DATE_FUTURE" || mode === "SPECIFIC_DATE_PAST" ? "SPECIFIC_DATE" : mode);
 
   const isB005SpecificDateMode = futureRunMode === "SPECIFIC_DATE_FUTURE" || futureRunMode === "SPECIFIC_DATE_PAST";
+
+  // 「特定の過去日」モードの場合、選択した日付が7日前〜今日の範囲内かどうか
+  const isFutureTargetDateInRange = useMemo(() => {
+    if (futureRunMode !== "SPECIFIC_DATE_PAST") return true;
+    if (!futureTargetDate.trim()) return true; // 未入力は別途b005CanRunで弾く
+    return futureTargetDate >= minPastDateStr && futureTargetDate <= todayDateStr;
+  }, [futureRunMode, futureTargetDate, minPastDateStr, todayDateStr]);
 
   const futureRunModeLabel = (mode: FutureRunModeUi): string => {
     switch (mode) {
@@ -365,7 +388,7 @@ export default function ManualScrapePage() {
   }, [isB014, isB007, isB005]);
 
   const b014CanRun = !isB014 || (country.trim() !== "" && league.trim() !== "" && !statOptionsQuery.isLoading && !statOptionsQuery.isError);
-  const b005CanRun = !isB005 || !isB005SpecificDateMode || futureTargetDate.trim() !== "";
+  const b005CanRun = !isB005 || !isB005SpecificDateMode || (futureTargetDate.trim() !== "" && isFutureTargetDateInRange);
 
   // ===== B007 request =====
   const countReq = useMemo<S3FileCountRequest>(
@@ -481,7 +504,9 @@ export default function ManualScrapePage() {
             ? "B014 はリーグを選択してください"
             : isB005 && isB005SpecificDateMode && !futureTargetDate.trim()
               ? "B005 は対象日を指定してください"
-              : undefined;
+              : isB005 && futureRunMode === "SPECIFIC_DATE_PAST" && futureTargetDate.trim() && !isFutureTargetDateInRange
+                ? `B005 の過去日は ${minPastDateStr} 〜 ${todayDateStr} の範囲で指定してください`
+                : undefined;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-4 md:p-8">
@@ -601,7 +626,7 @@ export default function ManualScrapePage() {
             ) : isB005 ? (
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge tone="blue">mode: {futureRunModeLabel(futureRunMode)}</Badge>
-                {isB005SpecificDateMode ? <Badge tone={futureTargetDate ? "emerald" : "rose"}>date: {futureTargetDate || "未指定"}</Badge> : null}
+                {isB005SpecificDateMode ? <Badge tone={futureTargetDate && isFutureTargetDateInRange ? "emerald" : "rose"}>date: {futureTargetDate || "未指定"}</Badge> : null}
               </div>
             ) : (
               <div className="flex items-center gap-2 flex-wrap">
@@ -636,11 +661,13 @@ export default function ManualScrapePage() {
                       value={futureTargetDate}
                       onChange={(e) => setFutureTargetDate(e.target.value)}
                       disabled={busy}
+                      min={futureRunMode === "SPECIFIC_DATE_PAST" ? minPastDateStr : undefined}
+                      max={futureRunMode === "SPECIFIC_DATE_PAST" ? todayDateStr : undefined}
                       className="w-full px-4 py-3 rounded-xl border bg-white text-sm font-semibold hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                     <div className="text-xs text-gray-500">
                       {futureRunMode === "SPECIFIC_DATE_PAST"
-                        ? "過去日は最大7日前まで指定できます（Flashscore側の制約。「終了した試合」タブから自動取得します）。"
+                        ? `過去日は最大7日前（${minPastDateStr} 〜 ${todayDateStr}）までしか指定できません（Flashscore側の制約。「終了した試合」タブから自動取得します）。`
                         : "未来日を指定してください（今日から1週間程度先まで想定）。"}
                     </div>
                   </div>
@@ -725,7 +752,15 @@ export default function ManualScrapePage() {
 
           {isB005 && !b005CanRun ? (
             <div className="mt-4">
-              <Alert type="warning" title="B005の実行条件" message="「特定の未来日を指定」または「特定の過去日を指定」モードを選んだ場合は、対象日を指定してください。" />
+              <Alert
+                type="warning"
+                title="B005の実行条件"
+                message={
+                  isB005SpecificDateMode && futureTargetDate.trim() && !isFutureTargetDateInRange
+                    ? `過去日は ${minPastDateStr} 〜 ${todayDateStr} の範囲で指定してください（Flashscore側の制約で最大7日前までしか遡れません）。`
+                    : "「特定の未来日を指定」または「特定の過去日を指定」モードを選んだ場合は、対象日を指定してください。"
+                }
+              />
             </div>
           ) : null}
 
