@@ -109,7 +109,7 @@ const LIST_URL = `/v1/api/admin/s3/files/list`;
 const RUN_URL = `/v1/api/admin/scrape/ecs/run`;
 const STAT_EACH_URL = `/v1/api/stat/each`;
 const STAT_OPTIONS_URL = `/v1/api/admin/stat/options`;
-const FUTURE_EXEC_URL = `/api/admin/exec/task/future`;
+const FUTURE_EXEC_URL = `/v1/api/admin/exec/task/future`;
 
 async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url, { credentials: "include" });
