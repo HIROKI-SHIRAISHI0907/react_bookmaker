@@ -106,10 +106,18 @@ function getSystemDataCount(match: FutureMatch): number {
 
 function getRealtimeDataStatus(match: FutureMatch): { label: string; tone: StatusTone } {
   const count = match.realtimeData?.currentLiveCount ?? 0;
+  const lastUpdatedAt = match.realtimeData?.lastUpdatedAt;
 
   if (count > 0) {
-    const updated = match.realtimeData?.lastUpdatedAt ? `（${formatDateTimeJst(match.realtimeData.lastUpdatedAt)}更新）` : "";
+    const updated = lastUpdatedAt ? `（${formatDateTimeJst(lastUpdatedAt)}更新）` : "";
     return { label: `更新中${updated}`, tone: "rose" };
+  }
+
+  // 直近30分以内の更新は無いが、過去に更新実績はある
+  // ＝実際の試合はもう進行していない（終了済）とみなす
+  if (lastUpdatedAt) {
+    const updated = `（${formatDateTimeJst(lastUpdatedAt)}最終更新）`;
+    return { label: `終了済${updated}`, tone: "emerald" };
   }
 
   return { label: "更新なし", tone: "gray" };

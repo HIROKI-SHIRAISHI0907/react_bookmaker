@@ -29,6 +29,28 @@ type EcsRunResponse = {
   taskArn?: string;
 };
 
+/** API（サーバ）側のrunMode。dev.web.api.bm_w013.StatRequestResource と一致させる */
+type FutureRunMode = "WEEK" | "NEXT_DAY_ONLY" | "SPECIFIC_DATE";
+
+/** UI側の選択肢。SPECIFIC_DATE を「未来日」「過去日」で分けて選べるようにするための表示用モード */
+type FutureRunModeUi = "WEEK" | "NEXT_DAY_ONLY" | "SPECIFIC_DATE_FUTURE" | "SPECIFIC_DATE_PAST";
+
+/** dev.web.api.bm_w013.StatRequestResource と同じ形（B014/B005共通の共有DTO） */
+type StatRequestResource = {
+  country?: string;
+  league?: string;
+  season?: string;
+  readyFlg?: boolean;
+  runMode?: FutureRunMode;
+  targetDate?: string;
+};
+
+/** dev.web.api.bm_w013.StatResponseResource と同じ形 */
+type StatResponseResource = {
+  taskArn?: string;
+  returnCd?: string;
+};
+
 type ProgressRes = {
   taskId?: string;
   status?: "RUNNING" | "STOPPED" | "NOT_FOUND" | string;
@@ -87,6 +109,7 @@ const LIST_URL = `/v1/api/admin/s3/files/list`;
 const RUN_URL = `/v1/api/admin/scrape/ecs/run`;
 const STAT_EACH_URL = `/v1/api/stat/each`;
 const STAT_OPTIONS_URL = `/v1/api/admin/stat/options`;
+const FUTURE_EXEC_URL = `/api/admin/exec/task/future`;
 
 async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url, { credentials: "include" });
@@ -258,6 +281,7 @@ export default function ManualScrapePage() {
 
   const isB007 = batchCode === "B007（AllLeague）";
   const isB014 = batchCode === "B014";
+  const isB005 = batchCode === "B005（Future）";
 
   // API（URL・リクエストボディ）へ渡す際は、表示用の括弧書きを取り除いた「素の」コードを使う
   const pureBatchCode = useMemo(() => toPureBatchCode(batchCode), [batchCode]);
@@ -272,6 +296,35 @@ export default function ManualScrapePage() {
   const [country, setCountry] = useState("");
   const [league, setLeague] = useState("");
   const [season, setSeason] = useState("");
+
+  // ===== B005 =====
+  const [futureRunMode, setFutureRunMode] = useState<FutureRunModeUi>("WEEK");
+  const [futureTargetDate, setFutureTargetDate] = useState("");
+
+  // UI上の選択肢（過去日/未来日）→ 実際にAPIへ送るrunMode（どちらもSPECIFIC_DATE）
+  const toApiRunMode = (mode: FutureRunModeUi): FutureRunMode => (mode === "SPECIFIC_DATE_FUTURE" || mode === "SPECIFIC_DATE_PAST" ? "SPECIFIC_DATE" : mode);
+
+  const isB005SpecificDateMode = futureRunMode === "SPECIFIC_DATE_FUTURE" || futureRunMode === "SPECIFIC_DATE_PAST";
+
+  const futureRunModeLabel = (mode: FutureRunModeUi): string => {
+    switch (mode) {
+      case "WEEK":
+        return "1週間分（従来通り）";
+      case "NEXT_DAY_ONLY":
+        return "翌日のみ";
+      case "SPECIFIC_DATE_FUTURE":
+        return "特定の未来日を指定";
+      case "SPECIFIC_DATE_PAST":
+        return "特定の過去日を指定（終了済試合）";
+      default:
+        return mode;
+    }
+  };
+
+  const buildFutureRequestBody = (runMode: FutureRunMode, targetDate?: string): StatRequestResource => ({
+    runMode,
+    targetDate: runMode === "SPECIFIC_DATE" ? targetDate?.trim() || undefined : undefined,
+  });
 
   // ===== Progress =====
   const progressQuery = useQuery({
@@ -316,9 +369,14 @@ export default function ManualScrapePage() {
     if (!isB007) {
       setIsMasterModalOpen(false);
     }
-  }, [isB014, isB007]);
+    if (!isB005) {
+      setFutureRunMode("WEEK");
+      setFutureTargetDate("");
+    }
+  }, [isB014, isB007, isB005]);
 
   const b014CanRun = !isB014 || (country.trim() !== "" && league.trim() !== "" && !statOptionsQuery.isLoading && !statOptionsQuery.isError);
+  const b005CanRun = !isB005 || !isB005SpecificDateMode || futureTargetDate.trim() !== "";
 
   // ===== B007 request =====
   const countReq = useMemo<S3FileCountRequest>(
@@ -372,8 +430,25 @@ export default function ManualScrapePage() {
         return await postJson<StatExecuteResponse>(STAT_EACH_URL, body);
       }
 
+      if (isB005) {
+        const body = buildFutureRequestBody(toApiRunMode(futureRunMode), futureTargetDate);
+        return await postJson<StatResponseResource>(FUTURE_EXEC_URL, body);
+      }
+
       const body: EcsRunRequest = { batchCd: pureBatchCode };
       return await postJson<EcsRunResponse>(RUN_URL, body);
+    },
+    onSuccess: async (res) => {
+      setLastTaskArn(res?.taskArn ?? null);
+      await progressQuery.refetch();
+    },
+  });
+
+  // B005専用：プルダウンの選択状態に関わらず、即座に「翌日のみ」を実行する
+  const nextDayMutation = useMutation({
+    mutationFn: async () => {
+      const body = buildFutureRequestBody("NEXT_DAY_ONLY");
+      return await postJson<StatResponseResource>(FUTURE_EXEC_URL, body);
     },
     onSuccess: async (res) => {
       setLastTaskArn(res?.taskArn ?? null);
@@ -391,7 +466,7 @@ export default function ManualScrapePage() {
     },
   });
 
-  const busy = runMutation.isPending || masterMutation.isPending;
+  const busy = runMutation.isPending || masterMutation.isPending || nextDayMutation.isPending;
 
   const percent = progressQuery.data?.percent ?? null;
   const percentSafe = Math.min(100, Math.max(0, typeof percent === "number" ? percent : 0));
@@ -403,7 +478,7 @@ export default function ManualScrapePage() {
   const s3CountOnDayText = typeof s3CountQuery.data?.countOnDay === "number" ? s3CountQuery.data.countOnDay.toLocaleString() : "-";
   const s3ReturnedText = typeof s3ListQuery.data?.returnedCount === "number" ? s3ListQuery.data.returnedCount.toLocaleString() : "-";
 
-  const runButtonDisabled = runMutation.isPending || isRunning || masterMutation.isPending || !b014CanRun;
+  const runButtonDisabled = runMutation.isPending || isRunning || masterMutation.isPending || nextDayMutation.isPending || !b014CanRun || !b005CanRun;
 
   const runButtonTitle = isRunning
     ? "RUNNING中のため実行できません"
@@ -415,7 +490,9 @@ export default function ManualScrapePage() {
           ? "B014 は国を選択してください"
           : isB014 && !league.trim()
             ? "B014 はリーグを選択してください"
-            : undefined;
+            : isB005 && isB005SpecificDateMode && !futureTargetDate.trim()
+              ? "B005 は対象日を指定してください"
+              : undefined;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-4 md:p-8">
@@ -430,7 +507,7 @@ export default function ManualScrapePage() {
             </div>
             <div>
               <h1 className="text-3xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">スクレイピング管理</h1>
-              <p className="text-sm text-gray-600 mt-1">ECS起動（RUN）と進捗監視、B007はS3成果物からマスタ登録まで、B014は国・リーグ指定実行に対応</p>
+              <p className="text-sm text-gray-600 mt-1">ECS起動（RUN）と進捗監視、B005は特定日（未来/過去）・翌日取得、B007はS3成果物からマスタ登録まで、B014は国・リーグ指定実行に対応</p>
             </div>
           </div>
 
@@ -447,7 +524,7 @@ export default function ManualScrapePage() {
           <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
             <div>
               <div className="text-lg font-extrabold text-gray-900">操作</div>
-              <div className="text-sm text-gray-600 mt-1">RUN/更新、B007はS3確認・マスタ登録、B014は国とリーグを指定して実行</div>
+              <div className="text-sm text-gray-600 mt-1">RUN/更新、B005は実行モード指定＋翌日取得ボタン、B007はS3確認・マスタ登録、B014は国とリーグを指定して実行</div>
             </div>
 
             <div className="flex gap-2 flex-wrap">
@@ -532,12 +609,75 @@ export default function ManualScrapePage() {
                 <Badge tone={league ? "violet" : "gray"}>league: {league || "-"}</Badge>
                 <Badge tone="gray">season: {season || "-"}</Badge>
               </div>
+            ) : isB005 ? (
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge tone="blue">mode: {futureRunModeLabel(futureRunMode)}</Badge>
+                {isB005SpecificDateMode ? <Badge tone={futureTargetDate ? "emerald" : "rose"}>date: {futureTargetDate || "未指定"}</Badge> : null}
+              </div>
             ) : (
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge tone="gray">progress poll: 5s</Badge>
               </div>
             )}
           </div>
+
+          {isB005 ? (
+            <div className="mt-5 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid gap-2">
+                  <label className="text-sm font-extrabold text-gray-900">実行モード</label>
+                  <select
+                    value={futureRunMode}
+                    onChange={(e) => setFutureRunMode(e.target.value as FutureRunModeUi)}
+                    disabled={busy}
+                    className="w-full px-4 py-3 rounded-xl border bg-white text-sm font-semibold hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="WEEK">1週間分（従来通り）</option>
+                    <option value="NEXT_DAY_ONLY">翌日のみ</option>
+                    <option value="SPECIFIC_DATE_FUTURE">特定の未来日を指定</option>
+                    <option value="SPECIFIC_DATE_PAST">特定の過去日を指定（終了済試合）</option>
+                  </select>
+                </div>
+
+                {isB005SpecificDateMode ? (
+                  <div className="grid gap-2">
+                    <label className="text-sm font-extrabold text-gray-900">対象日</label>
+                    <input
+                      type="date"
+                      value={futureTargetDate}
+                      onChange={(e) => setFutureTargetDate(e.target.value)}
+                      disabled={busy}
+                      className="w-full px-4 py-3 rounded-xl border bg-white text-sm font-semibold hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <div className="text-xs text-gray-500">
+                      {futureRunMode === "SPECIFIC_DATE_PAST"
+                        ? "過去日は最大7日前まで指定できます（Flashscore側の制約。「終了した試合」タブから自動取得します）。"
+                        : "未来日を指定してください（今日から1週間程度先まで想定）。"}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="hidden md:block" />
+                )}
+
+                <div className="hidden md:block" />
+              </div>
+
+              <div className="flex items-center gap-3 flex-wrap rounded-xl border border-dashed border-gray-300 bg-gray-50/60 p-4">
+                <Button
+                  variant="secondary"
+                  onClick={() => nextDayMutation.mutate()}
+                  disabled={runMutation.isPending || masterMutation.isPending || isRunning || nextDayMutation.isPending}
+                  loading={nextDayMutation.isPending}
+                  title="実行モードの選択に関わらず、翌日分を即時取得します"
+                >
+                  次の日取得
+                </Button>
+                <div className="text-xs text-gray-600">上のプルダウンの選択に関わらず、翌日分を即座に取得します。</div>
+              </div>
+
+              {nextDayMutation.isError ? <Alert type="error" title="翌日データ取得エラー" message={(nextDayMutation.error as Error).message} /> : null}
+            </div>
+          ) : null}
 
           {isB014 ? (
             <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -593,6 +733,12 @@ export default function ManualScrapePage() {
             {progressQuery.isError ? <Alert type="error" title="進捗取得エラー" message={(progressQuery.error as Error).message} /> : null}
             {masterMutation.isError ? <Alert type="error" title="マスタ登録エラー" message={(masterMutation.error as Error).message} /> : null}
           </div>
+
+          {isB005 && !b005CanRun ? (
+            <div className="mt-4">
+              <Alert type="warning" title="B005の実行条件" message="「特定の未来日を指定」または「特定の過去日を指定」モードを選んだ場合は、対象日を指定してください。" />
+            </div>
+          ) : null}
 
           {isB014 && statOptionsQuery.isError ? (
             <div className="mt-4">
