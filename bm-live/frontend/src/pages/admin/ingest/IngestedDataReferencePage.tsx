@@ -286,6 +286,15 @@ export default function IngestedDataReferenceAdminPage() {
   const [execError, setExecError] = useState<string | null>(null);
   const [execResult, setExecResult] = useState<ExecTaskResponse | null>(null);
 
+  // --- bulk (all pages) B008 execution ---
+  const BULK_CHUNK_SIZE = 300;
+  const BULK_CHUNK_DELAY_MS = 3000;
+
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [bulkError, setBulkError] = useState<string | null>(null);
+  const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number } | null>(null);
+  const [bulkResults, setBulkResults] = useState<Array<{ batch: number; size: number; ok: boolean; detail: string }>>([]);
+
   const [expandedKeys, setExpandedKeys] = useState<Record<string, boolean>>({});
 
   const abortRef = useRef<AbortController | null>(null);
@@ -378,12 +387,12 @@ export default function IngestedDataReferenceAdminPage() {
       const req = buildFinGettingRequestFromRows(rows);
 
       if (req.matches.length === 0) {
-        setExecError("B008対象が0件です（futureTime または matchId が取れる行がありません）。");
+        setExecError("B008対象が0件です(futureTime または matchId が取れる行がありません)。");
         return;
       }
 
       if (req.matches.length > 300) {
-        setExecError(`対象が多すぎます（${req.matches.length}件）。検索条件を絞ってください。`);
+        setExecError(`対象が多すぎます(${req.matches.length}件)。検索条件を絞ってください。`);
         return;
       }
 
@@ -393,6 +402,88 @@ export default function IngestedDataReferenceAdminPage() {
       setExecError(e?.message ?? String(e));
     } finally {
       setExecLoading(false);
+    }
+  };
+
+  // 現在適用中の検索条件(country / onlyNeedsAttention)で、ページングせず全件を取得する。
+  const fetchAllMatchingRows = async (): Promise<IngestedRowDTO[]> => {
+    const bulkPageSize = 500; // 通信回数を減らすため、通常のページサイズより大きめに取得する
+    let bulkOffset = 0;
+    let bulkTotal = Infinity;
+    const all: IngestedRowDTO[] = [];
+    const MAX_PAGES = 200; // 無限ループ防止用の安全策
+
+    for (let page = 0; page < MAX_PAGES && bulkOffset < bulkTotal; page++) {
+      const params = new URLSearchParams();
+
+      if (country.trim()) {
+        params.set("country", country.trim());
+      }
+
+      params.set("onlyNeedsAttention", String(onlyNeedsAttention));
+      params.set("limit", String(bulkPageSize));
+      params.set("offset", String(bulkOffset));
+
+      const res = await fetchJsonStrict<ApiResponse>(`/v1/api/admin/ingested?${params.toString()}`);
+      bulkTotal = res.total ?? 0;
+      const pageRows = res.rows ?? [];
+      all.push(...pageRows);
+
+      if (pageRows.length === 0) break;
+      bulkOffset += pageRows.length;
+    }
+
+    return all;
+  };
+
+  // 現在の検索条件に合致する全件(ページ横断)を対象にB008を一括起動する。
+  // 1回のリクエストが大きくなりすぎないよう、BULK_CHUNK_SIZE件ずつに分割して順番に実行する。
+  const runB008AllMatching = async () => {
+    setBulkLoading(true);
+    setBulkError(null);
+    setBulkResults([]);
+    setBulkProgress(null);
+
+    try {
+      const allRows = await fetchAllMatchingRows();
+
+      if (allRows.length === 0) {
+        setBulkError("対象が0件です。");
+        return;
+      }
+
+      const fullReq = buildFinGettingRequestFromRows(allRows);
+
+      if (fullReq.matches.length === 0) {
+        setBulkError("B008対象が0件です(matchDate または matchId が取れる行がありません)。");
+        return;
+      }
+
+      const chunks: FinGettingRequest["matches"][] = [];
+      for (let i = 0; i < fullReq.matches.length; i += BULK_CHUNK_SIZE) {
+        chunks.push(fullReq.matches.slice(i, i + BULK_CHUNK_SIZE));
+      }
+
+      setBulkProgress({ done: 0, total: chunks.length });
+
+      for (let i = 0; i < chunks.length; i++) {
+        try {
+          const res = await postFinGettingJson({ matches: chunks[i] });
+          setBulkResults((prev) => [...prev, { batch: i + 1, size: chunks[i].length, ok: true, detail: JSON.stringify(res) }]);
+        } catch (e: any) {
+          setBulkResults((prev) => [...prev, { batch: i + 1, size: chunks[i].length, ok: false, detail: e?.message ?? String(e) }]);
+        }
+
+        setBulkProgress({ done: i + 1, total: chunks.length });
+
+        if (i < chunks.length - 1) {
+          await new Promise((r) => setTimeout(r, BULK_CHUNK_DELAY_MS));
+        }
+      }
+    } catch (e: any) {
+      setBulkError(e?.message ?? String(e));
+    } finally {
+      setBulkLoading(false);
     }
   };
 
@@ -432,6 +523,17 @@ export default function IngestedDataReferenceAdminPage() {
           />
         ) : null}
 
+        {bulkError ? <Alert type="error" title="一括B008起動に失敗しました" message={bulkError} onClose={() => setBulkError(null)} /> : null}
+
+        {bulkResults.length > 0 ? (
+          <Alert
+            type={bulkResults.every((r) => r.ok) ? "success" : "error"}
+            title={`一括B008起動: ${bulkResults.filter((r) => r.ok).length}/${bulkResults.length} バッチ成功${bulkLoading ? "(実行中...)" : ""}`}
+            message={bulkResults.map((r) => `バッチ${r.batch}(${r.size}件): ${r.ok ? "OK" : "失敗"} - ${r.detail}`).join("\n")}
+            onClose={bulkLoading ? undefined : () => setBulkResults([])}
+          />
+        ) : null}
+
         {error ? <Alert type="error" title="取得に失敗しました" message={error} onClose={() => setError(null)} /> : null}
 
         <Panel
@@ -439,13 +541,17 @@ export default function IngestedDataReferenceAdminPage() {
           desc="チェックボックスの状態を変えたあと、検索ボタンでAPIを再実行します。"
           right={
             <div className="flex flex-col items-end gap-1">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap justify-end">
                 <Button onClick={handleSearch} disabled={loading}>
                   {loading ? "検索中..." : "検索"}
                 </Button>
 
-                <Button size="sm" onClick={runB008} disabled={loading || execLoading || rows.length === 0}>
-                  {execLoading ? "B008起動中..." : "B008起動"}
+                <Button size="sm" onClick={runB008} disabled={loading || execLoading || bulkLoading || rows.length === 0}>
+                  {execLoading ? "B008起動中..." : "B008起動(現在ページ)"}
+                </Button>
+
+                <Button size="sm" variant="outline" onClick={runB008AllMatching} disabled={loading || execLoading || bulkLoading || total === 0}>
+                  {bulkLoading ? `一括実行中 (${bulkProgress?.done ?? 0}/${bulkProgress?.total ?? "?"}バッチ)` : `全件(${total}件)でB008一括起動`}
                 </Button>
               </div>
 
