@@ -64,6 +64,23 @@ type SelectOption = {
   value: string;
 };
 
+type Tone = "gray" | "blue" | "emerald" | "amber" | "rose";
+
+/**
+ * 画面上の「実行単位」。
+ * B014 は readyFlg=true / false の2つの実行単位に分かれる。
+ */
+type RunUnit = {
+  key: string; // running / results / errors の state key
+  display: TaskDef; // 表示用（code / title / description / precheckMode）
+  baseTask: TaskDef; // 実行用（endpoint）
+  fileCheckKey: string; // fileChecks の参照キー
+  extraBody?: Partial<StatRequestResource>;
+};
+
+type ViewMode = "compact" | "detail";
+type FilterMode = "all" | "runnable" | "blocked";
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 const STAT_OPTIONS_ENDPOINT = "/v1/api/admin/stat/options";
 const FILE_CHECKS_ENDPOINT = "/v1/api/admin/file-checks";
@@ -77,6 +94,8 @@ const B014_ENDPOINT = "/v1/api/admin/exec/task/geografic";
 
 const B014_TRUE_STATE_KEY = "B014T";
 const B014_FALSE_STATE_KEY = "B014F";
+
+const VIEW_MODE_STORAGE_KEY = "dataFetchAdmin.viewMode";
 
 /** ============ Utils ============ */
 function toTrimOrNull(s: string): string | null {
@@ -92,6 +111,23 @@ function getErrorMessage(e: unknown): string {
 function withCacheBuster(url: string): string {
   const sep = url.indexOf("?") >= 0 ? "&" : "?";
   return `${url}${sep}_ts=${Date.now()}`;
+}
+
+function loadViewMode(): ViewMode {
+  try {
+    const v = window.localStorage.getItem(VIEW_MODE_STORAGE_KEY);
+    return v === "detail" ? "detail" : "compact";
+  } catch {
+    return "compact";
+  }
+}
+
+function saveViewMode(mode: ViewMode) {
+  try {
+    window.localStorage.setItem(VIEW_MODE_STORAGE_KEY, mode);
+  } catch {
+    // ignore
+  }
 }
 
 async function postJsonSafe<T>(url: string, body: unknown): Promise<{ data: T | null; rawText: string | null }> {
@@ -213,7 +249,7 @@ function getFileBadgeLabel(task?: BatchFileCheckTaskResource): string {
   return task.summary?.trim() || "必須不足";
 }
 
-function getItemTone(item: BatchFileCheckItemResource): "gray" | "blue" | "emerald" | "amber" | "rose" {
+function getItemTone(item: BatchFileCheckItemResource): Tone {
   if (item.kind === "count") {
     if (item.required && !item.exists) return "rose";
     return "blue";
@@ -273,8 +309,9 @@ type ButtonProps = {
   loading?: boolean;
   icon?: React.ReactNode;
   className?: string;
+  title?: string;
 };
-const Button = ({ children, onClick, variant = "primary", disabled, loading, icon, className = "" }: ButtonProps) => {
+const Button = ({ children, onClick, variant = "primary", disabled, loading, icon, className = "", title }: ButtonProps) => {
   const variantClasses: Record<ButtonVariant, string> = {
     primary: "bg-blue-600 hover:bg-blue-700 text-white border-blue-600 focus:ring-blue-500",
     secondary: "bg-gray-50 hover:bg-gray-100 text-gray-800 border-gray-200 focus:ring-gray-300",
@@ -286,6 +323,7 @@ const Button = ({ children, onClick, variant = "primary", disabled, loading, ico
     <button
       onClick={onClick}
       disabled={disabled || loading}
+      title={title}
       className={`
         inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold
         transition-all duration-200 shadow-sm hover:shadow-md
@@ -368,7 +406,7 @@ const Select = ({ label, value, onChange, options, placeholder = "選択して�
 );
 
 type AlertType = "info" | "success" | "error" | "warning";
-const Alert = ({ type, title, message, onClose }: { type: AlertType; title: string; message: string; onClose?: () => void }) => {
+const Alert = ({ type, title, message, onClose, className = "" }: { type: AlertType; title: string; message: string; onClose?: () => void; className?: string }) => {
   const typeClasses: Record<AlertType, string> = {
     info: "bg-blue-50 border-blue-200 text-blue-900",
     success: "bg-emerald-50 border-emerald-200 text-emerald-900",
@@ -376,16 +414,16 @@ const Alert = ({ type, title, message, onClose }: { type: AlertType; title: stri
     warning: "bg-amber-50 border-amber-200 text-amber-900",
   };
   return (
-    <div className={`border rounded-2xl p-4 flex gap-3 items-start ${typeClasses[type]}`}>
+    <div className={`border rounded-2xl p-4 flex gap-3 items-start ${typeClasses[type]} ${className}`}>
       <div className="mt-0.5">
         {type === "info" && "💡"}
         {type === "success" && "✅"}
         {type === "error" && "❌"}
         {type === "warning" && "⚠️"}
       </div>
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         <div className="font-bold text-sm">{title}</div>
-        <pre className="mt-1 whitespace-pre-wrap text-xs leading-relaxed">{message}</pre>
+        <pre className="mt-1 whitespace-pre-wrap break-all text-xs leading-relaxed max-h-60 overflow-auto">{message}</pre>
       </div>
       {onClose && (
         <button onClick={onClose} className="text-gray-500 hover:text-gray-800 transition-colors">
@@ -396,15 +434,32 @@ const Alert = ({ type, title, message, onClose }: { type: AlertType; title: stri
   );
 };
 
-const Badge = ({ children, tone = "gray" }: { children: React.ReactNode; tone?: "gray" | "blue" | "emerald" | "amber" | "rose" }) => {
-  const classes: Record<string, string> = {
-    gray: "bg-gray-100 text-gray-700 border-gray-200",
-    blue: "bg-blue-100 text-blue-800 border-blue-200",
-    emerald: "bg-emerald-100 text-emerald-800 border-emerald-200",
-    amber: "bg-amber-100 text-amber-800 border-amber-200",
-    rose: "bg-rose-100 text-rose-800 border-rose-200",
-  };
-  return <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${classes[tone]}`}>{children}</span>;
+const toneClasses: Record<Tone, string> = {
+  gray: "bg-gray-100 text-gray-700 border-gray-200",
+  blue: "bg-blue-100 text-blue-800 border-blue-200",
+  emerald: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  amber: "bg-amber-100 text-amber-800 border-amber-200",
+  rose: "bg-rose-100 text-rose-800 border-rose-200",
+};
+
+const Badge = ({ children, tone = "gray" }: { children: React.ReactNode; tone?: Tone }) => {
+  return <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border whitespace-nowrap ${toneClasses[tone]}`}>{children}</span>;
+};
+
+/** 事前確認アイテムを1行に収まる小さなチップで表示 */
+const ItemChip = ({ item }: { item: BatchFileCheckItemResource }) => {
+  const tone = getItemTone(item);
+  const tooltip = [item.bucket ? `Bucket: ${item.bucket}` : null, item.key ? `Key: ${item.key}` : null, item.kind === "count" ? `Count: ${item.count ?? 0}` : null, item.required ? "必須" : "任意"]
+    .filter(Boolean)
+    .join("\n");
+
+  return (
+    <span title={tooltip} className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-medium whitespace-nowrap ${toneClasses[tone]}`}>
+      <span aria-hidden="true">{getItemIcon(item)}</span>
+      <span>{item.label ?? "-"}</span>
+      {item.kind === "count" && <span className="font-bold">: {item.count ?? 0}</span>}
+    </span>
+  );
 };
 
 /** ============ Page ============ */
@@ -512,6 +567,50 @@ export default function DataFetchAdminPage() {
     [],
   );
 
+  /** タスク定義 → 実行単位（B014 は T / F に分割） */
+  const units: RunUnit[] = useMemo(() => {
+    const list: RunUnit[] = [];
+    for (const t of tasks) {
+      if (t.code === "B014") {
+        list.push({
+          key: B014_TRUE_STATE_KEY,
+          display: {
+            ...t,
+            id: B014_TRUE_STATE_KEY,
+            code: B014_TRUE_STATE_KEY,
+            title: `${t.title}（readyFlg=true）`,
+            description: "前提条件なしで実行",
+            precheckMode: "always",
+          },
+          baseTask: t,
+          fileCheckKey: B014_TRUE_STATE_KEY,
+          extraBody: { readyFlg: true },
+        });
+        list.push({
+          key: B014_FALSE_STATE_KEY,
+          display: {
+            ...t,
+            id: B014_FALSE_STATE_KEY,
+            code: B014_FALSE_STATE_KEY,
+            title: `${t.title}（readyFlg=false）`,
+            precheckMode: "required",
+          },
+          baseTask: t,
+          fileCheckKey: B014_FALSE_STATE_KEY,
+          extraBody: { readyFlg: false },
+        });
+        continue;
+      }
+      list.push({
+        key: t.id,
+        display: t,
+        baseTask: t,
+        fileCheckKey: t.precheckTaskCode ?? t.code,
+      });
+    }
+    return list;
+  }, [tasks]);
+
   const [country, setCountry] = useState("");
   const [league, setLeague] = useState("");
   const [season, setSeason] = useState("");
@@ -528,6 +627,33 @@ export default function DataFetchAdminPage() {
   const [fileChecks, setFileChecks] = useState<Record<string, BatchFileCheckTaskResource>>({});
   const [fileChecksLoading, setFileChecksLoading] = useState(false);
   const [fileChecksError, setFileChecksError] = useState<string | null>(null);
+
+  // 表示の工夫用
+  const [viewMode, setViewMode] = useState<ViewMode>(() => loadViewMode());
+  const [filterMode, setFilterMode] = useState<FilterMode>("all");
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [paramsOpen, setParamsOpen] = useState(false);
+
+  const changeViewMode = (mode: ViewMode) => {
+    setViewMode(mode);
+    saveViewMode(mode);
+  };
+
+  const toggleExpanded = (key: string) => {
+    setExpanded((p) => {
+      const next = new Set(p);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  // 成功メッセージは6秒で自動的に閉じる
+  useEffect(() => {
+    if (globalMessage?.type !== "success") return;
+    const timer = window.setTimeout(() => setGlobalMessage(null), 6000);
+    return () => window.clearTimeout(timer);
+  }, [globalMessage]);
 
   const requestBody = useMemo<StatRequestResource>(() => {
     const body: StatRequestResource = {};
@@ -606,6 +732,7 @@ export default function DataFetchAdminPage() {
   useEffect(() => {
     loadFileChecks();
     loadStatOptions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -684,7 +811,44 @@ export default function DataFetchAdminPage() {
     }
   };
 
-  const statOptionsBadgeTone: "gray" | "emerald" | "amber" | "rose" = statOptionsError ? "rose" : statOptionsLoading ? "amber" : "emerald";
+  const runUnit = async (u: RunUnit) => {
+    await runTask(u.baseTask, {
+      stateKey: u.key,
+      extraBody: u.extraBody,
+      successCode: u.display.code,
+      successTitle: u.display.title,
+      errorCode: u.display.code,
+      errorTitle: u.display.title,
+    });
+    // 実行後は結果が見えるように詳細を開く
+    setExpanded((p) => new Set(p).add(u.key));
+  };
+
+  /** 各実行単位の状態をまとめて計算 */
+  const unitStates = useMemo(() => {
+    return units.map((u) => {
+      const isRunning = running.has(u.key);
+      const result = results[u.key];
+      const err = errors[u.key];
+      const fileCheck = fileChecks[u.fileCheckKey];
+      const canRun = canRunTask(u.display, isRunning, fileCheck);
+      const runnable = canRunTask(u.display, false, fileCheck); // 実行中かどうかに関係なく、条件を満たすか
+      const runTone: Tone = isRunning ? "amber" : err ? "rose" : result ? "emerald" : "gray";
+      const runLabel = isRunning ? "RUNNING" : err ? "ERROR" : result ? "DONE" : "IDLE";
+      return { u, isRunning, result, err, fileCheck, canRun, runnable, runTone, runLabel };
+    });
+  }, [units, running, results, errors, fileChecks]);
+
+  const runnableCount = unitStates.filter((s) => s.runnable).length;
+  const blockedCount = unitStates.length - runnableCount;
+
+  const visibleStates = unitStates.filter((s) => {
+    if (filterMode === "runnable") return s.runnable;
+    if (filterMode === "blocked") return !s.runnable;
+    return true;
+  });
+
+  const statOptionsBadgeTone: Tone = statOptionsError ? "rose" : statOptionsLoading ? "amber" : "emerald";
 
   const statOptionsBadgeLabel = statOptionsError ? "候補取得失敗" : statOptionsLoading ? "候補取得中..." : `候補API OK (${countryOptions.length} countries)`;
 
@@ -697,7 +861,7 @@ export default function DataFetchAdminPage() {
         </div>
 
         {fileCheck?.items?.length ? (
-          <div className="mt-3 space-y-2">
+          <div className="mt-3 grid grid-cols-1 lg:grid-cols-2 gap-2">
             {fileCheck.items.map((item, idx) => (
               <div key={`${task.code}-${idx}`} className="rounded-xl border border-gray-100 bg-white p-3">
                 <div className="flex items-start gap-3">
@@ -773,9 +937,143 @@ export default function DataFetchAdminPage() {
     );
   };
 
+  /** 事前確認をチップで1行表示 */
+  const renderItemChips = (task: TaskDef, fileCheck?: BatchFileCheckTaskResource) => {
+    if (fileCheck?.items?.length) {
+      return (
+        <div className="flex flex-wrap gap-1.5">
+          {fileCheck.items.map((item, idx) => (
+            <ItemChip key={`${task.code}-chip-${idx}`} item={item} />
+          ))}
+        </div>
+      );
+    }
+    if (task.precheckMode === "always") {
+      return <span className="text-[11px] text-emerald-700">前提条件なし</span>;
+    }
+    return <span className="text-[11px] text-gray-400">確認情報なし</span>;
+  };
+
+  /** ===== コンパクト表示: 1タスク = 1行 ===== */
+  const renderCompactRow = (s: (typeof unitStates)[number]) => {
+    const { u, isRunning, result, err, fileCheck, canRun, runTone, runLabel } = s;
+    const t = u.display;
+    const isOpen = expanded.has(u.key) || !!err;
+
+    return (
+      <div key={u.key} className={`rounded-xl border bg-white transition-colors ${s.runnable ? "border-gray-100" : "border-rose-100"}`}>
+        <div className="flex flex-col md:flex-row md:items-center gap-3 px-4 py-3">
+          {/* 左: コード + タイトル + チップ */}
+          <div className="flex items-start gap-3 min-w-0 flex-1">
+            <div className="w-20 shrink-0 pt-0.5">
+              <Badge tone="blue">{t.code}</Badge>
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-bold text-gray-900 truncate" title={`${t.title}\n${t.description}\n${t.endpoint}`}>
+                {t.title}
+              </div>
+              <div className="mt-1.5">{renderItemChips(t, fileCheck)}</div>
+            </div>
+          </div>
+
+          {/* 右: 状態 + 操作 */}
+          <div className="flex items-center gap-2 flex-wrap md:flex-nowrap md:justify-end shrink-0">
+            <Badge tone={runTone}>{runLabel}</Badge>
+            <Badge tone={getEffectiveFileBadgeTone(t, fileCheck)}>{getEffectiveFileBadgeLabel(t, fileCheck)}</Badge>
+            <Button onClick={() => runUnit(u)} loading={isRunning} disabled={!canRun} icon={!isRunning ? "▶️" : undefined} className="px-3 py-1.5 text-xs">
+              {isRunning ? "実行中" : "実行"}
+            </Button>
+            <Button variant="secondary" onClick={() => navigator.clipboard.writeText(`${API_BASE}${u.baseTask.endpoint}`)} className="px-2.5 py-1.5 text-xs" title="URLコピー">
+              📎
+            </Button>
+            <Button variant="secondary" onClick={() => toggleExpanded(u.key)} className="px-2.5 py-1.5 text-xs" title="詳細">
+              {isOpen ? "▲" : "▼"}
+            </Button>
+          </div>
+        </div>
+
+        {isOpen && (
+          <div className="border-t border-gray-100 px-4 pb-4">
+            <div className="mt-3 text-xs text-gray-600">{t.description}</div>
+            <div className="mt-2 text-xs text-gray-500">
+              Endpoint: <code className="px-2 py-0.5 rounded-lg bg-gray-100 border border-gray-200 break-all">{u.baseTask.endpoint}</code>
+            </div>
+
+            {renderFileCheckPanel(t, fileCheck)}
+
+            {err && (
+              <div className="mt-4">
+                <Alert type="error" title="エラー" message={err} />
+              </div>
+            )}
+
+            {renderResultPanel(result)}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  /** ===== 詳細表示: 従来のカード（事前確認は折りたたみ） ===== */
+  const renderDetailCard = (s: (typeof unitStates)[number]) => {
+    const { u, isRunning, result, err, fileCheck, canRun, runTone, runLabel } = s;
+    const t = u.display;
+    const isOpen = expanded.has(u.key) || !!err || !s.runnable;
+
+    return (
+      <Card key={u.key} className="p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge tone="blue">{t.code}</Badge>
+              <Badge tone={runTone}>{runLabel}</Badge>
+              <Badge tone={getEffectiveFileBadgeTone(t, fileCheck)}>{getEffectiveFileBadgeLabel(t, fileCheck)}</Badge>
+            </div>
+
+            <div className="mt-2 text-base font-extrabold text-gray-900 truncate" title={t.title}>
+              {t.title}
+            </div>
+            <div className="mt-1 text-sm text-gray-600">{t.description}</div>
+
+            <div className="mt-2 text-xs text-gray-500">
+              Endpoint: <code className="px-2 py-0.5 rounded-lg bg-gray-100 border border-gray-200 break-all">{u.baseTask.endpoint}</code>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2 shrink-0">
+            <Button onClick={() => runUnit(u)} loading={isRunning} disabled={!canRun} icon={!isRunning ? "▶️" : undefined} className="px-3 py-2 text-xs">
+              {isRunning ? "実行中..." : "実行"}
+            </Button>
+            <Button variant="secondary" icon="📎" onClick={() => navigator.clipboard.writeText(`${API_BASE}${u.baseTask.endpoint}`)} className="px-3 py-2 text-xs">
+              URLコピー
+            </Button>
+          </div>
+        </div>
+
+        <div className="mt-3">{renderItemChips(t, fileCheck)}</div>
+
+        <button type="button" onClick={() => toggleExpanded(u.key)} className="mt-3 text-xs font-semibold text-blue-700 hover:underline">
+          {isOpen ? "▲ 事前確認の詳細を閉じる" : "▼ 事前確認の詳細を開く"}
+        </button>
+
+        {isOpen && renderFileCheckPanel(t, fileCheck)}
+
+        {err && (
+          <div className="mt-4">
+            <Alert type="error" title="エラー" message={err} />
+          </div>
+        )}
+
+        {renderResultPanel(result)}
+      </Card>
+    );
+  };
+
+  const segmentBtn = (active: boolean) => `px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${active ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"}`;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-4 md:p-8">
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="max-w-6xl mx-auto space-y-4">
         {/* Header */}
         <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
           <div className="flex items-center gap-4">
@@ -793,20 +1091,8 @@ export default function DataFetchAdminPage() {
           <div className="flex items-center gap-2 flex-wrap">
             <Badge tone={API_BASE ? "emerald" : "amber"}>{API_BASE ? `API: ${API_BASE}` : "API_BASE 未設定"}</Badge>
             <Badge tone={statOptionsBadgeTone}>{statOptionsBadgeLabel}</Badge>
-            <Badge tone="blue">タスク数: {tasks.length}</Badge>
-
-            <Button variant="secondary" icon="🗂️" loading={statOptionsLoading} onClick={loadStatOptions} className="px-3 py-2 text-xs">
-              {statOptionsLoading ? "候補読込中..." : "候補更新"}
-            </Button>
-
-            <Button variant="secondary" icon="🔄" loading={fileChecksLoading} onClick={loadFileChecks} className="px-3 py-2 text-xs">
-              {fileChecksLoading ? "確認中..." : "状態更新"}
-            </Button>
           </div>
         </div>
-
-        {/* Global alert */}
-        {globalMessage && <Alert type={globalMessage.type} title={globalMessage.title} message={globalMessage.message} onClose={() => setGlobalMessage(null)} />}
 
         {/* File-check alert */}
         {fileChecksError && <Alert type="warning" title="事前確認の取得に失敗" message={fileChecksError} onClose={() => setFileChecksError(null)} />}
@@ -814,18 +1100,19 @@ export default function DataFetchAdminPage() {
         {/* Options alert */}
         {statOptionsError && <Alert type="warning" title="国・リーグ候補の取得に失敗" message={statOptionsError} onClose={() => setStatOptionsError(null)} />}
 
-        {/* Request params */}
-        <Card className="p-6">
-          <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
-            <div>
-              <div className="text-lg font-bold text-gray-900">リクエストパラメータ（B006-each向け連動プルダウン対応）</div>
-              <div className="text-sm text-gray-600 mt-1">country を選ぶと、その国に紐づく league のみ選択できます。入力した値は各タスクの request body に入れて送信します。</div>
-            </div>
+        {/* Request params（折りたたみ） */}
+        <Card className="p-4">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <button type="button" onClick={() => setParamsOpen((v) => !v)} className="flex items-center gap-2 text-left min-w-0">
+              <span className="text-sm font-bold text-gray-900">{paramsOpen ? "▲" : "▼"} リクエストパラメータ</span>
+              <code className="px-2 py-0.5 rounded-lg bg-gray-100 border border-gray-200 text-xs text-gray-700 truncate max-w-[50vw]">{JSON.stringify(requestBody)}</code>
+            </button>
 
             <div className="flex gap-2 flex-wrap">
               <Button
                 variant="secondary"
                 icon="🧹"
+                className="px-3 py-1.5 text-xs"
                 onClick={() => {
                   setCountry("");
                   setLeague("");
@@ -835,265 +1122,118 @@ export default function DataFetchAdminPage() {
                 クリア
               </Button>
 
-              <Button variant="secondary" icon="📋" onClick={() => navigator.clipboard.writeText(JSON.stringify(requestBody, null, 2))}>
+              <Button variant="secondary" icon="📋" className="px-3 py-1.5 text-xs" onClick={() => navigator.clipboard.writeText(JSON.stringify(requestBody, null, 2))}>
                 body をコピー
               </Button>
             </div>
           </div>
 
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Select
-              label="🏳️ country"
-              value={country}
-              onChange={handleCountryChange}
-              options={countryOptions}
-              placeholder={statOptionsLoading ? "読込中..." : countryOptions.length > 0 ? "国を選択" : "候補なし"}
-              hint="B006-each で利用する国を選択"
-              disabled={statOptionsLoading || countryOptions.length === 0}
-            />
+          {paramsOpen && (
+            <>
+              <div className="mt-2 text-xs text-gray-600">country を選ぶと、その国に紐づく league のみ選択できます。入力した値は各タスクの request body に入れて送信します。</div>
 
-            <Select
-              label="🏆 league"
-              value={league}
-              onChange={setLeague}
-              options={leagueOptions}
-              placeholder={!country ? "先に国を選択" : leagueOptions.length > 0 ? "リーグを選択" : "候補なし"}
-              hint="選択した国に紐づくリーグのみ表示"
-              disabled={statOptionsLoading || !country || leagueOptions.length === 0}
-            />
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Select
+                  label="🏳️ country"
+                  value={country}
+                  onChange={handleCountryChange}
+                  options={countryOptions}
+                  placeholder={statOptionsLoading ? "読込中..." : countryOptions.length > 0 ? "国を選択" : "候補なし"}
+                  hint="B006-each で利用する国を選択"
+                  disabled={statOptionsLoading || countryOptions.length === 0}
+                />
 
-            <Input label="📅 season" value={season} onChange={setSeason} placeholder="例: 2025" hint="必要な場合のみ指定" />
-          </div>
+                <Select
+                  label="🏆 league"
+                  value={league}
+                  onChange={setLeague}
+                  options={leagueOptions}
+                  placeholder={!country ? "先に国を選択" : leagueOptions.length > 0 ? "リーグを選択" : "候補なし"}
+                  hint="選択した国に紐づくリーグのみ表示"
+                  disabled={statOptionsLoading || !country || leagueOptions.length === 0}
+                />
 
-          <div className="mt-4 text-xs text-gray-500">※ Spring側で env に詰める想定なら「入力 → request body → runner 側で env 反映」の流れにできます。</div>
+                <Input label="📅 season" value={season} onChange={setSeason} placeholder="例: 2025" hint="必要な場合のみ指定" />
+              </div>
 
-          <div className="mt-4 rounded-2xl border border-gray-100 bg-gray-50 p-4">
-            <div className="text-xs font-semibold text-gray-700 mb-2">送信 body（プレビュー）</div>
-            <pre className="text-xs text-gray-700 whitespace-pre-wrap">{JSON.stringify(requestBody, null, 2)}</pre>
-          </div>
+              <div className="mt-3 text-xs text-gray-500">※ Spring側で env に詰める想定なら「入力 → request body → runner 側で env 反映」の流れにできます。</div>
+            </>
+          )}
         </Card>
 
-        {/* Tasks */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {tasks.map((t) => {
-            if (t.code !== "B014") {
-              const isRunning = running.has(t.id);
-              const result = results[t.id];
-              const err = errors[t.id];
-              const fileCheck = fileChecks[t.precheckTaskCode ?? t.code];
+        {/* Toolbar（スクロールしても上に固定） */}
+        <div className="sticky top-0 z-20">
+          <div className="rounded-2xl border border-gray-100 bg-white/90 backdrop-blur shadow-sm px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge tone="blue">タスク数: {unitStates.length}</Badge>
+              <Badge tone="emerald">実行可: {runnableCount}</Badge>
+              <Badge tone={blockedCount > 0 ? "rose" : "gray"}>必須不足: {blockedCount}</Badge>
+            </div>
 
-              const runTone: "gray" | "blue" | "emerald" | "amber" | "rose" = err ? "rose" : result ? "emerald" : "gray";
-              const fileTone = getEffectiveFileBadgeTone(t, fileCheck);
-              const canRun = canRunTask(t, isRunning, fileCheck);
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* フィルタ */}
+              <div className="inline-flex rounded-xl bg-gray-100 p-1">
+                <button type="button" className={segmentBtn(filterMode === "all")} onClick={() => setFilterMode("all")}>
+                  すべて
+                </button>
+                <button type="button" className={segmentBtn(filterMode === "runnable")} onClick={() => setFilterMode("runnable")}>
+                  実行可のみ
+                </button>
+                <button type="button" className={segmentBtn(filterMode === "blocked")} onClick={() => setFilterMode("blocked")}>
+                  必須不足のみ
+                </button>
+              </div>
 
-              return (
-                <Card key={t.id} className="p-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Badge tone="blue">{t.code}</Badge>
-                        <Badge tone={runTone}>{err ? "ERROR" : result ? "DONE" : "IDLE"}</Badge>
-                        <Badge tone={fileTone}>{getEffectiveFileBadgeLabel(t, fileCheck)}</Badge>
-                      </div>
+              {/* 表示切替 */}
+              <div className="inline-flex rounded-xl bg-gray-100 p-1">
+                <button type="button" className={segmentBtn(viewMode === "compact")} onClick={() => changeViewMode("compact")}>
+                  ☰ 一覧
+                </button>
+                <button type="button" className={segmentBtn(viewMode === "detail")} onClick={() => changeViewMode("detail")}>
+                  ▦ カード
+                </button>
+              </div>
 
-                      <div className="mt-2 text-lg font-extrabold text-gray-900 truncate">{t.title}</div>
-                      <div className="mt-1 text-sm text-gray-600">{t.description}</div>
+              <Button variant="secondary" className="px-3 py-1.5 text-xs" onClick={() => setExpanded(new Set(units.map((u) => u.key)))}>
+                すべて開く
+              </Button>
+              <Button variant="secondary" className="px-3 py-1.5 text-xs" onClick={() => setExpanded(new Set())}>
+                すべて閉じる
+              </Button>
 
-                      <div className="mt-3 text-xs text-gray-500">
-                        Endpoint: <code className="px-2 py-1 rounded-lg bg-gray-100 border border-gray-200">{t.endpoint}</code>
-                      </div>
-                    </div>
+              <Button variant="secondary" icon="🗂️" loading={statOptionsLoading} onClick={loadStatOptions} className="px-3 py-1.5 text-xs">
+                {statOptionsLoading ? "候補読込中..." : "候補更新"}
+              </Button>
 
-                    <div className="flex flex-col gap-2 shrink-0">
-                      <Button onClick={() => runTask(t)} loading={isRunning} disabled={!canRun} icon={!isRunning ? "▶️" : undefined}>
-                        {isRunning ? "実行中..." : "実行"}
-                      </Button>
-
-                      <Button variant="secondary" icon="📎" onClick={() => navigator.clipboard.writeText(`${API_BASE}${t.endpoint}`)}>
-                        URLコピー
-                      </Button>
-                    </div>
-                  </div>
-
-                  {renderFileCheckPanel(t, fileCheck)}
-
-                  {err && (
-                    <div className="mt-4">
-                      <Alert type="error" title="エラー" message={err} />
-                    </div>
-                  )}
-
-                  {renderResultPanel(result)}
-                </Card>
-              );
-            }
-
-            const b014TrueTask: TaskDef = {
-              ...t,
-              id: B014_TRUE_STATE_KEY,
-              code: B014_TRUE_STATE_KEY,
-              title: `${t.title}（readyFlg=true）`,
-              description: "前提条件なしで実行",
-              precheckMode: "always",
-            };
-
-            const b014FalseTask: TaskDef = {
-              ...t,
-              id: B014_FALSE_STATE_KEY,
-              code: B014_FALSE_STATE_KEY,
-              title: `${t.title}（readyFlg=false）`,
-              description: t.description,
-              precheckMode: "required",
-            };
-
-            const trueRunning = running.has(B014_TRUE_STATE_KEY);
-            const falseRunning = running.has(B014_FALSE_STATE_KEY);
-
-            const trueResult = results[B014_TRUE_STATE_KEY];
-            const falseResult = results[B014_FALSE_STATE_KEY];
-
-            const trueError = errors[B014_TRUE_STATE_KEY];
-            const falseError = errors[B014_FALSE_STATE_KEY];
-
-            const trueFileCheck = fileChecks[B014_TRUE_STATE_KEY];
-            const falseFileCheck = fileChecks[B014_FALSE_STATE_KEY];
-
-            const trueRunTone: "gray" | "blue" | "emerald" | "amber" | "rose" = trueError ? "rose" : trueResult ? "emerald" : "gray";
-            const falseRunTone: "gray" | "blue" | "emerald" | "amber" | "rose" = falseError ? "rose" : falseResult ? "emerald" : "gray";
-
-            const trueFileTone = getEffectiveFileBadgeTone(b014TrueTask, trueFileCheck);
-            const falseFileTone = getEffectiveFileBadgeTone(b014FalseTask, falseFileCheck);
-
-            const canRunTrue = canRunTask(b014TrueTask, trueRunning, trueFileCheck);
-            const canRunFalse = canRunTask(b014FalseTask, falseRunning, falseFileCheck);
-
-            return (
-              <Card key={t.id} className="p-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Badge tone="blue">{t.code}</Badge>
-                    </div>
-
-                    <div className="mt-2 text-lg font-extrabold text-gray-900 truncate">{t.title}</div>
-                    <div className="mt-1 text-sm text-gray-600">{t.description}</div>
-
-                    <div className="mt-3 text-xs text-gray-500">
-                      Endpoint: <code className="px-2 py-1 rounded-lg bg-gray-100 border border-gray-200">{t.endpoint}</code>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-2 shrink-0">
-                    <Button variant="secondary" icon="📎" onClick={() => navigator.clipboard.writeText(`${API_BASE}${t.endpoint}`)}>
-                      URLコピー
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="mt-4 grid grid-cols-1 xl:grid-cols-2 gap-4">
-                  {/* B014T */}
-                  <div className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <Badge tone="blue">{b014TrueTask.code}</Badge>
-                          <Badge tone={trueRunTone}>{trueError ? "ERROR" : trueResult ? "DONE" : "IDLE"}</Badge>
-                          <Badge tone={trueFileTone}>{getEffectiveFileBadgeLabel(b014TrueTask, trueFileCheck)}</Badge>
-                        </div>
-
-                        <div className="mt-2 text-base font-extrabold text-gray-900 truncate">{b014TrueTask.title}</div>
-                        <div className="mt-1 text-sm text-gray-600">{b014TrueTask.description}</div>
-                      </div>
-
-                      <div className="flex flex-col gap-2 shrink-0">
-                        <Button
-                          onClick={() =>
-                            runTask(t, {
-                              stateKey: B014_TRUE_STATE_KEY,
-                              extraBody: { readyFlg: true },
-                              successCode: B014_TRUE_STATE_KEY,
-                              successTitle: b014TrueTask.title,
-                              errorCode: B014_TRUE_STATE_KEY,
-                              errorTitle: b014TrueTask.title,
-                            })
-                          }
-                          loading={trueRunning}
-                          disabled={!canRunTrue}
-                          icon={!trueRunning ? "▶️" : undefined}
-                        >
-                          {trueRunning ? "実行中..." : "実行"}
-                        </Button>
-                      </div>
-                    </div>
-
-                    {renderFileCheckPanel(b014TrueTask, trueFileCheck)}
-
-                    {trueError && (
-                      <div className="mt-4">
-                        <Alert type="error" title="エラー" message={trueError} />
-                      </div>
-                    )}
-
-                    {renderResultPanel(trueResult)}
-                  </div>
-
-                  {/* B014F */}
-                  <div className="rounded-2xl border border-amber-100 bg-amber-50/40 p-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <Badge tone="blue">{b014FalseTask.code}</Badge>
-                          <Badge tone={falseRunTone}>{falseError ? "ERROR" : falseResult ? "DONE" : "IDLE"}</Badge>
-                          <Badge tone={falseFileTone}>{getEffectiveFileBadgeLabel(b014FalseTask, falseFileCheck)}</Badge>
-                        </div>
-
-                        <div className="mt-2 text-base font-extrabold text-gray-900 truncate">{b014FalseTask.title}</div>
-                        <div className="mt-1 text-sm text-gray-600">{b014FalseTask.description}</div>
-                      </div>
-
-                      <div className="flex flex-col gap-2 shrink-0">
-                        <Button
-                          onClick={() =>
-                            runTask(t, {
-                              stateKey: B014_FALSE_STATE_KEY,
-                              extraBody: { readyFlg: false },
-                              successCode: B014_FALSE_STATE_KEY,
-                              successTitle: b014FalseTask.title,
-                              errorCode: B014_FALSE_STATE_KEY,
-                              errorTitle: b014FalseTask.title,
-                            })
-                          }
-                          loading={falseRunning}
-                          disabled={!canRunFalse}
-                          icon={!falseRunning ? "▶️" : undefined}
-                        >
-                          {falseRunning ? "実行中..." : "実行"}
-                        </Button>
-                      </div>
-                    </div>
-
-                    {renderFileCheckPanel(b014FalseTask, falseFileCheck)}
-
-                    {falseError && (
-                      <div className="mt-4">
-                        <Alert type="error" title="エラー" message={falseError} />
-                      </div>
-                    )}
-
-                    {renderResultPanel(falseResult)}
-                  </div>
-                </div>
-              </Card>
-            );
-          })}
+              <Button variant="secondary" icon="🔄" loading={fileChecksLoading} onClick={loadFileChecks} className="px-3 py-1.5 text-xs">
+                {fileChecksLoading ? "確認中..." : "状態更新"}
+              </Button>
+            </div>
+          </div>
         </div>
 
+        {/* Tasks */}
+        {visibleStates.length === 0 ? (
+          <Card className="p-6 text-center text-sm text-gray-500">条件に一致するタスクはありません。</Card>
+        ) : viewMode === "compact" ? (
+          <div className="space-y-2">{visibleStates.map(renderCompactRow)}</div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4 items-start">{visibleStates.map(renderDetailCard)}</div>
+        )}
+
         {/* Footer */}
-        <div className="text-center text-xs text-gray-500">
+        <div className="text-center text-xs text-gray-500 pt-2">
           ブラウザから叩けない場合は、Spring側の <span className="font-semibold">CORS</span> / <span className="font-semibold">認証</span> / <span className="font-semibold">CSRF</span>{" "}
           を確認してください。
         </div>
       </div>
+
+      {/* 実行結果メッセージ（画面右下に固定表示。スクロール位置に関係なく見える） */}
+      {globalMessage && (
+        <div className="fixed bottom-4 right-4 z-50 w-[min(28rem,calc(100vw-2rem))] shadow-xl rounded-2xl">
+          <Alert type={globalMessage.type} title={globalMessage.title} message={globalMessage.message} onClose={() => setGlobalMessage(null)} />
+        </div>
+      )}
     </div>
   );
 }

@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 
+type CsvStatus = "CREATED" | "TARGET" | "NOT_TARGET";
+
 type MatchDataByDateItem = {
   matchKey: string;
   matchId: string;
@@ -8,7 +10,7 @@ type MatchDataByDateItem = {
   homeTeamName: string;
   awayTeamName: string;
   addManualFlg: string;
-  csvStatus: string; // "CREATED" | "TARGET" | "NOT_TARGET"
+  csvStatus: CsvStatus | string;
   recordTime: string;
 };
 
@@ -42,14 +44,14 @@ const csvStatusBadgeBase: React.CSSProperties = {
 
 function buildCsvStatusBadge(csvStatus?: string) {
   if (csvStatus === "CREATED") {
-    return <span style={{ ...csvStatusBadgeBase, background: "#dcfce7", color: "#166534", border: "1px solid #86efac" }}>✅ CSV作成済</span>;
+    return <span style={{ ...csvStatusBadgeBase, background: "#dcfce7", color: "#166534", border: "1px solid #86efac" }}>✅ 統計CSV作成済</span>;
   }
 
   if (csvStatus === "TARGET") {
-    return <span style={{ ...csvStatusBadgeBase, background: "#dbeafe", color: "#1d4ed8", border: "1px solid #93c5fd" }}>📄 CSV作成対象</span>;
+    return <span style={{ ...csvStatusBadgeBase, background: "#dbeafe", color: "#1d4ed8", border: "1px solid #93c5fd" }}>📄 統計CSV作成可</span>;
   }
 
-  return <span style={{ ...csvStatusBadgeBase, background: "#f3f4f6", color: "#4b5563", border: "1px solid #d1d5db" }}>🚫 CSV作成非対象</span>;
+  return <span style={{ ...csvStatusBadgeBase, background: "#f3f4f6", color: "#4b5563", border: "1px solid #d1d5db" }}>🚫 統計CSV作成非対象</span>;
 }
 
 async function getJsonSafe<T>(url: string): Promise<T> {
@@ -144,6 +146,7 @@ export default function MatchDataByDatePage() {
 
   useEffect(() => {
     fetchMatchData(targetDate, 1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSearch = async () => {
@@ -297,7 +300,7 @@ export default function MatchDataByDatePage() {
                 items.map((item, index) => (
                   <tr key={`${item.matchKey || "row"}-${index}`} style={{ borderTop: "1px solid #f3f4f6" }}>
                     <td style={tdStyle}>{item.recordTime || "-"}</td>
-                    <td style={tdStyle}>{buildCsvStatusBadge(item.addManualFlg)}</td>
+                    <td style={tdStyle}>{buildCsvStatusBadge(item.csvStatus)}</td>
                     <td style={tdStyle}>{item.matchId || "-"}</td>
                     <td style={tdStyle}>{item.gameId || "-"}</td>
                     <td style={tdStyle}>{item.dataCategory || "-"}</td>
