@@ -2,25 +2,27 @@ import React, { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { todayJst } from "../../../api/checkData";
 import { colors } from "./AwsDashboardCommonPage";
-import { DynamoDbTab, Ec2Tab, EcsTab, IamTab, LambdaTab, OverviewTab, RdsTab, Route53Tab, S3Tab, type TabId, type TabProps } from "./AwsDashboardTabPage";
+import { DynamoDbTab, Ec2Tab, EcsTab, EventBridgeTab, IamTab, LambdaTab, OverviewTab, RdsTab, Route53Tab, S3Tab, VpcTab, type TabId, type TabProps } from "./AwsDashboardTabPage";
 
 /**
  * AWS リソース状況（管理者のみ）
  *
  * - 対象日を選ぶと ECS の実行回数 / Lambda の実行回数がその日の値になる
- * - それ以外（S3・RDS・IAM・DynamoDB・EC2・Route53）は現在の状態
+ * - それ以外（EventBridge・S3・RDS・IAM・DynamoDB・EC2・VPC・Route53）は現在の状態
  * - 選択中のタブは URL の ?tab= に保持（リロードしても同じタブを開く）
  */
 
 const TABS: { id: TabId; label: string; Comp: (p: TabProps) => React.ReactElement }[] = [
   { id: "overview", label: "概要", Comp: OverviewTab },
   { id: "ecs", label: "ECS", Comp: EcsTab },
+  { id: "eventbridge", label: "EventBridge", Comp: EventBridgeTab },
   { id: "s3", label: "S3", Comp: S3Tab },
   { id: "rds", label: "RDS", Comp: RdsTab },
   { id: "iam", label: "IAM", Comp: IamTab },
   { id: "lambda", label: "Lambda", Comp: LambdaTab },
   { id: "dynamodb", label: "DynamoDB", Comp: DynamoDbTab },
   { id: "ec2", label: "EC2", Comp: Ec2Tab },
+  { id: "vpc", label: "VPC", Comp: VpcTab },
   { id: "route53", label: "Route53", Comp: Route53Tab },
 ];
 

@@ -90,17 +90,32 @@ export type RdsInstance = {
   multiAz: boolean;
   allocatedStorageGb: number | null;
 };
-export type TableCount = { table: string; rows: number };
+/** 接続先 DB（アプリの DataSource ごと） */
+export type RdsDatabaseRef = {
+  key: string;
+  database: string;
+  product: string | null;
+  beanName: string;
+  error: string | null;
+};
 export type RdsSummary = {
   instanceCount: number;
   instances: RdsInstance[];
-  database: string | null;
-  schema: string | null;
-  exactCount: boolean;
+  databases: RdsDatabaseRef[];
+};
+/** estimated=true は統計情報からの推定値 */
+export type TableCount = { schema: string; table: string; rows: number; estimated: boolean };
+export type RdsTables = {
+  key: string;
+  database: string;
+  product: string | null;
+  schemas: string[];
   tableCount: number;
   totalRows: number;
+  estimatedTableCount: number;
+  exactCountEnabled: boolean;
+  maxExactRows: number;
   tables: TableCount[];
-  tableError: string | null;
 };
 
 // ----- IAM -----
@@ -178,6 +193,112 @@ export type RecordSet = {
 };
 export type Route53Summary = { zoneCount: number; totalRecords: number; zones: HostedZone[] };
 
+// ----- EventBridge -----
+export type EventBridgeSchedule = {
+  group: string | null;
+  name: string;
+  state: string;
+  expression: string | null;
+  timezone: string | null;
+  target: string | null;
+  taskDefinition: string | null;
+  flexibleWindow: string | null;
+  description: string | null;
+  lastModified: string | null;
+};
+export type EventBridgeRule = {
+  bus: string;
+  name: string;
+  state: string;
+  scheduleExpression: string | null;
+  eventPattern: boolean;
+  description: string | null;
+  managedBy: string | null;
+  targets: string[];
+};
+export type EventBridgeSummary = {
+  scheduleCount: number;
+  enabledScheduleCount: number;
+  busCount: number;
+  ruleCount: number;
+  enabledRuleCount: number;
+  schedules: EventBridgeSchedule[];
+  rules: EventBridgeRule[];
+  scheduleError: string | null;
+  ruleError: string | null;
+};
+
+// ----- VPC -----
+export type VpcInfo = {
+  vpcId: string;
+  name: string | null;
+  cidr: string;
+  state: string;
+  defaultVpc: boolean;
+  subnetCount: number;
+  securityGroupCount: number;
+  internetGatewayId: string | null;
+};
+export type SubnetInfo = {
+  subnetId: string;
+  name: string | null;
+  vpcId: string;
+  cidr: string;
+  az: string | null;
+  availableIps: number | null;
+  publicOnLaunch: boolean;
+};
+export type SecurityGroupInfo = {
+  groupId: string;
+  name: string;
+  vpcId: string | null;
+  description: string | null;
+  inbound: string[];
+  outboundRuleCount: number;
+  openToWorld: boolean;
+};
+export type NatGatewayInfo = {
+  natGatewayId: string;
+  name: string | null;
+  vpcId: string | null;
+  subnetId: string | null;
+  state: string;
+  connectivity: string | null;
+  publicIp: string | null;
+};
+export type VpcEndpointInfo = {
+  endpointId: string;
+  vpcId: string | null;
+  serviceName: string;
+  type: string | null;
+  state: string | null;
+};
+export type ElasticIpInfo = {
+  publicIp: string;
+  allocationId: string | null;
+  name: string | null;
+  associated: boolean;
+  instanceId: string | null;
+  networkInterfaceId: string | null;
+};
+export type VpcSummary = {
+  vpcCount: number;
+  subnetCount: number;
+  securityGroupCount: number;
+  openSecurityGroupCount: number;
+  internetGatewayCount: number;
+  activeNatGatewayCount: number;
+  endpointCount: number;
+  elasticIpCount: number;
+  unassociatedElasticIpCount: number;
+  vpcs: VpcInfo[];
+  subnets: SubnetInfo[];
+  securityGroups: SecurityGroupInfo[];
+  natGateways: NatGatewayInfo[];
+  endpoints: VpcEndpointInfo[];
+  elasticIps: ElasticIpInfo[];
+};
+
 // =====================================================================
 // 通信
 // =====================================================================
@@ -221,7 +342,8 @@ export function useAwsApi<T>(path: string | null, opts: { date?: string; reload?
     if (reload !== lastReload.current) params.set("refresh", "true");
     lastReload.current = reload;
     const qs = params.toString();
-    const url = `${AWS_API_BASE}/${path}${qs ? `?${qs}` : ""}`;
+    const sep = path.includes("?") ? "&" : "?";
+    const url = `${AWS_API_BASE}/${path}${qs ? `${sep}${qs}` : ""}`;
 
     setState((s) => ({ ...s, loading: true, error: null }));
     fetch(url, { signal: ctrl.signal, headers: authHeaders(), credentials: "include" })

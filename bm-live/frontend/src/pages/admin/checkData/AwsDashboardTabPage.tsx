@@ -1,16 +1,20 @@
 import React, { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   type DynamoSummary,
   type Ec2Summary,
+  type EventBridgeSummary,
   type EcsSummary,
   type HostedZone,
   type IamSummary,
   type LambdaSummary,
   type Overview,
   type RdsSummary,
+  type RdsTables,
   type RecordSet,
   type Route53Summary,
   type S3Summary,
+  type VpcSummary,
   fmtBytes,
   fmtDate,
   fmtNum,
@@ -26,7 +30,7 @@ export type TabProps = {
   onAccount: (info: { accountId: string | null; region: string }) => void;
 };
 
-export type TabId = "overview" | "ecs" | "s3" | "rds" | "iam" | "lambda" | "dynamodb" | "ec2" | "route53";
+export type TabId = "overview" | "ecs" | "eventbridge" | "s3" | "rds" | "iam" | "lambda" | "dynamodb" | "ec2" | "vpc" | "route53";
 
 // =====================================================================
 // 概要
@@ -41,6 +45,8 @@ const SERVICE_TAB: Record<string, TabId> = {
   DynamoDB: "dynamodb",
   EC2: "ec2",
   Route53: "route53",
+  EventBridge: "eventbridge",
+  VPC: "vpc",
 };
 
 export function OverviewTab({ date, reload, onSelectTab, onAccount }: TabProps) {
@@ -238,82 +244,179 @@ export function S3Tab({ reload }: TabProps) {
 
 export function RdsTab({ reload }: TabProps) {
   const state = useAwsApi<RdsSummary>("rds", { reload });
+  const [searchParams, setSearchParams] = useSearchParams();
 
   return (
     <Panel state={state}>
-      {(d) => (
-        <>
-          <StatRow>
-            <Stat label="インスタンス数" value={fmtNum(d.instanceCount)} />
-            <Stat label="テーブル数" value={fmtNum(d.tableCount)} />
-            <Stat label={`総レコード数${d.exactCount ? "" : "（推定）"}`} value={fmtNum(d.totalRows)} />
-          </StatRow>
+      {(d) => {
+        // 選択中の DB（URL の ?db= に保持。無ければ先頭の DB）
+        const dbParam = searchParams.get("db");
+        const selected = d.databases.find((x) => x.key === dbParam) ?? d.databases.find((x) => !x.error) ?? null;
+        const selectDb = (key: string) => {
+          const next = new URLSearchParams(searchParams);
+          next.set("db", key);
+          next.delete("schema");
+          setSearchParams(next, { replace: true });
+        };
 
-          <Section title="インスタンス">
-            <DataTable
-              rows={d.instances}
-              rowKey={(r) => r.identifier}
-              columns={[
-                { key: "identifier", label: "識別子", render: (r) => <Mono>{r.identifier}</Mono> },
-                { key: "engine", label: "エンジン", render: (r) => `${r.engine} ${r.engineVersion ?? ""}` },
-                { key: "instanceClass", label: "クラス" },
-                {
-                  key: "status",
-                  label: "状態",
-                  render: (r) => <Badge tone={r.status === "available" ? "ok" : "warn"}>{r.status}</Badge>,
-                },
-                { key: "multiAz", label: "Multi-AZ", render: (r) => (r.multiAz ? "あり" : "なし") },
-                {
-                  key: "allocatedStorageGb",
-                  label: "ストレージ",
-                  align: "right",
-                  render: (r) => (r.allocatedStorageGb ? `${r.allocatedStorageGb} GB` : "—"),
-                },
-                {
-                  key: "endpoint",
-                  label: "エンドポイント",
-                  render: (r) => <Mono>{r.endpoint ? `${r.endpoint}:${r.port}` : "—"}</Mono>,
-                },
-              ]}
-            />
-          </Section>
+        return (
+          <>
+            <StatRow>
+              <Stat label="インスタンス数" value={fmtNum(d.instanceCount)} />
+              <Stat label="データベース数" value={fmtNum(d.databases.length)} />
+            </StatRow>
 
-          <Section
-            title="テーブル別レコード件数"
-            right={
+            <Section title="インスタンス">
+              <DataTable
+                rows={d.instances}
+                rowKey={(r) => r.identifier}
+                columns={[
+                  { key: "identifier", label: "識別子", render: (r) => <Mono>{r.identifier}</Mono> },
+                  { key: "engine", label: "エンジン", render: (r) => `${r.engine} ${r.engineVersion ?? ""}` },
+                  { key: "instanceClass", label: "クラス" },
+                  {
+                    key: "status",
+                    label: "状態",
+                    render: (r) => <Badge tone={r.status === "available" ? "ok" : "warn"}>{r.status}</Badge>,
+                  },
+                  { key: "multiAz", label: "Multi-AZ", render: (r) => (r.multiAz ? "あり" : "なし") },
+                  {
+                    key: "allocatedStorageGb",
+                    label: "ストレージ",
+                    align: "right",
+                    render: (r) => (r.allocatedStorageGb ? `${r.allocatedStorageGb} GB` : "—"),
+                  },
+                  {
+                    key: "endpoint",
+                    label: "エンドポイント",
+                    render: (r) => <Mono>{r.endpoint ? `${r.endpoint}:${r.port}` : "—"}</Mono>,
+                  },
+                ]}
+              />
+            </Section>
+
+            <Section
+              title="テーブル別レコード件数"
+              right={
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }} role="group" aria-label="データベース">
+                  {d.databases.map((db) => (
+                    <SmallButton key={db.key} active={selected?.key === db.key} onClick={() => selectDb(db.key)}>
+                      {db.database}
+                      {db.error ? " ⚠" : ""}
+                    </SmallButton>
+                  ))}
+                </div>
+              }
+            >
+              {selected?.error && <ErrorBox>接続に失敗: {selected.error}</ErrorBox>}
+              {selected && !selected.error ? (
+                <RdsTablesView dbKey={selected.key} reload={reload} />
+              ) : (
+                !selected && <div style={{ padding: "48px 0", textAlign: "center", color: colors.muted }}>接続できる DB がありません</div>
+              )}
+            </Section>
+          </>
+        );
+      }}
+    </Panel>
+  );
+}
+
+function ErrorBox({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        color: colors.bad,
+        background: colors.badSoft,
+        borderRadius: 8,
+        padding: "10px 12px",
+        marginBottom: 12,
+        wordBreak: "break-all",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** 1 DB 分のテーブル件数。スキーマは「すべて / 各スキーマ」で切り替え（URL の ?schema= に保持） */
+function RdsTablesView({ dbKey, reload }: { dbKey: string; reload: number }) {
+  const state = useAwsApi<RdsTables>(`rds/tables?db=${encodeURIComponent(dbKey)}`, { reload });
+  const [searchParams, setSearchParams] = useSearchParams();
+  const schemaParam = searchParams.get("schema");
+
+  const selectSchema = (schema: string | null) => {
+    const next = new URLSearchParams(searchParams);
+    if (schema) next.set("schema", schema);
+    else next.delete("schema");
+    setSearchParams(next, { replace: true });
+  };
+
+  return (
+    <Panel state={state}>
+      {(t) => {
+        const schema = schemaParam && t.schemas.includes(schemaParam) ? schemaParam : null;
+        const rows = schema ? t.tables.filter((x) => x.schema === schema) : t.tables;
+        const total = rows.reduce((sum, x) => sum + x.rows, 0);
+        const estimated = rows.filter((x) => x.estimated).length;
+
+        return (
+          <>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
+              <span style={{ color: colors.muted, fontSize: 12.5, marginRight: 4 }}>スキーマ</span>
+              <SmallButton active={schema === null} onClick={() => selectSchema(null)}>
+                すべて（{t.schemas.length}）
+              </SmallButton>
+              {t.schemas.map((sc) => (
+                <SmallButton key={sc} active={schema === sc} onClick={() => selectSchema(sc)}>
+                  {sc}
+                </SmallButton>
+              ))}
+            </div>
+
+            <StatRow>
+              <Stat label="テーブル数" value={fmtNum(rows.length)} />
+              <Stat label={`総レコード数${estimated > 0 ? "（一部推定）" : ""}`} value={fmtNum(total)} />
+            </StatRow>
+
+            <div style={{ marginBottom: 8 }}>
               <Note>
-                {d.database ?? ""}
-                {d.schema ? ` / ${d.schema}` : ""} ・ {d.exactCount ? "COUNT(*)" : "統計情報の推定値"}
+                {t.database}
+                {t.product ? `（${t.product}）` : ""} ・{" "}
+                {t.exactCountEnabled ? `${fmtNum(t.maxExactRows)} 行以下のテーブルは COUNT(*)、それより大きいテーブルは統計情報の推定値` : "すべて統計情報の推定値"}
               </Note>
-            }
-          >
-            {d.tableError && (
-              <div
-                style={{
-                  color: colors.bad,
-                  background: colors.badSoft,
-                  borderRadius: 8,
-                  padding: "10px 12px",
-                  marginBottom: 12,
-                  wordBreak: "break-all",
-                }}
-              >
-                テーブル件数の取得に失敗: {d.tableError}
-              </div>
-            )}
+            </div>
+
             <DataTable
-              rows={d.tables}
-              rowKey={(r) => r.table}
-              searchKeys={["table"]}
+              key={`${t.key}|${schema ?? ""}`}
+              rows={rows}
+              rowKey={(r) => `${r.schema}.${r.table}`}
+              searchKeys={["table", "schema"]}
               initialSort={{ key: "rows", dir: "desc" }}
               columns={[
+                { key: "schema", label: "スキーマ", render: (r) => <Mono>{r.schema}</Mono> },
                 { key: "table", label: "テーブル", render: (r) => <Mono>{r.table}</Mono> },
-                { key: "rows", label: "件数", align: "right", render: (r) => fmtNum(r.rows) },
+                {
+                  key: "rows",
+                  label: "件数",
+                  align: "right",
+                  render: (r) => (
+                    <>
+                      {r.estimated && (
+                        <span style={{ marginRight: 6 }}>
+                          <Badge tone="warn">推定</Badge>
+                        </span>
+                      )}
+                      {r.estimated ? "約 " : ""}
+                      {fmtNum(r.rows)}
+                    </>
+                  ),
+                },
               ]}
             />
-          </Section>
-        </>
-      )}
+          </>
+        );
+      }}
     </Panel>
   );
 }
@@ -629,6 +732,303 @@ function Route53Records({ zoneId, reload }: { zoneId: string; reload: number }) 
           ]}
         />
       )}
+    </Panel>
+  );
+}
+
+// =====================================================================
+// EventBridge
+// =====================================================================
+
+/** cron(0 10 * * ? *) などをそのまま等幅で表示 */
+function Expr({ v }: { v: string | null }) {
+  return v ? <Mono>{v}</Mono> : <>—</>;
+}
+
+export function EventBridgeTab({ reload }: TabProps) {
+  const state = useAwsApi<EventBridgeSummary>("eventbridge", { reload });
+  const [view, setView] = useState<"schedules" | "rules">("schedules");
+
+  return (
+    <Panel state={state}>
+      {(d) => (
+        <>
+          <StatRow>
+            <Stat label="スケジュール（Scheduler）" value={fmtNum(d.scheduleCount)} />
+            <Stat label="有効なスケジュール" value={fmtNum(d.enabledScheduleCount)} tone="ok" />
+            <Stat label="ルール" value={fmtNum(d.ruleCount)} />
+            <Stat label="有効なルール" value={fmtNum(d.enabledRuleCount)} tone="ok" />
+            <Stat label="イベントバス" value={fmtNum(d.busCount)} />
+          </StatRow>
+
+          <Section
+            title={view === "schedules" ? `スケジュール（${d.schedules.length}）` : `ルール（${d.rules.length}）`}
+            right={
+              <div style={{ display: "flex", gap: 6 }}>
+                <SmallButton active={view === "schedules"} onClick={() => setView("schedules")}>
+                  スケジュール
+                </SmallButton>
+                <SmallButton active={view === "rules"} onClick={() => setView("rules")}>
+                  ルール
+                </SmallButton>
+              </div>
+            }
+          >
+            {view === "schedules" ? (
+              <>
+                {d.scheduleError && <ErrorBox>スケジュールの取得に失敗: {d.scheduleError}</ErrorBox>}
+                <DataTable
+                  key="schedules"
+                  rows={d.schedules}
+                  rowKey={(r) => `${r.group ?? ""}/${r.name}`}
+                  searchKeys={["name", "group", "expression", "target", "taskDefinition"]}
+                  columns={[
+                    { key: "name", label: "名前", render: (r) => <Mono>{r.name}</Mono> },
+                    { key: "group", label: "グループ", render: (r) => r.group ?? "—" },
+                    {
+                      key: "state",
+                      label: "状態",
+                      render: (r) => <Badge tone={r.state === "ENABLED" ? "ok" : "neutral"}>{r.state}</Badge>,
+                    },
+                    { key: "expression", label: "スケジュール式", render: (r) => <Expr v={r.expression} /> },
+                    { key: "timezone", label: "タイムゾーン", render: (r) => r.timezone ?? "UTC" },
+                    { key: "taskDefinition", label: "タスク定義", render: (r) => <Mono>{r.taskDefinition ?? "—"}</Mono> },
+                    { key: "target", label: "起動先", render: (r) => <Mono>{r.target ?? "—"}</Mono> },
+                    { key: "lastModified", label: "最終更新", render: (r) => fmtDate(r.lastModified) },
+                  ]}
+                />
+              </>
+            ) : (
+              <>
+                {d.ruleError && <ErrorBox>ルールの取得に失敗: {d.ruleError}</ErrorBox>}
+                <DataTable
+                  key="rules"
+                  rows={d.rules}
+                  rowKey={(r) => `${r.bus}/${r.name}`}
+                  searchKeys={["name", "bus", "scheduleExpression", "managedBy"]}
+                  columns={[
+                    { key: "name", label: "ルール名", render: (r) => <Mono>{r.name}</Mono> },
+                    { key: "bus", label: "イベントバス" },
+                    {
+                      key: "state",
+                      label: "状態",
+                      render: (r) => <Badge tone={r.state === "ENABLED" ? "ok" : "neutral"}>{r.state}</Badge>,
+                    },
+                    {
+                      key: "scheduleExpression",
+                      label: "起動条件",
+                      sortValue: (r) => r.scheduleExpression ?? (r.eventPattern ? "イベント" : ""),
+                      render: (r) => (r.scheduleExpression ? <Expr v={r.scheduleExpression} /> : r.eventPattern ? <Badge>イベントパターン</Badge> : "—"),
+                    },
+                    {
+                      key: "targets",
+                      label: "ターゲット",
+                      sortValue: (r) => r.targets.join(","),
+                      render: (r) => (
+                        <span style={{ whiteSpace: "pre-line", wordBreak: "break-all" }}>
+                          <Mono>{r.targets.length ? r.targets.join("\n") : "—"}</Mono>
+                        </span>
+                      ),
+                    },
+                    { key: "managedBy", label: "管理元", render: (r) => r.managedBy ?? "—" },
+                  ]}
+                />
+              </>
+            )}
+          </Section>
+        </>
+      )}
+    </Panel>
+  );
+}
+
+// =====================================================================
+// VPC
+// =====================================================================
+
+type VpcView = "vpcs" | "subnets" | "sg" | "nat" | "endpoints" | "eip";
+
+export function VpcTab({ reload }: TabProps) {
+  const state = useAwsApi<VpcSummary>("vpc", { reload });
+  const [view, setView] = useState<VpcView>("vpcs");
+
+  return (
+    <Panel state={state}>
+      {(d) => {
+        const views: { id: VpcView; label: string }[] = [
+          { id: "vpcs", label: `VPC（${d.vpcCount}）` },
+          { id: "subnets", label: `サブネット（${d.subnetCount}）` },
+          { id: "sg", label: `セキュリティグループ（${d.securityGroupCount}）` },
+          { id: "nat", label: `NAT ゲートウェイ（${d.natGateways.length}）` },
+          { id: "endpoints", label: `エンドポイント（${d.endpointCount}）` },
+          { id: "eip", label: `Elastic IP（${d.elasticIpCount}）` },
+        ];
+
+        return (
+          <>
+            <StatRow>
+              <Stat label="VPC" value={fmtNum(d.vpcCount)} />
+              <Stat label="サブネット" value={fmtNum(d.subnetCount)} />
+              <Stat label="セキュリティグループ" value={fmtNum(d.securityGroupCount)} />
+              <Stat label="全開放ルールのある SG" value={fmtNum(d.openSecurityGroupCount)} tone={d.openSecurityGroupCount > 0 ? "bad" : undefined} />
+              <Stat label="稼働中の NAT ゲートウェイ（課金）" value={fmtNum(d.activeNatGatewayCount)} />
+              <Stat label="未使用の Elastic IP（課金）" value={fmtNum(d.unassociatedElasticIpCount)} tone={d.unassociatedElasticIpCount > 0 ? "bad" : undefined} />
+            </StatRow>
+
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }} role="group" aria-label="表示">
+              {views.map((v) => (
+                <SmallButton key={v.id} active={view === v.id} onClick={() => setView(v.id)}>
+                  {v.label}
+                </SmallButton>
+              ))}
+            </div>
+
+            {view === "vpcs" && (
+              <DataTable
+                key="vpcs"
+                rows={d.vpcs}
+                rowKey={(r) => r.vpcId}
+                searchKeys={["vpcId", "name", "cidr"]}
+                columns={[
+                  { key: "name", label: "Name", render: (r) => r.name ?? "—" },
+                  { key: "vpcId", label: "VPC ID", render: (r) => <Mono>{r.vpcId}</Mono> },
+                  { key: "cidr", label: "CIDR", render: (r) => <Mono>{r.cidr}</Mono> },
+                  {
+                    key: "state",
+                    label: "状態",
+                    render: (r) => <Badge tone={r.state === "available" ? "ok" : "warn"}>{r.state}</Badge>,
+                  },
+                  { key: "defaultVpc", label: "デフォルト", render: (r) => (r.defaultVpc ? <Badge>デフォルト</Badge> : "—") },
+                  { key: "subnetCount", label: "サブネット", align: "right", render: (r) => String(r.subnetCount) },
+                  { key: "securityGroupCount", label: "SG", align: "right", render: (r) => String(r.securityGroupCount) },
+                  { key: "internetGatewayId", label: "IGW", render: (r) => <Mono>{r.internetGatewayId ?? "なし"}</Mono> },
+                ]}
+              />
+            )}
+
+            {view === "subnets" && (
+              <DataTable
+                key="subnets"
+                rows={d.subnets}
+                rowKey={(r) => r.subnetId}
+                searchKeys={["subnetId", "name", "vpcId", "cidr", "az"]}
+                columns={[
+                  { key: "name", label: "Name", render: (r) => r.name ?? "—" },
+                  { key: "subnetId", label: "サブネット ID", render: (r) => <Mono>{r.subnetId}</Mono> },
+                  { key: "vpcId", label: "VPC", render: (r) => <Mono>{r.vpcId}</Mono> },
+                  { key: "cidr", label: "CIDR", render: (r) => <Mono>{r.cidr}</Mono> },
+                  { key: "az", label: "AZ", render: (r) => r.az ?? "—" },
+                  { key: "availableIps", label: "空き IP", align: "right", render: (r) => fmtNum(r.availableIps) },
+                  {
+                    key: "publicOnLaunch",
+                    label: "パブリック IP 自動割当",
+                    render: (r) => (r.publicOnLaunch ? <Badge tone="warn">あり</Badge> : "なし"),
+                  },
+                ]}
+              />
+            )}
+
+            {view === "sg" && (
+              <DataTable
+                key="sg"
+                rows={d.securityGroups}
+                rowKey={(r) => r.groupId}
+                searchKeys={["groupId", "name", "vpcId", "description"]}
+                initialSort={{ key: "openToWorld", dir: "desc" }}
+                columns={[
+                  { key: "name", label: "グループ名", render: (r) => <Mono>{r.name}</Mono> },
+                  { key: "groupId", label: "ID", render: (r) => <Mono>{r.groupId}</Mono> },
+                  { key: "vpcId", label: "VPC", render: (r) => <Mono>{r.vpcId ?? "—"}</Mono> },
+                  {
+                    key: "openToWorld",
+                    label: "全開放",
+                    sortValue: (r) => (r.openToWorld ? 1 : 0),
+                    render: (r) => (r.openToWorld ? <Badge tone="bad">0.0.0.0/0 あり</Badge> : "—"),
+                  },
+                  {
+                    key: "inbound",
+                    label: "インバウンド",
+                    sortValue: (r) => r.inbound.length,
+                    render: (r) => (
+                      <span style={{ whiteSpace: "pre-line" }}>
+                        <Mono>{r.inbound.length ? r.inbound.join("\n") : "（なし）"}</Mono>
+                      </span>
+                    ),
+                  },
+                  { key: "outboundRuleCount", label: "アウトバウンド", align: "right", render: (r) => `${r.outboundRuleCount} 件` },
+                  { key: "description", label: "説明", render: (r) => r.description ?? "—" },
+                ]}
+              />
+            )}
+
+            {view === "nat" && (
+              <DataTable
+                key="nat"
+                rows={d.natGateways}
+                rowKey={(r) => r.natGatewayId}
+                empty="NAT ゲートウェイはありません"
+                columns={[
+                  { key: "name", label: "Name", render: (r) => r.name ?? "—" },
+                  { key: "natGatewayId", label: "ID", render: (r) => <Mono>{r.natGatewayId}</Mono> },
+                  {
+                    key: "state",
+                    label: "状態",
+                    render: (r) => <Badge tone={r.state === "available" ? "ok" : "warn"}>{r.state}</Badge>,
+                  },
+                  { key: "connectivity", label: "種別", render: (r) => r.connectivity ?? "—" },
+                  { key: "publicIp", label: "パブリック IP", render: (r) => <Mono>{r.publicIp ?? "—"}</Mono> },
+                  { key: "vpcId", label: "VPC", render: (r) => <Mono>{r.vpcId ?? "—"}</Mono> },
+                  { key: "subnetId", label: "サブネット", render: (r) => <Mono>{r.subnetId ?? "—"}</Mono> },
+                ]}
+              />
+            )}
+
+            {view === "endpoints" && (
+              <DataTable
+                key="endpoints"
+                rows={d.endpoints}
+                rowKey={(r) => r.endpointId}
+                searchKeys={["serviceName", "endpointId", "vpcId"]}
+                empty="VPC エンドポイントはありません"
+                columns={[
+                  { key: "serviceName", label: "サービス", render: (r) => <Mono>{r.serviceName}</Mono> },
+                  { key: "type", label: "種別", render: (r) => r.type ?? "—" },
+                  {
+                    key: "state",
+                    label: "状態",
+                    render: (r) => <Badge tone={(r.state ?? "").toLowerCase() === "available" ? "ok" : "warn"}>{r.state ?? "—"}</Badge>,
+                  },
+                  { key: "endpointId", label: "ID", render: (r) => <Mono>{r.endpointId}</Mono> },
+                  { key: "vpcId", label: "VPC", render: (r) => <Mono>{r.vpcId ?? "—"}</Mono> },
+                ]}
+              />
+            )}
+
+            {view === "eip" && (
+              <DataTable
+                key="eip"
+                rows={d.elasticIps}
+                rowKey={(r) => r.allocationId ?? r.publicIp}
+                empty="Elastic IP はありません"
+                initialSort={{ key: "associated", dir: "asc" }}
+                columns={[
+                  { key: "publicIp", label: "パブリック IP", render: (r) => <Mono>{r.publicIp}</Mono> },
+                  { key: "name", label: "Name", render: (r) => r.name ?? "—" },
+                  {
+                    key: "associated",
+                    label: "状態",
+                    sortValue: (r) => (r.associated ? 1 : 0),
+                    render: (r) => (r.associated ? <Badge tone="ok">使用中</Badge> : <Badge tone="bad">未使用（課金中）</Badge>),
+                  },
+                  { key: "instanceId", label: "インスタンス", render: (r) => <Mono>{r.instanceId ?? "—"}</Mono> },
+                  { key: "networkInterfaceId", label: "ENI", render: (r) => <Mono>{r.networkInterfaceId ?? "—"}</Mono> },
+                  { key: "allocationId", label: "割り当て ID", render: (r) => <Mono>{r.allocationId ?? "—"}</Mono> },
+                ]}
+              />
+            )}
+          </>
+        );
+      }}
     </Panel>
   );
 }
