@@ -30,7 +30,7 @@ export type TabProps = {
   onAccount: (info: { accountId: string | null; region: string }) => void;
 };
 
-export type TabId = "overview" | "ecs" | "eventbridge" | "s3" | "rds" | "iam" | "lambda" | "dynamodb" | "ec2" | "vpc" | "route53";
+export type TabId = "overview" | "ecs" | "eventbridge" | "s3" | "rds" | "iam" | "lambda" | "dynamodb" | "ec2" | "vpc" | "route53" | "report";
 
 // =====================================================================
 // 概要

@@ -299,6 +299,65 @@ export type VpcSummary = {
   elasticIps: ElasticIpInfo[];
 };
 
+// ----- 月次レポート -----
+export type NamedSeries = { name: string; total: number; secondaryTotal: number; daily: number[] };
+export type MonthTotal = { month: string; total: number; dataDays: number };
+export type EcsMonthly = {
+  total: number;
+  failed: number;
+  dataDays: number;
+  daily: number[];
+  failedDaily: number[];
+  covered: boolean[];
+  taskDefinitions: NamedSeries[];
+  monthlyTotals: MonthTotal[];
+};
+export type LambdaMonthly = {
+  totalInvocations: number;
+  totalErrors: number;
+  dataDays: number;
+  daily: number[];
+  covered: boolean[];
+  functions: NamedSeries[];
+};
+export type RdsTableMonthly = {
+  table: string;
+  daily: (number | null)[];
+  first: number | null;
+  last: number | null;
+  delta: number | null;
+  max: number | null;
+  estimated: boolean;
+};
+export type RdsSchemaMonthly = {
+  schema: string;
+  daily: (number | null)[];
+  first: number | null;
+  last: number | null;
+  delta: number | null;
+  tables: RdsTableMonthly[];
+};
+export type RdsDbMonthly = { database: string; schemas: RdsSchemaMonthly[] };
+export type RdsMonthly = { snapshotDays: number; databases: RdsDbMonthly[] };
+export type MonthlyReport = {
+  month: string;
+  days: string[];
+  generatedAt: string;
+  accountId: string | null;
+  region: string;
+  ecs: EcsMonthly;
+  lambda: LambdaMonthly;
+  rds: RdsMonthly;
+};
+export type CategoryCoverage = { category: string; from: string; to: string; days: number };
+export type StatsStatus = {
+  enabled: boolean;
+  running: boolean;
+  lastRunAt: string | null;
+  lastMessage: string | null;
+  coverage: CategoryCoverage[];
+};
+
 // =====================================================================
 // 通信
 // =====================================================================
@@ -308,7 +367,7 @@ export type VpcSummary = {
  * 既存画面と同じ方法で JWT を付ける。トークンの保存場所が違う場合はここだけ直す
  * （既存の共通 fetch / axios インスタンスがあるなら、そちらに差し替えてもOK）。
  */
-function authHeaders(): Record<string, string> {
+export function authHeaders(): Record<string, string> {
   try {
     const token = localStorage.getItem("accessToken");
     return token ? { Authorization: `Bearer ${token}` } : {};
@@ -323,6 +382,18 @@ export type ApiState<T> = {
   error: string | null;
   fetchedAt: string | null;
 };
+
+/** POST で API を呼ぶ（日次集計の手動実行など） */
+export async function postAwsApi<T>(path: string): Promise<ApiResult<T>> {
+  const res = await fetch(`${AWS_API_BASE}/${path}`, { method: "POST", headers: authHeaders(), credentials: "include" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return (await res.json()) as ApiResult<T>;
+}
+
+/** 今月（JST）を YYYY-MM で返す */
+export function thisMonthJst(): string {
+  return todayJst().slice(0, 7);
+}
 
 /**
  * API を呼ぶフック。

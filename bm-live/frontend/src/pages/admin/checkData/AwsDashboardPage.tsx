@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { todayJst } from "../../../api/checkData";
 import { colors } from "./AwsDashboardCommonPage";
+import AwsReportTab from "./AwsReportTab";
 import { DynamoDbTab, Ec2Tab, EcsTab, EventBridgeTab, IamTab, LambdaTab, OverviewTab, RdsTab, Route53Tab, S3Tab, VpcTab, type TabId, type TabProps } from "./AwsDashboardTabPage";
 
 /**
@@ -24,6 +25,7 @@ const TABS: { id: TabId; label: string; Comp: (p: TabProps) => React.ReactElemen
   { id: "ec2", label: "EC2", Comp: Ec2Tab },
   { id: "vpc", label: "VPC", Comp: VpcTab },
   { id: "route53", label: "Route53", Comp: Route53Tab },
+  { id: "report", label: "月次レポート（PDF）", Comp: AwsReportTab },
 ];
 
 function isTabId(v: string | null): v is TabId {
