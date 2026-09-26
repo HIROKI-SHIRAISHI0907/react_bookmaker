@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { todayJst } from "../../../api/checkData";
 import { colors } from "./AwsDashboardCommonPage";
-import { DynamoDbTab, Ec2Tab, EcsTab, IamTab, LambdaTab, OverviewTab, RdsTab, Route53Tab, S3Tab, type TabId, type TabProps } from "./AwsDashboardTab";
+import { DynamoDbTab, Ec2Tab, EcsTab, IamTab, LambdaTab, OverviewTab, RdsTab, Route53Tab, S3Tab, type TabId, type TabProps } from "./AwsDashboardTabPage";
 
 /**
  * AWS リソース状況（管理者のみ）

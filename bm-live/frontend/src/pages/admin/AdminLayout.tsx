@@ -25,7 +25,6 @@ export default function AdminLayout() {
         items: [
           { label: "スクレイピング対象データ取得設定", to: "manual/data/target" },
           { label: "スクレイピングCSV情報取得管理", to: "scrape/manual" },
-          { label: "スクレイピング生成物数管理", to: "s3/fileCount" },
           { label: "スクレイピングCSV情報データ登録管理", to: "data/fetch" },
         ],
       },
@@ -92,6 +91,8 @@ export default function AdminLayout() {
         items: [
           { label: "コネクション管理", to: "db/connections" },
           { label: "非稼働ECS管理", to: "noecs" },
+          // IAM・IP・DNS などアカウント情報を表示するため管理者のみ。
+          ...(role === "ADMIN" ? [{ label: "AWSリソース状況", to: "aws/dashboard" }] : []),
         ],
       },
     ];

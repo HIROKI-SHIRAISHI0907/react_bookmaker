@@ -13,7 +13,6 @@ import TeamDetailPage from "./pages/personal/teams/TeamDetailPage";
 import GameDetailPage from "./pages/personal/teams/GameDetailPage";
 import AdminLayout from "./pages/admin/AdminLayout";
 import ManualScrapePage from "./pages/admin/scrape/ManualScrapePage";
-import S3FileCountPage from "./pages/admin/s3/S3FileCountPage";
 import CountryLeagueForceAdminPage from "./pages/admin/force/CountryLeagueForceAdminPage";
 import NoticeAdminPage from "./pages/admin/notice/NoticeAdminPage";
 import DataFetchAdminPage from "./pages/admin/fetch/DataFetchAdminPage";
@@ -47,6 +46,7 @@ import MailInfoListPage from "./pages/admin/mail/MailInfoList";
 import MailInfoRegisterPage from "./pages/admin/mail/MailInfoRegisterPage"; // MailRegisterFormPage → MailInfoRegisterPage
 import MailInfoUpdatePage from "./pages/admin/mail/MailUpdateFormPage";
 import MyRequestsPage from "./pages/admin/approve/MyRequestsPage";
+import AwsDashboardPage from "./pages/admin/checkData/AwsDashboardPage";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -110,7 +110,6 @@ export default function App() {
               <Route index element={<Navigate to="data/fetch" replace />} />
               <Route path="force/update" element={<CountryLeagueForceAdminPage />} />
               <Route path="scrape/manual" element={<ManualScrapePage />} />
-              <Route path="s3/fileCount" element={<S3FileCountPage />} />
               {/* お知らせの作成・編集は担当者のみ。管理者は申請確認画面から見て承認/差し戻しするだけ。 */}
               <Route
                 path="notices"
@@ -191,6 +190,16 @@ export default function App() {
                 element={
                   <RequireRole role="ADMIN">
                     <AwsCostPage />
+                  </RequireRole>
+                }
+              />
+
+              {/* AWSリソース状況（IAM・IP・DNS などアカウント情報を表示するため管理者のみ） */}
+              <Route
+                path="aws/dashboard"
+                element={
+                  <RequireRole role="ADMIN">
+                    <AwsDashboardPage />
                   </RequireRole>
                 }
               />
