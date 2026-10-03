@@ -45,6 +45,7 @@ export default function AdminLayout() {
           { label: "統計用CSV作成内容参照", to: "csv/today" },
           { label: "未来データ・リアルタイムデータ紐づき参照", to: "ingested" },
           { label: "アップロード済リアルタイムデータ参照", to: "upload/realtime" },
+          { label: "統計用CSV反映済状態参照", to: "analyzeCsvError" },
         ],
       },
       {

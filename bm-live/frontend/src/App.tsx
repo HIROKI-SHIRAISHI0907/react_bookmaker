@@ -47,6 +47,7 @@ import MailInfoRegisterPage from "./pages/admin/mail/MailInfoRegisterPage"; // M
 import MailInfoUpdatePage from "./pages/admin/mail/MailUpdateFormPage";
 import MyRequestsPage from "./pages/admin/approve/MyRequestsPage";
 import AwsDashboardPage from "./pages/admin/checkData/AwsDashboardPage";
+import AnalyzeErrorMatchesPage from "./pages/admin/error/AnalyzeErrorMatchPage";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -141,6 +142,7 @@ export default function App() {
               <Route path="mailinfo/new" element={<MailInfoRegisterPage />} />
               <Route path="mailinfo/:mailId/edit" element={<MailInfoUpdatePage />} />
               <Route path="upload/realtime" element={<UploadedRealTimeDataDownloadPage />} />
+              <Route path="analyzeCsvError" element={<AnalyzeErrorMatchesPage />} />
 
               {/* 承認フロー */}
               <Route
