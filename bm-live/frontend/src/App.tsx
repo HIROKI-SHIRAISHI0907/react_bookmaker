@@ -41,7 +41,6 @@ import RequestReviewPage from "./pages/admin/approve/RequestReviewPage";
 import InstructionConfirmPage from "./pages/admin/approve/InstructionConfirmPage";
 import WithdrawalConfirmPage from "./pages/admin/withdraw/WithdrawalConfirmPage";
 import WithdrawalCompletePage from "./pages/admin/withdraw/WithdrawalCompletePage";
-import AwsCostPage from "./pages/admin/cost/AwsCostPage";
 import MailInfoListPage from "./pages/admin/mail/MailInfoList";
 import MailInfoRegisterPage from "./pages/admin/mail/MailInfoRegisterPage"; // MailRegisterFormPage → MailInfoRegisterPage
 import MailInfoUpdatePage from "./pages/admin/mail/MailUpdateFormPage";
@@ -183,15 +182,6 @@ export default function App() {
                 element={
                   <RequireRole role="ADMIN_SUB">
                     <WithdrawalCompletePage />
-                  </RequireRole>
-                }
-              />
-
-              <Route
-                path="cost"
-                element={
-                  <RequireRole role="ADMIN">
-                    <AwsCostPage />
                   </RequireRole>
                 }
               />
