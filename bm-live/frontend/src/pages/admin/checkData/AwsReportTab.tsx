@@ -2,12 +2,14 @@ import React, { useEffect, useRef, useState } from "react";
 import { type MonthlyReport, type NamedSeries, type RdsSchemaMonthly, type RdsTableMonthly, type StatsStatus, fmtDate, postAwsApi, thisMonthJst, useAwsApi } from "../../../api/checkData";
 import { Badge, Note, Panel, Section, SmallButton, colors } from "./AwsDashboardCommonPage";
 import { DailyBarChart, LineChart, MiniBars, MonthlyBarChart, ShareBar, Sparkline, chart, reportNumber as n } from "./AwsReportCharts";
+import { CostSection } from "./CostSectionPage";
 import type { TabProps } from "./AwsDashboardTabPage";
 
 /**
  * 月次レポート（PDF ダウンロード）
  *
  * - サーバーの aws_daily_stats（毎日 00:30 に前日分を記録）から 1 か月分を表示
+ * - 料金は Cost Explorer から取得（サーバー側でキャッシュ）。円換算レートも PDF に載せる
  * - 「PDF をダウンロード」でプレビューと同じ内容を A4 縦の PDF にする（ブラウザ内で生成）
  */
 
@@ -246,8 +248,18 @@ function ReportDocument({ r }: { r: MonthlyReport }) {
         </div>
       </Block>
 
+      {/* ---------- 料金（Cost Explorer） ---------- */}
+      {r.cost ? (
+        <CostSection cost={r.cost} month={r.month} />
+      ) : (
+        <Block>
+          <div style={h2}>AWS 料金</div>
+          <Empty>料金データがありません（サーバーが料金取得に対応していない可能性があります）</Empty>
+        </Block>
+      )}
+
       {/* ---------- ECS ---------- */}
-      <Block>
+      <Block breakBefore>
         <div style={h2}>ECS 日別の実行回数</div>
         <div style={sub}>
           CloudTrail の RunTask 件数。月合計 {n(r.ecs.total)} 回（うち失敗 {n(r.ecs.failed)} 回）。破線の日は未集計。
