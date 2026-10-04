@@ -97,7 +97,7 @@ const EMPTY_FILTERS: Filters = {
 };
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
-const ENDPOINT = "/api/analyze-error";
+const ENDPOINT = "/v1/api/analyze-error";
 const PAGE_SIZE = 20;
 const RESOLVED_BY = "ADMIN";
 
