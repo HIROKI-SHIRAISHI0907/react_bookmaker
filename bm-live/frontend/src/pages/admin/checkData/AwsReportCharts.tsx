@@ -120,16 +120,42 @@ export function DailyBarChart({
 // 月別の合計（数本の棒・全本にラベル）
 // =====================================================================
 
-export function MonthlyBarChart({ items, highlight, width = 720, height = 190 }: { items: { month: string; total: number; dataDays: number }[]; highlight: string; width?: number; height?: number }) {
-  const pad = { top: 22, right: 8, bottom: 30, left: 52 };
+export type MonthlyBarItem = { month: string; total: number; dataDays: number };
+
+/**
+ * format  … 目盛り・棒の上のラベルの書式（既定: 3 桁区切りの数値。料金なら ¥ 付きなど）
+ * tooltip … マウスを乗せたときの文言（既定: 「n回（d日分）」）
+ * 指定しなければ従来（ECS の実行回数）と同じ表示。
+ */
+export function MonthlyBarChart({
+  items,
+  highlight,
+  width = 720,
+  height = 190,
+  format = fmt,
+  tooltip,
+}: {
+  items: MonthlyBarItem[];
+  highlight: string;
+  width?: number;
+  height?: number;
+  format?: (v: number) => string;
+  tooltip?: (it: MonthlyBarItem) => string;
+}) {
+  const { max, step } = niceScale(Math.max(0, ...items.map((i) => i.total)));
+  const ticks: number[] = [];
+  for (let t = 0; t <= max + 1e-9; t += step) ticks.push(t);
+
+  // 「¥40,000」のように目盛りの文字が長くなっても切れないよう、左余白を文字数に合わせる
+  const longest = Math.max(...ticks.map((t) => format(t).length));
+  const pad = { top: 22, right: 8, bottom: 30, left: Math.max(52, longest * 7 + 12) };
   const w = width - pad.left - pad.right;
   const h = height - pad.top - pad.bottom;
-  const { max, step } = niceScale(Math.max(0, ...items.map((i) => i.total)));
   const slot = w / Math.max(1, items.length);
   const bw = Math.min(56, slot - 16);
   const y = (v: number) => pad.top + h - (v / max) * h;
-  const ticks: number[] = [];
-  for (let t = 0; t <= max + 1e-9; t += step) ticks.push(t);
+
+  const defaultTooltip = (it: MonthlyBarItem) => `${it.month}: ${it.dataDays === 0 ? "データなし" : `${fmt(it.total)}回（${it.dataDays}日分）`}`;
 
   return (
     <svg width={width} height={height} role="img" aria-label="月別の合計" style={{ display: "block" }}>
@@ -137,7 +163,7 @@ export function MonthlyBarChart({ items, highlight, width = 720, height = 190 }:
         <g key={t}>
           <line x1={pad.left} x2={pad.left + w} y1={y(t)} y2={y(t)} stroke={t === 0 ? chart.axis : chart.grid} />
           <text x={pad.left - 8} y={y(t) + 4} textAnchor="end" fontSize={11} fill={chart.text2}>
-            {fmt(t)}
+            {format(t)}
           </text>
         </g>
       ))}
@@ -147,10 +173,10 @@ export function MonthlyBarChart({ items, highlight, width = 720, height = 190 }:
         const noData = it.dataDays === 0;
         return (
           <g key={it.month}>
-            <title>{`${it.month}: ${noData ? "データなし" : `${fmt(it.total)}回（${it.dataDays}日分）`}`}</title>
+            <title>{(tooltip ?? defaultTooltip)(it)}</title>
             {!noData && it.total > 0 && <path d={barPath(x, y(it.total), bw, pad.top + h - y(it.total), 4)} fill={chart.series} fillOpacity={isCur ? 1 : 0.45} />}
             <text x={x + bw / 2} y={noData ? pad.top + h - 6 : y(it.total) - 6} textAnchor="middle" fontSize={11} fontWeight={isCur ? 700 : 500} fill={noData ? chart.muted : chart.text}>
-              {noData ? "—" : fmt(it.total)}
+              {noData ? "—" : format(it.total)}
             </text>
             <text x={x + bw / 2} y={pad.top + h + 18} textAnchor="middle" fontSize={11} fontWeight={isCur ? 700 : 400} fill={isCur ? chart.text : chart.text2}>
               {it.month.replace("-", "/")}
