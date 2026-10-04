@@ -339,6 +339,27 @@ export type RdsSchemaMonthly = {
 };
 export type RdsDbMonthly = { database: string; schemas: RdsSchemaMonthly[] };
 export type RdsMonthly = { snapshotDays: number; databases: RdsDbMonthly[] };
+
+// ----- 月次レポート：料金（Java 側 CostReportDtos と 1:1 対応）-----
+/** 円換算に使ったレート */
+export type ExchangeRate = { rate: number; date: string | null; source: string; fallback: boolean };
+/** サービス別 / 使用タイプ別の 1 行（amount は USD、amountJpy は円、share は %） */
+export type CostItem = { name: string; amount: number; amountJpy: number; share: number };
+/** 月別推移の 1 か月分 */
+export type CostMonth = { month: string; total: number; totalJpy: number; estimated: boolean; rate: ExchangeRate };
+export type CostMonthly = {
+  unit: string;
+  total: number;
+  totalJpy: number;
+  estimated: boolean;
+  rate: ExchangeRate | null;
+  byService: CostItem[];
+  byUsageType: CostItem[];
+  monthly: CostMonth[];
+  error: string | null;
+  fetchedAt: string;
+};
+
 export type MonthlyReport = {
   month: string;
   days: string[];
@@ -348,6 +369,8 @@ export type MonthlyReport = {
   ecs: EcsMonthly;
   lambda: LambdaMonthly;
   rds: RdsMonthly;
+  /** 料金（サーバーが古い・取得失敗のときは無いことがある） */
+  cost?: CostMonthly | null;
 };
 export type CategoryCoverage = { category: string; from: string; to: string; days: number };
 export type StatsStatus = {

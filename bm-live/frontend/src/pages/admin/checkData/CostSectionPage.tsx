@@ -5,38 +5,36 @@
  * - 円換算のレートと出どころは必ず PDF に載せる（ツールチップだけにしない）
  * - 月別の棒は各月のレート（月末時点）で換算した円
  *
- * ※ import のパスとカードの見た目は、既存のレポート画面に合わせて変えてください。
+ * - PDF 出力（exportPdf）は data-pdf-block の要素だけを画像化するので、各カードに付けている
  */
+import type React from "react";
+import type { CostItem, CostMonthly, ExchangeRate } from "../../../api/checkData";
 import { chart, MonthlyBarChart, ShareBar, reportNumber as fmt } from "./AwsReportCharts";
-
-export type ExchangeRate = { rate: number; date: string | null; source: string; fallback: boolean };
-export type CostItem = { name: string; amount: number; amountJpy: number; share: number };
-export type CostMonth = { month: string; total: number; totalJpy: number; estimated: boolean; rate: ExchangeRate };
-export type CostMonthly = {
-  unit: string;
-  total: number;
-  totalJpy: number;
-  estimated: boolean;
-  rate: ExchangeRate | null;
-  byService: CostItem[];
-  byUsageType: CostItem[];
-  monthly: CostMonth[];
-  error: string | null;
-  fetchedAt: string;
-};
 
 const yen = (v: number) => `¥${fmt(Math.round(v))}`;
 const usd = (v: number) => `$${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const rateText = (r: ExchangeRate) => `1 USD = ${r.rate.toFixed(2)} 円`;
 const rateNote = (r: ExchangeRate) => [r.date, r.source].filter(Boolean).join("・");
 
+/** PDF の 1 ブロック（exportPdf が拾う単位） */
+function Card({ children, breakBefore }: { children: React.ReactNode; breakBefore?: boolean }) {
+  return (
+    <div data-pdf-block="" data-pdf-break={breakBefore ? "before" : undefined} style={card}>
+      {children}
+    </div>
+  );
+}
+
+/** レポートの他のブロック（AwsReportTab の page）と同じ見た目 */
 const card: React.CSSProperties = {
-  border: `1px solid ${chart.grid}`,
-  borderRadius: 4,
-  padding: "18px 16px",
-  marginBottom: 12,
   background: chart.surface,
-  breakInside: "avoid",
+  color: chart.text,
+  padding: "18px 20px",
+  marginBottom: 12,
+  fontFamily: 'system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", sans-serif',
+  fontSize: 12.5,
+  lineHeight: 1.5,
+  border: `1px solid ${chart.grid}`,
 };
 const h2: React.CSSProperties = { fontSize: 15, fontWeight: 700, margin: "0 0 4px", color: chart.text };
 const sub: React.CSSProperties = { fontSize: 11, color: chart.text2, margin: "0 0 12px" };
@@ -49,10 +47,10 @@ export function CostSection({ cost, month }: { cost: CostMonthly | null | undefi
 
   if (cost.error) {
     return (
-      <section style={card}>
-        <h2 style={h2}>AWS 料金</h2>
+      <Card>
+        <div style={h2}>AWS 料金</div>
         <p style={{ ...sub, margin: 0 }}>{cost.error}</p>
-      </section>
+      </Card>
     );
   }
 
@@ -62,9 +60,9 @@ export function CostSection({ cost, month }: { cost: CostMonthly | null | undefi
   return (
     <>
       {/* ---- 合計 ---- */}
-      <section style={card}>
+      <Card>
         <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-          <h2 style={h2}>AWS 料金（{ym}利用分）</h2>
+          <div style={h2}>AWS 料金（{ym}利用分）</div>
           {cost.estimated && <span style={{ fontSize: 11, color: chart.text2, border: `1px solid ${chart.axis}`, borderRadius: 3, padding: "0 6px" }}>確定前</span>}
         </div>
         <div style={{ display: "flex", alignItems: "baseline", gap: 12, margin: "6px 0 4px" }}>
@@ -79,11 +77,11 @@ export function CostSection({ cost, month }: { cost: CostMonthly | null | undefi
         <p style={{ ...sub, margin: 0 }}>
           Cost Explorer の UnblendedCost（税を含む）。カードには翌月 2 日ごろ請求されます。AWS が請求時に使う為替レートとは異なるため、カード明細とは数 % ずれることがあります。
         </p>
-      </section>
+      </Card>
 
       {/* ---- 月別推移 ---- */}
-      <section style={card}>
-        <h2 style={h2}>月別の料金（直近 6 か月）</h2>
+      <Card>
+        <div style={h2}>月別の料金（直近 6 か月）</div>
         <p style={sub}>濃い棒が対象月。各月の月末時点のレートで円に換算しています。</p>
         <MonthlyBarChart
           items={cost.monthly.map((m) => ({ month: m.month, total: m.totalJpy, dataDays: 1 }))}
@@ -120,7 +118,7 @@ export function CostSection({ cost, month }: { cost: CostMonthly | null | undefi
             ))}
           </tbody>
         </table>
-      </section>
+      </Card>
 
       <CostTable title="サービス別" note="対象月の料金の内訳。" items={cost.byService} />
       <CostTable title="使用タイプ別（上位 15）" note="何に料金がかかっているかの詳細（例: APN1-NatGateway-Bytes = NAT のデータ処理量）。" items={cost.byUsageType} />
@@ -131,8 +129,8 @@ export function CostSection({ cost, month }: { cost: CostMonthly | null | undefi
 function CostTable({ title, note, items }: { title: string; note: string; items: CostItem[] }) {
   const max = Math.max(0, ...items.map((i) => i.amountJpy));
   return (
-    <section style={card}>
-      <h2 style={h2}>{title}</h2>
+    <Card>
+      <div style={h2}>{title}</div>
       <p style={sub}>{note}</p>
       {items.length === 0 ? (
         <p style={{ ...sub, textAlign: "center", margin: "12px 0" }}>この月の料金はありません</p>
@@ -162,6 +160,6 @@ function CostTable({ title, note, items }: { title: string; note: string; items:
           </tbody>
         </table>
       )}
-    </section>
+    </Card>
   );
 }
