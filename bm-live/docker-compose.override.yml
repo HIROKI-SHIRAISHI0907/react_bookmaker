@@ -1,0 +1,19 @@
+# bm-live の docker-compose.yml と同じフォルダに置く（自動で重ねて読まれる）。up では起動しない（profiles: tools）
+#  dbrestore: db/dumps/<フォルダ>/*.dump をローカルの db に流し込む（pull_and_restore.sh から呼ぶ）
+services:
+  dbrestore:
+    image: ${PG_TOOLS_IMAGE:-postgres:17-alpine}   # pg_restore はダンプを作った pg_dump と同じか新しい版
+    profiles: ["tools"]
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      TZ: Asia/Tokyo
+      LOCAL_HOST: db
+      LOCAL_PORT: 5432
+      LOCAL_USER: postgres
+      LOCAL_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./db/sync:/sync:ro
+      - ./db/dumps:/dumps:ro
+    entrypoint: ["bash", "/sync/restore_dumps.sh"]

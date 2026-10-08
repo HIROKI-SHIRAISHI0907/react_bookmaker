@@ -22,8 +22,8 @@ function authHeader(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-async function getJson<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
+async function getJson<T>(path: string, base: string = BASE): Promise<T> {
+  const res = await fetch(`${base}${path}`, {
     method: "GET",
     cache: "no-store",
     headers: { Accept: "application/json", ...authHeader() },
@@ -40,5 +40,14 @@ async function getJson<T>(path: string): Promise<T> {
 
 export const fetchDashboardSummary = () => getJson<DashboardSummaryResponse>("/summary");
 export const fetchDashboardLive = () => getJson<DashboardLiveResponse>("/live");
-export const fetchDashboardUpcoming = (limit = 20) => getJson<DashboardUpcomingResponse>(`/upcoming?limit=${limit}`);
+/** トップ画面: リーグごとに直近 perLeague 試合・最大 maxLeagues リーグ（0 なら全リーグ） */
+export const fetchDashboardUpcoming = (perLeague = 3, maxLeagues = 5) =>
+  getJson<DashboardUpcomingResponse>(`/upcoming?perLeague=${perLeague}&maxLeagues=${maxLeagues}`);
+
+/** 全試合画面（UpcomingMatches.tsx）: hours 時間後までの全試合（league を付けるとそのリーグだけ） */
+export const fetchUpcomingMatches = (hours = 36, league?: string) => {
+  const q = new URLSearchParams({ hours: String(hours) });
+  if (league) q.set("league", league);
+  return getJson<DashboardUpcomingResponse>(`?${q.toString()}`, "/v1/api/upcoming-matches");
+};
 export const fetchDashboardFavorites = () => getJson<DashboardFavoriteResponse>("/favorites");

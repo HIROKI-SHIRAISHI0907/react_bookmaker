@@ -28,7 +28,8 @@ export type DashboardForecast = {
 };
 
 export type DashboardLiveMatch = {
-  seq: number;
+  /** static_data の seq_key（最新の行。例: "0drkxQrA-12"） */
+  seqKey: string;
   matchId: string | null;
   country: string;
   league: string;
@@ -79,10 +80,29 @@ export type DashboardUpcomingMatch = {
   forecast: DashboardForecast;
 };
 
+export type DashboardUpcomingLeague = {
+  leagueLabel: string;
+  country: string;
+  league: string;
+  /** このリーグの期間内の全試合数（matches は先頭の数件だけのことがある） */
+  totalCount: number;
+  matches: DashboardUpcomingMatch[];
+};
+
 export type DashboardUpcomingResponse = {
   loggedIn: boolean;
+  /** 返した試合数 */
   count: number;
+  /** 期間内の全試合数 */
+  totalCount: number;
+  /** 期間内の全リーグ数 */
+  totalLeagueCount: number;
+  /** 何時間後までか */
+  hours: number;
+  /** 返した試合（キックオフ順） */
   matches: DashboardUpcomingMatch[];
+  /** リーグごと（最初の試合が早い順） */
+  leagues: DashboardUpcomingLeague[];
 };
 
 export type DashboardSummaryResponse = {
@@ -113,7 +133,7 @@ export type DashboardFavoriteItem = {
   opponentScore: number | null;
   kickoff: string | null;
   winProb: number | null;
-  seq: number | null;
+  seqKey: string | null;
 };
 
 export type DashboardFavoriteResponse = {

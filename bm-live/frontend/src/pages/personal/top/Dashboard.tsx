@@ -54,7 +54,7 @@ export default function Dashboard() {
 
   const upcoming = useQuery({
     queryKey: ["dashboard-upcoming", loggedIn],
-    queryFn: () => fetchDashboardUpcoming(20),
+    queryFn: () => fetchDashboardUpcoming(3, 5),
     staleTime: 60_000,
     refetchInterval: 300_000,
   });
@@ -120,7 +120,13 @@ export default function Dashboard() {
             ) : (
               <DashboardLoginCta from={location.pathname + location.search} />
             )}
-            <DashboardUpcoming matches={upcoming.data?.matches ?? []} loading={upcoming.isLoading} favoriteTeams={favoriteTeams} />
+            <DashboardUpcoming
+              leagues={upcoming.data?.leagues ?? []}
+              totalCount={upcoming.data?.totalCount ?? 0}
+              totalLeagueCount={upcoming.data?.totalLeagueCount ?? 0}
+              loading={upcoming.isLoading}
+              favoriteTeams={favoriteTeams}
+            />
           </aside>
         </div>
       </main>
