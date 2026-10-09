@@ -7,10 +7,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AdminProtectedRoute from "./components/AdminProtectedRoute";
 import RequireRole from "./components/RequireRole";
 import TopRedirectByRole from "./components/TopRedirectByRole";
-import LeagueMenuPage from "./pages/humberger/LeagueMenuPage";
-import FavoritePage from "./pages/personal/favorite/FavoritePage";
-import TeamDetailPage from "./pages/personal/teams/TeamDetailPage";
-import GameDetailPage from "./pages/personal/teams/GameDetailPage";
 import AdminLayout from "./pages/admin/AdminLayout";
 import ManualScrapePage from "./pages/admin/scrape/ManualScrapePage";
 import CountryLeagueForceAdminPage from "./pages/admin/force/CountryLeagueForceAdminPage";
@@ -47,6 +43,9 @@ import MailInfoUpdatePage from "./pages/admin/mail/MailUpdateFormPage";
 import MyRequestsPage from "./pages/admin/approve/MyRequestsPage";
 import AwsDashboardPage from "./pages/admin/checkData/AwsDashboardPage";
 import AnalyzeErrorMatchesPage from "./pages/admin/error/AnalyzeErrorMatchPage";
+import FavoriteEdit from "./pages/personal/favorite/FavoriteEdit";
+import TeamResults from "./pages/personal/teams/TeamResults";
+import UpcomingMatches from "./pages/personal/top/DashboardUpcomingMatches";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -84,6 +83,9 @@ export default function App() {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/reset-password/invalid" element={<InvalidPage />} />
+          <Route path="/favorite-edit" element={<FavoriteEdit />} />
+          <Route path="/team-results" element={<TeamResults />} />
+          <Route path="/upcoming" element={<UpcomingMatches />} />
 
           <Route
             path="/top"
@@ -95,14 +97,9 @@ export default function App() {
           />
 
           <Route path="/dashboard" element={<Navigate to="/top" replace />} />
-          <Route path="/soccer/:countrySlug/:leagueSlug" element={<LeagueMenuPage />} />
 
           {/* 一般ユーザー向け認証ページ */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/favorite" element={<FavoritePage />} />
-            <Route path="/team/:teamEnglish/:teamHash" element={<TeamDetailPage />} />
-            <Route path="/gameDetail" element={<GameDetailPage />} />
-          </Route>
+          <Route element={<ProtectedRoute />}></Route>
 
           {/* 管理者専用 */}
           <Route element={<AdminProtectedRoute />}>

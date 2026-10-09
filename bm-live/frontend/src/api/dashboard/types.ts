@@ -134,6 +134,7 @@ export type DashboardFavoriteItem = {
   kickoff: string | null;
   winProb: number | null;
   seqKey: string | null;
+  recentForm?: ("W" | "D" | "L" | null)[] | null;
 };
 
 export type DashboardFavoriteResponse = {

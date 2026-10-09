@@ -1,9 +1,11 @@
 // これからの試合（トップ画面・コンパクト版）
 //  リーグごとに直近 3 試合、最初の試合が早いリーグから 5 リーグ。残りは「全試合」画面（/upcoming）へ。
+//  チーム名 → チームの過去の結果（/team-results）
 import { Link } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import type { DashboardForecast, DashboardUpcomingLeague, DashboardUpcomingMatch } from "../../../api/dashboard/types";
 import { RankBadge, formatKickoff } from "./parts";
+import { TeamLink } from "../teams/TeamForm";
 
 export const UPCOMING_PATH = "/upcoming";
 
@@ -81,10 +83,10 @@ function UpcomingRow({ m, favoriteTeams }: { m: DashboardUpcomingMatch; favorite
         {[m.home, m.away].map((t, i) => (
           <div key={i} className="flex min-w-0 items-center gap-1">
             <RankBadge rank={t.rank} />
-            <span className="truncate font-semibold">
+            <TeamLink country={m.country} league={m.league} team={t.name} className="truncate font-semibold">
               {favoriteTeams.has(t.name) && <span className="text-amber-500">★</span>}
               {t.name}
-            </span>
+            </TeamLink>
           </div>
         ))}
       </div>
