@@ -1,4 +1,5 @@
 // ライブ（リーグごとの1行表示。国・お気に入りで絞り込み、ゴールが多い順に並べ替え）
+//  行をクリック → onOpen(seqKey)（static_data の seq_key。例: "0drkxQrA-12"）
 import { useMemo, useState } from "react";
 import type { DashboardLiveLeague, DashboardLiveMatch } from "../../../api/dashboard/types";
 import { GoalsBadge, LiveDot, RankBadge, TeamGrades, WdlBar } from "./parts";
@@ -8,12 +9,12 @@ type Props = {
   count: number;
   favoriteTeams: Set<string>;
   loggedIn: boolean;
-  onOpen: (seq: number) => void;
+  onOpen: (seqKey: string, match: DashboardLiveMatch) => void;
 };
 
 const GOAL_ORDER = { HIGH: 0, MID: 1, LOW: 2 } as const;
 
-function Row({ m, fav, onOpen }: { m: DashboardLiveMatch; fav: boolean; onOpen: (seq: number) => void }) {
+function Row({ m, fav, onOpen }: { m: DashboardLiveMatch; fav: boolean; onOpen: Props["onOpen"] }) {
   const teams = [
     { t: m.home, s: m.homeScore, o: m.awayScore },
     { t: m.away, s: m.awayScore, o: m.homeScore },
@@ -21,7 +22,8 @@ function Row({ m, fav, onOpen }: { m: DashboardLiveMatch; fav: boolean; onOpen: 
   return (
     <button
       type="button"
-      onClick={() => onOpen(m.seq)}
+      onClick={() => onOpen(m.seqKey, m)}
+      data-testid={`live-row-${m.seqKey}`}
       className="grid w-full grid-cols-[52px_1fr_auto] items-center gap-3 px-3 py-2.5 text-left transition hover:bg-muted/50 md:grid-cols-[52px_1fr_auto_150px]"
     >
       <div className="text-center">
@@ -146,11 +148,11 @@ export default function DashboardLiveBoard({ leagues, count, favoriteTeams, logg
         <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">現在ライブ中の試合はありません</div>
       ) : (
         shown.map((g) => (
-          <div key={g.leagueLabel}>
+          <div key={`${g.country}|${g.leagueLabel}`}>
             <div className="mb-1 mt-3 px-1 text-xs font-semibold">{g.leagueLabel}</div>
             <div className="divide-y overflow-hidden rounded-xl border">
               {g.matches.map((m) => (
-                <Row key={m.seq} m={m} fav={loggedIn && isFav(m)} onOpen={onOpen} />
+                <Row key={m.seqKey} m={m} fav={loggedIn && isFav(m)} onOpen={onOpen} />
               ))}
             </div>
           </div>

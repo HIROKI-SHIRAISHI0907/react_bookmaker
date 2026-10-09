@@ -1,4 +1,4 @@
-// チームの過去の結果  /team-results?country=&league=&team=
+// チームの過去の結果・メンバー  /team-results?country=&league=&team=
 //  GET /v1/api/team-results（surface_overview_match → 無いラウンドは static_data の「終了済」→ それも無ければ空欄）
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -9,6 +9,7 @@ import AppHeader from "../../../components/layout/AppHeader";
 import { fetchTeamResults } from "../../../api/team/teamapi";
 import type { TeamResultItem } from "../../../api/team/teamtypes";
 import { TeamFormDots, TeamLink } from "./TeamForm";
+import TeamMembers from "../teamMembers/TeamMembers";
 
 const LIMITS = [5, 10, 20] as const;
 
@@ -98,6 +99,9 @@ export default function TeamResults() {
             <p className="text-[11px] text-muted-foreground">空欄のラウンドは試合結果が見つからなかったラウンドです（試合が無い・データ未取得）。</p>
           </>
         )}
+
+        {/* メンバー（結果が無くても表示） */}
+        {country && league && team && <TeamMembers country={country} league={league} team={team} />}
       </main>
     </div>
   );

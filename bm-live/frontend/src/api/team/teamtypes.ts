@@ -28,6 +28,33 @@ export type TeamResultsResponse = {
   goalsAgainst: number;
 };
 
+export type PositionGroup = "GK" | "DF" | "MF" | "FW" | "OTHER";
+
+export type TeamMember = {
+  jersey: number | null;
+  name: string;
+  positionGroup: PositionGroup;
+  position: string | null;
+  age: number | null;
+  height: number | null;
+  marketValue: string | null;
+  /** 負傷内容（無ければ null） */
+  injury: string | null;
+  /** レンタル元（レンタルでなければ null） */
+  loanFrom: string | null;
+  facePicPath: string | null;
+};
+
+export type TeamMembersResponse = {
+  country: string;
+  league: string;
+  team: string;
+  latestInfoDate: string | null;
+  injuredCount: number;
+  /** GK → DF → MF → FW → その他、背番号順 */
+  members: TeamMember[];
+};
+
 export type FavoriteTeam = { id: number; country: string; league: string; team: string };
 
 export type FavoriteEditResponse = { teams: FavoriteTeam[]; maxTeams: number; message: string | null };

@@ -1,4 +1,5 @@
 // 注目の試合（ライブ中でゴール数の見込みが一番多い試合）
+//  カードをクリック → onOpen(seqKey)（static_data の seq_key。例: "0drkxQrA-12"）
 import type { DashboardLiveMatch, DashboardTeam } from "../../../api/dashboard/types";
 import { GoalsBadge, TeamGrades, WdlBar } from "./parts";
 
@@ -38,10 +39,28 @@ function Stat({ label, home, away, ratio }: { label: string; home: string; away:
 const ratio = (h: number | null, a: number | null) => (h == null || a == null || h + a <= 0 ? null : h / (h + a));
 const fmt = (v: number | null, digits = 0, suffix = "") => (v == null ? "-" : `${v.toFixed(digits)}${suffix}`);
 
-export default function DashboardFeatured({ m, onOpen }: { m: DashboardLiveMatch; onOpen: (seq: number) => void }) {
+type Props = {
+  m: DashboardLiveMatch;
+  onOpen: (seqKey: string, match: DashboardLiveMatch) => void;
+};
+
+export default function DashboardFeatured({ m, onOpen }: Props) {
   const f = m.forecast;
+  const open = () => onOpen(m.seqKey, m);
   return (
-    <section className="relative cursor-pointer overflow-hidden rounded-2xl border bg-gradient-to-br from-emerald-500/15 via-card to-cyan-500/15 p-6" onClick={() => onOpen(m.seq)}>
+    <section
+      role="button"
+      tabIndex={0}
+      onClick={open}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          open();
+        }
+      }}
+      data-testid={`featured-${m.seqKey}`}
+      className="relative cursor-pointer overflow-hidden rounded-2xl border bg-gradient-to-br from-emerald-500/15 via-card to-cyan-500/15 p-6"
+    >
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
         <span className="rounded-full bg-muted px-2.5 py-1">
           注目の試合 ・ {m.leagueLabel}

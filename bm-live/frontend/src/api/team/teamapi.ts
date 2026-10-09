@@ -1,5 +1,5 @@
 // チームの過去の結果（/v1/api/team-results）・お気に入り編集（/v1/api/favorite-edit）の API
-import type { FavoriteEditResponse, FavoriteLeague, FavoriteTeamCandidate, TeamResultsResponse } from "./teamtypes";
+import type { FavoriteEditResponse, FavoriteLeague, FavoriteTeamCandidate, TeamResultsResponse, TeamMembersResponse } from "./teamtypes";
 import { getAccessToken, getTokenType } from "../../utils/auth";
 
 /**
@@ -79,3 +79,9 @@ export const searchFavoriteCandidates = (q: string, country: string, league: str
 };
 export const addFavoriteTeam = (country: string, league: string, team: string) => request<FavoriteEditResponse>(`${FAV}/teams`, { method: "POST", body: JSON.stringify({ country, league, team }) });
 export const deleteFavoriteTeam = (id: number) => request<FavoriteEditResponse>(`${FAV}/teams/${id}`, { method: "DELETE" });
+
+/** チームメンバー（team_member_master） */
+export const fetchTeamMembers = (country: string, league: string, team: string) => {
+  const q = new URLSearchParams({ country, league, team });
+  return request<TeamMembersResponse>(`/v1/api/team-results/members?${q.toString()}`);
+};

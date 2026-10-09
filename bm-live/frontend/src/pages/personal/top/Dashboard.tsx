@@ -25,17 +25,22 @@ import DashboardFavorites, { DashboardLoginCta } from "./DashboardFavorites";
  *   未ログインは確率・平均得点などの数値がサーバーから返らない（◎○△・バー・多い/少ないは見える）
  * ===================================================================== */
 
-const GAME_DETAIL_SEQ_KEY = "game-detail-seq";
+/** 試合詳細に渡す static_data の seq_key（例: "0drkxQrA-12"） */
+export const GAME_DETAIL_SEQ_KEY = "game-detail-seq-key";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const loggedIn = isAuthenticated();
 
-  const handleOpenGameDetail = (seq: number) => {
-    if (!seq || seq <= 0) return;
-    sessionStorage.setItem(GAME_DETAIL_SEQ_KEY, String(seq));
-    navigate("/gameDetail");
+  const handleOpenGameDetail = (seqKey: string) => {
+    if (!seqKey?.trim()) return;
+    try {
+      sessionStorage.setItem(GAME_DETAIL_SEQ_KEY, seqKey);
+    } catch {
+      /* storage が使えなくても URL で渡す */
+    }
+    navigate(`/gameDetail?seqKey=${encodeURIComponent(seqKey)}`);
   };
 
   const summary = useQuery({
@@ -116,7 +121,7 @@ export default function Dashboard() {
           {/* 右カラム */}
           <aside className="space-y-4">
             {loggedIn ? (
-              <DashboardFavorites items={favorites.data?.items ?? []} loading={favorites.isLoading} onOpen={handleOpenGameDetail} />
+              <DashboardFavorites items={favorites.data?.items ?? []} loading={favorites.isLoading} loggedIn={loggedIn} />
             ) : (
               <DashboardLoginCta from={location.pathname + location.search} />
             )}
