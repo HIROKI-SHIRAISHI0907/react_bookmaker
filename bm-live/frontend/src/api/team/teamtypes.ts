@@ -1,3 +1,5 @@
+import type { DashboardUpcomingMatch } from "../dashboard/types";
+
 // チームの過去の結果・お気に入り編集の型
 export type TeamResultItem = {
   roundNo: number;
@@ -53,6 +55,27 @@ export type TeamMembersResponse = {
   injuredCount: number;
   /** GK → DF → MF → FW → その他、背番号順 */
   members: TeamMember[];
+};
+
+export type TeamUpcomingItem = {
+  /** トップ画面の「これからの試合」と同じ形（未ログインは数値 null） */
+  match: DashboardUpcomingMatch;
+  homeAway: "H" | "A";
+  opponent: string;
+  /** 対戦相手の直近の結果（左が新しい） */
+  opponentForm: ("W" | "D" | "L" | null)[] | null;
+  /** このチームが勝つ確率（%。未ログインは null） */
+  winProb: number | null;
+};
+
+export type TeamUpcomingResponse = {
+  country: string;
+  league: string;
+  team: string;
+  loggedIn: boolean;
+  days: number;
+  /** キックオフ順（items[0] が次節） */
+  items: TeamUpcomingItem[];
 };
 
 export type FavoriteTeam = { id: number; country: string; league: string; team: string };

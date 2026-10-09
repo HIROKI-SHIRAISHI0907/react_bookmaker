@@ -1,4 +1,5 @@
-// チームの過去の結果・メンバー  /team-results?country=&league=&team=
+// チームページ  /team-results?country=&league=&team=
+//  左: 過去の結果・メンバー　右: 次節・その後の試合（スマホは次節が上）
 //  GET /v1/api/team-results（surface_overview_match → 無いラウンドは static_data の「終了済」→ それも無ければ空欄）
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -10,6 +11,7 @@ import { fetchTeamResults } from "../../../api/team/teamapi";
 import type { TeamResultItem } from "../../../api/team/teamtypes";
 import { TeamFormDots, TeamLink } from "./TeamForm";
 import TeamMembers from "../teamMembers/TeamMembers";
+import TeamNextMatch from "./TeamNextMatch";
 
 const LIMITS = [5, 10, 20] as const;
 
@@ -42,7 +44,7 @@ export default function TeamResults() {
     <div className="min-h-screen bg-background">
       <AppHeader title={team || "チーム"} subtitle={`${country} / ${league}${d?.season ? `・${d.season}` : ""}`} />
 
-      <main className="container mx-auto max-w-3xl space-y-4 px-4 py-6">
+      <main className="container mx-auto max-w-5xl px-4 py-6">
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => navigate(-1)} data-testid="button-back">
             <ArrowLeft className="mr-1 h-4 w-4" />
@@ -62,46 +64,54 @@ export default function TeamResults() {
           </div>
         </div>
 
-        {!country || !league || !team ? (
-          <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">国・リーグ・チームを指定してください</div>
-        ) : q.isLoading ? (
-          <Skeleton className="h-64 w-full rounded-2xl" />
-        ) : q.error ? (
-          <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">取得に失敗しました: {(q.error as Error).message}</div>
-        ) : !d || d.items.length === 0 ? (
-          <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
-            ラウンド番号のある試合結果がまだありません（{country} / {league}）
-          </div>
-        ) : (
-          <>
-            {/* まとめ */}
-            <div className="rounded-2xl border bg-card p-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <TeamFormDots form={d.items.map((i) => i.result)} size="md" />
-                <div className="flex gap-4 text-sm">
-                  <span>
-                    <b className="text-emerald-600">{d.wins}</b>勝 <b>{d.draws}</b>分 <b className="text-rose-600">{d.losses}</b>敗
-                  </span>
-                  <span className="font-mono text-muted-foreground">
-                    得点 {d.goalsFor} / 失点 {d.goalsAgainst}
-                    {played > 0 && `（1試合 ${(d.goalsFor / played).toFixed(1)} / ${(d.goalsAgainst / played).toFixed(1)}）`}
-                  </span>
-                </div>
+        <div className="mt-4 grid items-start gap-4 lg:grid-cols-[1fr_320px]">
+          {/* 右: 次節（スマホでは先に表示） */}
+          <aside className="space-y-4 lg:sticky lg:top-4 lg:order-2">{country && league && team && <TeamNextMatch country={country} league={league} team={team} />}</aside>
+
+          {/* 左: 過去の結果・メンバー */}
+          <div className="min-w-0 space-y-4 lg:order-1">
+            {!country || !league || !team ? (
+              <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">国・リーグ・チームを指定してください</div>
+            ) : q.isLoading ? (
+              <Skeleton className="h-64 w-full rounded-2xl" />
+            ) : q.error ? (
+              <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">取得に失敗しました: {(q.error as Error).message}</div>
+            ) : !d || d.items.length === 0 ? (
+              <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
+                ラウンド番号のある試合結果がまだありません（{country} / {league}）
               </div>
-            </div>
+            ) : (
+              <>
+                {/* まとめ */}
+                <div className="rounded-2xl border bg-card p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <TeamFormDots form={d.items.map((i) => i.result)} size="md" />
+                    <div className="flex gap-4 text-sm">
+                      <span>
+                        <b className="text-emerald-600">{d.wins}</b>勝 <b>{d.draws}</b>分 <b className="text-rose-600">{d.losses}</b>敗
+                      </span>
+                      <span className="font-mono text-muted-foreground">
+                        得点 {d.goalsFor} / 失点 {d.goalsAgainst}
+                        {played > 0 && `（1試合 ${(d.goalsFor / played).toFixed(1)} / ${(d.goalsAgainst / played).toFixed(1)}）`}
+                      </span>
+                    </div>
+                  </div>
+                </div>
 
-            {/* ラウンドごと */}
-            <div className="divide-y rounded-2xl border bg-card">
-              {d.items.map((i) => (
-                <ResultRow key={i.roundNo} i={i} country={country} league={league} />
-              ))}
-            </div>
-            <p className="text-[11px] text-muted-foreground">空欄のラウンドは試合結果が見つからなかったラウンドです（試合が無い・データ未取得）。</p>
-          </>
-        )}
+                {/* ラウンドごと */}
+                <div className="divide-y rounded-2xl border bg-card">
+                  {d.items.map((i) => (
+                    <ResultRow key={i.roundNo} i={i} country={country} league={league} />
+                  ))}
+                </div>
+                <p className="text-[11px] text-muted-foreground">空欄のラウンドは試合結果が見つからなかったラウンドです（試合が無い・データ未取得）。</p>
+              </>
+            )}
 
-        {/* メンバー（結果が無くても表示） */}
-        {country && league && team && <TeamMembers country={country} league={league} team={team} />}
+            {/* メンバー（結果が無くても表示） */}
+            {country && league && team && <TeamMembers country={country} league={league} team={team} />}
+          </div>
+        </div>
       </main>
     </div>
   );
