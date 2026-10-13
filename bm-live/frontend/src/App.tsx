@@ -46,6 +46,7 @@ import AnalyzeErrorMatchesPage from "./pages/admin/error/AnalyzeErrorMatchPage";
 import FavoriteEdit from "./pages/personal/favorite/FavoriteEdit";
 import TeamResults from "./pages/personal/teams/TeamResults";
 import UpcomingMatches from "./pages/personal/top/DashboardUpcomingMatches";
+import MatchDetail, { MATCH_DETAIL_PATH } from "./pages/personal/match/MatchDetail";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -86,6 +87,8 @@ export default function App() {
           <Route path="/favorite-edit" element={<FavoriteEdit />} />
           <Route path="/team-results" element={<TeamResults />} />
           <Route path="/upcoming" element={<UpcomingMatches />} />
+          {/* 試合詳細 /match-detail?seqKey=xxxx（ダッシュボードのライブ・注目試合から遷移） */}
+          <Route path={MATCH_DETAIL_PATH} element={<MatchDetail />} />
 
           <Route
             path="/top"

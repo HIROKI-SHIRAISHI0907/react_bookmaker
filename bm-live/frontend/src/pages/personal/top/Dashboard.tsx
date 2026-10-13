@@ -14,6 +14,7 @@ import DashboardFeatured from "./DashboardFeatured";
 import DashboardLiveBoard from "./DashboardLiveBoard";
 import DashboardUpcoming from "./DashboardUpcoming";
 import DashboardFavorites, { DashboardLoginCta } from "./DashboardFavorites";
+import { matchDetailUrl } from "../match/MatchDetail";
 
 /* =====================================================================
  * トップ画面（Dashboard）
@@ -25,22 +26,15 @@ import DashboardFavorites, { DashboardLoginCta } from "./DashboardFavorites";
  *   未ログインは確率・平均得点などの数値がサーバーから返らない（◎○△・バー・多い/少ないは見える）
  * ===================================================================== */
 
-/** 試合詳細に渡す static_data の seq_key（例: "0drkxQrA-12"） */
-export const GAME_DETAIL_SEQ_KEY = "game-detail-seq-key";
-
 export default function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const loggedIn = isAuthenticated();
 
+  // 試合詳細（/match-detail?seqKey=）へ
   const handleOpenGameDetail = (seqKey: string) => {
     if (!seqKey?.trim()) return;
-    try {
-      sessionStorage.setItem(GAME_DETAIL_SEQ_KEY, seqKey);
-    } catch {
-      /* storage が使えなくても URL で渡す */
-    }
-    navigate(`/gameDetail?seqKey=${encodeURIComponent(seqKey)}`);
+    navigate(matchDetailUrl(seqKey));
   };
 
   const summary = useQuery({
@@ -120,11 +114,7 @@ export default function Dashboard() {
 
           {/* 右カラム */}
           <aside className="space-y-4">
-            {loggedIn ? (
-              <DashboardFavorites items={favorites.data?.items ?? []} loading={favorites.isLoading} loggedIn={loggedIn} />
-            ) : (
-              <DashboardLoginCta from={location.pathname + location.search} />
-            )}
+            {loggedIn ? <DashboardFavorites items={favorites.data?.items ?? []} loading={favorites.isLoading} loggedIn={loggedIn} /> : <DashboardLoginCta from={location.pathname + location.search} />}
             <DashboardUpcoming
               leagues={upcoming.data?.leagues ?? []}
               totalCount={upcoming.data?.totalCount ?? 0}

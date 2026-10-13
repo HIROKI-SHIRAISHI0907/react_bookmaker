@@ -1,8 +1,9 @@
 // ライブ（リーグごとの1行表示。国・お気に入りで絞り込み、ゴールが多い順に並べ替え）
-//  行をクリック → onOpen(seqKey)（static_data の seq_key。例: "0drkxQrA-12"）
+//  行をクリック → onOpen(seqKey)（試合詳細へ）／チーム名をクリック → チームページ（/team-results）
 import { useMemo, useState } from "react";
 import type { DashboardLiveLeague, DashboardLiveMatch } from "../../../api/dashboard/types";
 import { GoalsBadge, LiveDot, RankBadge, TeamGrades, WdlBar } from "./parts";
+import { TeamLink } from "../teams/TeamForm";
 
 type Props = {
   leagues: DashboardLiveLeague[];
@@ -20,11 +21,18 @@ function Row({ m, fav, onOpen }: { m: DashboardLiveMatch; fav: boolean; onOpen: 
     { t: m.away, s: m.awayScore, o: m.homeScore },
   ];
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={() => onOpen(m.seqKey, m)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpen(m.seqKey, m);
+        }
+      }}
       data-testid={`live-row-${m.seqKey}`}
-      className="grid w-full grid-cols-[52px_1fr_auto] items-center gap-3 px-3 py-2.5 text-left transition hover:bg-muted/50 md:grid-cols-[52px_1fr_auto_150px]"
+      className="grid w-full cursor-pointer grid-cols-[52px_1fr_auto] items-center gap-3 px-3 py-2.5 text-left transition hover:bg-muted/50 md:grid-cols-[52px_1fr_auto_150px]"
     >
       <div className="text-center">
         {m.status === "HT" ? (
@@ -43,10 +51,10 @@ function Row({ m, fav, onOpen }: { m: DashboardLiveMatch; fav: boolean; onOpen: 
           <div key={i} className="flex items-center justify-between gap-2">
             <div className="flex min-w-0 items-center gap-1.5">
               <RankBadge rank={t.rank} />
-              <span className={`truncate ${s >= o ? "font-semibold" : "text-muted-foreground"}`}>
+              <TeamLink country={m.country} league={m.league} team={t.name} className={`truncate ${s >= o ? "font-semibold" : "text-muted-foreground"}`}>
                 {fav && i === 0 && <span className="text-amber-500">★ </span>}
                 {t.name}
-              </span>
+              </TeamLink>
             </div>
             <TeamGrades team={t} />
           </div>
@@ -63,7 +71,7 @@ function Row({ m, fav, onOpen }: { m: DashboardLiveMatch; fav: boolean; onOpen: 
           <GoalsBadge f={m.forecast} />
         </div>
       </div>
-    </button>
+    </div>
   );
 }
 

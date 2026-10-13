@@ -1,6 +1,7 @@
 // チームページ  /team-results?country=&league=&team=
-//  左: 過去の結果・メンバー　右: 次節・その後の試合（スマホは次節が上）
+//  左: 過去の結果・メンバー　右: 次節・ホームスタジアム（スマホは右側が上）
 //  GET /v1/api/team-results（surface_overview_match → 無いラウンドは static_data の「終了済」→ それも無ければ空欄）
+//  GET /v1/api/team-venue（team_location_master のホームスタジアム）
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
@@ -12,6 +13,7 @@ import type { TeamResultItem } from "../../../api/team/teamtypes";
 import { TeamFormDots, TeamLink } from "./TeamForm";
 import TeamMembers from "../teamMembers/TeamMembers";
 import TeamNextMatch from "./TeamNextMatch";
+import TeamVenue from "./TeamVenue";
 
 const LIMITS = [5, 10, 20] as const;
 
@@ -39,6 +41,7 @@ export default function TeamResults() {
 
   const d = q.data;
   const played = d ? d.wins + d.draws + d.losses : 0;
+  const ready = !!country && !!league && !!team;
 
   return (
     <div className="min-h-screen bg-background">
@@ -65,12 +68,15 @@ export default function TeamResults() {
         </div>
 
         <div className="mt-4 grid items-start gap-4 lg:grid-cols-[1fr_320px]">
-          {/* 右: 次節（スマホでは先に表示） */}
-          <aside className="space-y-4 lg:sticky lg:top-4 lg:order-2">{country && league && team && <TeamNextMatch country={country} league={league} team={team} />}</aside>
+          {/* 右: 次節・ホームスタジアム（スマホでは先に表示） */}
+          <aside className="space-y-4 lg:sticky lg:top-4 lg:order-2">
+            {ready && <TeamNextMatch country={country} league={league} team={team} />}
+            {ready && <TeamVenue country={country} league={league} team={team} />}
+          </aside>
 
           {/* 左: 過去の結果・メンバー */}
           <div className="min-w-0 space-y-4 lg:order-1">
-            {!country || !league || !team ? (
+            {!ready ? (
               <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">国・リーグ・チームを指定してください</div>
             ) : q.isLoading ? (
               <Skeleton className="h-64 w-full rounded-2xl" />
@@ -109,7 +115,7 @@ export default function TeamResults() {
             )}
 
             {/* メンバー（結果が無くても表示） */}
-            {country && league && team && <TeamMembers country={country} league={league} team={team} />}
+            {ready && <TeamMembers country={country} league={league} team={team} />}
           </div>
         </div>
       </main>

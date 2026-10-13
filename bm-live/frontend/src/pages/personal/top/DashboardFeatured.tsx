@@ -1,7 +1,8 @@
 // 注目の試合（ライブ中でゴール数の見込みが一番多い試合）
-//  カードをクリック → onOpen(seqKey)（static_data の seq_key。例: "0drkxQrA-12"）
+//  カードをクリック → onOpen(seqKey)（試合詳細へ）／チーム名をクリック → チームページ（/team-results）
 import type { DashboardLiveMatch, DashboardTeam } from "../../../api/dashboard/types";
 import { GoalsBadge, TeamGrades, WdlBar } from "./parts";
+import { TeamLink } from "../teams/TeamForm";
 
 function Crest({ team, rankSide }: { team: DashboardTeam; rankSide: "left" | "right" }) {
   return (
@@ -79,7 +80,7 @@ export default function DashboardFeatured({ m, onOpen }: Props) {
         <div className="flex min-w-0 items-center gap-3">
           <Crest team={m.home} rankSide="right" />
           <div className="min-w-0">
-            <div className="truncate text-xl font-bold">{m.home.name}</div>
+            <TeamLink country={m.country} league={m.league} team={m.home.name} className="block truncate text-xl font-bold" />
             <div className="mt-1 flex gap-2">
               <TeamGrades team={m.home} />
             </div>
@@ -97,7 +98,7 @@ export default function DashboardFeatured({ m, onOpen }: Props) {
         </div>
         <div className="flex min-w-0 items-center justify-end gap-3 text-right">
           <div className="min-w-0">
-            <div className="truncate text-xl font-bold">{m.away.name}</div>
+            <TeamLink country={m.country} league={m.league} team={m.away.name} className="block truncate text-xl font-bold" />
             <div className="mt-1 flex justify-end gap-2">
               <TeamGrades team={m.away} />
             </div>
