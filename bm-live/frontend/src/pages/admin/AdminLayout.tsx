@@ -1,185 +1,112 @@
-import React, { useMemo, useState } from "react";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
+import { ChevronDown, LayoutGrid, Menu, X } from "lucide-react";
 import { useCurrentRole } from "../../hooks/useCurrentRole";
+import { ADMIN_BASE, adminPath, buildAdminMenu, isMenuItemActive, roleLabel } from "../../api/auth/adminMenu";
 
-type MenuItem = {
-  label: string;
-  to: string;
-};
-
-type MenuGroup = {
-  key: string;
-  label: string;
-  items: MenuItem[];
-};
-
+/**
+ * 管理画面の共通レイアウト（左にメニュー、右に各画面）
+ *   /admin（メニュー画面）はこのレイアウトの外で表示し、各画面に入ったらこのレイアウトで表示する。
+ */
 export default function AdminLayout() {
   const location = useLocation();
   const role = useCurrentRole();
 
-  const menuGroups: MenuGroup[] = useMemo(() => {
-    const groups: MenuGroup[] = [
-      {
-        key: "scraping",
-        label: "スクレイピング管理",
-        items: [
-          { label: "スクレイピング対象データ取得設定", to: "manual/data/target" },
-          { label: "スクレイピングCSV情報取得管理", to: "scrape/manual" },
-          { label: "スクレイピングCSV情報データ登録管理", to: "data/fetch" },
-        ],
-      },
-      {
-        key: "master",
-        label: "マスタデータ参照",
-        items: [
-          { label: "シーズンデータ取得情報", to: "season" },
-          { label: "チームデータ取得情報", to: "team" },
-          { label: "試合予定データ取得情報", to: "future/matches" },
-        ],
-      },
-      {
-        key: "other",
-        label: "その他データ参照",
-        items: [
-          { label: "リアルタイムデータ登録済参照", to: "matches/by-date" },
-          { label: "統計用CSV作成内容参照", to: "csv/today" },
-          { label: "未来データ・リアルタイムデータ紐づき参照", to: "ingested" },
-          { label: "アップロード済リアルタイムデータ参照", to: "upload/realtime" },
-          { label: "統計用CSV反映済状態参照", to: "analyzeCsvError" },
-        ],
-      },
-      {
-        key: "otherSetting",
-        label: "その他設定",
-        items: [
-          { label: "統計用CSV作成前詳細設定", to: "sub-input" },
-          { label: "お気に入り国リーグ情報全体反映設定", to: "force/update" },
-          { label: "リーグ勝ち点情報反映設定", to: "point-setting" },
-          { label: "チームカラー情報反映設定", to: "manual/teamColor" },
-          { label: "サブリーグ名反映設定", to: "sub-league" },
-          // お知らせの作成・編集ができる画面のため、担当者のみに表示する。
-          // 管理者は「申請確認画面」から内容を見て承認/差し戻しするだけにする。
-          ...(role === "ADMIN_SUB" ? [{ label: "トップメニュー通知情報設定", to: "notices" }] : []),
-          { label: "データカテゴリ変更設定", to: "data-category" },
-          { label: "メール情報登録設定", to: "mailinfo" },
-        ],
-      },
-      {
-        key: "approveFlow",
-        label: "承認フロー",
-        items: [
-          // 管理者: 担当者から届いた依頼をまとめて確認・承認/差し戻しする画面。
-          ...(role === "ADMIN" ? [{ label: "申請確認画面", to: "approve/requests" }] : []),
-          // 担当者: 管理者から届いた指令を確認する画面。
-          ...(role === "ADMIN_SUB" ? [{ label: "指令確認画面", to: "approve/instructions" }] : []),
-          // 担当者: 担当者で依頼した内容を確認する画面。
-          ...(role === "ADMIN_SUB" ? [{ label: "依頼確認画面", to: "approve/myrequest" }] : []),
-        ],
-      },
-      {
-        key: "user",
-        label: "利用者情報",
-        items: [...(role === "ADMIN" ? [{ label: "利用者情報管理", to: "users" }] : [])],
-      },
-      {
-        key: "db",
-        label: "ミドルウェア管理",
-        items: [
-          { label: "コネクション管理", to: "db/connections" },
-          { label: "非稼働ECS管理", to: "noecs" },
-          // IAM・IP・DNS などアカウント情報を表示するため管理者のみ。
-          ...(role === "ADMIN" ? [{ label: "AWSリソース状況", to: "aws/dashboard" }] : []),
-        ],
-      },
-    ];
+  const menuGroups = useMemo(() => buildAdminMenu(role), [role]);
 
-    // ロールによって表示項目が0件になったグループ(承認フローなど)はメニューに出さない。
-    return groups.filter((g) => g.items.length > 0);
-  }, [role]);
+  /** 今いる画面が含まれるグループ */
+  const activeGroupKey = useMemo(() => menuGroups.find((g) => g.items.some((it) => isMenuItemActive(location.pathname, it.to)))?.key ?? null, [menuGroups, location.pathname]);
 
-  const initialOpenState = useMemo(() => {
-    const state: Record<string, boolean> = {};
-    for (const group of menuGroups) {
-      state[group.key] = group.items.some((item) => location.pathname.includes(`/admin/${item.to}`));
-    }
-    return state;
-  }, [menuGroups, location.pathname]);
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => (activeGroupKey ? { [activeGroupKey]: true } : {}));
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(initialOpenState);
+  // 別グループの画面へ移ったら、そのグループを開く（他のグループの開閉はそのまま）
+  useEffect(() => {
+    if (activeGroupKey) setOpenGroups((prev) => (prev[activeGroupKey] ? prev : { ...prev, [activeGroupKey]: true }));
+    setMobileOpen(false);
+  }, [activeGroupKey, location.pathname]);
 
-  const toggleGroup = (key: string) => {
-    setOpenGroups((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  };
+  const toggleGroup = (key: string) => setOpenGroups((prev) => ({ ...prev, [key]: !prev[key] }));
 
-  const linkStyle = ({ isActive }: { isActive: boolean }) => ({
-    display: "block",
-    padding: "10px 12px 10px 20px",
-    textDecoration: "none",
-    color: "#111827",
-    background: isActive ? "#eef2ff" : "transparent",
-    borderRadius: 8,
-    fontWeight: isActive ? 700 : 500,
-    borderLeft: isActive ? "4px solid #4f46e5" : "4px solid transparent",
-  });
+  const nav = (
+    <nav className="grid gap-1">
+      {menuGroups.map((group) => {
+        const isOpen = !!openGroups[group.key];
+        const hasActive = group.key === activeGroupKey;
+        return (
+          <div key={group.key}>
+            <button
+              type="button"
+              onClick={() => toggleGroup(group.key)}
+              className={[
+                "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-[12.5px] font-bold transition-colors hover:bg-gray-100",
+                hasActive ? "text-gray-900" : "text-gray-600",
+              ].join(" ")}
+              aria-expanded={isOpen}
+            >
+              <span className="min-w-0 flex-1 truncate">{group.label}</span>
+              {!isOpen && hasActive && <span className="h-1.5 w-1.5 rounded-full bg-indigo-600" />}
+              <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {isOpen && (
+              <div className="mb-1 ml-2.5 mt-0.5 grid gap-px border-l border-gray-200 pl-1.5">
+                {group.items.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={adminPath(item.to)}
+                    title={item.desc}
+                    className={({ isActive }) =>
+                      [
+                        "block rounded-md px-2.5 py-1.5 text-[12.5px] leading-snug no-underline transition-colors",
+                        isActive ? "bg-indigo-50 font-bold text-indigo-700" : "text-gray-700 hover:bg-gray-100 hover:text-gray-900",
+                      ].join(" ")
+                    }
+                  >
+                    {item.label}
+                  </NavLink>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </nav>
+  );
+
+  const header = (
+    <div className="mb-3 flex items-center gap-2 px-1">
+      <Link to={ADMIN_BASE} className="inline-flex items-center gap-1.5 text-[15px] font-bold text-gray-900 no-underline hover:text-indigo-700" title="管理メニューへ">
+        <LayoutGrid className="h-4 w-4 text-indigo-600" />
+        管理画面
+      </Link>
+      <span className="ml-auto rounded-full bg-gray-100 px-2 py-px text-[11px] font-bold text-gray-600">{roleLabel(role)}</span>
+    </div>
+  );
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "280px 1fr", minHeight: "calc(100vh - 40px)" }}>
-      <aside style={{ padding: 16, borderRight: "1px solid #eee", background: "#fff" }}>
-        <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 16 }}>管理画面</div>
-
-        <div style={{ display: "grid", gap: 12 }}>
-          {menuGroups.map((group) => {
-            const isOpen = openGroups[group.key];
-
-            return (
-              <div
-                key={group.key}
-                style={{
-                  border: "1px solid #e5e7eb",
-                  borderRadius: 12,
-                  overflow: "hidden",
-                  background: "#fafafa",
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => toggleGroup(group.key)}
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    padding: "12px 14px",
-                    background: "white",
-                    border: "none",
-                    cursor: "pointer",
-                    fontWeight: 700,
-                    fontSize: 14,
-                  }}
-                >
-                  <span>{group.label}</span>
-                  <span style={{ fontSize: 12, color: "#6b7280" }}>{isOpen ? "▲" : "▼"}</span>
-                </button>
-
-                {isOpen && (
-                  <div style={{ display: "grid", gap: 6, padding: 10, background: "#fafafa" }}>
-                    {group.items.map((item) => (
-                      <NavLink key={item.to} to={item.to} style={linkStyle}>
-                        {item.label}
-                      </NavLink>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+    <div className="min-h-[calc(100vh-40px)] bg-[#f5f6f8] md:grid md:grid-cols-[248px_minmax(0,1fr)]">
+      {/* PC: 左に固定のメニュー */}
+      <aside className="hidden border-r border-gray-200 bg-white md:block">
+        <div className="sticky top-10 max-h-[calc(100vh-40px)] overflow-y-auto px-2.5 py-3">
+          {header}
+          {nav}
         </div>
       </aside>
 
-      <main style={{ padding: 16 }}>
+      {/* スマホ: 上にメニューボタン */}
+      <div className="flex items-center gap-2 border-b border-gray-200 bg-white px-3 py-2 md:hidden">
+        <button type="button" onClick={() => setMobileOpen((v) => !v)} className="rounded-md p-1 text-gray-700 hover:bg-gray-100" aria-label="メニュー">
+          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
+        <Link to={ADMIN_BASE} className="text-[14px] font-bold text-gray-900 no-underline">
+          管理画面
+        </Link>
+        <span className="ml-auto rounded-full bg-gray-100 px-2 py-px text-[11px] font-bold text-gray-600">{roleLabel(role)}</span>
+      </div>
+      {mobileOpen && <div className="border-b border-gray-200 bg-white px-2.5 py-2 md:hidden">{nav}</div>}
+
+      <main className="min-w-0 p-4">
         <Outlet />
       </main>
     </div>

@@ -1,5 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { ChevronLeft, ChevronRight, RefreshCw, Trash2 } from "lucide-react";
+import {
+  ClickEditCell,
+  ConsoleButton,
+  ConsoleColumn,
+  ConsoleInput,
+  ConsoleModal,
+  ConsoleNotice,
+  ConsoleTable,
+  ConsoleToolbar,
+  StatChips,
+  fmtNum,
+} from "../../../api/commonAdminDesign";
 
 type CountryLeagueDTO = {
   id?: string;
@@ -68,6 +80,8 @@ type EditingCell = {
 
 const MASTER_NAME = "country_league_master";
 
+const EDIT_FIELDS: (keyof CountryLeagueMasterEntity)[] = ["country", "league", "team", "delFlg"];
+
 async function fetchJsonStrict<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   const response = await fetch(input, {
     credentials: "include",
@@ -91,145 +105,6 @@ async function fetchJsonStrict<T>(input: RequestInfo | URL, init?: RequestInit):
 
   return JSON.parse(rawText) as T;
 }
-
-const pageStyle: React.CSSProperties = {
-  padding: 16,
-  fontSize: 12,
-  color: "#0f172a",
-};
-
-const sectionStyle: React.CSSProperties = {
-  background: "#ffffff",
-  border: "1px solid #e2e8f0",
-  borderRadius: 10,
-  padding: 14,
-};
-
-const overlayStyle: React.CSSProperties = {
-  position: "fixed",
-  inset: 0,
-  background: "rgba(15, 23, 42, 0.42)",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  zIndex: 2147483647,
-};
-
-const modalStyle: React.CSSProperties = {
-  width: "min(980px, 94vw)",
-  maxHeight: "86vh",
-  overflow: "auto",
-  background: "#fff",
-  borderRadius: 12,
-  boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
-  padding: 16,
-};
-
-const tableWrapperStyle: React.CSSProperties = {
-  overflowX: "auto",
-  border: "1px solid #e2e8f0",
-  borderRadius: 10,
-  marginTop: 10,
-};
-
-const tableStyle: React.CSSProperties = {
-  width: "100%",
-  borderCollapse: "collapse",
-  fontSize: 12,
-};
-
-const thTdStyle: React.CSSProperties = {
-  borderBottom: "1px solid #e2e8f0",
-  padding: "7px 8px",
-  fontSize: 12,
-  verticalAlign: "top",
-  lineHeight: 1.4,
-};
-
-const thStyle: React.CSSProperties = {
-  ...thTdStyle,
-  position: "sticky",
-  top: 0,
-  background: "#f8fafc",
-  zIndex: 1,
-  fontWeight: 700,
-  whiteSpace: "nowrap",
-};
-
-const cellTextStyle: React.CSSProperties = {
-  display: "block",
-  maxWidth: 160,
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  whiteSpace: "nowrap",
-};
-
-const wideCellTextStyle: React.CSSProperties = {
-  ...cellTextStyle,
-  maxWidth: 240,
-};
-
-const buttonStyle: React.CSSProperties = {
-  height: 30,
-  padding: "0 10px",
-  borderRadius: 7,
-  border: "1px solid #cbd5e1",
-  background: "#fff",
-  cursor: "pointer",
-  fontSize: 12,
-  whiteSpace: "nowrap",
-};
-
-const primaryButtonStyle: React.CSSProperties = {
-  ...buttonStyle,
-  background: "#2563eb",
-  color: "#fff",
-  border: "1px solid #2563eb",
-};
-
-const okButtonStyle: React.CSSProperties = {
-  ...buttonStyle,
-  background: "#16a34a",
-  color: "#fff",
-  border: "1px solid #16a34a",
-  minWidth: 80,
-};
-
-const dangerButtonStyle: React.CSSProperties = {
-  ...buttonStyle,
-  background: "#dc2626",
-  color: "#fff",
-  border: "1px solid #dc2626",
-  minWidth: 120,
-};
-
-const disabledButtonStyle: React.CSSProperties = {
-  ...buttonStyle,
-  opacity: 0.45,
-  cursor: "not-allowed",
-};
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  minWidth: 180,
-  height: 30,
-  border: "1px solid #94a3b8",
-  borderRadius: 6,
-  padding: "4px 8px",
-  fontSize: 12,
-  boxSizing: "border-box",
-};
-
-const badgeStyle: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  height: 26,
-  padding: "0 10px",
-  borderRadius: 9999,
-  background: "#f1f5f9",
-  color: "#334155",
-  fontSize: 12,
-};
 
 function toDisplay(value: unknown): string {
   if (value === null || value === undefined || value === "") return "-";
@@ -260,65 +135,6 @@ function masterRowDeleteKey(row: CountryLeagueMasterEntity): string {
   }
   return `${row.country ?? ""}___${row.league ?? ""}___${row.team ?? ""}`;
 }
-
-type EditableCellProps = {
-  rowIndex: number;
-  field: keyof CountryLeagueMasterEntity;
-  value: unknown;
-  editingCell: EditingCell;
-  editingValue: string;
-  wide?: boolean;
-  onStartEdit: (rowIndex: number, field: keyof CountryLeagueMasterEntity, currentValue: unknown) => void;
-  onChangeValue: (value: string) => void;
-  onCommit: () => void;
-  onCancel: () => void;
-};
-
-const EditableCell: React.FC<EditableCellProps> = ({ rowIndex, field, value, editingCell, editingValue, wide, onStartEdit, onChangeValue, onCommit, onCancel }) => {
-  const isEditing = editingCell?.rowIndex === rowIndex && editingCell?.field === field;
-
-  if (isEditing) {
-    return (
-      <input
-        autoFocus
-        value={editingValue}
-        onChange={(e) => onChangeValue(e.target.value)}
-        onBlur={onCommit}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") onCommit();
-          if (e.key === "Escape") onCancel();
-        }}
-        style={inputStyle}
-      />
-    );
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={() => onStartEdit(rowIndex, field, value)}
-      style={{
-        background: "transparent",
-        border: "none",
-        padding: 0,
-        cursor: "pointer",
-        textAlign: "left",
-        width: "100%",
-        color: "#0f172a",
-        fontSize: 12,
-      }}
-      title={toDisplay(value)}
-    >
-      <span style={wide ? wideCellTextStyle : cellTextStyle}>{toDisplay(value)}</span>
-    </button>
-  );
-};
-
-const MasterCell: React.FC<{ value: unknown; wide?: boolean }> = ({ value, wide }) => (
-  <span style={wide ? wideCellTextStyle : cellTextStyle} title={toDisplay(value)}>
-    {toDisplay(value)}
-  </span>
-);
 
 const CountryLeagueMasterPage: React.FC = () => {
   const [rows, setRows] = useState<CountryLeagueDTO[]>([]);
@@ -496,26 +312,6 @@ const CountryLeagueMasterPage: React.FC = () => {
     void load();
   }, [load]);
 
-  useEffect(() => {
-    if (!modalOpen) return;
-
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !busy) {
-        closeModal();
-      }
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [modalOpen, closeModal, busy]);
-
   const filteredRows = useMemo(() => {
     const q = keyword.trim().toLowerCase();
     if (!q) return rows;
@@ -524,14 +320,7 @@ const CountryLeagueMasterPage: React.FC = () => {
   }, [rows, keyword]);
 
   const countryLeaguePages = useMemo(() => {
-    const pageMap = new Map<
-      string,
-      {
-        country: string;
-        league: string;
-        items: CountryLeagueDTO[];
-      }
-    >();
+    const pageMap = new Map<string, { country: string; league: string; items: CountryLeagueDTO[] }>();
 
     filteredRows.forEach((row) => {
       const country = (row.country ?? "").trim() || "未設定国";
@@ -544,11 +333,7 @@ const CountryLeagueMasterPage: React.FC = () => {
         return;
       }
 
-      pageMap.set(key, {
-        country,
-        league,
-        items: [row],
-      });
+      pageMap.set(key, { country, league, items: [row] });
     });
 
     return Array.from(pageMap.values());
@@ -579,16 +364,7 @@ const CountryLeagueMasterPage: React.FC = () => {
   const commitEdit = () => {
     if (!editingCell) return;
 
-    setNewRows((prev) =>
-      prev.map((row, index) =>
-        index === editingCell.rowIndex
-          ? {
-              ...row,
-              [editingCell.field]: editingValue,
-            }
-          : row,
-      ),
-    );
+    setNewRows((prev) => prev.map((row, index) => (index === editingCell.rowIndex ? { ...row, [editingCell.field]: editingValue } : row)));
 
     setEditingCell(null);
     setEditingValue("");
@@ -602,14 +378,7 @@ const CountryLeagueMasterPage: React.FC = () => {
   const rowsWithPendingEdit = useMemo(() => {
     if (editingCell == null) return newRows;
 
-    return newRows.map((row, index) =>
-      index === editingCell.rowIndex
-        ? {
-            ...row,
-            [editingCell.field]: editingValue,
-          }
-        : row,
-    );
+    return newRows.map((row, index) => (index === editingCell.rowIndex ? { ...row, [editingCell.field]: editingValue } : row));
   }, [newRows, editingCell, editingValue]);
 
   const allModalRowsSelected = useMemo(() => {
@@ -717,337 +486,174 @@ const CountryLeagueMasterPage: React.FC = () => {
     }
   }, [busy, rowsWithPendingEdit, updateEditedRowsApi, updateInitialFlg, closeModal, load]);
 
-  const modalContent =
-    modalOpen && typeof document !== "undefined"
-      ? createPortal(
-          <div
-            style={overlayStyle}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="country-league-modal-title"
-            onClick={(e) => {
-              if (e.target === e.currentTarget && !busy) {
-                closeModal();
-              }
-            }}
-          >
-            <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
-                <div>
-                  <h2 id="country-league-modal-title" style={{ margin: 0, fontSize: 18, lineHeight: 1.3 }}>
-                    新規リーグデータ確認
-                  </h2>
-                  <p style={{ margin: "6px 0 0", color: "#475569", fontSize: 12 }}>
-                    各セルは編集できます。OK を押すと編集内容を更新し、その後 initialFlg を更新します。不要な行は複数選択して削除できます。
-                  </p>
-                </div>
-                <button type="button" style={busy ? disabledButtonStyle : buttonStyle} onClick={closeModal} disabled={busy}>
-                  閉じる
-                </button>
-              </div>
+  /* ----- 一覧の列 ----- */
+  const listColumns: ConsoleColumn<CountryLeagueDTO>[] = [
+    { key: "no", header: "No", mono: true, align: "right", cell: (_r, i) => <span className="text-gray-500">{i + 1}</span> },
+    { key: "country", header: "country", cell: (r) => toDisplay(r.country) },
+    { key: "league", header: "league", cell: (r) => toDisplay(r.league) },
+    { key: "team", header: "team", className: "max-w-[260px] truncate", cell: (r) => <span title={toDisplay(r.team)}>{toDisplay(r.team)}</span> },
+    {
+      key: "check",
+      header: "確認",
+      align: "right",
+      cell: (r) => (
+        <ConsoleButton size="sm" onClick={() => void openModal(r)} disabled={newRowsLoading}>
+          確認
+        </ConsoleButton>
+      ),
+    },
+  ];
 
-              <div
-                style={{
-                  marginTop: 12,
-                  padding: 10,
-                  background: "#eff6ff",
-                  color: "#1d4ed8",
-                  borderRadius: 8,
-                  fontSize: 12,
-                }}
-              >
-                各セルはクリックするとその場で編集できます。Enter またはフォーカスアウトで反映、Esc でキャンセルします。
-              </div>
+  /* ----- モーダルの列 ----- */
+  const modalColumns: ConsoleColumn<CountryLeagueMasterEntity>[] = [
+    {
+      key: "check",
+      header: <input type="checkbox" checked={allModalRowsSelected} onChange={toggleSelectAllRows} disabled={busy || rowsWithPendingEdit.length === 0} className="accent-red-600" aria-label="すべて選択" />,
+      align: "center",
+      cell: (row) => {
+        const key = masterRowDeleteKey(row);
+        return <input type="checkbox" checked={selectedDeleteKeys.includes(key)} onChange={() => toggleSelectRow(key)} disabled={busy} className="accent-red-600" aria-label="削除対象として選択" />;
+      },
+    },
+    { key: "no", header: "No", mono: true, align: "right", cell: (_r, i) => <span className="text-gray-500">{i + 1}</span> },
+    ...EDIT_FIELDS.map<ConsoleColumn<CountryLeagueMasterEntity>>((field) => ({
+      key: String(field),
+      header: String(field),
+      cell: (row, rowIndex) => (
+        <ClickEditCell
+          value={row[field]}
+          editing={editingCell?.rowIndex === rowIndex && editingCell?.field === field}
+          editingValue={editingValue}
+          onStart={() => startEdit(rowIndex, field, row[field])}
+          onChange={setEditingValue}
+          onCommit={commitEdit}
+          onCancel={cancelEdit}
+          disabled={busy}
+        />
+      ),
+    })),
+  ];
 
-              {selectedDeleteKeys.length > 0 && (
-                <div
-                  style={{
-                    marginTop: 12,
-                    padding: 10,
-                    background: "#fef2f2",
-                    color: "#991b1b",
-                    borderRadius: 8,
-                    fontSize: 12,
-                  }}
-                >
-                  削除選択中: {selectedDeleteKeys.length}件
-                </div>
-              )}
-
-              {newRowsError && (
-                <div
-                  style={{
-                    marginTop: 12,
-                    color: "#b91c1c",
-                    background: "#fee2e2",
-                    padding: 10,
-                    borderRadius: 8,
-                    fontSize: 12,
-                  }}
-                >
-                  {newRowsError}
-                </div>
-              )}
-
-              {newRowsLoading ? (
-                <div style={{ marginTop: 16, fontSize: 12 }}>新規登録データを読み込み中です...</div>
-              ) : (
-                <div style={tableWrapperStyle}>
-                  <table style={tableStyle}>
-                    <thead>
-                      <tr>
-                        <th style={{ ...thStyle, width: 44, textAlign: "center" }}>
-                          <input type="checkbox" checked={allModalRowsSelected} onChange={toggleSelectAllRows} disabled={busy || rowsWithPendingEdit.length === 0} />
-                        </th>
-                        {["No", "country", "league", "team", "delFlg"].map((label) => (
-                          <th key={label} style={thStyle}>
-                            {label}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {rowsWithPendingEdit.map((row, rowIndex) => {
-                        const key = masterRowDeleteKey(row);
-                        const checked = selectedDeleteKeys.includes(key);
-
-                        return (
-                          <tr
-                            key={row.id != null && row.id !== "" ? row.id : `${row.country}-${row.league}-${row.team}-${rowIndex}`}
-                            style={{ background: checked ? "#fef2f2" : rowIndex % 2 === 0 ? "#ffffff" : "#fcfcfd" }}
-                          >
-                            <td style={{ ...thTdStyle, textAlign: "center" }}>
-                              <input type="checkbox" checked={checked} onChange={() => toggleSelectRow(key)} disabled={busy} />
-                            </td>
-
-                            <td style={thTdStyle}>
-                              <MasterCell value={rowIndex + 1} />
-                            </td>
-
-                            {(["country", "league", "team", "delFlg"] as (keyof CountryLeagueMasterEntity)[]).map((field) => (
-                              <td key={String(field)} style={thTdStyle}>
-                                <EditableCell
-                                  rowIndex={rowIndex}
-                                  field={field}
-                                  value={row[field]}
-                                  wide={false}
-                                  editingCell={editingCell}
-                                  editingValue={editingValue}
-                                  onStartEdit={startEdit}
-                                  onChangeValue={setEditingValue}
-                                  onCommit={commitEdit}
-                                  onCancel={cancelEdit}
-                                />
-                              </td>
-                            ))}
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginTop: 16, flexWrap: "wrap" }}>
-                <button
-                  type="button"
-                  style={busy || selectedDeleteKeys.length === 0 ? disabledButtonStyle : dangerButtonStyle}
-                  onClick={() => void handleDeleteSelected()}
-                  disabled={busy || selectedDeleteKeys.length === 0}
-                >
-                  {deletingRows ? "削除中..." : `選択行を削除${selectedDeleteKeys.length > 0 ? ` (${selectedDeleteKeys.length})` : ""}`}
-                </button>
-
-                <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-                  <button type="button" style={busy ? disabledButtonStyle : buttonStyle} onClick={closeModal} disabled={busy}>
-                    キャンセル
-                  </button>
-                  <button type="button" style={busy ? disabledButtonStyle : okButtonStyle} onClick={() => void handleOk()} disabled={busy}>
-                    {updatingStatus ? "更新中..." : "OK"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>,
-          document.body,
-        )
-      : null;
+  const pageNo = totalCountryLeaguePages === 0 ? 0 : currentCountryLeaguePage + 1;
 
   return (
-    <>
-      <div style={pageStyle}>
-        <div style={sectionStyle}>
-          <div style={{ marginBottom: 12 }}>
-            <h1 style={{ margin: 0, fontSize: 22, lineHeight: 1.3 }}>country_league_master 確認</h1>
-            <p style={{ margin: "6px 0 0", color: "#475569", fontSize: 12 }}>このページに遷移した瞬間にモーダルを表示し、APIでは全件一括取得、画面側で同一の国＋リーグごとにページング表示します。</p>
-          </div>
+    <div>
+      <ConsoleToolbar
+        title="country_league_master 確認"
+        info="全件を一括取得し、国＋リーグごとにページを分けて表示"
+        description="このページを開くと、最初の国リーグの新規登録データを確認するモーダルを自動で表示します。"
+      >
+        <ConsoleInput
+          value={keyword}
+          onChange={(e) => {
+            setKeyword(e.target.value);
+            setCurrentCountryLeaguePage(0);
+          }}
+          placeholder="country / league / team / delFlg で絞り込み"
+          className="w-72"
+        />
+        <ConsoleButton variant="primary" onClick={() => void load()} loading={loading}>
+          {!loading && <RefreshCw className="h-3.5 w-3.5" />}
+          再読み込み
+        </ConsoleButton>
+      </ConsoleToolbar>
 
-          <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12, flexWrap: "wrap" }}>
-            <button type="button" onClick={() => void load()} style={primaryButtonStyle}>
-              {loading ? "読み込み中..." : "再読み込み"}
-            </button>
+      <StatChips
+        items={[
+          { label: "総件数", value: fmtNum(rows.length) },
+          { label: "絞込件数", value: fmtNum(filteredRows.length) },
+          { label: "国", value: currentCountryName },
+          { label: "リーグ", value: currentLeagueName },
+          { label: "国リーグ", value: `${pageNo} / ${totalCountryLeaguePages}` },
+        ]}
+      />
 
-            <input
-              value={keyword}
-              onChange={(e) => {
-                setKeyword(e.target.value);
-                setCurrentCountryLeaguePage(0);
-              }}
-              placeholder="country / league / team / delFlg などで絞り込み"
-              style={{ ...inputStyle, width: 300 }}
-            />
+      {error && (
+        <ConsoleNotice tone="ng" onClose={() => setError(null)}>
+          {error}
+        </ConsoleNotice>
+      )}
+      {newRowsError && !modalOpen && (
+        <ConsoleNotice tone="ng" onClose={() => setNewRowsError(null)}>
+          {newRowsError}
+        </ConsoleNotice>
+      )}
+      {infoMessage && !modalOpen && <ConsoleNotice tone="info" title={infoMessage} onClose={() => setInfoMessage(null)} />}
+      {newRowsLoading && !modalOpen && <ConsoleNotice tone="info" title="新規登録データを確認中です…" />}
 
-            <span style={badgeStyle}>総件数: {rows.length}</span>
-            <span style={badgeStyle}>絞込件数: {filteredRows.length}</span>
-            <span style={badgeStyle}>国: {currentCountryName}</span>
-            <span style={badgeStyle}>リーグ: {currentLeagueName}</span>
-            <span style={badgeStyle}>
-              ページ: {totalCountryLeaguePages === 0 ? 0 : currentCountryLeaguePage + 1} / {totalCountryLeaguePages}
+      <ConsoleTable
+        columns={listColumns}
+        rows={currentRows}
+        rowKey={(r, i) => `${r.country}-${r.league}-${r.team}-${i}`}
+        loading={loading}
+        emptyText="表示できるデータがありません。"
+        footer={
+          <>
+            <span>
+              <b className="text-gray-900">
+                {currentCountryName} / {currentLeagueName}
+              </b>
+              <span className="ml-2 tabular-nums">
+                {pageNo} / {totalCountryLeaguePages} 国リーグ・{currentRows.length}件
+              </span>
             </span>
-          </div>
-
-          <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10, flexWrap: "wrap" }}>
-            <button
-              type="button"
-              style={currentCountryLeaguePage <= 0 ? disabledButtonStyle : buttonStyle}
-              onClick={() => setCurrentCountryLeaguePage((prev) => Math.max(prev - 1, 0))}
-              disabled={currentCountryLeaguePage <= 0}
-            >
-              前の国リーグ
-            </button>
-
-            <button
-              type="button"
-              style={currentCountryLeaguePage >= totalCountryLeaguePages - 1 || totalCountryLeaguePages === 0 ? disabledButtonStyle : buttonStyle}
-              onClick={() => setCurrentCountryLeaguePage((prev) => Math.min(prev + 1, totalCountryLeaguePages - 1))}
-              disabled={currentCountryLeaguePage >= totalCountryLeaguePages - 1 || totalCountryLeaguePages === 0}
-            >
-              次の国リーグ
-            </button>
-          </div>
-
-          {error && (
-            <div
-              style={{
-                marginBottom: 10,
-                color: "#b91c1c",
-                background: "#fee2e2",
-                padding: 10,
-                borderRadius: 8,
-                fontSize: 12,
-              }}
-            >
-              {error}
+            <div className="flex gap-1.5">
+              <ConsoleButton size="sm" onClick={() => setCurrentCountryLeaguePage((prev) => Math.max(prev - 1, 0))} disabled={currentCountryLeaguePage <= 0}>
+                <ChevronLeft className="h-3.5 w-3.5" />
+                前の国リーグ
+              </ConsoleButton>
+              <ConsoleButton
+                size="sm"
+                onClick={() => setCurrentCountryLeaguePage((prev) => Math.min(prev + 1, totalCountryLeaguePages - 1))}
+                disabled={currentCountryLeaguePage >= totalCountryLeaguePages - 1 || totalCountryLeaguePages === 0}
+              >
+                次の国リーグ
+                <ChevronRight className="h-3.5 w-3.5" />
+              </ConsoleButton>
             </div>
-          )}
+          </>
+        }
+      />
 
-          {newRowsError && !modalOpen && (
-            <div
-              style={{
-                marginBottom: 10,
-                color: "#b91c1c",
-                background: "#fee2e2",
-                padding: 10,
-                borderRadius: 8,
-                fontSize: 12,
-              }}
-            >
-              {newRowsError}
+      <ConsoleModal
+        open={modalOpen}
+        title="新規リーグデータ確認"
+        description="OK を押すと編集内容を更新し、その後 initialFlg を更新します。不要な行は複数選択して削除できます。"
+        onClose={closeModal}
+        busy={busy}
+        footer={
+          <>
+            <ConsoleButton variant="danger" onClick={() => void handleDeleteSelected()} disabled={selectedDeleteKeys.length === 0 || updatingStatus} loading={deletingRows}>
+              {!deletingRows && <Trash2 className="h-3.5 w-3.5" />}
+              {deletingRows ? "削除中…" : `選択行を削除${selectedDeleteKeys.length > 0 ? `（${selectedDeleteKeys.length}）` : ""}`}
+            </ConsoleButton>
+            <div className="ml-auto flex gap-1.5">
+              <ConsoleButton onClick={closeModal} disabled={busy}>
+                キャンセル
+              </ConsoleButton>
+              <ConsoleButton variant="success" onClick={() => void handleOk()} disabled={deletingRows} loading={updatingStatus} className="min-w-[80px]">
+                {updatingStatus ? "更新中…" : "OK"}
+              </ConsoleButton>
             </div>
-          )}
+          </>
+        }
+      >
+        <ConsoleNotice tone="info">セルをクリックするとその場で編集できます。Enter またはフォーカスアウトで反映、Esc でキャンセルします。</ConsoleNotice>
+        {selectedDeleteKeys.length > 0 && <ConsoleNotice tone="ng" title={`削除選択中: ${selectedDeleteKeys.length}件`} />}
+        {newRowsError && <ConsoleNotice tone="ng">{newRowsError}</ConsoleNotice>}
 
-          {infoMessage && !modalOpen && (
-            <div
-              style={{
-                marginBottom: 10,
-                color: "#1d4ed8",
-                background: "#dbeafe",
-                padding: 10,
-                borderRadius: 8,
-                fontSize: 12,
-              }}
-            >
-              {infoMessage}
-            </div>
-          )}
-
-          {newRowsLoading && !modalOpen && (
-            <div
-              style={{
-                marginBottom: 10,
-                color: "#334155",
-                background: "#f8fafc",
-                padding: 10,
-                borderRadius: 8,
-                fontSize: 12,
-              }}
-            >
-              新規登録データを確認中です...
-            </div>
-          )}
-
-          <div style={tableWrapperStyle}>
-            <table style={tableStyle}>
-              <thead>
-                <tr>
-                  {["No", "country", "league", "team", "確認"].map((label) => (
-                    <th key={label} style={thStyle}>
-                      {label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={6} style={thTdStyle}>
-                      読み込み中です...
-                    </td>
-                  </tr>
-                ) : currentRows.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} style={thTdStyle}>
-                      表示できるデータがありません。
-                    </td>
-                  </tr>
-                ) : (
-                  currentRows.map((row, index) => (
-                    <tr key={`${row.country}-${row.league}-${row.team}-${index}`} style={{ background: index % 2 === 0 ? "#ffffff" : "#fcfcfd" }}>
-                      <td style={thTdStyle}>
-                        <MasterCell value={index + 1} />
-                      </td>
-                      <td style={thTdStyle}>
-                        <MasterCell value={row.country} />
-                      </td>
-                      <td style={thTdStyle}>
-                        <MasterCell value={row.league} />
-                      </td>
-                      <td style={thTdStyle}>
-                        <MasterCell value={row.team} />
-                      </td>
-                      <td style={thTdStyle}>
-                        <button
-                          type="button"
-                          style={buttonStyle}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            void openModal(row);
-                          }}
-                        >
-                          確認
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      {modalContent}
-    </>
+        {newRowsLoading ? (
+          <div className="py-8 text-center text-sm text-gray-400">新規登録データを読み込み中です…</div>
+        ) : (
+          <ConsoleTable
+            columns={modalColumns}
+            rows={rowsWithPendingEdit}
+            rowKey={(row, i) => (row.id != null && row.id !== "" ? row.id : `${row.country}-${row.league}-${row.team}-${i}`)}
+            rowClassName={(row) => (selectedDeleteKeys.includes(masterRowDeleteKey(row)) ? "!bg-red-50" : "")}
+          />
+        )}
+      </ConsoleModal>
+    </div>
   );
 };
 

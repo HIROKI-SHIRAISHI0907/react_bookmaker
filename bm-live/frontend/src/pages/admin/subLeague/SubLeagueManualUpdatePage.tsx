@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { GripVertical, Plus, RefreshCw, Save, Undo2 } from "lucide-react";
+import { ConsoleButton, ConsoleField, ConsoleInput, ConsoleModal, ConsoleNotice, ConsolePanel, ConsoleToolbar, NoticeTone, StatusBadge } from "../../../api/commonAdminDesign";
 
 // バックエンドが /v1/api/... ならこちらに合わせる
 // もしフロントのプロキシで /api -> /v1/api を吸収しているなら "/api" のままでOK
@@ -35,6 +37,8 @@ type SaveRequest = {
 };
 
 type AlertType = "info" | "success" | "error" | "warning";
+
+const ALERT_TONE: Record<AlertType, NoticeTone> = { info: "info", success: "ok", error: "ng", warning: "warn" };
 
 const toTrimOrNull = (v?: string | null) => {
   const s = (v ?? "").trim();
@@ -110,197 +114,34 @@ function buildTargetCountriesFromItems(items: TeamRow[]): TargetCountry[] {
     .sort((a, b) => a.country.localeCompare(b.country, "ja"));
 }
 
-function Card(props: React.PropsWithChildren<{ title?: string; right?: React.ReactNode }>) {
+const sortTeams = (a: TeamRow, b: TeamRow) => {
+  const c1 = a.country.localeCompare(b.country, "ja");
+  if (c1 !== 0) return c1;
+  const c2 = a.league.localeCompare(b.league, "ja");
+  if (c2 !== 0) return c2;
+  return a.team.localeCompare(b.team, "ja");
+};
+
+/** ドラッグできるチームの行 */
+function TeamChip({ team, onDragStart, onDragEnd, right, tone = "default" }: { team: TeamRow; onDragStart: () => void; onDragEnd: () => void; right?: React.ReactNode; tone?: "default" | "assigned" }) {
   return (
     <div
-      style={{
-        background: "#fff",
-        border: "1px solid #e5e7eb",
-        borderRadius: 12,
-        padding: 16,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-      }}
+      draggable
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      className={[
+        "flex cursor-grab items-center gap-2 rounded-lg border bg-white px-2.5 py-1.5 active:cursor-grabbing",
+        tone === "assigned" ? "border-indigo-200" : "border-gray-200 hover:border-gray-300",
+      ].join(" ")}
     >
-      {(props.title || props.right) && (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 12,
-          }}
-        >
-          <h3 style={{ margin: 0, fontSize: 18 }}>{props.title}</h3>
-          <div>{props.right}</div>
-        </div>
-      )}
-      {props.children}
-    </div>
-  );
-}
-
-function Button(
-  props: React.ButtonHTMLAttributes<HTMLButtonElement> & {
-    loading?: boolean;
-    variant?: "primary" | "secondary" | "success" | "danger";
-  },
-) {
-  const { loading, variant = "primary", children, ...rest } = props;
-
-  const colorMap = {
-    primary: "#2563eb",
-    secondary: "#6b7280",
-    success: "#16a34a",
-    danger: "#dc2626",
-  };
-
-  return (
-    <button
-      {...rest}
-      disabled={loading || rest.disabled}
-      style={{
-        border: "none",
-        borderRadius: 8,
-        padding: "10px 14px",
-        color: "#fff",
-        cursor: loading || rest.disabled ? "not-allowed" : "pointer",
-        background: colorMap[variant],
-        opacity: loading || rest.disabled ? 0.7 : 1,
-      }}
-    >
-      {loading ? "処理中..." : children}
-    </button>
-  );
-}
-
-function Input(props: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; hint?: string }) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      <label style={{ fontWeight: 600 }}>{props.label}</label>
-      <input
-        value={props.value}
-        onChange={(e) => props.onChange(e.target.value)}
-        placeholder={props.placeholder}
-        style={{
-          border: "1px solid #d1d5db",
-          borderRadius: 8,
-          padding: "10px 12px",
-          fontSize: 14,
-        }}
-      />
-      {props.hint && <div style={{ color: "#6b7280", fontSize: 12 }}>{props.hint}</div>}
-    </div>
-  );
-}
-
-function Alert(props: { type: AlertType; children: React.ReactNode }) {
-  const colors = {
-    info: ["#eff6ff", "#1d4ed8"],
-    success: ["#f0fdf4", "#15803d"],
-    error: ["#fef2f2", "#b91c1c"],
-    warning: ["#fffbeb", "#b45309"],
-  } as const;
-
-  const [bg, fg] = colors[props.type];
-
-  return (
-    <div
-      style={{
-        background: bg,
-        color: fg,
-        borderRadius: 8,
-        padding: 12,
-        border: `1px solid ${fg}22`,
-      }}
-    >
-      {props.children}
-    </div>
-  );
-}
-
-function Badge(props: { children: React.ReactNode; color?: string }) {
-  return (
-    <span
-      style={{
-        display: "inline-block",
-        padding: "4px 8px",
-        borderRadius: 999,
-        background: props.color ?? "#eef2ff",
-        fontSize: 12,
-        fontWeight: 700,
-      }}
-    >
-      {props.children}
-    </span>
-  );
-}
-
-function Modal(props: { open: boolean; title: string; onClose: () => void; children: React.ReactNode }) {
-  if (!props.open) return null;
-
-  return (
-    <div
-      onClick={props.onClose}
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(0,0,0,0.45)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 9999,
-        padding: 24,
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          background: "#fff",
-          borderRadius: 16,
-          width: "min(1400px, 100%)",
-          height: "min(90vh, 900px)",
-          overflow: "hidden",
-          display: "flex",
-          flexDirection: "column",
-          boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
-        }}
-      >
-        <div
-          style={{
-            padding: "16px 20px",
-            borderBottom: "1px solid #e5e7eb",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flex: "0 0 auto",
-          }}
-        >
-          <h2 style={{ margin: 0, fontSize: 20 }}>{props.title}</h2>
-          <button
-            type="button"
-            onClick={props.onClose}
-            style={{
-              border: "none",
-              background: "transparent",
-              fontSize: 24,
-              cursor: "pointer",
-            }}
-          >
-            ×
-          </button>
-        </div>
-
-        <div
-          style={{
-            padding: 20,
-            overflow: "auto",
-            flex: 1,
-            minHeight: 0,
-          }}
-        >
-          {props.children}
+      <GripVertical className="h-3.5 w-3.5 shrink-0 text-gray-300" />
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-[13px] font-bold text-gray-900">{team.team}</div>
+        <div className="truncate text-[11px] text-gray-500">
+          {team.country} / {team.league}
         </div>
       </div>
+      {right}
     </div>
   );
 }
@@ -321,6 +162,7 @@ export default function SubLeagueManualUpdatePage() {
   const [selectedLeagueMapBySubLeague, setSelectedLeagueMapBySubLeague] = useState<Record<string, string[]>>({});
 
   const [draggingTeamKey, setDraggingTeamKey] = useState<string | null>(null);
+  const [dropHover, setDropHover] = useState<"assign" | "unassign" | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -356,6 +198,7 @@ export default function SubLeagueManualUpdatePage() {
 
   useEffect(() => {
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const openSubLeagueModal = (subLeague: string) => {
@@ -388,6 +231,7 @@ export default function SubLeagueManualUpdatePage() {
   const closeModal = () => {
     setSelectedSubLeague(null);
     setDraggingTeamKey(null);
+    setDropHover(null);
   };
 
   const addSubLeagueName = () => {
@@ -482,34 +326,30 @@ export default function SubLeagueManualUpdatePage() {
     return items
       .filter((x) => checkedLeagueSet.has(leagueKeyOf(x)))
       .filter((x) => normalizeSubLeague(x.subLeague) !== selectedSubLeague)
-      .sort((a, b) => {
-        const c1 = a.country.localeCompare(b.country, "ja");
-        if (c1 !== 0) return c1;
-        const c2 = a.league.localeCompare(b.league, "ja");
-        if (c2 !== 0) return c2;
-        return a.team.localeCompare(b.team, "ja");
-      });
+      .sort(sortTeams);
   }, [items, selectedSubLeague, currentCheckedLeagueKeys]);
 
   const assignedTeams = useMemo(() => {
     if (!selectedSubLeague) return [];
 
-    return items
-      .filter((x) => normalizeSubLeague(x.subLeague) === selectedSubLeague)
-      .sort((a, b) => {
-        const c1 = a.country.localeCompare(b.country, "ja");
-        if (c1 !== 0) return c1;
-        const c2 = a.league.localeCompare(b.league, "ja");
-        if (c2 !== 0) return c2;
-        return a.team.localeCompare(b.team, "ja");
-      });
+    return items.filter((x) => normalizeSubLeague(x.subLeague) === selectedSubLeague).sort(sortTeams);
   }, [items, selectedSubLeague]);
+
+  const countBySubLeague = useMemo(() => {
+    const map = new Map<string, number>();
+    items.forEach((x) => {
+      const s = normalizeSubLeague(x.subLeague);
+      if (s) map.set(s, (map.get(s) ?? 0) + 1);
+    });
+    return map;
+  }, [items]);
 
   const moveTeamToSubLeague = (target: { country: string; league: string; team: string }, subLeague: string | null) => {
     setItems((prev) => prev.map((x) => (x.country === target.country && x.league === target.league && x.team === target.team ? { ...x, subLeague } : x)));
   };
 
   const handleDropToSelectedSubLeague = () => {
+    setDropHover(null);
     if (!draggingTeamKey || !selectedSubLeague) return;
 
     const [country, league, team] = draggingTeamKey.split("___");
@@ -518,6 +358,7 @@ export default function SubLeagueManualUpdatePage() {
   };
 
   const handleDropToUnassigned = () => {
+    setDropHover(null);
     if (!draggingTeamKey) return;
 
     const [country, league, team] = draggingTeamKey.split("___");
@@ -549,399 +390,219 @@ export default function SubLeagueManualUpdatePage() {
     }
   };
 
+  const dragProps = (team: TeamRow) => ({
+    onDragStart: () => setDraggingTeamKey(teamKeyOf(team)),
+    onDragEnd: () => {
+      setDraggingTeamKey(null);
+      setDropHover(null);
+    },
+  });
+
   return (
-    <div style={{ padding: 24, background: "#f8fafc", minHeight: "100vh" }}>
-      <div
-        style={{
-          maxWidth: 1400,
-          margin: "0 auto",
-          display: "flex",
-          flexDirection: "column",
-          gap: 16,
-        }}
+    <div>
+      <ConsoleToolbar title="Sub League 手動更新" info={<span className="font-mono">API: {API_BASE}</span>}>
+        <ConsoleButton onClick={() => void load()} loading={loading}>
+          {!loading && <RefreshCw className="h-3.5 w-3.5" />}
+          再読み込み
+        </ConsoleButton>
+        <ConsoleButton variant="success" onClick={() => void onSave()} loading={saving}>
+          {!saving && <Save className="h-3.5 w-3.5" />}
+          保存
+        </ConsoleButton>
+      </ConsoleToolbar>
+
+      {alert && (
+        <ConsoleNotice tone={ALERT_TONE[alert.type]} onClose={() => setAlert(null)}>
+          {alert.message}
+        </ConsoleNotice>
+      )}
+
+      <ConsolePanel title="サブリーグ名の追加" info="先にサブリーグ名を作成し、カードをクリックして対象の country / league / team を設定します">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            addSubLeagueName();
+          }}
+          className="flex flex-wrap items-end gap-2"
+        >
+          <ConsoleField label="登録したいサブリーグ名">
+            <ConsoleInput value={newSubLeagueName} onChange={(e) => setNewSubLeagueName(e.target.value)} placeholder="例: EAST / WEST / 上位 / 下位" className="w-72" />
+          </ConsoleField>
+          <ConsoleButton type="submit" variant="primary" disabled={!newSubLeagueName.trim()}>
+            <Plus className="h-3.5 w-3.5" />
+            追加
+          </ConsoleButton>
+        </form>
+        <div className="mt-2 text-[11px] text-gray-500">手順: サブリーグ名を作成 → カードをクリック → 「country をチェック → league をチェック → team をドラッグ」 → 最後に「保存」。</div>
+      </ConsolePanel>
+
+      <ConsolePanel title="サブリーグ一覧" info={`${subLeagueNames.length}件`}>
+        {subLeagueNames.length === 0 ? (
+          <div className="py-6 text-center text-sm text-gray-400">まだサブリーグ名がありません。上の入力欄から追加してください。</div>
+        ) : (
+          <div className="grid gap-2" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))" }}>
+            {subLeagueNames.map((name) => {
+              const count = countBySubLeague.get(name) ?? 0;
+              return (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() => openSubLeagueModal(name)}
+                  className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-left transition-colors hover:border-indigo-300 hover:bg-indigo-50/50"
+                >
+                  <span className="min-w-0 flex-1 truncate text-[14px] font-bold text-gray-900">{name}</span>
+                  <StatusBadge tone={count > 0 ? "info" : "neutral"} dot={false}>
+                    {count} teams
+                  </StatusBadge>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </ConsolePanel>
+
+      <ConsoleModal
+        open={!!selectedSubLeague}
+        title={selectedSubLeague ? `サブリーグ設定: ${selectedSubLeague}` : ""}
+        description="country をチェック → league をチェック → 候補チームを右へドラッグ。変更は画面を閉じても残り、「保存」で反映されます。"
+        onClose={closeModal}
+        width={1400}
+        footer={
+          <div className="ml-auto flex gap-1.5">
+            <ConsoleButton onClick={closeModal}>閉じる</ConsoleButton>
+          </div>
+        }
       >
-        <Card title="Sub League 手動更新" right={<Badge color="#dbeafe">API: {API_BASE}</Badge>}>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr auto auto",
-              gap: 12,
-              alignItems: "end",
-            }}
-          >
-            <Input
-              label="登録したいサブリーグ名"
-              value={newSubLeagueName}
-              onChange={setNewSubLeagueName}
-              placeholder="例: EAST / WEST / 上位 / 下位"
-              hint="先にサブリーグ名を作成し、その後クリックして対象の country / league / team を設定します。"
-            />
-            <Button variant="primary" onClick={addSubLeagueName}>
-              追加
-            </Button>
-            <Button variant="secondary" onClick={load} loading={loading}>
-              再読込
-            </Button>
-            <Button variant="success" onClick={onSave} loading={saving}>
-              保存
-            </Button>
+        {alert && alert.type !== "success" && (
+          <ConsoleNotice tone={ALERT_TONE[alert.type]} onClose={() => setAlert(null)}>
+            {alert.message}
+          </ConsoleNotice>
+        )}
+        <div className="grid h-[64vh] min-h-0 grid-cols-1 gap-3 lg:grid-cols-[300px_1fr_1fr]">
+          {/* 対象国・リーグ */}
+          <div className="flex min-h-0 flex-col rounded-xl border border-gray-200 bg-gray-50">
+            <div className="border-b border-gray-200 px-3 py-2 text-[13px] font-bold text-gray-900">対象国・リーグ選択</div>
+            <div className="min-h-0 flex-1 overflow-y-auto p-2">
+              {targetCountries.length === 0 ? (
+                <div className="py-6 text-center text-xs text-gray-400">対象の国・リーグがありません。</div>
+              ) : (
+                <div className="grid gap-1.5">
+                  {targetCountries.map((group) => {
+                    const countryChecked = currentCheckedCountries.includes(group.country);
+                    return (
+                      <div key={group.country} className={`rounded-lg border bg-white px-2.5 py-1.5 ${countryChecked ? "border-indigo-200" : "border-gray-200"}`}>
+                        <label className="flex cursor-pointer items-center gap-2 text-[13px] font-bold text-gray-900">
+                          <input type="checkbox" checked={countryChecked} onChange={() => toggleCountryChecked(group.country)} className="accent-indigo-600" />
+                          <span>{group.country}</span>
+                          <span className="ml-auto text-[11px] font-normal text-gray-400">{group.leagues.length}</span>
+                        </label>
+                        {countryChecked && (
+                          <div className="ml-5 mt-1 grid gap-1">
+                            {group.leagues.map((league) => {
+                              const leagueKey = `${group.country}___${league}`;
+                              return (
+                                <label key={leagueKey} className="flex cursor-pointer items-center gap-2 text-xs text-gray-700">
+                                  <input type="checkbox" checked={currentCheckedLeagueKeys.includes(leagueKey)} onChange={() => toggleLeagueChecked(leagueKey)} className="accent-indigo-600" />
+                                  <span>{league}</span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
 
-          <div style={{ marginTop: 16 }}>
-            <Alert type="info">
-              まずサブリーグ名を作成します。作成後、サブリーグカードをクリックするとモーダルが開きます。モーダル内では「country をチェック → league をチェック → team をドラッグ」で所属を設定できます。
-            </Alert>
+          {/* 候補チーム */}
+          <div className="flex min-h-0 flex-col rounded-xl border border-gray-200 bg-white">
+            <div className="flex items-center gap-2 border-b border-gray-200 px-3 py-2">
+              <span className="text-[13px] font-bold text-gray-900">候補チーム</span>
+              <span className="text-xs tabular-nums text-gray-500">{candidateTeams.length}件</span>
+              <span className="ml-auto text-[11px] text-gray-400">右の「{selectedSubLeague}」へドラッグ</span>
+            </div>
+            <div className="grid min-h-0 flex-1 content-start gap-1.5 overflow-y-auto p-2">
+              {candidateTeams.map((team) => (
+                <TeamChip
+                  key={teamKeyOf(team)}
+                  team={team}
+                  {...dragProps(team)}
+                  right={
+                    <StatusBadge tone="neutral" dot={false}>
+                      {normalizeSubLeague(team.subLeague) ?? "未設定"}
+                    </StatusBadge>
+                  }
+                />
+              ))}
+              {candidateTeams.length === 0 && <div className="py-8 text-center text-xs text-gray-400">左で country をチェックし、その後 league をチェックすると、配下のチームが表示されます。</div>}
+            </div>
           </div>
 
-          {alert && (
-            <div style={{ marginTop: 12 }}>
-              <Alert type={alert.type}>{alert.message}</Alert>
-            </div>
-          )}
-        </Card>
-
-        <Card title="サブリーグ一覧" right={<Badge>{subLeagueNames.length}件</Badge>}>
-          {subLeagueNames.length === 0 ? (
-            <Alert type="warning">まだサブリーグ名がありません。上の入力欄から追加してください。</Alert>
-          ) : (
+          {/* 所属チーム + 未設定に戻す */}
+          <div className="flex min-h-0 flex-col gap-2">
             <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-                gap: 12,
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDropHover("assign");
               }}
+              onDragLeave={() => setDropHover(null)}
+              onDrop={handleDropToSelectedSubLeague}
+              className={[
+                "flex min-h-0 flex-1 flex-col rounded-xl border-2 border-dashed transition-colors",
+                dropHover === "assign" ? "border-indigo-500 bg-indigo-100/60" : "border-indigo-300 bg-indigo-50/60",
+              ].join(" ")}
             >
-              {subLeagueNames.map((name) => {
-                const count = items.filter((x) => normalizeSubLeague(x.subLeague) === name).length;
-
-                return (
-                  <button
-                    key={name}
-                    type="button"
-                    onClick={() => openSubLeagueModal(name)}
-                    style={{
-                      textAlign: "left",
-                      border: "1px solid #dbeafe",
-                      background: "#fff",
-                      borderRadius: 12,
-                      padding: 16,
-                      cursor: "pointer",
-                    }}
-                  >
-                    <div style={{ fontWeight: 700, fontSize: 16 }}>{name}</div>
-                    <div style={{ marginTop: 8 }}>
-                      <Badge color="#eff6ff">{count} teams</Badge>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </Card>
-
-        <Modal open={!!selectedSubLeague} title={selectedSubLeague ? `サブリーグ設定: ${selectedSubLeague}` : ""} onClose={closeModal}>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "340px 1fr 1fr",
-              gap: 16,
-              alignItems: "stretch",
-              minHeight: 0,
-              height: "100%",
-            }}
-          >
-            <div
-              style={{
-                border: "1px solid #e5e7eb",
-                borderRadius: 12,
-                padding: 16,
-                background: "#fafafa",
-                minHeight: 0,
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              <h3 style={{ marginTop: 0 }}>対象国・リーグ選択</h3>
-
-              <div style={{ marginBottom: 12 }}>
-                <Alert type="info">まず country をチェックし、そのあと league をチェックしてください。</Alert>
+              <div className="flex items-center gap-2 px-3 py-2">
+                <span className="text-[13px] font-bold text-indigo-900">{selectedSubLeague}</span>
+                <span className="text-xs tabular-nums text-indigo-700">{assignedTeams.length}件</span>
+                <span className="ml-auto text-[11px] text-indigo-700/70">ここにドロップすると所属します</span>
               </div>
-
-              <div
-                style={{
-                  overflowY: "auto",
-                  minHeight: 0,
-                  flex: 1,
-                  paddingRight: 4,
-                }}
-              >
-                {targetCountries.length === 0 ? (
-                  <Alert type="warning">対象の国・リーグがありません。</Alert>
-                ) : (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                    {targetCountries.map((group) => {
-                      const countryChecked = currentCheckedCountries.includes(group.country);
-
-                      return (
-                        <div
-                          key={group.country}
-                          style={{
-                            border: "1px solid #e5e7eb",
-                            borderRadius: 10,
-                            padding: 10,
-                            background: "#fff",
-                          }}
-                        >
-                          <label
-                            style={{
-                              display: "flex",
-                              gap: 8,
-                              alignItems: "center",
-                              cursor: "pointer",
-                              fontWeight: 700,
-                            }}
-                          >
-                            <input type="checkbox" checked={countryChecked} onChange={() => toggleCountryChecked(group.country)} />
-                            <span>{group.country}</span>
-                          </label>
-
-                          {countryChecked && (
-                            <div
-                              style={{
-                                marginTop: 10,
-                                marginLeft: 24,
-                                display: "flex",
-                                flexDirection: "column",
-                                gap: 8,
-                              }}
-                            >
-                              {group.leagues.map((league) => {
-                                const leagueKey = `${group.country}___${league}`;
-                                const checked = currentCheckedLeagueKeys.includes(leagueKey);
-
-                                return (
-                                  <label
-                                    key={leagueKey}
-                                    style={{
-                                      display: "flex",
-                                      gap: 8,
-                                      alignItems: "center",
-                                      cursor: "pointer",
-                                    }}
-                                  >
-                                    <input type="checkbox" checked={checked} onChange={() => toggleLeagueChecked(leagueKey)} />
-                                    <span>{league}</span>
-                                  </label>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div
-              style={{
-                border: "1px solid #e5e7eb",
-                borderRadius: 12,
-                padding: 16,
-                minHeight: 0,
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: 12,
-                  flex: "0 0 auto",
-                }}
-              >
-                <h3 style={{ margin: 0 }}>候補チーム</h3>
-                <Badge>{candidateTeams.length}件</Badge>
-              </div>
-
-              <div style={{ flex: "0 0 auto" }}>
-                <Alert type="info">左で league までチェックした配下のチームが表示されます。カードを右の「{selectedSubLeague}」へドラッグしてください。</Alert>
-              </div>
-
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 8,
-                  marginTop: 12,
-                  overflowY: "auto",
-                  minHeight: 0,
-                  flex: 1,
-                  paddingRight: 4,
-                }}
-              >
-                {candidateTeams.map((team) => (
-                  <div
+              <div className="grid min-h-0 flex-1 content-start gap-1.5 overflow-y-auto px-2 pb-2">
+                {assignedTeams.map((team) => (
+                  <TeamChip
                     key={teamKeyOf(team)}
-                    draggable
-                    onDragStart={() => setDraggingTeamKey(teamKeyOf(team))}
-                    onDragEnd={() => setDraggingTeamKey(null)}
-                    style={{
-                      background: "#fff",
-                      border: "1px solid #e5e7eb",
-                      borderRadius: 10,
-                      padding: 10,
-                      cursor: "grab",
-                      boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
-                    }}
-                  >
-                    <div style={{ fontWeight: 700 }}>{team.team}</div>
-                    <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4 }}>
-                      {team.country} / {team.league}
-                    </div>
-                    <div style={{ marginTop: 6 }}>
-                      <Badge color="#f3f4f6">現在: {normalizeSubLeague(team.subLeague) ?? "未設定"}</Badge>
-                    </div>
-                  </div>
+                    team={team}
+                    tone="assigned"
+                    {...dragProps(team)}
+                    right={
+                      <ConsoleButton
+                        size="sm"
+                        variant="ghost"
+                        className="hover:!bg-red-50 hover:!text-red-700"
+                        onClick={() => moveTeamToSubLeague({ country: team.country, league: team.league, team: team.team }, null)}
+                        title="未設定に戻す"
+                      >
+                        <Undo2 className="h-3 w-3" />
+                        戻す
+                      </ConsoleButton>
+                    }
+                  />
                 ))}
-
-                {candidateTeams.length === 0 && (
-                  <div style={{ marginTop: 8 }}>
-                    <Alert type="warning">まだ候補チームがありません。左で country をチェックし、その後 league をチェックしてください。</Alert>
-                  </div>
-                )}
+                {assignedTeams.length === 0 && <div className="py-8 text-center text-xs text-indigo-700/60">まだこのサブリーグに所属するチームはありません。</div>}
               </div>
             </div>
 
             <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 12,
-                minHeight: 0,
-                height: "100%",
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDropHover("unassign");
               }}
+              onDragLeave={() => setDropHover(null)}
+              onDrop={handleDropToUnassigned}
+              className={[
+                "shrink-0 rounded-xl border-2 border-dashed px-3 py-2.5 transition-colors",
+                dropHover === "unassign" ? "border-red-500 bg-red-100/70" : "border-red-300 bg-red-50/60",
+              ].join(" ")}
             >
-              <div
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={handleDropToSelectedSubLeague}
-                style={{
-                  border: "2px dashed #60a5fa",
-                  borderRadius: 12,
-                  padding: 16,
-                  background: "#eff6ff",
-                  minHeight: 0,
-                  flex: 1,
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: 12,
-                    flex: "0 0 auto",
-                  }}
-                >
-                  <h3 style={{ margin: 0 }}>{selectedSubLeague}</h3>
-                  <Badge color="#dbeafe">{assignedTeams.length}件</Badge>
-                </div>
-
-                <div style={{ flex: "0 0 auto" }}>
-                  <Alert type="info">ここにドロップすると、このサブリーグに所属します。</Alert>
-                </div>
-
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 8,
-                    marginTop: 12,
-                    overflowY: "auto",
-                    minHeight: 0,
-                    flex: 1,
-                    paddingRight: 4,
-                  }}
-                >
-                  {assignedTeams.map((team) => (
-                    <div
-                      key={teamKeyOf(team)}
-                      draggable
-                      onDragStart={() => setDraggingTeamKey(teamKeyOf(team))}
-                      onDragEnd={() => setDraggingTeamKey(null)}
-                      style={{
-                        background: "#fff",
-                        border: "1px solid #bfdbfe",
-                        borderRadius: 10,
-                        padding: 10,
-                        cursor: "grab",
-                      }}
-                    >
-                      <div style={{ fontWeight: 700 }}>{team.team}</div>
-                      <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4 }}>
-                        {team.country} / {team.league}
-                      </div>
-                      <div style={{ marginTop: 8 }}>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            moveTeamToSubLeague(
-                              {
-                                country: team.country,
-                                league: team.league,
-                                team: team.team,
-                              },
-                              null,
-                            )
-                          }
-                          style={{
-                            border: "none",
-                            background: "#fee2e2",
-                            color: "#b91c1c",
-                            borderRadius: 8,
-                            padding: "6px 10px",
-                            cursor: "pointer",
-                          }}
-                        >
-                          未設定に戻す
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-
-                  {assignedTeams.length === 0 && (
-                    <div style={{ marginTop: 8 }}>
-                      <Alert type="warning">まだこのサブリーグに所属するチームはありません。</Alert>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={handleDropToUnassigned}
-                style={{
-                  border: "2px dashed #fca5a5",
-                  borderRadius: 12,
-                  padding: 16,
-                  background: "#fef2f2",
-                  flex: "0 0 auto",
-                }}
-              >
-                <div style={{ fontWeight: 700 }}>未設定に戻す</div>
-                <div style={{ fontSize: 12, color: "#7f1d1d", marginTop: 6 }}>右側の所属チームをここへドラッグすると subLeague を解除します。</div>
-              </div>
+              <div className="text-[13px] font-bold text-red-800">未設定に戻す</div>
+              <div className="text-[11px] text-red-700/80">所属チームをここへドラッグすると subLeague を解除します。</div>
             </div>
           </div>
-        </Modal>
-      </div>
+        </div>
+      </ConsoleModal>
     </div>
   );
 }

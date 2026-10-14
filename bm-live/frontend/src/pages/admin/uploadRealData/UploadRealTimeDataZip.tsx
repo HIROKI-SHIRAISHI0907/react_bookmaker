@@ -1,4 +1,18 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Download, Search } from "lucide-react";
+import {
+  ConsoleButton,
+  ConsoleCheck,
+  ConsoleColumn,
+  ConsoleField,
+  ConsoleInput,
+  ConsoleNotice,
+  ConsolePanel,
+  ConsoleTable,
+  ConsoleToolbar,
+  StatChips,
+  StatusBadge,
+} from "../../../api/commonAdminDesign";
 
 type UploadedRealTimeDataDownloadItem = {
   fileName: string;
@@ -30,6 +44,38 @@ function buildSearchQuery(params: { country: string; league: string; finFlg: boo
   return query.toString();
 }
 
+const onDownload = (fileName: string) => {
+  const url = `${API_BASE}/download?fileName=${encodeURIComponent(fileName)}`;
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+};
+
+const COLUMNS: ConsoleColumn<UploadedRealTimeDataDownloadItem>[] = [
+  { key: "fileName", header: "ファイル名", mono: true, wrap: true, className: "min-w-[220px] break-all", cell: (i) => i.fileName || "-" },
+  { key: "game", header: "対戦情報", wrap: true, className: "min-w-[200px]", cell: (i) => i.gameTeamName || "-" },
+  {
+    key: "process",
+    header: "状態",
+    cell: (i) => (i.gameProcess === "0" ? <StatusBadge tone="neutral">終了済</StatusBadge> : <StatusBadge tone="ok">対戦中</StatusBadge>),
+  },
+  { key: "size", header: "サイズ", align: "right", mono: true, cell: (i) => i.size || "-" },
+  { key: "lastUpdate", header: "最終更新日時", mono: true, cell: (i) => i.lastUpdateDate || "-" },
+  {
+    key: "dl",
+    header: "",
+    align: "right",
+    cell: (i) => (
+      <ConsoleButton size="sm" onClick={() => onDownload(i.fileName)}>
+        <Download className="h-3 w-3" />
+        ダウンロード
+      </ConsoleButton>
+    ),
+  },
+];
+
 export default function UploadedRealTimeDataDownloadPage() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -42,28 +88,12 @@ export default function UploadedRealTimeDataDownloadPage() {
   const [items, setItems] = useState<UploadedRealTimeDataDownloadItem[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
-
   const pagedItems = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
     return items.slice(start, start + PAGE_SIZE);
   }, [items, currentPage]);
 
-  const visiblePageNumbers = useMemo(() => {
-    const pages: number[] = [];
-    const start = Math.max(1, currentPage - 2);
-    const end = Math.min(totalPages, currentPage + 2);
-
-    for (let i = start; i <= end; i += 1) {
-      pages.push(i);
-    }
-    return pages;
-  }, [currentPage, totalPages]);
-
-  const onMovePage = (page: number) => {
-    if (page < 1 || page > totalPages) return;
-    setCurrentPage(page);
-  };
+  const finishedCount = useMemo(() => items.filter((i) => i.gameProcess === "0").length, [items]);
 
   const loadInit = async () => {
     setLoading(true);
@@ -121,291 +151,67 @@ export default function UploadedRealTimeDataDownloadPage() {
     setLeague("");
     setFinFlg(false);
     setUploadDate("");
-    loadInit();
-  };
-
-  const onDownload = (fileName: string) => {
-    const url = `${API_BASE}/download?fileName=${encodeURIComponent(fileName)}`;
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
+    void loadInit();
   };
 
   useEffect(() => {
-    loadInit();
+    void loadInit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <div style={{ display: "grid", gap: 16 }}>
-      <div>
-        <h1 style={{ margin: 0, fontSize: 24 }}>アップロード済みリアルタイムデータ</h1>
-        <p style={{ margin: "8px 0 0", color: "#6b7280" }}>S3にアップロードされている試合ごとのzipファイルを検索・ダウンロードします。</p>
-      </div>
+    <div>
+      <ConsoleToolbar title="アップロード済みリアルタイムデータ" info="S3にアップロードされている試合ごとのzipファイルを検索・ダウンロード" />
 
-      <div
-        style={{
-          border: "1px solid #e5e7eb",
-          borderRadius: 12,
-          padding: 16,
-          background: "#fff",
-          display: "flex",
-          gap: 12,
-          alignItems: "end",
-          flexWrap: "wrap",
-        }}
-      >
-        <div style={{ display: "grid", gap: 6 }}>
-          <label style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>国</label>
-          <input type="text" value={country} onChange={(e) => setCountry(e.target.value)} placeholder="例: Japan" style={inputStyle} />
-        </div>
+      {errorMessage && <ConsoleNotice tone="ng" title={errorMessage} onClose={() => setErrorMessage("")} />}
 
-        <div style={{ display: "grid", gap: 6 }}>
-          <label style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>リーグ</label>
-          <input type="text" value={league} onChange={(e) => setLeague(e.target.value)} placeholder="例: J1" style={inputStyle} />
-        </div>
-
-        <div style={{ display: "grid", gap: 6 }}>
-          <label style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>アップロード日</label>
-          <input type="date" value={uploadDate} onChange={(e) => setUploadDate(e.target.value)} style={inputStyle} />
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 8, paddingBottom: 10 }}>
-          <input id="finFlg" type="checkbox" checked={finFlg} onChange={(e) => setFinFlg(e.target.checked)} style={{ width: 16, height: 16 }} />
-          <label htmlFor="finFlg" style={{ fontSize: 14, color: "#374151", fontWeight: 700 }}>
+      <ConsolePanel title="検索条件">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void onSearch();
+          }}
+          className="flex flex-wrap items-end gap-2"
+        >
+          <ConsoleField label="国">
+            <ConsoleInput type="text" value={country} onChange={(e) => setCountry(e.target.value)} placeholder="例: Japan" className="w-40" />
+          </ConsoleField>
+          <ConsoleField label="リーグ">
+            <ConsoleInput type="text" value={league} onChange={(e) => setLeague(e.target.value)} placeholder="例: J1" className="w-40" />
+          </ConsoleField>
+          <ConsoleField label="アップロード日">
+            <ConsoleInput type="date" value={uploadDate} onChange={(e) => setUploadDate(e.target.value)} />
+          </ConsoleField>
+          <ConsoleCheck checked={finFlg} onChange={setFinFlg}>
             終了済のみ
-          </label>
-        </div>
+          </ConsoleCheck>
+          <ConsoleButton type="submit" variant="primary" loading={loading}>
+            {!loading && <Search className="h-3.5 w-3.5" />}
+            検索
+          </ConsoleButton>
+          <ConsoleButton onClick={onClearAndReload} disabled={loading}>
+            条件クリア
+          </ConsoleButton>
+        </form>
+      </ConsolePanel>
 
-        <button type="button" onClick={onSearch} disabled={loading} style={primaryButtonStyle}>
-          {loading ? "読込中..." : "検索"}
-        </button>
+      <StatChips
+        loading={loading && items.length === 0}
+        items={[
+          { label: "件数", value: items.length },
+          { label: "終了済", value: finishedCount },
+          { label: "対戦中", value: items.length - finishedCount, tone: items.length - finishedCount > 0 ? "ok" : "default" },
+        ]}
+      />
 
-        <button type="button" onClick={onClearAndReload} disabled={loading} style={secondaryButtonStyle}>
-          条件クリア
-        </button>
-      </div>
-
-      {errorMessage && (
-        <div
-          style={{
-            border: "1px solid #fecaca",
-            background: "#fef2f2",
-            color: "#991b1b",
-            borderRadius: 10,
-            padding: 12,
-          }}
-        >
-          {errorMessage}
-        </div>
-      )}
-
-      <div
-        style={{
-          border: "1px solid #e5e7eb",
-          borderRadius: 12,
-          background: "#fff",
-          overflow: "hidden",
-        }}
-      >
-        <div
-          style={{
-            padding: "14px 16px",
-            borderBottom: "1px solid #e5e7eb",
-            fontWeight: 800,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: 12,
-            flexWrap: "wrap",
-          }}
-        >
-          <div>アップロード済み一覧</div>
-          <div style={{ fontSize: 13, color: "#6b7280" }}>
-            {items.length} 件（{currentPage} / {totalPages} ページ）
-          </div>
-        </div>
-
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 860 }}>
-            <thead style={{ background: "#f9fafb" }}>
-              <tr>
-                <th style={thStyle}>ファイル名</th>
-                <th style={thStyle}>対戦情報</th>
-                <th style={thStyle}>状態</th>
-                <th style={thStyle}>サイズ</th>
-                <th style={thStyle}>最終更新日時</th>
-                <th style={thStyle}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {pagedItems.length === 0 && !loading ? (
-                <tr>
-                  <td colSpan={6} style={{ padding: 24, textAlign: "center", color: "#6b7280" }}>
-                    該当するデータはありません。
-                  </td>
-                </tr>
-              ) : (
-                pagedItems.map((item, index) => (
-                  <tr key={`${item.fileName}-${index}`} style={{ borderTop: "1px solid #f3f4f6" }}>
-                    <td style={tdStyle}>{item.fileName || "-"}</td>
-                    <td style={tdStyle}>{item.gameTeamName || "-"}</td>
-                    <td style={tdStyle}>
-                      <span
-                        style={{
-                          display: "inline-block",
-                          padding: "2px 10px",
-                          borderRadius: 999,
-                          fontSize: 12,
-                          fontWeight: 700,
-                          background: item.gameProcess === "0" ? "#f3f4f6" : "#dcfce7",
-                          color: item.gameProcess === "0" ? "#374151" : "#166534",
-                        }}
-                      >
-                        {item.gameProcess === "0" ? "終了済" : "対戦中"}
-                      </span>
-                    </td>
-                    <td style={tdStyle}>{item.size || "-"}</td>
-                    <td style={tdStyle}>{item.lastUpdateDate || "-"}</td>
-                    <td style={{ ...tdStyle, textAlign: "right" }}>
-                      <button type="button" onClick={() => onDownload(item.fileName)} style={downloadButtonStyle}>
-                        ダウンロード
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        <div
-          style={{
-            borderTop: "1px solid #e5e7eb",
-            padding: 16,
-            display: "flex",
-            justifyContent: "center",
-            gap: 8,
-            flexWrap: "wrap",
-            background: "#fff",
-          }}
-        >
-          <button type="button" onClick={() => onMovePage(1)} disabled={loading || currentPage === 1} style={pageButtonStyle}>
-            先頭
-          </button>
-
-          <button type="button" onClick={() => onMovePage(currentPage - 1)} disabled={loading || currentPage === 1} style={pageButtonStyle}>
-            前へ
-          </button>
-
-          {visiblePageNumbers[0] > 1 && (
-            <>
-              <button type="button" onClick={() => onMovePage(1)} disabled={loading} style={pageButtonStyle}>
-                1
-              </button>
-              {visiblePageNumbers[0] > 2 && <span style={{ alignSelf: "center", color: "#6b7280" }}>...</span>}
-            </>
-          )}
-
-          {visiblePageNumbers.map((page) => (
-            <button
-              key={page}
-              type="button"
-              onClick={() => onMovePage(page)}
-              disabled={loading}
-              style={{
-                ...pageButtonStyle,
-                background: page === currentPage ? "#111827" : "#fff",
-                color: page === currentPage ? "#fff" : "#111827",
-                borderColor: page === currentPage ? "#111827" : "#d1d5db",
-              }}
-            >
-              {page}
-            </button>
-          ))}
-
-          {visiblePageNumbers[visiblePageNumbers.length - 1] < totalPages && (
-            <>
-              {visiblePageNumbers[visiblePageNumbers.length - 1] < totalPages - 1 && <span style={{ alignSelf: "center", color: "#6b7280" }}>...</span>}
-              <button type="button" onClick={() => onMovePage(totalPages)} disabled={loading} style={pageButtonStyle}>
-                {totalPages}
-              </button>
-            </>
-          )}
-
-          <button type="button" onClick={() => onMovePage(currentPage + 1)} disabled={loading || currentPage === totalPages} style={pageButtonStyle}>
-            次へ
-          </button>
-
-          <button type="button" onClick={() => onMovePage(totalPages)} disabled={loading || currentPage === totalPages} style={pageButtonStyle}>
-            末尾
-          </button>
-        </div>
-      </div>
+      <ConsoleTable
+        columns={COLUMNS}
+        rows={pagedItems}
+        rowKey={(i, idx) => `${i.fileName}-${idx}`}
+        loading={loading}
+        emptyText="該当するデータはありません。"
+        paging={{ page: currentPage, pageSize: PAGE_SIZE, total: items.length, onChange: setCurrentPage }}
+      />
     </div>
   );
 }
-
-const inputStyle: React.CSSProperties = {
-  border: "1px solid #d1d5db",
-  borderRadius: 10,
-  padding: "10px 12px",
-  fontSize: 14,
-  minWidth: 160,
-};
-
-const primaryButtonStyle: React.CSSProperties = {
-  border: "1px solid #111827",
-  background: "#111827",
-  color: "#fff",
-  padding: "10px 14px",
-  borderRadius: 10,
-  cursor: "pointer",
-  fontWeight: 700,
-};
-
-const secondaryButtonStyle: React.CSSProperties = {
-  border: "1px solid #d1d5db",
-  background: "#f9fafb",
-  padding: "10px 14px",
-  borderRadius: 10,
-  cursor: "pointer",
-  fontWeight: 700,
-};
-
-const pageButtonStyle: React.CSSProperties = {
-  border: "1px solid #d1d5db",
-  background: "#fff",
-  padding: "8px 12px",
-  borderRadius: 10,
-  cursor: "pointer",
-  fontWeight: 700,
-  minWidth: 44,
-};
-
-const downloadButtonStyle: React.CSSProperties = {
-  border: "1px solid #d1d5db",
-  background: "#fff",
-  padding: "6px 12px",
-  borderRadius: 8,
-  cursor: "pointer",
-  fontWeight: 700,
-  fontSize: 13,
-};
-
-const thStyle: React.CSSProperties = {
-  textAlign: "left",
-  padding: "12px 14px",
-  fontSize: 13,
-  color: "#374151",
-  borderBottom: "1px solid #e5e7eb",
-  whiteSpace: "nowrap",
-};
-
-const tdStyle: React.CSSProperties = {
-  padding: "12px 14px",
-  fontSize: 14,
-  color: "#111827",
-  verticalAlign: "top",
-};

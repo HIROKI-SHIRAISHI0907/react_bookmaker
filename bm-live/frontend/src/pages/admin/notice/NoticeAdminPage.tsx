@@ -1,8 +1,24 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { Archive, RefreshCw, Send } from "lucide-react";
 import { queryClient } from "../../../lib/queryClient";
-import { Button } from "../../../components/ui/button";
-import { Skeleton } from "../../../components/ui/skeleton";
+import {
+  BadgeTone,
+  ConsoleButton,
+  ConsoleColumn,
+  ConsoleField,
+  ConsoleInput,
+  ConsoleNotice,
+  ConsolePanel,
+  ConsoleSelect,
+  ConsoleTable,
+  ConsoleTextarea,
+  ConsoleToolbar,
+  NoticeTone,
+  SegmentedTabs,
+  StatChips,
+  StatusBadge,
+} from "../../../api/commonAdminDesign";
 
 type NoticeType = "NORMAL" | "FEATURED_MATCH";
 
@@ -75,70 +91,12 @@ async function fetchOrThrow(url: string, init?: RequestInit) {
   return body;
 }
 
-/** ================= UI helpers ================= */
-type Tone = "gray" | "blue" | "emerald" | "amber" | "rose" | "violet";
-
-function Badge({ children, tone = "gray" }: { children: React.ReactNode; tone?: Tone }) {
-  const cls: Record<Tone, string> = {
-    gray: "bg-gray-100 text-gray-700 ring-gray-200",
-    blue: "bg-blue-100 text-blue-800 ring-blue-200",
-    emerald: "bg-emerald-100 text-emerald-800 ring-emerald-200",
-    amber: "bg-amber-100 text-amber-900 ring-amber-200",
-    rose: "bg-rose-100 text-rose-800 ring-rose-200",
-    violet: "bg-violet-100 text-violet-800 ring-violet-200",
-  };
-  return <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ring-1 ring-inset ${cls[tone]}`}>{children}</span>;
-}
-
-function Panel({ title, desc, right, children }: { title: string; desc?: string; right?: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <div className="rounded-2xl border bg-white/80 backdrop-blur shadow-sm">
-      <div className="px-5 py-4 border-b bg-gradient-to-r from-white to-gray-50 rounded-t-2xl">
-        <div className="flex items-start justify-between gap-4 flex-col md:flex-row">
-          <div>
-            <div className="text-base font-extrabold text-gray-900">{title}</div>
-            {desc ? <div className="text-sm text-muted-foreground mt-1">{desc}</div> : null}
-          </div>
-          {right ? <div className="shrink-0">{right}</div> : null}
-        </div>
-      </div>
-      <div className="p-5">{children}</div>
-    </div>
-  );
-}
-
-function Alert({ type, title, message, onClose }: { type: "info" | "success" | "error"; title: string; message: string; onClose?: () => void }) {
-  const cls = type === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : type === "error" ? "border-rose-200 bg-rose-50 text-rose-900" : "border-blue-200 bg-blue-50 text-blue-900";
-
-  const icon = type === "success" ? "✅" : type === "error" ? "❌" : "💡";
-
-  return (
-    <div className={`rounded-2xl border p-4 flex items-start gap-3 ${cls}`}>
-      <div className="mt-0.5">{icon}</div>
-      <div className="min-w-0 flex-1">
-        <div className="text-sm font-extrabold">{title}</div>
-        <pre className="mt-1 text-xs whitespace-pre-wrap leading-relaxed">{message}</pre>
-      </div>
-      {onClose ? (
-        <button onClick={onClose} className="text-gray-500 hover:text-gray-800 transition-colors">
-          ✕
-        </button>
-      ) : null}
-    </div>
-  );
-}
-
-function statusTone(status: string): Tone {
+function statusTone(status: string): BadgeTone {
   const s = (status ?? "").toUpperCase();
-  if (s.includes("PUBLISH")) return "emerald";
-  if (s.includes("ARCHIVE")) return "gray";
-  if (s.includes("DRAFT")) return "amber";
-  return "blue";
-}
-
-function typeTone(t?: NoticeType): Tone {
-  if (t === "FEATURED_MATCH") return "violet";
-  return "blue";
+  if (s.includes("PUBLISH")) return "ok";
+  if (s.includes("ARCHIVE")) return "neutral";
+  if (s.includes("DRAFT")) return "warn";
+  return "info";
 }
 
 function fmt(iso?: string | null): string {
@@ -168,9 +126,9 @@ export default function NoticeAdminPage() {
   const [archivingId, setArchivingId] = useState<number | null>(null);
 
   // toast
-  const [toast, setToast] = useState<{ type: "info" | "success" | "error"; title: string; message: string } | null>(null);
+  const [toast, setToast] = useState<{ type: NoticeTone; title: string; message: string } | null>(null);
 
-  // ✅ 更新後に「即」一覧APIを叩く共通関数
+  // 更新後に「即」一覧APIを叩く共通関数
   const refetchAdminList = async () => {
     await queryClient.refetchQueries({ queryKey: ["admin-notices"] });
   };
@@ -250,6 +208,8 @@ export default function NoticeAdminPage() {
     return map;
   }, [approveRequestsQuery.data]);
 
+  const pendingCount = useMemo(() => Array.from(latestRequestByNoticeId.values()).filter((r) => r.flowStatus === "申請済").length, [latestRequestByNoticeId]);
+
   // --- Mutations ---
   const createMutation = useMutation({
     mutationFn: async () => {
@@ -285,11 +245,11 @@ export default function NoticeAdminPage() {
       await refetchAdminList();
       await refetchFrontActive();
 
-      setToast({ type: "success", title: "登録完了", message: "DRAFT として登録しました。" });
+      setToast({ type: "ok", title: "登録完了", message: "DRAFT として登録しました。" });
     },
     onError: (e) => {
       console.error("[createMutation] error", e);
-      setToast({ type: "error", title: "登録失敗", message: safeText((e as any)?.message) || "登録に失敗しました" });
+      setToast({ type: "ng", title: "登録失敗", message: safeText((e as any)?.message) || "登録に失敗しました" });
     },
   });
 
@@ -305,11 +265,11 @@ export default function NoticeAdminPage() {
     },
     onSuccess: async () => {
       await refetchApproveRequests();
-      setToast({ type: "success", title: "承認依頼を送信しました", message: "管理者の承認をお待ちください。" });
+      setToast({ type: "ok", title: "承認依頼を送信しました", message: "管理者の承認をお待ちください。" });
     },
     onError: (e) => {
       console.error("[requestApprovalMutation] error", e);
-      setToast({ type: "error", title: "送信失敗", message: safeText((e as any)?.message) || "承認依頼の送信に失敗しました" });
+      setToast({ type: "ng", title: "送信失敗", message: safeText((e as any)?.message) || "承認依頼の送信に失敗しました" });
     },
   });
 
@@ -320,11 +280,11 @@ export default function NoticeAdminPage() {
     onSuccess: async () => {
       await refetchAdminList();
       await refetchFrontActive();
-      setToast({ type: "success", title: "アーカイブ完了", message: "アーカイブしました。" });
+      setToast({ type: "ok", title: "アーカイブ完了", message: "アーカイブしました。" });
     },
     onError: (e) => {
       console.error("[archiveMutation] error", e);
-      setToast({ type: "error", title: "アーカイブ失敗", message: safeText((e as any)?.message) || "アーカイブに失敗しました" });
+      setToast({ type: "ng", title: "アーカイブ失敗", message: safeText((e as any)?.message) || "アーカイブに失敗しました" });
     },
   });
 
@@ -333,347 +293,282 @@ export default function NoticeAdminPage() {
   const canSubmitFeatured = selectedFutureId !== "";
   const canSubmit = noticeType === "NORMAL" ? canSubmitNormal : canSubmitFeatured;
 
-  const isRefreshing = noticesQuery.isFetching;
+  const isRefreshing = noticesQuery.isFetching || approveRequestsQuery.isFetching;
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
-      <div className="container mx-auto px-4 py-6 max-w-6xl space-y-6">
-        {/* Header */}
-        <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
-          <div className="flex items-center gap-4">
-            <div className="bg-gradient-to-r from-violet-600 to-blue-600 text-white p-3 rounded-2xl shadow-lg">
-              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h10M7 16h10M5 6h14v14H5z" />
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-3xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">お知らせ管理</h1>
-              <p className="text-sm text-muted-foreground mt-1">通常お知らせ / 注目試合お知らせ（future_master）を登録できます。公開は管理者への承認依頼を経て行われます。</p>
-            </div>
-          </div>
+  const columns: ConsoleColumn<Notice>[] = [
+    { key: "id", header: "ID", mono: true, align: "right", cell: (n) => <span className="text-gray-500">{n.id}</span> },
+    {
+      key: "state",
+      header: "状態",
+      cell: (n) => {
+        const req = latestRequestByNoticeId.get(n.id);
+        return (
+          <span className="inline-flex flex-col items-start gap-1">
+            <StatusBadge tone={statusTone(n.status)}>{n.status}</StatusBadge>
+            {req?.flowStatus === "申請済" && <StatusBadge tone="info">承認待ち</StatusBadge>}
+            {req?.flowStatus === "差し戻し" && <StatusBadge tone="ng">差し戻し</StatusBadge>}
+          </span>
+        );
+      },
+    },
+    {
+      key: "type",
+      header: "種別",
+      cell: (n) => (
+        <span className="inline-flex flex-col items-start gap-1">
+          <StatusBadge tone={n.noticeType === "FEATURED_MATCH" ? "info" : "neutral"} dot={false}>
+            {n.noticeType ?? "NORMAL"}
+          </StatusBadge>
+          {n.featureMatchId ? <span className="font-mono text-[11px] text-gray-500">match {n.featureMatchId}</span> : null}
+        </span>
+      ),
+    },
+    {
+      key: "content",
+      header: "タイトル / 内容",
+      wrap: true,
+      className: "min-w-[280px] max-w-[460px]",
+      cell: (n) => {
+        const req = latestRequestByNoticeId.get(n.id);
+        return (
+          <>
+            <div className="font-bold">{n.title}</div>
+            <div className="mt-0.5 line-clamp-3 whitespace-pre-wrap text-xs text-gray-600">{n.body}</div>
+            {req?.flowStatus === "差し戻し" && req.comment ? <div className="mt-1 text-[11px] text-red-700">差し戻し理由: {req.comment}</div> : null}
+          </>
+        );
+      },
+    },
+    {
+      key: "period",
+      header: "表示期間",
+      mono: true,
+      className: "text-[11px] text-gray-600",
+      cell: (n) => (
+        <>
+          <div>{n.displayFrom ?? "-"}</div>
+          <div>{n.displayTo ?? "-"}</div>
+        </>
+      ),
+    },
+    { key: "publishedAt", header: "publishedAt", mono: true, className: "text-[11px] text-gray-600", cell: (n) => fmt(n.publishedAt) },
+    { key: "updateTime", header: "updateTime", mono: true, className: "text-[11px] text-gray-600", cell: (n) => fmt(n.updateTime) },
+    {
+      key: "ops",
+      header: "操作",
+      align: "right",
+      cell: (n) => {
+        const isRequesting = requestingId === n.id;
+        const isArchiving = archivingId === n.id;
+        const rowBusy = isRequesting || isArchiving;
 
-          <div className="flex items-center gap-2 flex-wrap">
-            <Badge tone="blue">total {stats.total}</Badge>
-            <Badge tone="emerald">published {stats.published}</Badge>
-            <Badge tone="amber">draft {stats.draft}</Badge>
-            <Badge tone="gray">archived {stats.archived}</Badge>
-          </div>
-        </div>
+        const relatedRequest = latestRequestByNoticeId.get(n.id);
+        const isPendingRequest = relatedRequest?.flowStatus === "申請済";
+        const isRejectedRequest = relatedRequest?.flowStatus === "差し戻し";
+        const isDraft = (n.status ?? "").toUpperCase() === "DRAFT";
+        const canRequestApproval = isDraft && !isPendingRequest;
 
-        {/* Toast */}
-        {toast ? <Alert type={toast.type} title={toast.title} message={toast.message} onClose={() => setToast(null)} /> : null}
+        return (
+          <span className="inline-flex gap-1.5">
+            {canRequestApproval ? (
+              <ConsoleButton
+                size="sm"
+                variant="primary"
+                disabled={rowBusy}
+                loading={isRequesting}
+                onClick={async () => {
+                  setRequestingId(n.id);
+                  try {
+                    await requestApprovalMutation.mutateAsync(n.id);
+                  } finally {
+                    setRequestingId(null);
+                  }
+                }}
+              >
+                {!isRequesting && <Send className="h-3 w-3" />}
+                {isRequesting ? "送信中…" : isRejectedRequest ? "再度、承認依頼" : "承認依頼"}
+              </ConsoleButton>
+            ) : isPendingRequest ? (
+              <ConsoleButton size="sm" disabled>
+                承認待ち
+              </ConsoleButton>
+            ) : null}
 
-        {/* Create form */}
-        <Panel
-          title="登録（DRAFT）"
-          desc="表示期間は任意。注目試合は候補から選択して登録します。"
-          right={
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">種別</span>
-              <div className="inline-flex rounded-xl border bg-white overflow-hidden">
-                <button
-                  className={`px-3 py-2 text-sm font-semibold transition-colors ${noticeType === "NORMAL" ? "bg-gray-900 text-white" : "hover:bg-gray-50"}`}
-                  onClick={() => {
-                    setNoticeType("NORMAL");
-                    setSelectedFutureId("");
-                  }}
-                  type="button"
-                >
-                  通常
-                </button>
-                <button
-                  className={`px-3 py-2 text-sm font-semibold transition-colors ${noticeType === "FEATURED_MATCH" ? "bg-gray-900 text-white" : "hover:bg-gray-50"}`}
-                  onClick={() => setNoticeType("FEATURED_MATCH")}
-                  type="button"
-                >
-                  注目試合
-                </button>
-              </div>
-            </div>
-          }
-        >
-          {/* display window */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <div className="text-sm font-semibold text-gray-800">表示開始</div>
-              <input
-                type="datetime-local"
-                className="w-full rounded-xl border bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={displayFrom}
-                onChange={(e) => setDisplayFrom(e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <div className="text-sm font-semibold text-gray-800">表示終了</div>
-              <input
-                type="datetime-local"
-                className="w-full rounded-xl border bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={displayTo}
-                onChange={(e) => setDisplayTo(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="mt-5">
-            {noticeType === "NORMAL" ? (
-              <div className="grid grid-cols-1 gap-4">
-                <div className="space-y-2">
-                  <div className="text-sm font-semibold text-gray-800">タイトル</div>
-                  <input
-                    className="w-full rounded-xl border bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="例）メンテナンスのお知らせ"
-                  />
-                  {!canSubmitNormal && title.trim().length === 0 ? <div className="text-xs text-amber-700">タイトルは必須です</div> : null}
-                </div>
-
-                <div className="space-y-2">
-                  <div className="text-sm font-semibold text-gray-800">内容</div>
-                  <textarea
-                    className="w-full rounded-xl border bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows={5}
-                    value={body}
-                    onChange={(e) => setBody(e.target.value)}
-                    placeholder="例）2/10 02:00-03:00 にメンテナンスします"
-                  />
-                  {!canSubmitNormal && body.trim().length === 0 ? <div className="text-xs text-amber-700">内容は必須です</div> : null}
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-2xl border bg-gradient-to-r from-violet-50 to-blue-50 p-4">
-                <div className="flex items-center justify-between gap-4 flex-col md:flex-row">
-                  <div>
-                    <div className="font-extrabold text-gray-900">注目試合候補</div>
-                    <div className="text-sm text-muted-foreground mt-1">country/league/limit を調整して候補を取得 → 試合を選択</div>
-                  </div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Badge tone="violet">FEATURED_MATCH</Badge>
-                    <Badge tone={futureQuery.isFetching ? "amber" : "emerald"}>{futureQuery.isFetching ? "取得中…" : "候補OK"}</Badge>
-                  </div>
-                </div>
-
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div className="space-y-2">
-                    <div className="text-sm font-semibold text-gray-800">country</div>
-                    <input
-                      className="w-full rounded-xl border bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      value={country}
-                      onChange={(e) => setCountry(e.target.value)}
-                      placeholder="例）jp"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="text-sm font-semibold text-gray-800">league</div>
-                    <input
-                      className="w-full rounded-xl border bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      value={league}
-                      onChange={(e) => setLeague(e.target.value)}
-                      placeholder="例）j1"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="text-sm font-semibold text-gray-800">limit</div>
-                    <input
-                      type="number"
-                      className="w-full rounded-xl border bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      value={limit}
-                      onChange={(e) => setLimit(Number(e.target.value))}
-                      min={1}
-                      max={200}
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-4">
-                  {futureQuery.isLoading ? (
-                    <div className="space-y-2">
-                      <Skeleton className="h-5 w-full" />
-                      <Skeleton className="h-5 w-full" />
-                      <Skeleton className="h-5 w-2/3" />
-                    </div>
-                  ) : futureQuery.error ? (
-                    <div className="text-rose-700 text-sm">候補取得エラー: {safeText((futureQuery.error as any)?.message)}</div>
-                  ) : (
-                    <div className="space-y-2">
-                      <select
-                        className="w-full rounded-xl border bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        value={selectedFutureId}
-                        onChange={(e) => setSelectedFutureId(e.target.value ? Number(e.target.value) : "")}
-                      >
-                        <option value="">注目試合を選択してください</option>
-                        {matches.map((m) => (
-                          <option key={m.id} value={m.id}>
-                            {m.futureTime ? m.futureTime : ""}　{m.homeTeam} vs {m.awayTeam}（id={m.id}）
-                          </option>
-                        ))}
-                      </select>
-
-                      {selectedMatch ? (
-                        <div className="text-sm text-muted-foreground">
-                          選択中:{" "}
-                          <span className="font-semibold text-gray-900">
-                            {selectedMatch.homeTeam} vs {selectedMatch.awayTeam}
-                          </span>{" "}
-                          <span className="text-xs">（id={selectedMatch.id}）</span>
-                          {selectedMatch.link ? (
-                            <div className="mt-1 text-xs">
-                              link: <span className="underline break-all">{selectedMatch.link}</span>
-                            </div>
-                          ) : null}
-                        </div>
-                      ) : (
-                        <div className="text-xs text-amber-700">試合を選択してください</div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="mt-5 flex items-center gap-3 flex-wrap">
-            <Button onClick={() => createMutation.mutate()} disabled={!canSubmit || createMutation.isPending}>
-              {createMutation.isPending ? "登録中..." : "登録（DRAFT）"}
-            </Button>
-
-            <div className="flex items-center gap-2">
-              <Badge tone={noticeType === "NORMAL" ? "blue" : "violet"}>{noticeType}</Badge>
-              {displayFrom || displayTo ? <Badge tone="gray">期間指定あり</Badge> : <Badge tone="gray">期間指定なし</Badge>}
-            </div>
-
-            {createMutation.error ? <div className="text-rose-700 text-sm">{safeText((createMutation.error as any)?.message)}</div> : null}
-          </div>
-        </Panel>
-
-        {/* List */}
-        <Panel
-          title="一覧"
-          desc="DRAFTのお知らせは「承認依頼を送る」→管理者が承認すると自動的に公開されます。行カードの右側から操作します。"
-          right={
-            <Button
-              variant="outline"
+            <ConsoleButton
               size="sm"
+              disabled={rowBusy}
+              loading={isArchiving}
               onClick={async () => {
-                await refetchAdminList();
-                await refetchApproveRequests();
+                setArchivingId(n.id);
+                try {
+                  await archiveMutation.mutateAsync(n.id);
+                } finally {
+                  setArchivingId(null);
+                }
               }}
             >
-              {isRefreshing ? "更新中..." : "更新"}
-            </Button>
-          }
+              {!isArchiving && <Archive className="h-3 w-3" />}
+              {isArchiving ? "アーカイブ中…" : "アーカイブ"}
+            </ConsoleButton>
+          </span>
+        );
+      },
+    },
+  ];
+
+  return (
+    <div>
+      <ConsoleToolbar title="お知らせ管理" info="通常お知らせ / 注目試合お知らせ（future_master）を登録。公開は管理者への承認依頼を経て行われます">
+        <ConsoleButton
+          variant="primary"
+          loading={isRefreshing}
+          onClick={async () => {
+            await refetchAdminList();
+            await refetchApproveRequests();
+          }}
         >
-          {noticesQuery.isLoading ? (
-            <div className="space-y-3">
-              <Skeleton className="h-6 w-full" />
-              <Skeleton className="h-6 w-full" />
-              <Skeleton className="h-6 w-2/3" />
+          {!isRefreshing && <RefreshCw className="h-3.5 w-3.5" />}
+          再読み込み
+        </ConsoleButton>
+      </ConsoleToolbar>
+
+      <StatChips
+        loading={noticesQuery.isLoading}
+        items={[
+          { label: "total", value: stats.total },
+          { label: "published", value: stats.published, tone: "ok" },
+          { label: "draft", value: stats.draft, tone: "warn" },
+          { label: "archived", value: stats.archived },
+          { label: "承認待ち", value: pendingCount, tone: pendingCount > 0 ? "info" : "default" },
+        ]}
+      />
+
+      {toast && (
+        <ConsoleNotice tone={toast.type} title={toast.title} onClose={() => setToast(null)}>
+          {toast.message}
+        </ConsoleNotice>
+      )}
+
+      {/* ===== 登録 ===== */}
+      <ConsolePanel
+        title="登録（DRAFT）"
+        info="表示期間は任意。注目試合は候補から選択して登録します"
+        right={
+          <SegmentedTabs<NoticeType>
+            value={noticeType}
+            onChange={(v) => {
+              setNoticeType(v);
+              if (v === "NORMAL") setSelectedFutureId("");
+            }}
+            options={[
+              { value: "NORMAL", label: "通常" },
+              { value: "FEATURED_MATCH", label: "注目試合" },
+            ]}
+          />
+        }
+      >
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <ConsoleField label="表示開始">
+            <ConsoleInput type="datetime-local" value={displayFrom} onChange={(e) => setDisplayFrom(e.target.value)} className="w-full" />
+          </ConsoleField>
+          <ConsoleField label="表示終了">
+            <ConsoleInput type="datetime-local" value={displayTo} onChange={(e) => setDisplayTo(e.target.value)} className="w-full" />
+          </ConsoleField>
+        </div>
+
+        <div className="mt-3">
+          {noticeType === "NORMAL" ? (
+            <div className="grid gap-3">
+              <ConsoleField label="タイトル" hint={title.trim().length === 0 ? <span className="text-amber-700">タイトルは必須です</span> : undefined}>
+                <ConsoleInput value={title} onChange={(e) => setTitle(e.target.value)} placeholder="例）メンテナンスのお知らせ" className="w-full" />
+              </ConsoleField>
+              <ConsoleField label="内容" hint={body.trim().length === 0 ? <span className="text-amber-700">内容は必須です</span> : undefined}>
+                <ConsoleTextarea rows={5} value={body} onChange={(e) => setBody(e.target.value)} placeholder="例）2/10 02:00-03:00 にメンテナンスします" className="w-full resize-y" />
+              </ConsoleField>
             </div>
-          ) : noticesQuery.error ? (
-            <div className="text-rose-700 text-sm">一覧取得エラー: {safeText((noticesQuery.error as any)?.message)}</div>
-          ) : notices.length === 0 ? (
-            <div className="text-sm text-muted-foreground">データがありません。</div>
           ) : (
-            <div className="grid grid-cols-1 gap-3">
-              {notices.map((n) => {
-                const isRequesting = requestingId === n.id;
-                const isArchiving = archivingId === n.id;
-                const rowBusy = isRequesting || isArchiving;
+            <div className="rounded-lg border border-indigo-200 bg-indigo-50/50 p-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <b className="text-[13px] text-gray-900">注目試合候補</b>
+                <span className="text-xs text-gray-500">country / league / limit を調整して候補を取得 → 試合を選択</span>
+                <span className="ml-auto">
+                  <StatusBadge tone={futureQuery.isFetching ? "warn" : "ok"}>{futureQuery.isFetching ? "取得中…" : "候補OK"}</StatusBadge>
+                </span>
+              </div>
 
-                const relatedRequest = latestRequestByNoticeId.get(n.id);
-                const isPendingRequest = relatedRequest?.flowStatus === "申請済";
-                const isRejectedRequest = relatedRequest?.flowStatus === "差し戻し";
-                const isDraft = (n.status ?? "").toUpperCase() === "DRAFT";
-                const canRequestApproval = isDraft && !isPendingRequest;
+              <div className="mt-2 grid grid-cols-3 gap-2 md:max-w-xl">
+                <ConsoleField label="country">
+                  <ConsoleInput value={country} onChange={(e) => setCountry(e.target.value)} placeholder="例）jp" className="w-full" />
+                </ConsoleField>
+                <ConsoleField label="league">
+                  <ConsoleInput value={league} onChange={(e) => setLeague(e.target.value)} placeholder="例）j1" className="w-full" />
+                </ConsoleField>
+                <ConsoleField label="limit">
+                  <ConsoleInput type="number" value={limit} onChange={(e) => setLimit(Number(e.target.value))} min={1} max={200} className="w-full" />
+                </ConsoleField>
+              </div>
 
-                return (
-                  <div
-                    key={n.id}
-                    className="
-                      rounded-2xl border bg-white hover:shadow-sm transition-shadow
-                      p-4 flex items-start justify-between gap-4 flex-col md:flex-row
-                    "
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Badge tone="gray">ID {n.id}</Badge>
-                        <Badge tone={typeTone(n.noticeType)}>{n.noticeType ?? "NORMAL"}</Badge>
-                        <Badge tone={statusTone(n.status)}>{n.status}</Badge>
-                        {n.featureMatchId ? <Badge tone="violet">featureMatchId {n.featureMatchId}</Badge> : null}
-                        {isPendingRequest ? <Badge tone="blue">承認待ち</Badge> : null}
-                        {isRejectedRequest ? <Badge tone="rose">差し戻し</Badge> : null}
+              <div className="mt-2.5">
+                {futureQuery.isLoading ? (
+                  <div className="text-xs text-gray-400">候補を読み込み中…</div>
+                ) : futureQuery.error ? (
+                  <div className="text-xs text-red-700">候補取得エラー: {safeText((futureQuery.error as any)?.message)}</div>
+                ) : (
+                  <>
+                    <ConsoleSelect value={selectedFutureId} onChange={(e) => setSelectedFutureId(e.target.value ? Number(e.target.value) : "")} className="w-full">
+                      <option value="">注目試合を選択してください</option>
+                      {matches.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.futureTime ? m.futureTime : ""}　{m.homeTeam} vs {m.awayTeam}（id={m.id}）
+                        </option>
+                      ))}
+                    </ConsoleSelect>
+                    {selectedMatch ? (
+                      <div className="mt-1.5 text-xs text-gray-600">
+                        選択中:{" "}
+                        <b className="text-gray-900">
+                          {selectedMatch.homeTeam} vs {selectedMatch.awayTeam}
+                        </b>{" "}
+                        <span className="font-mono">（id={selectedMatch.id}）</span>
+                        {selectedMatch.link ? <div className="mt-0.5 break-all font-mono text-[11px]">link: {selectedMatch.link}</div> : null}
                       </div>
-
-                      <div className="mt-2 text-lg font-extrabold text-gray-900">{n.title}</div>
-                      <div className="mt-1 text-sm whitespace-pre-wrap text-gray-800">{n.body}</div>
-
-                      {isRejectedRequest && relatedRequest?.comment ? <div className="mt-2 text-xs text-rose-700">差し戻し理由: {relatedRequest.comment}</div> : null}
-
-                      <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-2 text-xs text-muted-foreground">
-                        <div className="rounded-xl border bg-gray-50 px-3 py-2">
-                          <div className="font-semibold text-gray-700">表示期間</div>
-                          <div className="mt-1">{n.displayFrom ?? "-"}</div>
-                          <div>{n.displayTo ?? "-"}</div>
-                        </div>
-
-                        <div className="rounded-xl border bg-gray-50 px-3 py-2">
-                          <div className="font-semibold text-gray-700">publishedAt</div>
-                          <div className="mt-1">{fmt(n.publishedAt)}</div>
-                        </div>
-
-                        <div className="rounded-xl border bg-gray-50 px-3 py-2">
-                          <div className="font-semibold text-gray-700">updateTime</div>
-                          <div className="mt-1">{fmt(n.updateTime)}</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="shrink-0 flex items-center gap-2">
-                      {canRequestApproval ? (
-                        <Button
-                          size="sm"
-                          disabled={rowBusy}
-                          onClick={async () => {
-                            setRequestingId(n.id);
-                            try {
-                              await requestApprovalMutation.mutateAsync(n.id);
-                            } finally {
-                              setRequestingId(null);
-                            }
-                          }}
-                        >
-                          {isRequesting ? "送信中..." : isRejectedRequest ? "再度、承認依頼を送る" : "承認依頼を送る"}
-                        </Button>
-                      ) : isPendingRequest ? (
-                        <Button size="sm" disabled>
-                          承認待ち
-                        </Button>
-                      ) : null}
-
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={rowBusy}
-                        onClick={async () => {
-                          setArchivingId(n.id);
-                          try {
-                            await archiveMutation.mutateAsync(n.id);
-                          } finally {
-                            setArchivingId(null);
-                          }
-                        }}
-                      >
-                        {isArchiving ? "アーカイブ中..." : "アーカイブ"}
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
+                    ) : (
+                      <div className="mt-1.5 text-xs text-amber-700">試合を選択してください</div>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
           )}
-        </Panel>
+        </div>
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <ConsoleButton variant="primary" onClick={() => createMutation.mutate()} disabled={!canSubmit} loading={createMutation.isPending}>
+            {createMutation.isPending ? "登録中…" : "登録（DRAFT）"}
+          </ConsoleButton>
+          <StatusBadge tone={noticeType === "NORMAL" ? "neutral" : "info"} dot={false}>
+            {noticeType}
+          </StatusBadge>
+          <StatusBadge tone="neutral" dot={false}>
+            {displayFrom || displayTo ? "期間指定あり" : "期間指定なし"}
+          </StatusBadge>
+          {createMutation.error ? <span className="text-xs text-red-700">{safeText((createMutation.error as any)?.message)}</span> : null}
+        </div>
+      </ConsolePanel>
+
+      {/* ===== 一覧 ===== */}
+      <div className="mb-1.5 flex flex-wrap items-center gap-2">
+        <h2 className="m-0 text-sm font-bold text-gray-900">一覧</h2>
+        <span className="text-xs text-gray-500">DRAFT は「承認依頼」→ 管理者が承認すると自動的に公開されます</span>
       </div>
+      <ConsoleTable
+        columns={columns}
+        rows={notices}
+        rowKey={(n) => n.id}
+        loading={noticesQuery.isLoading}
+        error={noticesQuery.error ? `一覧取得エラー: ${safeText((noticesQuery.error as any)?.message)}` : undefined}
+        emptyText="データがありません。"
+      />
     </div>
   );
 }

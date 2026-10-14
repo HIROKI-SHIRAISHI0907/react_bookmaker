@@ -1,11 +1,11 @@
 // src/pages/admin/mail/MailRegisterFormPage.tsx
 import React from "react";
+import { ConsoleButton, ConsoleField, ConsoleInput, ConsoleNotice, ConsoleTextarea } from "../../../api/commonAdminDesign";
 
 /**
  * メール情報登録画面・更新画面で共有するフォーム部分。
  * 登録時はmailIdを入力可能、更新時はmailIdを非活性にして呼び出す。
- *
- * (変更なし。元のファイルをそのまま配置しています。)
+ * （Props・型は変更なし。見た目だけ共通部品に置き換え）
  */
 
 export type MailInfoFormValues = {
@@ -30,92 +30,41 @@ export default function MailInfoForm({ values, mailIdEditable, submitting, submi
   const update = (patch: Partial<MailInfoFormValues>) => onChange({ ...values, ...patch });
 
   return (
-    <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
-      <label style={styles.label}>
-        メールID
-        <input
-          type="text"
-          value={values.mailId}
-          onChange={(e) => update({ mailId: e.target.value })}
-          required
-          disabled={!mailIdEditable}
-          style={{ ...styles.input, ...(!mailIdEditable ? styles.inputDisabled : {}) }}
-          placeholder="例: PASSWORD_RESET"
-        />
-      </label>
+    <form onSubmit={onSubmit} className="grid gap-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <ConsoleField label="メールID" hint={!mailIdEditable ? "メールIDは変更できません" : undefined}>
+          <ConsoleInput
+            type="text"
+            value={values.mailId}
+            onChange={(e) => update({ mailId: e.target.value })}
+            required
+            disabled={!mailIdEditable}
+            placeholder="例: PASSWORD_RESET"
+            className="w-full font-mono"
+          />
+        </ConsoleField>
 
-      <label style={styles.label}>
-        メール件名
-        <input type="text" value={values.mailSubject} onChange={(e) => update({ mailSubject: e.target.value })} required style={styles.input} />
-      </label>
+        <ConsoleField label="送信元メールアドレス">
+          <ConsoleInput type="email" value={values.fromAddress} onChange={(e) => update({ fromAddress: e.target.value })} required placeholder="no-reply@example.com" className="w-full" />
+        </ConsoleField>
+      </div>
 
-      <label style={styles.label}>
-        送信元メールアドレス
-        <input type="email" value={values.fromAddress} onChange={(e) => update({ fromAddress: e.target.value })} required style={styles.input} placeholder="no-reply@example.com" />
-      </label>
+      <ConsoleField label="メール件名">
+        <ConsoleInput type="text" value={values.mailSubject} onChange={(e) => update({ mailSubject: e.target.value })} required className="w-full" />
+      </ConsoleField>
 
-      <label style={styles.label}>
-        メール本文
-        <textarea value={values.mailBody} onChange={(e) => update({ mailBody: e.target.value })} required rows={10} style={styles.textarea} />
-      </label>
+      <ConsoleField label="メール本文">
+        <ConsoleTextarea value={values.mailBody} onChange={(e) => update({ mailBody: e.target.value })} required rows={10} className="w-full resize-y leading-relaxed" />
+      </ConsoleField>
 
-      {errorMessage && <div style={styles.errorText}>{errorMessage}</div>}
+      {errorMessage && <ConsoleNotice tone="ng" title={errorMessage} className="mb-0" />}
+      {message && <ConsoleNotice tone="ok" title={message} className="mb-0" />}
 
-      <button type="submit" disabled={submitting} style={styles.primaryButton}>
-        {submitting ? "処理中..." : submitLabel}
-      </button>
-
-      {message && <div style={styles.message}>{message}</div>}
+      <div>
+        <ConsoleButton type="submit" variant="primary" loading={submitting}>
+          {submitting ? "処理中…" : submitLabel}
+        </ConsoleButton>
+      </div>
     </form>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  label: { display: "grid", gap: 6, fontSize: 14 },
-  input: {
-    width: "100%",
-    padding: "10px 12px",
-    borderRadius: 10,
-    border: "1px solid #d7dbe7",
-    outline: "none",
-    fontSize: 14,
-    boxSizing: "border-box",
-  },
-  inputDisabled: {
-    background: "#f3f4f6",
-    color: "#6b7280",
-    cursor: "not-allowed",
-  },
-  textarea: {
-    width: "100%",
-    padding: "10px 12px",
-    borderRadius: 10,
-    border: "1px solid #d7dbe7",
-    outline: "none",
-    fontSize: 14,
-    boxSizing: "border-box",
-    fontFamily: "inherit",
-    resize: "vertical",
-  },
-  primaryButton: {
-    width: "100%",
-    padding: "10px 12px",
-    borderRadius: 10,
-    border: "none",
-    cursor: "pointer",
-    background: "#111827",
-    color: "white",
-    fontWeight: 600,
-  },
-  message: {
-    padding: 10,
-    borderRadius: 10,
-    background: "#f1f5f9",
-    border: "1px solid #e2e8f0",
-    fontSize: 13,
-  },
-  errorText: {
-    fontSize: 12,
-    color: "#dc2626",
-  },
-};

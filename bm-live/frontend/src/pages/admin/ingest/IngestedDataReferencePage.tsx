@@ -1,6 +1,22 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Button } from "../../../components/ui/button";
-import { Skeleton } from "../../../components/ui/skeleton";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ExternalLink, Play, Search } from "lucide-react";
+import {
+  ConsoleButton,
+  ConsoleCheck,
+  ConsoleColumn,
+  ConsoleDrawer,
+  ConsoleField,
+  ConsoleInput,
+  ConsoleNotice,
+  ConsolePanel,
+  ConsoleSelect,
+  ConsoleTable,
+  ConsoleToolbar,
+  DetailRow,
+  StatChips,
+  StatusBadge,
+  fmtNum,
+} from "../../../api/commonAdminDesign";
 
 /** =========================
  * Types
@@ -52,59 +68,6 @@ type DataRowDTO = {
   gameId?: string | null;
   gameLink?: string | null;
 };
-
-/** =========================
- * UI helpers
- * ========================= */
-type Tone = "gray" | "blue" | "emerald" | "amber" | "rose" | "violet";
-
-function Badge({ children, tone = "gray" }: { children: React.ReactNode; tone?: Tone }) {
-  const cls: Record<Tone, string> = {
-    gray: "bg-gray-100 text-gray-700 ring-gray-200",
-    blue: "bg-blue-100 text-blue-800 ring-blue-200",
-    emerald: "bg-emerald-100 text-emerald-800 ring-emerald-200",
-    amber: "bg-amber-100 text-amber-900 ring-amber-200",
-    rose: "bg-rose-100 text-rose-800 ring-rose-200",
-    violet: "bg-violet-100 text-violet-800 ring-violet-200",
-  };
-
-  return <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ring-1 ring-inset ${cls[tone]}`}>{children}</span>;
-}
-
-function Panel({ title, desc, right, children }: { title: string; desc?: string; right?: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <div className="rounded-2xl border bg-white/80 backdrop-blur shadow-sm">
-      <div className="px-5 py-4 border-b bg-gradient-to-r from-white to-gray-50 rounded-t-2xl">
-        <div className="flex items-start justify-between gap-4 flex-col md:flex-row">
-          <div>
-            <div className="text-base font-extrabold text-gray-900">{title}</div>
-            {desc ? <div className="text-sm text-muted-foreground mt-1">{desc}</div> : null}
-          </div>
-          {right ? <div className="shrink-0">{right}</div> : null}
-        </div>
-      </div>
-      <div className="p-5">{children}</div>
-    </div>
-  );
-}
-
-function Alert({ type, title, message, onClose }: { type: "info" | "success" | "error"; title: string; message: string; onClose?: () => void }) {
-  const cls = type === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : type === "error" ? "border-rose-200 bg-rose-50 text-rose-900" : "border-blue-200 bg-blue-50 text-blue-900";
-
-  return (
-    <div className={`rounded-2xl border p-4 flex items-start gap-3 ${cls}`}>
-      <div className="min-w-0 flex-1">
-        <div className="text-sm font-extrabold">{title}</div>
-        <pre className="mt-1 text-xs whitespace-pre-wrap leading-relaxed">{message}</pre>
-      </div>
-      {onClose ? (
-        <button onClick={onClose} className="text-gray-500 hover:text-gray-800 transition-colors" type="button">
-          ✕
-        </button>
-      ) : null}
-    </div>
-  );
-}
 
 /** =========================
  * Utils
@@ -263,6 +226,15 @@ function buildFinGettingRequestFromRows(rows: IngestedRowDTO[]): FinGettingReque
   return { matches };
 }
 
+function LinkText({ href }: { href: string | null | undefined }) {
+  if (!href) return <>-</>;
+  return (
+    <a href={href} target="_blank" rel="noreferrer" className="break-all text-indigo-600 hover:underline">
+      {href}
+    </a>
+  );
+}
+
 /** =========================
  * Page
  * ========================= */
@@ -295,7 +267,8 @@ export default function IngestedDataReferenceAdminPage() {
   const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number } | null>(null);
   const [bulkResults, setBulkResults] = useState<Array<{ batch: number; size: number; ok: boolean; detail: string }>>([]);
 
-  const [expandedKeys, setExpandedKeys] = useState<Record<string, boolean>>({});
+  // 詳細（右から出るパネル）
+  const [detailRow, setDetailRow] = useState<IngestedRowDTO | null>(null);
 
   const abortRef = useRef<AbortController | null>(null);
 
@@ -348,9 +321,6 @@ export default function IngestedDataReferenceAdminPage() {
   const rows = response?.rows ?? [];
   const total = response?.total ?? 0;
 
-  const canPrev = offset > 0;
-  const canNext = offset + pageSize < total;
-
   const stats = useMemo(() => {
     const dataCount = rows.filter((r) => r.table === "DATA").length;
     const futureCount = rows.filter((r) => r.table === "FUTURE_MASTER").length;
@@ -367,15 +337,11 @@ export default function IngestedDataReferenceAdminPage() {
     };
   }, [rows]);
 
-  const handleSearch = async () => {
+  const handleSearch = () => {
     setOffset(0);
     setCountry(countryInput);
     setOnlyNeedsAttention(onlyNeedsAttentionInput);
     setSearchVersion((v) => v + 1);
-  };
-
-  const toggleExpand = (key: string) => {
-    setExpandedKeys((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const runB008 = async () => {
@@ -487,315 +453,242 @@ export default function IngestedDataReferenceAdminPage() {
     }
   };
 
+  const closeDetail = useCallback(() => setDetailRow(null), []);
+
+  const columns: ConsoleColumn<IngestedRowDTO>[] = [
+    {
+      key: "table",
+      header: "種別",
+      cell: (r) => (
+        <StatusBadge tone={r.table === "DATA" ? "info" : "ok"} dot={false}>
+          {r.table}
+        </StatusBadge>
+      ),
+    },
+    {
+      key: "match",
+      header: "試合",
+      wrap: true,
+      className: "min-w-[260px]",
+      cell: (r) => (
+        <>
+          <div className="font-bold">
+            {getRowHome(r)} <span className="font-normal text-gray-400">vs</span> {getRowAway(r)}
+          </div>
+          <div className="text-[11px] text-gray-500">{getRowCategory(r)}</div>
+        </>
+      ),
+    },
+    {
+      key: "futureTime",
+      header: "試合予定時間",
+      mono: true,
+      cell: (r) => {
+        const t = getRowFutureTime(r);
+        return t ? fmtJstFixed(t, true) : <span className="text-gray-300">-</span>;
+      },
+    },
+    {
+      key: "future",
+      header: "未来データ",
+      cell: (r) => (r.futureExists ? <StatusBadge tone="ok">あり</StatusBadge> : <StatusBadge tone="ng">なし</StatusBadge>),
+    },
+    {
+      key: "finished",
+      header: "終了済データ",
+      cell: (r) => (r.hasFinishedData ? <StatusBadge tone="info">あり</StatusBadge> : <StatusBadge tone="warn">なし</StatusBadge>),
+    },
+    {
+      key: "same",
+      header: "同一試合data",
+      align: "right",
+      cell: (r) => (r.data?.sameMatchDataCount != null ? <span className="tabular-nums">{r.data.sameMatchDataCount}</span> : <span className="text-gray-300">-</span>),
+    },
+    {
+      key: "link",
+      header: "リンク",
+      cell: (r) => {
+        const link = getRowGameLink(r);
+        return link ? (
+          <a href={link} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:underline">
+            開く <ExternalLink className="h-3 w-3" />
+          </a>
+        ) : (
+          <span className="text-gray-300">-</span>
+        );
+      },
+    },
+  ];
+
+  const busy = loading || execLoading || bulkLoading;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
-      <div className="container mx-auto px-4 py-6 max-w-6xl space-y-6">
-        <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
-          <div className="flex items-center gap-4">
-            <div className="bg-gradient-to-r from-violet-600 to-blue-600 text-white p-3 rounded-2xl shadow-lg">
-              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4h16v16H4zM7 8h10M7 12h10M7 16h10" />
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-3xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">投入済データ参照管理</h1>
-              <p className="text-sm text-muted-foreground mt-1">国と「終了済データなし または 未来データなし」条件で検索します。</p>
-            </div>
-          </div>
+    <div>
+      <ConsoleToolbar title="投入済データ参照管理" info="国と「終了済データなし または 未来データなし」で検索">
+        <ConsoleButton variant="primary" onClick={() => void runB008()} disabled={busy || rows.length === 0} loading={execLoading}>
+          {!execLoading && <Play className="h-3 w-3" />}
+          {execLoading ? "B008起動中…" : "B008起動（このページ）"}
+        </ConsoleButton>
+        <ConsoleButton onClick={() => void runB008AllMatching()} disabled={busy || total === 0} loading={bulkLoading}>
+          {bulkLoading ? `一括実行中（${bulkProgress?.done ?? 0}/${bulkProgress?.total ?? "?"}バッチ）` : `全件（${fmtNum(total)}件）でB008一括起動`}
+        </ConsoleButton>
+      </ConsoleToolbar>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            <Badge tone="blue">page rows {rows.length}</Badge>
-            <Badge tone="gray">total {total}</Badge>
-            <Badge tone="emerald">futureあり {stats.futureExistsCount}</Badge>
-            <Badge tone="violet">終了済あり {stats.finishedCount}</Badge>
-            <Badge tone="amber">不足あり {stats.missingEitherCount}</Badge>
-          </div>
-        </div>
-
-        {execError ? <Alert type="error" title="B008起動に失敗しました" message={execError} onClose={() => setExecError(null)} /> : null}
-
-        {execResult ? (
-          <Alert
-            type="success"
-            title="B008を起動しました"
-            message={`returnCd: ${execResult.returnCd ?? "-"}${execResult.taskArn ? `\ntaskArn: ${execResult.taskArn}` : ""}${execResult.message ? `\nmessage: ${execResult.message}` : ""}`}
-            onClose={() => setExecResult(null)}
-          />
-        ) : null}
-
-        {bulkError ? <Alert type="error" title="一括B008起動に失敗しました" message={bulkError} onClose={() => setBulkError(null)} /> : null}
-
-        {bulkResults.length > 0 ? (
-          <Alert
-            type={bulkResults.every((r) => r.ok) ? "success" : "error"}
-            title={`一括B008起動: ${bulkResults.filter((r) => r.ok).length}/${bulkResults.length} バッチ成功${bulkLoading ? "(実行中...)" : ""}`}
-            message={bulkResults.map((r) => `バッチ${r.batch}(${r.size}件): ${r.ok ? "OK" : "失敗"} - ${r.detail}`).join("\n")}
-            onClose={bulkLoading ? undefined : () => setBulkResults([])}
-          />
-        ) : null}
-
-        {error ? <Alert type="error" title="取得に失敗しました" message={error} onClose={() => setError(null)} /> : null}
-
-        <Panel
-          title="検索条件"
-          desc="チェックボックスの状態を変えたあと、検索ボタンでAPIを再実行します。"
-          right={
-            <div className="flex flex-col items-end gap-1">
-              <div className="flex items-center gap-2 flex-wrap justify-end">
-                <Button onClick={handleSearch} disabled={loading}>
-                  {loading ? "検索中..." : "検索"}
-                </Button>
-
-                <Button size="sm" onClick={runB008} disabled={loading || execLoading || bulkLoading || rows.length === 0}>
-                  {execLoading ? "B008起動中..." : "B008起動(現在ページ)"}
-                </Button>
-
-                <Button size="sm" variant="outline" onClick={runB008AllMatching} disabled={loading || execLoading || bulkLoading || total === 0}>
-                  {bulkLoading ? `一括実行中 (${bulkProgress?.done ?? 0}/${bulkProgress?.total ?? "?"}バッチ)` : `全件(${total}件)でB008一括起動`}
-                </Button>
-              </div>
-
-              {lastFetchedAt ? <div className="text-[11px] text-muted-foreground">最終取得: {fmtJstFixed(lastFetchedAt, true)}</div> : null}
-            </div>
-          }
+      {execError && (
+        <ConsoleNotice tone="ng" title="B008起動に失敗しました" onClose={() => setExecError(null)}>
+          {execError}
+        </ConsoleNotice>
+      )}
+      {execResult && (
+        <ConsoleNotice tone="ok" title="B008を起動しました" onClose={() => setExecResult(null)}>
+          {`returnCd: ${execResult.returnCd ?? "-"}${execResult.taskArn ? `\ntaskArn: ${execResult.taskArn}` : ""}${execResult.message ? `\nmessage: ${execResult.message}` : ""}`}
+        </ConsoleNotice>
+      )}
+      {bulkError && (
+        <ConsoleNotice tone="ng" title="一括B008起動に失敗しました" onClose={() => setBulkError(null)}>
+          {bulkError}
+        </ConsoleNotice>
+      )}
+      {bulkResults.length > 0 && (
+        <ConsoleNotice
+          tone={bulkResults.every((r) => r.ok) ? "ok" : "ng"}
+          title={`一括B008起動: ${bulkResults.filter((r) => r.ok).length}/${bulkResults.length} バッチ成功${bulkLoading ? "（実行中…）" : ""}`}
+          onClose={bulkLoading ? undefined : () => setBulkResults([])}
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <div className="text-sm font-semibold text-gray-800">国名</div>
-              <input
-                className="w-full rounded-xl border bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={countryInput}
-                onChange={(e) => setCountryInput(e.target.value)}
-                placeholder="例）日本"
-              />
-            </div>
+          {bulkResults.map((r) => `バッチ${r.batch}(${r.size}件): ${r.ok ? "OK" : "失敗"} - ${r.detail}`).join("\n")}
+        </ConsoleNotice>
+      )}
+      {error && (
+        <ConsoleNotice tone="ng" title="取得に失敗しました" onClose={() => setError(null)}>
+          {error}
+        </ConsoleNotice>
+      )}
 
-            <div className="space-y-2">
-              <div className="text-sm font-semibold text-gray-800">絞り込み</div>
-              <label className="flex items-center gap-2 text-sm rounded-xl border bg-white px-3 py-3">
-                <input type="checkbox" checked={onlyNeedsAttentionInput} onChange={(e) => setOnlyNeedsAttentionInput(e.target.checked)} />
-                終了済データなし または 未来データなしのみ
-              </label>
-            </div>
-          </div>
-
-          <div className="mt-4 flex items-center gap-2 flex-wrap">
-            <Badge tone="gray">offset {offset}</Badge>
-            <Badge tone="gray">limit {pageSize}</Badge>
-
-            <div className="ml-auto flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">page size</span>
-              <select
-                className="rounded-xl border bg-white px-3 py-2 text-sm"
-                value={pageSize}
-                onChange={(e) => {
-                  setPageSize(Number(e.target.value));
-                  setOffset(0);
-                }}
-              >
-                {[50, 100, 200].map((n) => (
-                  <option key={n} value={n}>
-                    {n}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </Panel>
-
-        <Panel
-          title="一覧"
-          desc="API返却結果をそのまま表示します。"
-          right={
-            <div className="flex items-center gap-2">
-              <Badge tone="gray">
-                {total === 0 ? 0 : offset + 1} - {Math.min(offset + pageSize, total)} / {total}
-              </Badge>
-              <Button variant="outline" size="sm" disabled={!canPrev || loading} onClick={() => setOffset((v) => Math.max(0, v - pageSize))}>
-                Prev
-              </Button>
-              <Button variant="outline" size="sm" disabled={!canNext || loading} onClick={() => setOffset((v) => v + pageSize)}>
-                Next
-              </Button>
-            </div>
-          }
+      <ConsolePanel title="検索条件" info={lastFetchedAt ? `最終取得 ${fmtJstFixed(lastFetchedAt, true)}` : undefined}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSearch();
+          }}
+          className="flex flex-wrap items-end gap-2"
         >
-          {loading ? (
-            <div className="space-y-3">
-              <Skeleton className="h-6 w-full" />
-              <Skeleton className="h-6 w-full" />
-              <Skeleton className="h-6 w-2/3" />
+          <ConsoleField label="国名">
+            <ConsoleInput value={countryInput} onChange={(e) => setCountryInput(e.target.value)} placeholder="例）日本" className="w-48" />
+          </ConsoleField>
+          <ConsoleCheck checked={onlyNeedsAttentionInput} onChange={setOnlyNeedsAttentionInput}>
+            終了済データなし または 未来データなしのみ
+          </ConsoleCheck>
+          <ConsoleButton type="submit" variant="primary" loading={loading}>
+            {!loading && <Search className="h-3.5 w-3.5" />}
+            検索
+          </ConsoleButton>
+          <ConsoleField label="1ページの件数" className="ml-auto">
+            <ConsoleSelect
+              value={pageSize}
+              onChange={(e) => {
+                setPageSize(Number(e.target.value));
+                setOffset(0);
+              }}
+            >
+              {[50, 100, 200].map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </ConsoleSelect>
+          </ConsoleField>
+        </form>
+      </ConsolePanel>
+
+      <StatChips
+        loading={loading && rows.length === 0}
+        items={[
+          { label: "総件数", value: fmtNum(total) },
+          { label: "このページ", value: fmtNum(rows.length) },
+          { label: "未来データあり", value: fmtNum(stats.futureExistsCount), tone: "ok" },
+          { label: "終了済あり", value: fmtNum(stats.finishedCount), tone: "info" },
+          { label: "不足あり", value: fmtNum(stats.missingEitherCount), tone: stats.missingEitherCount > 0 ? "warn" : "default" },
+        ]}
+      />
+
+      <ConsoleTable
+        columns={columns}
+        rows={rows}
+        rowKey={(r) => `${r.table}:${r.seq}`}
+        loading={loading}
+        emptyText="データがありません。"
+        onRowClick={setDetailRow}
+        maxHeight="calc(100vh - 300px)"
+        paging={{
+          page: Math.floor(offset / pageSize) + 1,
+          pageSize,
+          total,
+          onChange: (p) => setOffset((p - 1) * pageSize),
+        }}
+      />
+
+      <ConsoleDrawer
+        open={detailRow !== null}
+        onClose={closeDetail}
+        title={detailRow ? `${getRowHome(detailRow)} vs ${getRowAway(detailRow)}` : ""}
+      >
+        {detailRow && (
+          <>
+            <div className="mb-2 flex flex-wrap gap-1.5">
+              <StatusBadge tone={detailRow.table === "DATA" ? "info" : "ok"} dot={false}>
+                {detailRow.table}
+              </StatusBadge>
+              {detailRow.futureExists ? <StatusBadge tone="ok">未来データあり</StatusBadge> : <StatusBadge tone="ng">未来データなし</StatusBadge>}
+              {detailRow.hasFinishedData ? <StatusBadge tone="info">終了済データあり</StatusBadge> : <StatusBadge tone="warn">終了済データなし</StatusBadge>}
             </div>
-          ) : rows.length === 0 ? (
-            <div className="text-sm text-muted-foreground">データがありません。</div>
-          ) : (
-            <div className="grid grid-cols-1 gap-3">
-              {rows.map((row) => {
-                const rowKey = `${row.table}:${row.seq}`;
-                const expanded = Boolean(expandedKeys[rowKey]);
-                const home = getRowHome(row);
-                const away = getRowAway(row);
-                const category = getRowCategory(row);
-                const gameLink = getRowGameLink(row);
-                const futureTime = getRowFutureTime(row);
 
-                return (
-                  <div key={rowKey} className="rounded-2xl border bg-white hover:shadow-sm transition-shadow p-4">
-                    <button type="button" className="w-full text-left" onClick={() => toggleExpand(rowKey)}>
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="min-w-0">
-                          <div className="text-lg font-extrabold text-gray-900 truncate">
-                            {home} vs {away}
-                          </div>
+            <h3 className="mb-1 mt-3 text-xs font-bold text-gray-500">共通情報</h3>
+            <DetailRow label="seq">
+              <span className="font-mono">{detailRow.seq}</span>
+            </DetailRow>
+            <DetailRow label="table">{detailRow.table}</DetailRow>
+            <DetailRow label="matchKey">
+              <span className="font-mono">{detailRow.matchKey ?? "-"}</span>
+            </DetailRow>
+            <DetailRow label="home">{getRowHome(detailRow)}</DetailRow>
+            <DetailRow label="away">{getRowAway(detailRow)}</DetailRow>
+            <DetailRow label="category">{getRowCategory(detailRow)}</DetailRow>
+            <DetailRow label="futureTime">
+              <span className="font-mono">{getRowFutureTime(detailRow) ? fmtJstFixed(getRowFutureTime(detailRow), true) : "-"}</span>
+            </DetailRow>
+            <DetailRow label="gameLink">
+              <LinkText href={getRowGameLink(detailRow)} />
+            </DetailRow>
 
-                          <div className="mt-1 text-sm text-muted-foreground truncate">{category}</div>
+            {detailRow.data && (
+              <>
+                <h3 className="mb-1 mt-4 text-xs font-bold text-gray-500">data 詳細</h3>
+                <DetailRow label="dataCategory">{detailRow.data.dataCategory ?? "-"}</DetailRow>
+                <DetailRow label="sameMatchDataCount">{detailRow.data.sameMatchDataCount ?? "-"}</DetailRow>
+                <DetailRow label="gameId">
+                  <span className="font-mono">{detailRow.data.gameId ?? "-"}</span>
+                </DetailRow>
+                <DetailRow label="gameLink">
+                  <LinkText href={detailRow.data.gameLink} />
+                </DetailRow>
+              </>
+            )}
 
-                          <div className="mt-2 flex items-center gap-2 flex-wrap">
-                            <Badge tone={row.table === "DATA" ? "blue" : "emerald"}>{row.table}</Badge>
-
-                            {Boolean(row.futureExists) ? <Badge tone="emerald">未来データあり</Badge> : <Badge tone="rose">未来データなし</Badge>}
-
-                            {Boolean(row.hasFinishedData) ? <Badge tone="violet">終了済データあり</Badge> : <Badge tone="amber">終了済データなし</Badge>}
-
-                            {row.data?.sameMatchDataCount != null ? <Badge tone="gray">同一試合data件数 {row.data.sameMatchDataCount}</Badge> : null}
-                          </div>
-
-                          <div className="mt-2 text-sm text-gray-700">
-                            試合予定時間: {futureTime ? <span className="font-semibold">{fmtJstFixed(futureTime, true)}</span> : <span className="text-gray-400">-</span>}
-                          </div>
-                        </div>
-
-                        <div className="shrink-0 text-xs text-muted-foreground">{expanded ? "▲" : "▼"}</div>
-                      </div>
-                    </button>
-
-                    {expanded ? (
-                      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div className="rounded-2xl border bg-gray-50 px-4 py-3">
-                          <div className="text-sm font-extrabold text-gray-900">共通情報</div>
-                          <div className="mt-2 text-sm text-gray-800 space-y-1">
-                            <div>
-                              <span className="text-muted-foreground">seq</span> {row.seq}
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">table</span> {row.table}
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">matchKey</span> {row.matchKey ?? "-"}
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">home</span> {home}
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">away</span> {away}
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">category</span> {category}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="rounded-2xl border bg-gray-50 px-4 py-3">
-                          <div className="text-sm font-extrabold text-gray-900">状態</div>
-                          <div className="mt-2 text-sm text-gray-800 space-y-1">
-                            <div>
-                              <span className="text-muted-foreground">futureExists</span> {String(Boolean(row.futureExists))}
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">hasFinishedData</span> {String(Boolean(row.hasFinishedData))}
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">futureTime</span> {futureTime ? fmtJstFixed(futureTime, true) : "-"}
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">gameLink</span>{" "}
-                              {gameLink ? (
-                                <a href={gameLink} target="_blank" rel="noreferrer" className="text-blue-600 underline break-all">
-                                  {gameLink}
-                                </a>
-                              ) : (
-                                "-"
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {row.data ? (
-                          <div className="md:col-span-2 rounded-2xl border bg-white px-4 py-3">
-                            <div className="text-sm font-extrabold text-gray-900">data 詳細</div>
-                            <div className="mt-3 overflow-x-auto">
-                              <table className="w-full text-sm">
-                                <tbody>
-                                  <tr className="border-b">
-                                    <th className="py-2 pr-3 text-left text-muted-foreground font-medium">dataCategory</th>
-                                    <td className="py-2 pr-3">{row.data.dataCategory ?? "-"}</td>
-                                  </tr>
-                                  <tr className="border-b">
-                                    <th className="py-2 pr-3 text-left text-muted-foreground font-medium">sameMatchDataCount</th>
-                                    <td className="py-2 pr-3">{row.data.sameMatchDataCount ?? "-"}</td>
-                                  </tr>
-                                  <tr className="border-b">
-                                    <th className="py-2 pr-3 text-left text-muted-foreground font-medium">gameId</th>
-                                    <td className="py-2 pr-3">{row.data.gameId ?? "-"}</td>
-                                  </tr>
-                                  <tr>
-                                    <th className="py-2 pr-3 text-left text-muted-foreground font-medium">gameLink</th>
-                                    <td className="py-2 pr-3">
-                                      {row.data.gameLink ? (
-                                        <a href={row.data.gameLink} target="_blank" rel="noreferrer" className="text-blue-600 underline break-all">
-                                          {row.data.gameLink}
-                                        </a>
-                                      ) : (
-                                        "-"
-                                      )}
-                                    </td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        ) : null}
-
-                        {row.future ? (
-                          <div className="md:col-span-2 rounded-2xl border bg-white px-4 py-3">
-                            <div className="text-sm font-extrabold text-gray-900">future_master 詳細</div>
-                            <div className="mt-3 overflow-x-auto">
-                              <table className="w-full text-sm">
-                                <tbody>
-                                  <tr className="border-b">
-                                    <th className="py-2 pr-3 text-left text-muted-foreground font-medium">gameTeamCategory</th>
-                                    <td className="py-2 pr-3">{row.future.gameTeamCategory ?? "-"}</td>
-                                  </tr>
-                                  <tr className="border-b">
-                                    <th className="py-2 pr-3 text-left text-muted-foreground font-medium">futureTime</th>
-                                    <td className="py-2 pr-3">{row.future.futureTime ? fmtJstFixed(row.future.futureTime, true) : "-"}</td>
-                                  </tr>
-                                  <tr>
-                                    <th className="py-2 pr-3 text-left text-muted-foreground font-medium">gameLink</th>
-                                    <td className="py-2 pr-3">
-                                      {row.future.gameLink ? (
-                                        <a href={row.future.gameLink} target="_blank" rel="noreferrer" className="text-blue-600 underline break-all">
-                                          {row.future.gameLink}
-                                        </a>
-                                      ) : (
-                                        "-"
-                                      )}
-                                    </td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        ) : null}
-                      </div>
-                    ) : null}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </Panel>
-      </div>
+            {detailRow.future && (
+              <>
+                <h3 className="mb-1 mt-4 text-xs font-bold text-gray-500">future_master 詳細</h3>
+                <DetailRow label="gameTeamCategory">{detailRow.future.gameTeamCategory ?? "-"}</DetailRow>
+                <DetailRow label="futureTime">
+                  <span className="font-mono">{detailRow.future.futureTime ? fmtJstFixed(detailRow.future.futureTime, true) : "-"}</span>
+                </DetailRow>
+                <DetailRow label="gameLink">
+                  <LinkText href={detailRow.future.gameLink} />
+                </DetailRow>
+              </>
+            )}
+          </>
+        )}
+      </ConsoleDrawer>
     </div>
   );
 }

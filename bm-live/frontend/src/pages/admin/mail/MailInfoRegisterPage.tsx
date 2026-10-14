@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { ChevronLeft } from "lucide-react";
 import { registerMailInfoApi, requestMailInfoApprovalApi } from "../../../api/mailinfo";
 import MailInfoForm, { MailInfoFormValues } from "./MailRegisterFormPage";
 import { useCurrentRole } from "../../../hooks/useCurrentRole";
+import { ConsoleNotice, ConsolePanel, ConsoleToolbar } from "../../../api/commonAdminDesign";
 
 /**
  * メール情報登録画面
@@ -59,18 +61,21 @@ export default function MailInfoRegisterPage() {
   };
 
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>メール情報登録</h1>
-        <p style={styles.desc}>メールID・件名・本文・送信元メールアドレスを登録します。</p>
+    <div className="max-w-3xl">
+      <ConsoleToolbar title="メール情報登録" info="メールID・件名・本文・送信元メールアドレスを登録します">
+        <Link to="/admin/mailinfo" className="inline-flex h-8 items-center gap-1 rounded-lg px-2 text-[13px] font-bold text-gray-500 no-underline hover:bg-gray-100 hover:text-gray-900">
+          <ChevronLeft className="h-4 w-4" />
+          一覧へ戻る
+        </Link>
+      </ConsoleToolbar>
 
-        {isAdminSub && (
-          <div style={styles.noticeBox}>
-            担当者としてログインしています。登録すると、この内容は管理者への「登録依頼」として送信され、
-            管理者が承認した時点でメール一覧に反映されます。
-          </div>
-        )}
+      {isAdminSub && (
+        <ConsoleNotice tone="info" title="担当者としてログインしています">
+          登録すると、この内容は管理者への「登録依頼」として送信され、管理者が承認した時点でメール一覧に反映されます。
+        </ConsoleNotice>
+      )}
 
+      <ConsolePanel title="登録内容">
         <MailInfoForm
           values={values}
           mailIdEditable
@@ -81,47 +86,7 @@ export default function MailInfoRegisterPage() {
           message={message}
           errorMessage={errorMessage}
         />
-
-        <div style={{ marginTop: 14 }}>
-          <Link to="/admin/mailinfo">一覧へ戻る</Link>
-        </div>
-      </div>
+      </ConsolePanel>
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    minHeight: "100vh",
-    display: "grid",
-    placeItems: "center",
-    padding: 24,
-    background: "#f6f7fb",
-  },
-  card: {
-    width: "100%",
-    maxWidth: 560,
-    background: "white",
-    border: "1px solid #e6e8ef",
-    borderRadius: 16,
-    padding: 20,
-    boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
-  },
-  title: { margin: "0 0 8px", fontSize: 22 },
-  desc: {
-    margin: "0 0 12px",
-    color: "#4b5563",
-    fontSize: 14,
-    lineHeight: 1.5,
-  },
-  noticeBox: {
-    margin: "0 0 16px",
-    padding: 12,
-    borderRadius: 10,
-    background: "#eff6ff",
-    border: "1px solid #bfdbfe",
-    color: "#1d4ed8",
-    fontSize: 13,
-    lineHeight: 1.6,
-  },
-};

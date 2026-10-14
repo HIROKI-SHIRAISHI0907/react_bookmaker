@@ -1,4 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { ExternalLink, RefreshCw } from "lucide-react";
+import {
+  BadgeTone,
+  ConsoleButton,
+  ConsoleColumn,
+  ConsoleInput,
+  ConsoleNotice,
+  ConsolePanel,
+  ConsoleTable,
+  ConsoleToolbar,
+  MetricGrid,
+  SegmentedTabs,
+  StatChips,
+  StatusBadge,
+} from "../../../api/commonAdminDesign";
 
 type EcsStopInterval = {
   start?: string;
@@ -55,6 +70,10 @@ type NoEcsSlotsResponse = {
 };
 
 type GameTabType = "matched" | "nextDay" | "prevDay";
+type TimeState = "before" | "active" | "after" | "unknown";
+
+/** 状態 → バッジの色（停止中 / BUSY中は赤、開始前は青、終了後は緑） */
+const STATE_TONE: Record<TimeState, BadgeTone> = { active: "ng", before: "info", after: "ok", unknown: "neutral" };
 
 async function fetchJsonStrict<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   const response = await fetch(input, {
@@ -136,39 +155,23 @@ function formatDiff(ms: number): string {
   return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
-function getIntervalStatus(interval: EcsStopInterval, now: Date) {
+function getIntervalStatus(interval: EcsStopInterval, now: Date): { label: string; remaining: string; state: TimeState } {
   const start = interval.start ? new Date(interval.start) : null;
   const end = interval.end ? new Date(interval.end) : null;
 
   if (!start || !end || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-    return {
-      label: "判定不可",
-      remaining: "-",
-      state: "unknown" as const,
-    };
+    return { label: "判定不可", remaining: "-", state: "unknown" };
   }
 
   if (now < start) {
-    return {
-      label: "停止開始まで",
-      remaining: formatDiff(start.getTime() - now.getTime()),
-      state: "before" as const,
-    };
+    return { label: "停止開始まで", remaining: formatDiff(start.getTime() - now.getTime()), state: "before" };
   }
 
   if (now >= start && now < end) {
-    return {
-      label: "停止終了まで",
-      remaining: formatDiff(end.getTime() - now.getTime()),
-      state: "active" as const,
-    };
+    return { label: "停止終了まで", remaining: formatDiff(end.getTime() - now.getTime()), state: "active" };
   }
 
-  return {
-    label: "停止終了後",
-    remaining: formatDiff(now.getTime() - end.getTime()),
-    state: "after" as const,
-  };
+  return { label: "停止終了後", remaining: formatDiff(now.getTime() - end.getTime()), state: "after" };
 }
 
 function getGlobalEcsStatus(body: NoEcsSlotsBody | undefined, now: Date) {
@@ -205,218 +208,24 @@ function getGlobalEcsStatus(body: NoEcsSlotsBody | undefined, now: Date) {
   };
 }
 
-function getGameStatus(game: NoEcsGame, now: Date) {
+function getGameStatus(game: NoEcsGame, now: Date): { label: string; remaining: string; state: TimeState } {
   const start = game.start ? new Date(game.start) : null;
   const busyEnd = game.busy_end ? new Date(game.busy_end) : null;
 
   if (!start || !busyEnd || Number.isNaN(start.getTime()) || Number.isNaN(busyEnd.getTime())) {
-    return {
-      label: "判定不可",
-      remaining: "-",
-      state: "unknown" as const,
-    };
+    return { label: "判定不可", remaining: "-", state: "unknown" };
   }
 
   if (now < start) {
-    return {
-      label: "開始まで",
-      remaining: formatDiff(start.getTime() - now.getTime()),
-      state: "before" as const,
-    };
+    return { label: "開始まで", remaining: formatDiff(start.getTime() - now.getTime()), state: "before" };
   }
 
   if (now >= start && now < busyEnd) {
-    return {
-      label: "BUSY終了まで",
-      remaining: formatDiff(busyEnd.getTime() - now.getTime()),
-      state: "active" as const,
-    };
+    return { label: "BUSY終了まで", remaining: formatDiff(busyEnd.getTime() - now.getTime()), state: "active" };
   }
 
-  return {
-    label: "終了後",
-    remaining: formatDiff(now.getTime() - busyEnd.getTime()),
-    state: "after" as const,
-  };
+  return { label: "終了後", remaining: formatDiff(now.getTime() - busyEnd.getTime()), state: "after" };
 }
-
-const pageStyle: React.CSSProperties = {
-  padding: 16,
-  fontSize: 12,
-  color: "#0f172a",
-  background: "#f8fafc",
-  minHeight: "100vh",
-  boxSizing: "border-box",
-};
-
-const sectionStyle: React.CSSProperties = {
-  background: "#ffffff",
-  border: "1px solid #e2e8f0",
-  borderRadius: 12,
-  padding: 16,
-  marginBottom: 16,
-};
-
-const buttonStyle: React.CSSProperties = {
-  height: 32,
-  padding: "0 12px",
-  borderRadius: 8,
-  border: "1px solid #cbd5e1",
-  background: "#fff",
-  cursor: "pointer",
-  fontSize: 12,
-  whiteSpace: "nowrap",
-};
-
-const primaryButtonStyle: React.CSSProperties = {
-  ...buttonStyle,
-  background: "#2563eb",
-  color: "#fff",
-  border: "1px solid #2563eb",
-};
-
-const disabledButtonStyle: React.CSSProperties = {
-  ...buttonStyle,
-  opacity: 0.45,
-  cursor: "not-allowed",
-};
-
-const inputStyle: React.CSSProperties = {
-  height: 32,
-  border: "1px solid #94a3b8",
-  borderRadius: 8,
-  padding: "4px 8px",
-  fontSize: 12,
-  boxSizing: "border-box",
-};
-
-const badgeStyle: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  minHeight: 28,
-  padding: "0 10px",
-  borderRadius: 9999,
-  background: "#f1f5f9",
-  color: "#334155",
-  fontSize: 12,
-  border: "1px solid #e2e8f0",
-};
-
-const infoCardStyle: React.CSSProperties = {
-  background: "#ffffff",
-  border: "1px solid #e2e8f0",
-  borderRadius: 12,
-  padding: 14,
-  minWidth: 180,
-  flex: "1 1 180px",
-};
-
-const infoLabelStyle: React.CSSProperties = {
-  fontSize: 11,
-  color: "#64748b",
-  marginBottom: 6,
-};
-
-const infoValueStyle: React.CSSProperties = {
-  fontSize: 20,
-  fontWeight: 700,
-  color: "#0f172a",
-  lineHeight: 1.3,
-};
-
-const tableWrapperStyle: React.CSSProperties = {
-  overflowX: "auto",
-  border: "1px solid #e2e8f0",
-  borderRadius: 10,
-  marginTop: 10,
-};
-
-const tableStyle: React.CSSProperties = {
-  width: "100%",
-  borderCollapse: "collapse",
-  fontSize: 12,
-};
-
-const thTdStyle: React.CSSProperties = {
-  borderBottom: "1px solid #e2e8f0",
-  padding: "8px 10px",
-  fontSize: 12,
-  verticalAlign: "top",
-  lineHeight: 1.5,
-  textAlign: "left",
-};
-
-const thStyle: React.CSSProperties = {
-  ...thTdStyle,
-  background: "#f8fafc",
-  fontWeight: 700,
-  whiteSpace: "nowrap",
-};
-
-const tabStyle: React.CSSProperties = {
-  ...buttonStyle,
-  minWidth: 120,
-};
-
-const activeTabStyle: React.CSSProperties = {
-  ...buttonStyle,
-  minWidth: 120,
-  background: "#0f172a",
-  color: "#fff",
-  border: "1px solid #0f172a",
-};
-
-const statusPillBaseStyle: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  minHeight: 28,
-  minWidth: 96,
-  padding: "0 10px",
-  borderRadius: 9999,
-  fontSize: 12,
-  fontWeight: 700,
-};
-
-function getStatusPillStyle(state: "before" | "active" | "after" | "unknown"): React.CSSProperties {
-  if (state === "active") {
-    return {
-      ...statusPillBaseStyle,
-      background: "#fee2e2",
-      color: "#b91c1c",
-      border: "1px solid #fecaca",
-    };
-  }
-  if (state === "before") {
-    return {
-      ...statusPillBaseStyle,
-      background: "#dbeafe",
-      color: "#1d4ed8",
-      border: "1px solid #bfdbfe",
-    };
-  }
-  if (state === "after") {
-    return {
-      ...statusPillBaseStyle,
-      background: "#dcfce7",
-      color: "#15803d",
-      border: "1px solid #bbf7d0",
-    };
-  }
-  return {
-    ...statusPillBaseStyle,
-    background: "#e2e8f0",
-    color: "#475569",
-    border: "1px solid #cbd5e1",
-  };
-}
-
-const gameCardStyle: React.CSSProperties = {
-  border: "1px solid #e2e8f0",
-  borderRadius: 12,
-  padding: 14,
-  background: "#fff",
-};
 
 const NoEcsSlotsPage: React.FC = () => {
   const [batchCode, setBatchCode] = useState("B009");
@@ -469,10 +278,11 @@ const NoEcsSlotsPage: React.FC = () => {
 
   const slotsBody = response?.body;
   const globalStatus = useMemo(() => getGlobalEcsStatus(slotsBody, now), [slotsBody, now]);
+  const stopped = globalStatus.status === "STOPPED";
 
   const nextChangeText = useMemo(() => {
     if (!globalStatus.nextTime) return "-";
-    return `${globalStatus.nextLabel} ${formatDiff(globalStatus.nextTime.getTime() - now.getTime())}`;
+    return formatDiff(globalStatus.nextTime.getTime() - now.getTime());
   }, [globalStatus, now]);
 
   const activeGames = useMemo(() => {
@@ -482,247 +292,165 @@ const NoEcsSlotsPage: React.FC = () => {
     return slotsBody.prev_day_overlap_games ?? [];
   }, [slotsBody, activeTab]);
 
-  const activeGamesCount = useMemo(() => {
-    if (!slotsBody) return 0;
-    if (activeTab === "matched") return slotsBody.matched_games_count ?? 0;
-    if (activeTab === "nextDay") return slotsBody.next_day_lookahead_games_count ?? 0;
-    return slotsBody.prev_day_overlap_games_count ?? 0;
-  }, [slotsBody, activeTab]);
+  const intervals = slotsBody?.ecs_stop_intervals ?? [];
+
+  const intervalColumns: ConsoleColumn<EcsStopInterval>[] = [
+    { key: "no", header: "No", mono: true, align: "right", cell: (_v, i) => <span className="text-gray-500">{i + 1}</span> },
+    { key: "start", header: "開始", mono: true, cell: (v) => formatDateTimeJst(v.start) },
+    { key: "end", header: "終了", mono: true, cell: (v) => formatDateTimeJst(v.end) },
+    {
+      key: "state",
+      header: "状態",
+      cell: (v) => {
+        const s = getIntervalStatus(v, now);
+        return <StatusBadge tone={STATE_TONE[s.state]}>{s.label}</StatusBadge>;
+      },
+    },
+    { key: "remaining", header: "残り / 経過", mono: true, align: "right", cell: (v) => <b>{getIntervalStatus(v, now).remaining}</b> },
+  ];
+
+  const gameColumns: ConsoleColumn<NoEcsGame>[] = [
+    {
+      key: "match",
+      header: "試合",
+      wrap: true,
+      className: "min-w-[260px]",
+      cell: (g) => (
+        <>
+          <div className="font-bold">
+            {toDisplay(g.home)} <span className="font-normal text-gray-400">vs</span> {toDisplay(g.away)}
+          </div>
+          <div className="text-[11px] text-gray-500">{toDisplay(g.category)}</div>
+        </>
+      ),
+    },
+    { key: "start", header: "開始", mono: true, cell: (g) => formatShortDateTimeJst(g.start) },
+    { key: "busy", header: "BUSY終了", mono: true, cell: (g) => formatShortDateTimeJst(g.busy_end) },
+    {
+      key: "state",
+      header: "状態",
+      cell: (g) => {
+        const s = getGameStatus(g, now);
+        return <StatusBadge tone={STATE_TONE[s.state]}>{s.label}</StatusBadge>;
+      },
+    },
+    { key: "remaining", header: "残り / 経過", mono: true, align: "right", cell: (g) => <b className="text-[13px]">{getGameStatus(g, now).remaining}</b> },
+    {
+      key: "url",
+      header: "リンク",
+      cell: (g) =>
+        g.url ? (
+          <a href={g.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:underline">
+            開く <ExternalLink className="h-3 w-3" />
+          </a>
+        ) : (
+          <span className="text-gray-300">-</span>
+        ),
+    },
+  ];
 
   return (
-    <div style={pageStyle}>
-      <div style={sectionStyle}>
-        <div style={{ marginBottom: 12 }}>
-          <h1 style={{ margin: 0, fontSize: 24, lineHeight: 1.3 }}>No ECS Runtime Monitor</h1>
-          <p style={{ margin: "6px 0 0", color: "#475569", fontSize: 12 }}>noEcsRun が出力した JSON を使って、ECS停止時間と試合時間をリアルタイム表示します。</p>
+    <div>
+      <ConsoleToolbar title="No ECS Runtime Monitor" info="noEcsRun が出力した JSON から、ECS停止時間と試合時間をリアルタイム表示">
+        <ConsoleInput value={batchCode} onChange={(e) => setBatchCode(e.target.value)} placeholder="batchCode" className="w-24 font-mono" />
+        <ConsoleInput type="date" value={day} onChange={(e) => setDay(e.target.value)} />
+        <ConsoleButton variant="primary" onClick={() => void load()} loading={loading}>
+          {!loading && <RefreshCw className="h-3.5 w-3.5" />}
+          再読み込み
+        </ConsoleButton>
+      </ConsoleToolbar>
+
+      {error && (
+        <ConsoleNotice tone="ng" onClose={() => setError(null)}>
+          {error}
+        </ConsoleNotice>
+      )}
+
+      {/* 現在の実行状態（大きく表示） */}
+      <div className={`mb-3 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl border px-4 py-3 ${stopped ? "border-red-200 bg-red-50" : "border-emerald-200 bg-emerald-50"}`}>
+        <div className="flex items-center gap-2">
+          <span className={`h-2.5 w-2.5 rounded-full ${stopped ? "animate-pulse bg-red-500" : "bg-emerald-500"}`} />
+          <span className={`text-[17px] font-bold ${stopped ? "text-red-800" : "text-emerald-800"}`}>{globalStatus.label}</span>
+          <StatusBadge tone={stopped ? "ng" : "ok"} dot={false}>
+            {globalStatus.status}
+          </StatusBadge>
         </div>
-
-        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
-          <input value={batchCode} onChange={(e) => setBatchCode(e.target.value)} placeholder="batchCode" style={{ ...inputStyle, width: 120 }} />
-
-          <input type="date" value={day} onChange={(e) => setDay(e.target.value)} style={{ ...inputStyle, width: 160 }} />
-
-          <button type="button" onClick={() => void load()} style={loading ? disabledButtonStyle : primaryButtonStyle} disabled={loading}>
-            {loading ? "読込中..." : "再読み込み"}
-          </button>
-
-          <span style={badgeStyle}>現在時刻: {formatDateTimeJst(now.toISOString())}</span>
-          <span style={badgeStyle}>bucket: {toDisplay(response?.bucket)}</span>
-          <span style={badgeStyle}>file: {toDisplay(response?.fileName)}</span>
+        <div className="text-[13px] text-gray-700">
+          {globalStatus.nextLabel}
+          <b className="ml-2 font-mono text-[17px] tabular-nums text-gray-900">{nextChangeText}</b>
+          {globalStatus.nextTime && <span className="ml-2 font-mono text-xs text-gray-500">（{formatDateTimeJst(globalStatus.nextTime.toISOString())}）</span>}
         </div>
-
-        {error && (
-          <div
-            style={{
-              marginBottom: 12,
-              color: "#b91c1c",
-              background: "#fee2e2",
-              padding: 10,
-              borderRadius: 8,
-              fontSize: 12,
-            }}
-          >
-            {error}
-          </div>
-        )}
-
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
-          <div style={infoCardStyle}>
-            <div style={infoLabelStyle}>現在の実行状態</div>
-            <div style={infoValueStyle}>{globalStatus.label}</div>
-            <div style={{ marginTop: 8 }}>
-              <span style={getStatusPillStyle(globalStatus.status === "STOPPED" ? "active" : "after")}>{globalStatus.status === "STOPPED" ? "STOPPED" : "RUNNABLE"}</span>
-            </div>
-          </div>
-
-          <div style={infoCardStyle}>
-            <div style={infoLabelStyle}>次の切替</div>
-            <div style={infoValueStyle}>{nextChangeText}</div>
-            <div style={{ marginTop: 8, color: "#475569", fontSize: 12 }}>{globalStatus.nextTime ? formatDateTimeJst(globalStatus.nextTime.toISOString()) : "-"}</div>
-          </div>
-
-          <div style={infoCardStyle}>
-            <div style={infoLabelStyle}>対象日</div>
-            <div style={infoValueStyle}>{toDisplay(slotsBody?.target_date)}</div>
-            <div style={{ marginTop: 8, color: "#475569", fontSize: 12 }}>
-              {toDisplay(slotsBody?.target_day)} / today_flg: {String(slotsBody?.today_flg)}
-            </div>
-          </div>
-
-          <div style={infoCardStyle}>
-            <div style={infoLabelStyle}>対象リーグ数</div>
-            <div style={infoValueStyle}>{toDisplay(slotsBody?.target_leagues_count)}</div>
-            <div style={{ marginTop: 8, color: "#475569", fontSize: 12 }}>timezone: {toDisplay(slotsBody?.timezone)}</div>
-          </div>
-        </div>
+        <div className="ml-auto font-mono text-xs tabular-nums text-gray-500">現在 {formatDateTimeJst(now.toISOString())}</div>
       </div>
 
-      <div style={sectionStyle}>
-        <h2 style={{ margin: "0 0 12px", fontSize: 18 }}>計算条件 / 実行情報</h2>
+      <StatChips
+        loading={loading && !slotsBody}
+        items={[
+          { label: "対象日", value: toDisplay(slotsBody?.target_date) },
+          { label: "target_day", value: toDisplay(slotsBody?.target_day) },
+          { label: "today_flg", value: String(slotsBody?.today_flg ?? "-") },
+          { label: "対象リーグ数", value: toDisplay(slotsBody?.target_leagues_count) },
+          { label: "timezone", value: toDisplay(slotsBody?.timezone) },
+          { label: "bucket", value: toDisplay(response?.bucket) },
+          { label: "file", value: toDisplay(response?.fileName) },
+        ]}
+      />
 
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
-          <span style={badgeStyle}>generated_at: {formatDateTimeJst(slotsBody?.generated_at)}</span>
-          <span style={badgeStyle}>window_start: {formatDateTimeJst(slotsBody?.calculation_window_start)}</span>
-          <span style={badgeStyle}>window_end: {formatDateTimeJst(slotsBody?.calculation_window_end)}</span>
-        </div>
-
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <span style={badgeStyle}>min_gap_minutes: {toDisplay(slotsBody?.min_gap_minutes)}</span>
-          <span style={badgeStyle}>match_duration_minutes: {toDisplay(slotsBody?.match_duration_minutes)}</span>
-          <span style={badgeStyle}>match_delay_buffer_minutes: {toDisplay(slotsBody?.match_delay_buffer_minutes)}</span>
-          <span style={badgeStyle}>match_busy_minutes: {toDisplay(slotsBody?.match_busy_minutes)}</span>
-          <span style={badgeStyle}>pre_match_buffer_minutes: {toDisplay(slotsBody?.pre_match_buffer_minutes)}</span>
-          <span style={badgeStyle}>post_match_buffer_minutes: {toDisplay(slotsBody?.post_match_buffer_minutes)}</span>
-          <span style={badgeStyle}>last_match_buffer_minutes: {toDisplay(slotsBody?.last_match_buffer_minutes)}</span>
-        </div>
+      <ConsolePanel title="計算条件 / 実行情報">
+        <MetricGrid
+          minWidth={200}
+          items={[
+            { label: "generated_at", value: formatDateTimeJst(slotsBody?.generated_at), mono: true },
+            { label: "window_start", value: formatDateTimeJst(slotsBody?.calculation_window_start), mono: true },
+            { label: "window_end", value: formatDateTimeJst(slotsBody?.calculation_window_end), mono: true },
+            { label: "min_gap_minutes", value: toDisplay(slotsBody?.min_gap_minutes) },
+            { label: "match_duration_minutes", value: toDisplay(slotsBody?.match_duration_minutes) },
+            { label: "match_delay_buffer_minutes", value: toDisplay(slotsBody?.match_delay_buffer_minutes) },
+            { label: "match_busy_minutes", value: toDisplay(slotsBody?.match_busy_minutes) },
+            { label: "pre_match_buffer_minutes", value: toDisplay(slotsBody?.pre_match_buffer_minutes) },
+            { label: "post_match_buffer_minutes", value: toDisplay(slotsBody?.post_match_buffer_minutes) },
+            { label: "last_match_buffer_minutes", value: toDisplay(slotsBody?.last_match_buffer_minutes) },
+          ]}
+        />
 
         {slotsBody?.runtime_note && (
-          <div
-            style={{
-              marginTop: 12,
-              background: "#eff6ff",
-              color: "#1d4ed8",
-              padding: 12,
-              borderRadius: 10,
-              fontSize: 12,
-            }}
-          >
-            <div>when_checking_runtime_after_22: {String(slotsBody.runtime_note.when_checking_runtime_after_22)}</div>
-            <div style={{ marginTop: 6 }}>related_json_dates: {(slotsBody.runtime_note.recommended_related_json_dates ?? []).join(", ") || "-"}</div>
-          </div>
+          <ConsoleNotice tone="info" className="mb-0 mt-2.5">
+            {`when_checking_runtime_after_22: ${String(slotsBody.runtime_note.when_checking_runtime_after_22)}\nrelated_json_dates: ${(slotsBody.runtime_note.recommended_related_json_dates ?? []).join(", ") || "-"}`}
+          </ConsoleNotice>
         )}
+      </ConsolePanel>
+
+      <div className="mb-1.5 flex items-center gap-2">
+        <h2 className="m-0 text-sm font-bold text-gray-900">ECS 停止時間</h2>
+        <span className="text-xs text-gray-500">{intervals.length}件</span>
+      </div>
+      <div className="mb-3">
+        <ConsoleTable columns={intervalColumns} rows={intervals} rowKey={(v, i) => `${v.start ?? "start"}-${v.end ?? "end"}-${i}`} loading={loading} emptyText="停止時間データがありません。" />
       </div>
 
-      <div style={sectionStyle}>
-        <h2 style={{ margin: "0 0 12px", fontSize: 18 }}>ECS 停止時間</h2>
-
-        <div style={tableWrapperStyle}>
-          <table style={tableStyle}>
-            <thead>
-              <tr>
-                <th style={thStyle}>No</th>
-                <th style={thStyle}>開始</th>
-                <th style={thStyle}>終了</th>
-                <th style={thStyle}>状態</th>
-                <th style={thStyle}>残り/経過</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(slotsBody?.ecs_stop_intervals ?? []).length === 0 ? (
-                <tr>
-                  <td colSpan={5} style={thTdStyle}>
-                    停止時間データがありません。
-                  </td>
-                </tr>
-              ) : (
-                (slotsBody?.ecs_stop_intervals ?? []).map((interval, index) => {
-                  const status = getIntervalStatus(interval, now);
-
-                  return (
-                    <tr key={`${interval.start ?? "start"}-${interval.end ?? "end"}-${index}`}>
-                      <td style={thTdStyle}>{index + 1}</td>
-                      <td style={thTdStyle}>{formatDateTimeJst(interval.start)}</td>
-                      <td style={thTdStyle}>{formatDateTimeJst(interval.end)}</td>
-                      <td style={thTdStyle}>
-                        <span style={getStatusPillStyle(status.state)}>{status.label}</span>
-                      </td>
-                      <td style={thTdStyle}>{status.remaining}</td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+      <div className="mb-1.5 flex flex-wrap items-center gap-2">
+        <h2 className="m-0 text-sm font-bold text-gray-900">試合一覧</h2>
+        <span className="text-xs text-gray-500">start と busy_end から、開始前 / BUSY中 / 終了後をリアルタイム表示</span>
+        <div className="ml-auto">
+          <SegmentedTabs<GameTabType>
+            value={activeTab}
+            onChange={setActiveTab}
+            options={[
+              { value: "matched", label: "当日対象", count: slotsBody?.matched_games_count ?? 0 },
+              { value: "nextDay", label: "翌日先読み", count: slotsBody?.next_day_lookahead_games_count ?? 0 },
+              { value: "prevDay", label: "前日重複", count: slotsBody?.prev_day_overlap_games_count ?? 0 },
+            ]}
+          />
         </div>
       </div>
-
-      <div style={sectionStyle}>
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
-          <div>
-            <h2 style={{ margin: 0, fontSize: 18 }}>試合一覧</h2>
-            <p style={{ margin: "6px 0 0", fontSize: 12, color: "#475569" }}>start と busy_end を使って、開始前 / BUSY中 / 終了後をリアルタイム表示します。</p>
-          </div>
-
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button type="button" style={activeTab === "matched" ? activeTabStyle : tabStyle} onClick={() => setActiveTab("matched")}>
-              当日対象 ({toDisplay(slotsBody?.matched_games_count)})
-            </button>
-            <button type="button" style={activeTab === "nextDay" ? activeTabStyle : tabStyle} onClick={() => setActiveTab("nextDay")}>
-              翌日先読み ({toDisplay(slotsBody?.next_day_lookahead_games_count)})
-            </button>
-            <button type="button" style={activeTab === "prevDay" ? activeTabStyle : tabStyle} onClick={() => setActiveTab("prevDay")}>
-              前日重複 ({toDisplay(slotsBody?.prev_day_overlap_games_count)})
-            </button>
-          </div>
-        </div>
-
-        <div style={{ marginBottom: 12 }}>
-          <span style={badgeStyle}>表示件数: {activeGamesCount}</span>
-        </div>
-
-        {activeGames.length === 0 ? (
-          <div
-            style={{
-              color: "#475569",
-              background: "#f8fafc",
-              padding: 12,
-              borderRadius: 10,
-              fontSize: 12,
-            }}
-          >
-            表示対象の試合がありません。
-          </div>
-        ) : (
-          <div style={{ display: "grid", gap: 12 }}>
-            {activeGames.map((game, index) => {
-              const status = getGameStatus(game, now);
-
-              return (
-                <div key={`${game.url ?? "game"}-${index}`} style={gameCardStyle}>
-                  <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-                    <div style={{ flex: "1 1 420px" }}>
-                      <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>{toDisplay(game.category)}</div>
-                      <div style={{ fontSize: 18, fontWeight: 700, lineHeight: 1.4 }}>
-                        {toDisplay(game.home)} vs {toDisplay(game.away)}
-                      </div>
-
-                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
-                        <span style={badgeStyle}>開始: {formatShortDateTimeJst(game.start)}</span>
-                        <span style={badgeStyle}>BUSY終了: {formatShortDateTimeJst(game.busy_end)}</span>
-                      </div>
-
-                      {game.url && (
-                        <div style={{ marginTop: 10 }}>
-                          <a
-                            href={game.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{
-                              color: "#2563eb",
-                              textDecoration: "none",
-                              fontSize: 12,
-                              fontWeight: 600,
-                            }}
-                          >
-                            試合ページを開く
-                          </a>
-                        </div>
-                      )}
-                    </div>
-
-                    <div style={{ minWidth: 220 }}>
-                      <div style={{ marginBottom: 8 }}>
-                        <span style={getStatusPillStyle(status.state)}>{status.label}</span>
-                      </div>
-                      <div style={{ fontSize: 26, fontWeight: 700, lineHeight: 1.2 }}>{status.remaining}</div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+      <ConsoleTable
+        columns={gameColumns}
+        rows={activeGames}
+        rowKey={(g, i) => `${g.url ?? "game"}-${i}`}
+        loading={loading}
+        emptyText="表示対象の試合がありません。"
+        rowClassName={(g) => (getGameStatus(g, now).state === "active" ? "!bg-red-50/60" : "")}
+      />
     </div>
   );
 };

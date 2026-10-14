@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Button } from "../../../components/ui/button";
-import { Skeleton } from "../../../components/ui/skeleton";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { RefreshCw, Search } from "lucide-react";
+import { ConsoleButton, ConsoleColumn, ConsoleField, ConsoleInput, ConsoleNotice, ConsolePanel, ConsoleTable, ConsoleToolbar, StatChips, StatusBadge } from "../../../api/commonAdminDesign";
 
 /** =========================
  * API base path
@@ -9,8 +9,8 @@ import { Skeleton } from "../../../components/ui/skeleton";
  * ========================= */
 const API_BASE = "/v1/api/real-time-data";
 
-/** 一覧の1ページあたりの表示件数 */
-const PAGE_SIZE = 5;
+/** 一覧の1ページあたりの表示件数（表にしたので5件 → 20件に増やしています） */
+const PAGE_SIZE = 20;
 
 /** =========================
  * Types
@@ -58,59 +58,6 @@ type MatchGroup = {
     cnt: number | null;
   }>;
 };
-
-/** =========================
- * UI helpers
- * ========================= */
-type Tone = "gray" | "blue" | "emerald" | "amber" | "rose" | "violet";
-
-function Badge({ children, tone = "gray" }: { children: React.ReactNode; tone?: Tone }) {
-  const cls: Record<Tone, string> = {
-    gray: "bg-gray-100 text-gray-700 ring-gray-200",
-    blue: "bg-blue-100 text-blue-800 ring-blue-200",
-    emerald: "bg-emerald-100 text-emerald-800 ring-emerald-200",
-    amber: "bg-amber-100 text-amber-900 ring-amber-200",
-    rose: "bg-rose-100 text-rose-800 ring-rose-200",
-    violet: "bg-violet-100 text-violet-800 ring-violet-200",
-  };
-
-  return <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ring-1 ring-inset ${cls[tone]}`}>{children}</span>;
-}
-
-function Panel({ title, desc, right, children }: { title: string; desc?: string; right?: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <div className="rounded-xl border bg-white/80 backdrop-blur shadow-sm">
-      <div className="px-4 py-3 border-b bg-gradient-to-r from-white to-gray-50 rounded-t-xl">
-        <div className="flex items-start justify-between gap-3 flex-col md:flex-row">
-          <div>
-            <div className="text-sm font-extrabold text-gray-900">{title}</div>
-            {desc ? <div className="text-xs text-muted-foreground mt-0.5">{desc}</div> : null}
-          </div>
-          {right ? <div className="shrink-0">{right}</div> : null}
-        </div>
-      </div>
-      <div className="p-4">{children}</div>
-    </div>
-  );
-}
-
-function Alert({ type, title, message, onClose }: { type: "info" | "success" | "error"; title: string; message: string; onClose?: () => void }) {
-  const cls = type === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : type === "error" ? "border-rose-200 bg-rose-50 text-rose-900" : "border-blue-200 bg-blue-50 text-blue-900";
-
-  return (
-    <div className={`rounded-xl border p-3 flex items-start gap-3 ${cls}`}>
-      <div className="min-w-0 flex-1">
-        <div className="text-xs font-extrabold">{title}</div>
-        <pre className="mt-1 text-[11px] whitespace-pre-wrap leading-relaxed">{message}</pre>
-      </div>
-      {onClose ? (
-        <button onClick={onClose} className="text-gray-500 hover:text-gray-800 transition-colors" type="button">
-          ✕
-        </button>
-      ) : null}
-    </div>
-  );
-}
 
 /** =========================
  * Utils
@@ -240,7 +187,7 @@ export default function RealTimeDataAdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [rows, setRows] = useState<RealTimeDataDTO[]>([]);
 
-  /** 一覧のページング(1ページ5件) */
+  /** 一覧のページング */
   const [page, setPage] = useState(1);
 
   /** グループごとの入力中テキスト(dataCategoryの新しい値) */
@@ -308,7 +255,8 @@ export default function RealTimeDataAdminPage() {
   const stats = useMemo(() => {
     const sameCount = groups.filter((g) => g.categoryFormatIcon === "同一カテゴリ名").length;
     const mixedCount = groups.filter((g) => g.categoryFormatIcon === "混在").length;
-    return { groupCount: groups.length, sameCount, mixedCount };
+    const needsCount = groups.filter(groupNeedsRoundUpdate).length;
+    return { groupCount: groups.length, sameCount, mixedCount, needsCount };
   }, [groups]);
 
   const totalPages = Math.max(1, Math.ceil(groups.length / PAGE_SIZE));
@@ -322,9 +270,6 @@ export default function RealTimeDataAdminPage() {
     const start = (page - 1) * PAGE_SIZE;
     return groups.slice(start, start + PAGE_SIZE);
   }, [groups, page]);
-
-  const handlePrevPage = () => setPage((p) => Math.max(1, p - 1));
-  const handleNextPage = () => setPage((p) => Math.min(totalPages, p + 1));
 
   /** このページの全グループが選択済みか */
   const allOnPageSelected = pagedGroups.length > 0 && pagedGroups.every((g) => selectedKeys.has(g.key));
@@ -377,7 +322,7 @@ export default function RealTimeDataAdminPage() {
   };
 
   const handleUpdate = async (group: MatchGroup) => {
-    const newCategory = (editValues[group.key] ?? "").trim();
+    const newCategory = (editValues[group.key] ?? (group.categories.length === 1 ? group.categories[0].dataCategory : "")).trim();
 
     if (!newCategory) {
       setUpdateState((prev) => ({ ...prev, [group.key]: { loading: false, error: "dataCategoryを入力してください。" } }));
@@ -452,203 +397,188 @@ export default function RealTimeDataAdminPage() {
     }
   };
 
+  const columns: ConsoleColumn<MatchGroup>[] = [
+    {
+      key: "check",
+      header: <input type="checkbox" checked={allOnPageSelected} onChange={toggleSelectAllOnPage} className="accent-indigo-600" aria-label="このページを全選択" />,
+      cell: (g) => (
+        <input
+          type="checkbox"
+          checked={selectedKeys.has(g.key)}
+          onChange={() => toggleSelectGroup(g.key)}
+          className="mt-0.5 accent-indigo-600"
+          aria-label={`${g.homeTeamName} vs ${g.awayTeamName} を一括更新の対象として選択`}
+        />
+      ),
+    },
+    {
+      key: "match",
+      header: "対戦",
+      wrap: true,
+      className: "min-w-[200px]",
+      cell: (g) => (
+        <>
+          <div className="font-bold">
+            {g.homeTeamName} <span className="font-normal text-gray-400">vs</span> {g.awayTeamName}
+          </div>
+          <div className="mt-1 flex flex-wrap gap-1">
+            {groupNeedsRoundUpdate(g) ? <StatusBadge tone="ng">要更新</StatusBadge> : <StatusBadge tone="neutral">更新不要</StatusBadge>}
+            {g.categoryFormatIcon === "混在" ? (
+              <StatusBadge tone="warn" dot={false}>
+                混在
+              </StatusBadge>
+            ) : g.categoryFormatIcon === "同一カテゴリ名" ? (
+              <StatusBadge tone="ok" dot={false}>
+                同一カテゴリ名
+              </StatusBadge>
+            ) : null}
+          </div>
+        </>
+      ),
+    },
+    {
+      key: "categories",
+      header: "現在の dataCategory",
+      wrap: true,
+      className: "min-w-[260px]",
+      cell: (g) =>
+        g.categories.length === 0 ? (
+          <span className="text-xs text-gray-400">dataCategory なし</span>
+        ) : (
+          <div className="grid gap-1">
+            {g.categories.map((c, idx) => (
+              <div key={`${g.key}-${idx}`} className="flex items-center gap-1.5 text-xs">
+                {c.formattedDataCategory ? (
+                  <StatusBadge tone="info" dot={false}>
+                    形式一致
+                  </StatusBadge>
+                ) : (
+                  <StatusBadge tone="ng" dot={false}>
+                    形式不一致
+                  </StatusBadge>
+                )}
+                <span className="min-w-0 break-words text-gray-800">{c.dataCategory}</span>
+                {c.cnt != null && <span className="shrink-0 tabular-nums text-[11px] text-gray-400">({c.cnt}件)</span>}
+              </div>
+            ))}
+          </div>
+        ),
+    },
+    {
+      key: "edit",
+      header: "新しい dataCategory",
+      className: "min-w-[320px] py-1",
+      cell: (g) => {
+        const state = updateState[g.key];
+        const editValue = editValues[g.key] ?? (g.categories.length === 1 ? g.categories[0].dataCategory : "");
+        return (
+          <>
+            <div className="flex items-center gap-1.5">
+              <ConsoleInput
+                value={editValue}
+                onChange={(e) => handleEditChange(g.key, e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && void handleUpdate(g)}
+                placeholder="例: 日本: J1リーグ - ラウンド 5"
+                className="h-7 min-w-0 flex-1 text-[12.5px]"
+              />
+              <ConsoleButton size="sm" variant="primary" onClick={() => void handleUpdate(g)} loading={state?.loading}>
+                {state?.loading ? "更新中…" : "更新"}
+              </ConsoleButton>
+            </div>
+            {state?.error && <div className="mt-1 text-[11px] font-bold text-red-700">{state.error}</div>}
+            {state?.success && <div className="mt-1 text-[11px] font-bold text-emerald-700">{state.success}</div>}
+          </>
+        );
+      },
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
-      <div className="container mx-auto px-4 py-4 max-w-5xl space-y-4">
-        <div className="flex items-start md:items-center justify-between gap-3 flex-col md:flex-row">
-          <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-r from-violet-600 to-blue-600 text-white p-2.5 rounded-xl shadow-lg">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4h16v16H4zM7 8h10M7 12h10M7 16h10" />
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">リアルタイムデータ管理</h1>
-              <p className="text-xs text-muted-foreground mt-0.5">home/away の組み合わせ単位で dataCategory を確認・上書きします。</p>
-            </div>
-          </div>
+    <div>
+      <ConsoleToolbar title="リアルタイムデータ管理" info="home / away の組み合わせ単位で dataCategory を確認・上書き">
+        <ConsoleButton variant="primary" onClick={() => void doFetch()} loading={loading}>
+          {!loading && <RefreshCw className="h-3.5 w-3.5" />}
+          再読み込み
+        </ConsoleButton>
+      </ConsoleToolbar>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            <Badge tone="blue">組み合わせ数 {stats.groupCount}</Badge>
-            <Badge tone="emerald">同一カテゴリ名 {stats.sameCount}</Badge>
-            <Badge tone="amber">混在 {stats.mixedCount}</Badge>
-          </div>
-        </div>
+      {error && (
+        <ConsoleNotice tone="ng" title="取得に失敗しました" onClose={() => setError(null)}>
+          {error}
+        </ConsoleNotice>
+      )}
 
-        {error ? <Alert type="error" title="取得に失敗しました" message={error} onClose={() => setError(null)} /> : null}
-
-        <Panel
-          title="検索条件"
-          desc="ホーム/アウェーの両方を入力して検索すると1組み合わせに絞り込みます。未入力のまま検索すると全件表示に戻ります。"
-          right={
-            <div className="flex items-center gap-2">
-              <Button onClick={handleSearch} disabled={loading}>
-                {loading ? "検索中..." : "検索"}
-              </Button>
-              <Button variant="outline" onClick={handleClearFilter} disabled={loading}>
-                全件表示
-              </Button>
-            </div>
-          }
+      <ConsolePanel title="検索条件" info="ホーム・アウェーの両方を入力すると1組み合わせに絞り込みます。未入力で検索すると全件表示に戻ります">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSearch();
+          }}
+          className="flex flex-wrap items-end gap-2"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <div className="text-xs font-semibold text-gray-800">ホームチーム名</div>
-              <input
-                className="w-full rounded-lg border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={homeInput}
-                onChange={(e) => setHomeInput(e.target.value)}
-                placeholder="例）FC東京"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="text-xs font-semibold text-gray-800">アウェーチーム名</div>
-              <input
-                className="w-full rounded-lg border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={awayInput}
-                onChange={(e) => setAwayInput(e.target.value)}
-                placeholder="例）浦和レッズ"
-              />
-            </div>
-          </div>
-        </Panel>
-
-        <Panel title="一覧" desc="「ラウンド」が付いていない（更新が必要な）組み合わせを先に表示します。チェックボックスで複数選択すると一括更新できます。">
-          {!loading && groups.length > 0 ? (
-            <div className="mb-3 rounded-xl border border-violet-200 bg-violet-50/60 p-3">
-              <div className="flex items-center justify-between gap-3 flex-wrap">
-                <label className="flex items-center gap-2 text-xs font-semibold text-gray-800 cursor-pointer">
-                  <input type="checkbox" className="h-3.5 w-3.5 rounded border-gray-300 text-violet-600 focus:ring-violet-500" checked={allOnPageSelected} onChange={toggleSelectAllOnPage} />
-                  このページを全選択
-                </label>
-                <Badge tone="violet">{selectedKeys.size}件選択中</Badge>
-              </div>
-
-              {selectedKeys.size > 0 ? (
-                <div className="mt-2.5 flex items-center gap-2 flex-wrap">
-                  <input
-                    className="flex-1 min-w-[220px] rounded-lg border bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
-                    value={bulkValue}
-                    onChange={(e) => setBulkValue(e.target.value)}
-                    placeholder="選択した項目に一括反映する dataCategory (例: 日本: J1リーグ - ラウンド 5)"
-                  />
-                  <Button size="sm" onClick={() => void handleBulkUpdate()} disabled={bulkState.loading}>
-                    {bulkState.loading ? "一括更新中..." : `選択した${selectedKeys.size}件を一括更新`}
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={handleClearSelection} disabled={bulkState.loading}>
-                    選択解除
-                  </Button>
-                </div>
-              ) : null}
-
-              {bulkState.error ? <div className="mt-2 text-[11px] font-semibold text-rose-700 whitespace-pre-wrap">{bulkState.error}</div> : null}
-              {bulkState.success ? <div className="mt-2 text-[11px] font-semibold text-emerald-700">{bulkState.success}</div> : null}
-            </div>
-          ) : null}
-
-          {loading ? (
-            <div className="space-y-2">
-              <Skeleton className="h-5 w-full" />
-              <Skeleton className="h-5 w-full" />
-              <Skeleton className="h-5 w-2/3" />
-            </div>
-          ) : groups.length === 0 ? (
-            <div className="text-sm text-muted-foreground">データがありません。</div>
-          ) : (
-            <div className="grid grid-cols-1 gap-2">
-              {pagedGroups.map((group) => {
-                const state = updateState[group.key];
-                const editValue = editValues[group.key] ?? (group.categories.length === 1 ? group.categories[0].dataCategory : "");
-
-                const isSelected = selectedKeys.has(group.key);
-                const needsUpdate = groupNeedsRoundUpdate(group);
-
-                return (
-                  <div key={group.key} className={`rounded-xl border bg-white hover:shadow-sm transition-shadow p-3 ${isSelected ? "ring-2 ring-violet-300 border-violet-300" : ""}`}>
-                    <div className="flex items-start justify-between gap-3 flex-col md:flex-row">
-                      <div className="min-w-0 flex items-start gap-2.5">
-                        <input
-                          type="checkbox"
-                          className="mt-1 h-3.5 w-3.5 shrink-0 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
-                          checked={isSelected}
-                          onChange={() => toggleSelectGroup(group.key)}
-                          aria-label={`${group.homeTeamName} vs ${group.awayTeamName} を一括更新の対象として選択`}
-                        />
-                        <div className="min-w-0">
-                          <div className="text-sm font-extrabold text-gray-900 truncate">
-                            {group.homeTeamName} vs {group.awayTeamName}
-                          </div>
-
-                          <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
-                            {needsUpdate ? <Badge tone="rose">要更新</Badge> : <Badge tone="gray">更新不要</Badge>}
-                            {group.categoryFormatIcon === "混在" ? (
-                              <Badge tone="amber">混在</Badge>
-                            ) : group.categoryFormatIcon === "同一カテゴリ名" ? (
-                              <Badge tone="emerald">同一カテゴリ名</Badge>
-                            ) : (
-                              <Badge tone="gray">-</Badge>
-                            )}
-                          </div>
-
-                          <div className="mt-2 flex flex-col gap-1">
-                            {group.categories.length === 0 ? (
-                              <div className="text-xs text-muted-foreground">dataCategory なし</div>
-                            ) : (
-                              group.categories.map((c, idx) => (
-                                <div key={`${group.key}-${idx}`} className="flex items-center gap-1.5 text-xs text-gray-700">
-                                  {c.formattedDataCategory ? <Badge tone="blue">形式一致</Badge> : <Badge tone="rose">形式不一致</Badge>}
-                                  <span className="truncate">{c.dataCategory}</span>
-                                  {c.cnt != null ? <span className="text-[11px] text-muted-foreground">({c.cnt}件)</span> : null}
-                                </div>
-                              ))
-                            )}
-                          </div>
-
-                          {/* ホーム vs アウェー の表示の下に dataCategory 更新フォームを配置 */}
-                          <div className="mt-3 flex items-center gap-2 flex-wrap">
-                            <input
-                              className="flex-1 min-w-[220px] rounded-lg border bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              value={editValue}
-                              onChange={(e) => handleEditChange(group.key, e.target.value)}
-                              placeholder="新しい dataCategory (例: 日本: J1リーグ - ラウンド 5)"
-                            />
-                            <Button size="sm" onClick={() => handleUpdate(group)} disabled={state?.loading}>
-                              {state?.loading ? "更新中..." : "更新"}
-                            </Button>
-                          </div>
-
-                          {state?.error ? <div className="mt-1.5 text-[11px] font-semibold text-rose-700">{state.error}</div> : null}
-                          {state?.success ? <div className="mt-1.5 text-[11px] font-semibold text-emerald-700">{state.success}</div> : null}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+          <ConsoleField label="ホームチーム名">
+            <ConsoleInput value={homeInput} onChange={(e) => setHomeInput(e.target.value)} placeholder="例）FC東京" className="w-56" />
+          </ConsoleField>
+          <ConsoleField label="アウェーチーム名">
+            <ConsoleInput value={awayInput} onChange={(e) => setAwayInput(e.target.value)} placeholder="例）浦和レッズ" className="w-56" />
+          </ConsoleField>
+          <ConsoleButton type="submit" variant="primary" disabled={loading}>
+            <Search className="h-3.5 w-3.5" />
+            検索
+          </ConsoleButton>
+          <ConsoleButton onClick={handleClearFilter} disabled={loading}>
+            全件表示
+          </ConsoleButton>
+          {isFiltered && (
+            <StatusBadge tone="info" dot={false}>
+              絞り込み中
+            </StatusBadge>
           )}
+        </form>
+      </ConsolePanel>
 
-          {!loading && groups.length > 0 ? (
-            <div className="mt-3 flex items-center justify-between gap-3 flex-col sm:flex-row">
-              <div className="text-[11px] text-muted-foreground">
-                全{groups.length}件中 {(page - 1) * PAGE_SIZE + 1}〜{Math.min(page * PAGE_SIZE, groups.length)}件を表示
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={handlePrevPage} disabled={page <= 1}>
-                  前へ
-                </Button>
-                <span className="text-xs font-semibold text-gray-700">
-                  {page} / {totalPages} ページ
-                </span>
-                <Button variant="outline" size="sm" onClick={handleNextPage} disabled={page >= totalPages}>
-                  次へ
-                </Button>
-              </div>
-            </div>
-          ) : null}
-        </Panel>
-      </div>
+      <StatChips
+        loading={loading && groups.length === 0}
+        items={[
+          { label: "組み合わせ数", value: stats.groupCount },
+          { label: "要更新", value: stats.needsCount, tone: stats.needsCount > 0 ? "ng" : "ok" },
+          { label: "同一カテゴリ名", value: stats.sameCount, tone: "ok" },
+          { label: "混在", value: stats.mixedCount, tone: stats.mixedCount > 0 ? "warn" : "default" },
+        ]}
+      />
+
+      {/* 一括更新（ページをまたいで選択を保持） */}
+      {groups.length > 0 && (
+        <div className={["mb-2 flex flex-wrap items-center gap-2 rounded-xl border px-3 py-2", selectedKeys.size > 0 ? "border-indigo-200 bg-indigo-50" : "border-gray-200 bg-white"].join(" ")}>
+          <span className="text-[13px] font-bold text-gray-900">選択中: {selectedKeys.size}件</span>
+          <ConsoleInput
+            value={bulkValue}
+            onChange={(e) => setBulkValue(e.target.value)}
+            placeholder="選択した組み合わせに一括反映する dataCategory（例: 日本: J1リーグ - ラウンド 5）"
+            className="min-w-[260px] flex-1"
+            disabled={selectedKeys.size === 0}
+          />
+          <ConsoleButton variant="primary" onClick={() => void handleBulkUpdate()} disabled={selectedKeys.size === 0} loading={bulkState.loading}>
+            {bulkState.loading ? "一括更新中…" : `選択した${selectedKeys.size}件を一括更新`}
+          </ConsoleButton>
+          <ConsoleButton onClick={handleClearSelection} disabled={selectedKeys.size === 0 || bulkState.loading}>
+            選択解除
+          </ConsoleButton>
+          {bulkState.error && <div className="w-full whitespace-pre-wrap text-[11px] font-bold text-red-700">{bulkState.error}</div>}
+          {bulkState.success && <div className="w-full text-[11px] font-bold text-emerald-700">{bulkState.success}</div>}
+        </div>
+      )}
+
+      <ConsoleTable
+        columns={columns}
+        rows={pagedGroups}
+        rowKey={(g) => g.key}
+        loading={loading}
+        emptyText="データがありません。"
+        rowClassName={(g) => (selectedKeys.has(g.key) ? "!bg-indigo-50" : "")}
+        paging={{ page, pageSize: PAGE_SIZE, total: groups.length, onChange: setPage }}
+      />
+      <div className="mt-1.5 text-[11px] text-gray-400">「ラウンド」が付いていない（更新が必要な）組み合わせを先に表示しています。新しい dataCategory の欄で Enter を押しても更新できます。</div>
     </div>
   );
 }

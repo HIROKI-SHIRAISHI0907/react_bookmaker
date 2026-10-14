@@ -1,4 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { RefreshCw } from "lucide-react";
+import { ConsoleButton, ConsoleColumn, ConsoleTable, ConsoleToolbar, DateStepper, FlagBadge, StatChips, fmtNum, todayYmd } from "../../../api/commonAdminDesign";
 
 type TodayCreatedCsvItem = {
   csvId: string;
@@ -21,22 +23,30 @@ type TodayCreatedCsvListResponse = {
 
 const PAGE_SIZE = 50;
 
-function todayString() {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const d = String(now.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
+const isFin = (flg: string | null | undefined) => String(flg ?? "").trim() === "1";
+
+const COLUMNS: ConsoleColumn<TodayCreatedCsvItem>[] = [
+  { key: "registerTime", header: "登録日時", mono: true, cell: (r) => r.registerTime || "-" },
+  { key: "csvId", header: "CSV ID", mono: true, cell: (r) => r.csvId || "-" },
+  { key: "dataCategory", header: "データカテゴリ", wrap: true, className: "min-w-[220px]", cell: (r) => r.dataCategory || "-" },
+  { key: "season", header: "シーズン", cell: (r) => r.season || "-" },
+  { key: "homeTeamName", header: "ホーム", cell: (r) => r.homeTeamName || "-" },
+  { key: "awayTeamName", header: "アウェイ", cell: (r) => r.awayTeamName || "-" },
+  {
+    key: "checkFinFlg",
+    header: "終了確認",
+    align: "center",
+    cell: (r) => (r.checkFinFlg ? <FlagBadge value={r.checkFinFlg} /> : <span className="text-gray-400">-</span>),
+  },
+];
 
 export default function TodayCreatedCsvPage() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [targetDate, setTargetDate] = useState(todayString());
+  const [targetDate, setTargetDate] = useState(todayYmd());
   const [currentPage, setCurrentPage] = useState(1);
-
   const [data, setData] = useState<TodayCreatedCsvListResponse>({
-    targetDate: todayString(),
+    targetDate: todayYmd(),
     count: 0,
     totalCount: 0,
     startOffset: 0,
@@ -44,20 +54,7 @@ export default function TodayCreatedCsvPage() {
     items: [],
   });
 
-  const totalPages = Math.max(1, Math.ceil((data.totalCount || 0) / PAGE_SIZE));
-
-  const visiblePageNumbers = useMemo(() => {
-    const pages: number[] = [];
-    const start = Math.max(1, currentPage - 2);
-    const end = Math.min(totalPages, currentPage + 2);
-
-    for (let i = start; i <= end; i += 1) {
-      pages.push(i);
-    }
-    return pages;
-  }, [currentPage, totalPages]);
-
-  const load = async (date: string, page: number) => {
+  const load = useCallback(async (date: string, page: number) => {
     setLoading(true);
     setErrorMessage("");
 
@@ -65,17 +62,12 @@ export default function TodayCreatedCsvPage() {
     const endOffset = startOffset + PAGE_SIZE;
 
     try {
-      const response = await fetch(`/v1/api/admin/csv/today?targetDate=${encodeURIComponent(date)}&startOffset=${startOffset}&endOffset=${endOffset}`, {
-        method: "GET",
-        credentials: "include",
-      });
-
+      const response = await fetch(`/v1/api/admin/csv/today?targetDate=${encodeURIComponent(date)}&startOffset=${startOffset}&endOffset=${endOffset}`, { method: "GET", credentials: "include" });
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
 
       const json = (await response.json()) as TodayCreatedCsvListResponse;
-
       setData({
         targetDate: json.targetDate ?? date,
         count: json.count ?? 0,
@@ -84,7 +76,6 @@ export default function TodayCreatedCsvPage() {
         endOffset: json.endOffset ?? endOffset,
         items: json.items ?? [],
       });
-
       setCurrentPage(page);
     } catch (error) {
       console.error(error);
@@ -92,324 +83,63 @@ export default function TodayCreatedCsvPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     load(targetDate, 1);
+    // 初回のみ
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const onSearch = () => {
-    load(targetDate, 1);
-  };
-
-  const onClickToday = () => {
-    const today = todayString();
-    setTargetDate(today);
-    load(today, 1);
+  // 日付を変えたらすぐ1ページ目を読み込む
+  const onChangeDate = (date: string) => {
+    setTargetDate(date);
+    load(date, 1);
   };
 
   const onMovePage = (page: number) => {
     if (loading) return;
-    if (page < 1 || page > totalPages) return;
     load(targetDate, page);
   };
+
+  // 完了 / 未確認は API が総数を返さないため、表示中のページ分を数える
+  const pageFin = useMemo(() => data.items.filter((it) => isFin(it.checkFinFlg)).length, [data.items]);
+  const pageNotFin = data.items.length - pageFin;
 
   const displayStart = data.totalCount === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
   const displayEnd = Math.min(currentPage * PAGE_SIZE, data.totalCount);
 
   return (
-    <div style={{ display: "grid", gap: 16 }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          gap: 12,
-          flexWrap: "wrap",
-        }}
-      >
-        <div>
-          <h1 style={{ margin: 0, fontSize: 24 }}>作成CSV情報</h1>
-          <p style={{ margin: "8px 0 0", color: "#6b7280" }}>csv_detail_manage の register_time を基準に、指定日の作成CSVを表示します。</p>
-        </div>
-      </div>
+    <div>
+      <ConsoleToolbar title="作成CSV情報" info="csv_detail_manage・register_time 基準">
+        <DateStepper value={targetDate} onChange={onChangeDate} disabled={loading} />
+        <ConsoleButton variant="primary" onClick={() => load(targetDate, currentPage)} disabled={loading}>
+          <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+          再読み込み
+        </ConsoleButton>
+      </ConsoleToolbar>
 
-      <div
-        style={{
-          border: "1px solid #e5e7eb",
-          borderRadius: 12,
-          padding: 16,
-          background: "#fff",
-          display: "flex",
-          gap: 12,
-          alignItems: "end",
-          flexWrap: "wrap",
-        }}
-      >
-        <div style={{ display: "grid", gap: 6 }}>
-          <label style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>対象日</label>
-          <input
-            type="date"
-            value={targetDate}
-            onChange={(e) => setTargetDate(e.target.value)}
-            style={{
-              border: "1px solid #d1d5db",
-              borderRadius: 10,
-              padding: "10px 12px",
-              fontSize: 14,
-              minWidth: 180,
-            }}
-          />
-        </div>
+      <StatChips
+        loading={loading && data.items.length === 0}
+        items={[
+          { label: "対象日", value: data.targetDate },
+          { label: "総件数", value: fmtNum(data.totalCount) },
+          { label: "このページの完了", value: fmtNum(pageFin), tone: "ok" },
+          { label: "このページの未確認", value: fmtNum(pageNotFin), tone: pageNotFin > 0 ? "warn" : "default" },
+          { label: "表示", value: `${fmtNum(displayStart)}–${fmtNum(displayEnd)}` },
+        ]}
+      />
 
-        <button
-          type="button"
-          onClick={onSearch}
-          disabled={loading}
-          style={{
-            border: "1px solid #d1d5db",
-            background: "#fff",
-            padding: "10px 14px",
-            borderRadius: 10,
-            cursor: loading ? "default" : "pointer",
-            fontWeight: 700,
-          }}
-        >
-          {loading ? "読込中..." : "検索"}
-        </button>
-
-        <button
-          type="button"
-          onClick={onClickToday}
-          disabled={loading}
-          style={{
-            border: "1px solid #d1d5db",
-            background: "#f9fafb",
-            padding: "10px 14px",
-            borderRadius: 10,
-            cursor: loading ? "default" : "pointer",
-            fontWeight: 700,
-          }}
-        >
-          今日
-        </button>
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          gap: 12,
-          flexWrap: "wrap",
-        }}
-      >
-        <div
-          style={{
-            border: "1px solid #e5e7eb",
-            borderRadius: 12,
-            padding: 16,
-            background: "#fff",
-            minWidth: 220,
-          }}
-        >
-          <div style={{ fontSize: 12, color: "#6b7280" }}>対象日</div>
-          <div style={{ fontSize: 20, fontWeight: 800 }}>{data.targetDate}</div>
-        </div>
-
-        <div
-          style={{
-            border: "1px solid #e5e7eb",
-            borderRadius: 12,
-            padding: 16,
-            background: "#fff",
-            minWidth: 180,
-          }}
-        >
-          <div style={{ fontSize: 12, color: "#6b7280" }}>総件数</div>
-          <div style={{ fontSize: 28, fontWeight: 800 }}>{data.totalCount}</div>
-        </div>
-
-        <div
-          style={{
-            border: "1px solid #e5e7eb",
-            borderRadius: 12,
-            padding: 16,
-            background: "#fff",
-            minWidth: 220,
-          }}
-        >
-          <div style={{ fontSize: 12, color: "#6b7280" }}>表示範囲</div>
-          <div style={{ fontSize: 20, fontWeight: 800 }}>
-            {displayStart} - {displayEnd}
-          </div>
-        </div>
-      </div>
-
-      {errorMessage && (
-        <div
-          style={{
-            border: "1px solid #fecaca",
-            background: "#fef2f2",
-            color: "#991b1b",
-            borderRadius: 10,
-            padding: 12,
-          }}
-        >
-          {errorMessage}
-        </div>
-      )}
-
-      <div
-        style={{
-          border: "1px solid #e5e7eb",
-          borderRadius: 12,
-          background: "#fff",
-          overflow: "hidden",
-        }}
-      >
-        <div
-          style={{
-            padding: "14px 16px",
-            borderBottom: "1px solid #e5e7eb",
-            fontWeight: 800,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: 12,
-            flexWrap: "wrap",
-          }}
-        >
-          <div>作成CSV一覧</div>
-          <div style={{ fontSize: 13, color: "#6b7280" }}>
-            {currentPage} / {totalPages} ページ
-          </div>
-        </div>
-
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 980 }}>
-            <thead style={{ background: "#f9fafb" }}>
-              <tr>
-                <th style={thStyle}>登録日時</th>
-                <th style={thStyle}>CSV ID</th>
-                <th style={thStyle}>データカテゴリ</th>
-                <th style={thStyle}>シーズン</th>
-                <th style={thStyle}>ホーム</th>
-                <th style={thStyle}>アウェイ</th>
-                <th style={thStyle}>checkFinFlg</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.items.length === 0 && !loading ? (
-                <tr>
-                  <td colSpan={7} style={{ padding: 24, textAlign: "center", color: "#6b7280" }}>
-                    指定日に作成されたデータはありません。
-                  </td>
-                </tr>
-              ) : (
-                data.items.map((item, index) => (
-                  <tr key={`${item.csvId}-${index}`} style={{ borderTop: "1px solid #f3f4f6" }}>
-                    <td style={tdStyle}>{item.registerTime || "-"}</td>
-                    <td style={tdStyle}>{item.csvId || "-"}</td>
-                    <td style={tdStyle}>{item.dataCategory || "-"}</td>
-                    <td style={tdStyle}>{item.season || "-"}</td>
-                    <td style={tdStyle}>{item.homeTeamName || "-"}</td>
-                    <td style={tdStyle}>{item.awayTeamName || "-"}</td>
-                    <td style={tdStyle}>{item.checkFinFlg || "-"}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        <div
-          style={{
-            borderTop: "1px solid #e5e7eb",
-            padding: 16,
-            display: "flex",
-            justifyContent: "center",
-            gap: 8,
-            flexWrap: "wrap",
-            background: "#fff",
-          }}
-        >
-          <button type="button" onClick={() => onMovePage(1)} disabled={loading || currentPage === 1} style={pageButtonStyle}>
-            先頭
-          </button>
-
-          <button type="button" onClick={() => onMovePage(currentPage - 1)} disabled={loading || currentPage === 1} style={pageButtonStyle}>
-            前へ
-          </button>
-
-          {visiblePageNumbers[0] > 1 && (
-            <>
-              <button type="button" onClick={() => onMovePage(1)} disabled={loading} style={pageButtonStyle}>
-                1
-              </button>
-              {visiblePageNumbers[0] > 2 && <span style={{ alignSelf: "center", color: "#6b7280" }}>...</span>}
-            </>
-          )}
-
-          {visiblePageNumbers.map((page) => (
-            <button
-              key={page}
-              type="button"
-              onClick={() => onMovePage(page)}
-              disabled={loading}
-              style={{
-                ...pageButtonStyle,
-                background: page === currentPage ? "#111827" : "#fff",
-                color: page === currentPage ? "#fff" : "#111827",
-                borderColor: page === currentPage ? "#111827" : "#d1d5db",
-              }}
-            >
-              {page}
-            </button>
-          ))}
-
-          {visiblePageNumbers[visiblePageNumbers.length - 1] < totalPages && (
-            <>
-              {visiblePageNumbers[visiblePageNumbers.length - 1] < totalPages - 1 && <span style={{ alignSelf: "center", color: "#6b7280" }}>...</span>}
-              <button type="button" onClick={() => onMovePage(totalPages)} disabled={loading} style={pageButtonStyle}>
-                {totalPages}
-              </button>
-            </>
-          )}
-
-          <button type="button" onClick={() => onMovePage(currentPage + 1)} disabled={loading || currentPage === totalPages} style={pageButtonStyle}>
-            次へ
-          </button>
-
-          <button type="button" onClick={() => onMovePage(totalPages)} disabled={loading || currentPage === totalPages} style={pageButtonStyle}>
-            末尾
-          </button>
-        </div>
-      </div>
+      <ConsoleTable
+        columns={COLUMNS}
+        rows={data.items}
+        rowKey={(r, i) => `${r.csvId}-${i}`}
+        loading={loading}
+        error={errorMessage || undefined}
+        emptyText="指定日に作成されたデータはありません。"
+        maxHeight="calc(100vh - 220px)"
+        paging={{ page: currentPage, pageSize: PAGE_SIZE, total: data.totalCount, onChange: onMovePage }}
+      />
     </div>
   );
 }
-
-const thStyle: React.CSSProperties = {
-  textAlign: "left",
-  padding: "12px 14px",
-  fontSize: 13,
-  color: "#374151",
-  borderBottom: "1px solid #e5e7eb",
-  whiteSpace: "nowrap",
-};
-
-const tdStyle: React.CSSProperties = {
-  padding: "12px 14px",
-  fontSize: 14,
-  color: "#111827",
-  verticalAlign: "top",
-};
-
-const pageButtonStyle: React.CSSProperties = {
-  border: "1px solid #d1d5db",
-  background: "#fff",
-  padding: "8px 12px",
-  borderRadius: 10,
-  cursor: "pointer",
-  fontWeight: 700,
-  minWidth: 44,
-};

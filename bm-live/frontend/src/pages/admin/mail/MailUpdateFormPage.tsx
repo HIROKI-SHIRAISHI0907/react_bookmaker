@@ -1,8 +1,10 @@
 // src/pages/admin/mail/MailUpdateFormPage.tsx
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { ChevronLeft } from "lucide-react";
 import { fetchMailInfoByIdApi, updateMailInfoApi } from "../../../api/mailinfo";
 import MailInfoForm, { MailInfoFormValues } from "./MailRegisterFormPage";
+import { ConsoleNotice, ConsolePanel, ConsoleToolbar } from "../../../api/commonAdminDesign";
 
 /**
  * メール情報更新画面
@@ -74,53 +76,25 @@ export default function MailInfoUpdatePage() {
   };
 
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>メール情報更新</h1>
-        <p style={styles.desc}>件名・本文・送信元メールアドレスを更新します（メールIDは変更できません）。</p>
+    <div className="max-w-3xl">
+      <ConsoleToolbar title="メール情報更新" info={<span className="font-mono">{mailId || "-"}</span>}>
+        <Link to="/admin/mailinfo" className="inline-flex h-8 items-center gap-1 rounded-lg px-2 text-[13px] font-bold text-gray-500 no-underline hover:bg-gray-100 hover:text-gray-900">
+          <ChevronLeft className="h-4 w-4" />
+          一覧へ戻る
+        </Link>
+      </ConsoleToolbar>
 
-        {loading && <p style={styles.desc}>読み込み中...</p>}
-        {loadError && <div style={styles.errorText}>{loadError}</div>}
+      {loadError && <ConsoleNotice tone="ng" title={loadError} />}
 
-        {!loading && !loadError && (
+      <ConsolePanel title="更新内容" info="件名・本文・送信元メールアドレスを更新します（メールIDは変更できません）">
+        {loading ? (
+          <div className="py-8 text-center text-sm text-gray-400">読み込み中…</div>
+        ) : loadError ? (
+          <div className="py-8 text-center text-sm text-gray-400">データを表示できません。</div>
+        ) : (
           <MailInfoForm values={values} mailIdEditable={false} submitting={submitting} submitLabel="更新する" onChange={setValues} onSubmit={onSubmit} message={message} errorMessage={errorMessage} />
         )}
-
-        <div style={{ marginTop: 14 }}>
-          <Link to="/admin/mailinfo">一覧へ戻る</Link>
-        </div>
-      </div>
+      </ConsolePanel>
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    minHeight: "100vh",
-    display: "grid",
-    placeItems: "center",
-    padding: 24,
-    background: "#f6f7fb",
-  },
-  card: {
-    width: "100%",
-    maxWidth: 560,
-    background: "white",
-    border: "1px solid #e6e8ef",
-    borderRadius: 16,
-    padding: 20,
-    boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
-  },
-  title: { margin: "0 0 8px", fontSize: 22 },
-  desc: {
-    margin: "0 0 12px",
-    color: "#4b5563",
-    fontSize: 14,
-    lineHeight: 1.5,
-  },
-  errorText: {
-    fontSize: 13,
-    color: "#dc2626",
-    marginBottom: 12,
-  },
-};

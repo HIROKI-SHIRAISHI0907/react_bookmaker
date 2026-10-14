@@ -1,5 +1,21 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { CalendarClock, Copy, Database, Play, RefreshCw, Search } from "lucide-react";
+import {
+  BadgeTone,
+  ConsoleButton,
+  ConsoleColumn,
+  ConsoleField,
+  ConsoleInput,
+  ConsoleModal,
+  ConsoleNotice,
+  ConsolePanel,
+  ConsoleSelect,
+  ConsoleTable,
+  ConsoleToolbar,
+  StatChips,
+  StatusBadge,
+} from "../../../api/commonAdminDesign";
 
 type StatExecuteRequest = {
   country?: string;
@@ -78,6 +94,12 @@ type S3FileListRequest = {
   limit?: number | null;
 };
 
+type S3FileItem = {
+  key: string;
+  size: number;
+  lastModifiedIso: string;
+};
+
 type S3FileListResponse = {
   batchCode: string;
   bucket: string;
@@ -85,11 +107,7 @@ type S3FileListResponse = {
   recursive: boolean;
   returnedCount: number;
   message: string;
-  items: Array<{
-    key: string;
-    size: number;
-    lastModifiedIso: string;
-  }>;
+  items: S3FileItem[];
 };
 
 const COUNT_URL = `/v1/api/admin/s3/files/count`;
@@ -134,145 +152,37 @@ function toDateInputValue(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
-/** ===================== UI（小さめ部品） ===================== */
-type Tone = "gray" | "blue" | "emerald" | "amber" | "rose" | "violet";
-
-function Badge({ children, tone = "gray" }: { children: React.ReactNode; tone?: Tone }) {
-  const cls: Record<Tone, string> = {
-    gray: "bg-gray-100 text-gray-700 ring-gray-200",
-    blue: "bg-blue-100 text-blue-800 ring-blue-200",
-    emerald: "bg-emerald-100 text-emerald-800 ring-emerald-200",
-    amber: "bg-amber-100 text-amber-900 ring-amber-200",
-    rose: "bg-rose-100 text-rose-800 ring-rose-200",
-    violet: "bg-violet-100 text-violet-800 ring-violet-200",
-  };
-  return <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-extrabold ring-1 ring-inset ${cls[tone]}`}>{children}</span>;
-}
-
-function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <div className={`rounded-2xl border bg-white/85 backdrop-blur shadow-sm ${className}`}>{children}</div>;
-}
-
-function Spinner() {
-  return (
-    <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24" aria-hidden="true">
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-    </svg>
-  );
-}
-
-function Button({
-  children,
-  onClick,
-  disabled,
-  loading,
-  variant = "primary",
-  title,
-  className = "",
-  type = "button",
-}: {
-  children: React.ReactNode;
-  onClick?: React.MouseEventHandler<HTMLButtonElement>;
-  disabled?: boolean;
-  loading?: boolean;
-  variant?: "primary" | "secondary" | "danger";
-  title?: string;
-  className?: string;
-  type?: "button" | "submit";
-}) {
-  const base =
-    "inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-extrabold transition-all shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
-  const v =
-    variant === "primary"
-      ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700 focus:ring-blue-500"
-      : variant === "danger"
-        ? "bg-rose-600 text-white border-rose-600 hover:bg-rose-700 focus:ring-rose-500"
-        : "bg-white text-gray-900 border-gray-200 hover:bg-gray-50 focus:ring-gray-300";
-  return (
-    <button type={type} onClick={onClick} disabled={disabled || loading} title={title} className={`${base} ${v} ${className}`}>
-      {loading ? <Spinner /> : null}
-      {children}
-    </button>
-  );
-}
-
-function Alert({ type, title, message }: { type: "info" | "warning" | "error"; title: string; message: string }) {
-  const cls = type === "error" ? "border-rose-200 bg-rose-50 text-rose-900" : type === "warning" ? "border-amber-200 bg-amber-50 text-amber-900" : "border-blue-200 bg-blue-50 text-blue-900";
-  const icon = type === "error" ? "❌" : type === "warning" ? "⚠️" : "💡";
-  return (
-    <div className={`rounded-2xl border p-4 flex items-start gap-3 ${cls}`}>
-      <div className="mt-0.5">{icon}</div>
-      <div className="min-w-0 flex-1">
-        <div className="text-sm font-extrabold">{title}</div>
-        <pre className="mt-1 text-xs whitespace-pre-wrap leading-relaxed">{message}</pre>
-      </div>
-    </div>
-  );
-}
-
-function statusTone(status?: string): Tone {
+function statusTone(status?: string): BadgeTone {
   const s = (status ?? "").toUpperCase();
-  if (s === "RUNNING") return "emerald";
-  if (s === "STOPPED") return "gray";
-  if (s === "NOT_FOUND") return "amber";
-  if (!s) return "gray";
-  return "blue";
+  if (s === "RUNNING") return "ok";
+  if (s === "STOPPED") return "neutral";
+  if (s === "NOT_FOUND") return "warn";
+  if (!s) return "neutral";
+  return "info";
 }
 
-function ConfirmModal(props: {
-  open: boolean;
-  title?: string;
-  message: string;
-  confirmText?: string;
-  cancelText?: string;
-  onConfirm: () => void;
-  onClose: () => void;
-  isLoading?: boolean;
-  confirmDisabled?: boolean;
-}) {
-  const { open, title = "確認", message, confirmText = "OK", cancelText = "キャンセル", onConfirm, onClose, isLoading, confirmDisabled } = props;
-  if (!open) return null;
+const BATCH_CODES = [
+  "B002（TeamMember）",
+  "B003（CountryLeagueSeason）",
+  "B004（CountryLeague）",
+  "B005（Future）",
+  "B007（AllLeague）",
+  "B008（RealData）",
+  "B009",
+  "B010（FinGetting）",
+  "B014",
+  "B015",
+];
 
-  return (
-    <div role="dialog" aria-modal="true" onClick={onClose} className="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center p-4">
-      <div onClick={(e) => e.stopPropagation()} className="w-full max-w-lg rounded-2xl border bg-white shadow-xl">
-        <div className="px-5 py-4 border-b bg-gradient-to-r from-white to-gray-50 rounded-t-2xl">
-          <div className="text-base font-extrabold text-gray-900">{title}</div>
-        </div>
-
-        <div className="p-5">
-          <pre className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{message}</pre>
-
-          <div className="mt-5 flex items-center justify-end gap-2">
-            <Button variant="secondary" onClick={onClose} disabled={isLoading}>
-              {cancelText}
-            </Button>
-            <Button variant="primary" onClick={onConfirm} disabled={isLoading || confirmDisabled} loading={isLoading} title={confirmDisabled ? "条件を満たしていないため実行できません" : undefined}>
-              {confirmText}
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+const S3_COLUMNS: ConsoleColumn<S3FileItem>[] = [
+  { key: "key", header: "key", wrap: true, className: "min-w-[420px] break-all font-mono text-[12px]", cell: (it) => it.key },
+  { key: "size", header: "size", align: "right", mono: true, cell: (it) => (typeof it.size === "number" ? it.size.toLocaleString() : "-") },
+  { key: "lastModified", header: "lastModifiedIso", mono: true, cell: (it) => it.lastModifiedIso ?? "-" },
+];
 
 /** ===================== Page ===================== */
 export default function ManualScrapePage() {
-  const batchCodes = [
-    "B002（TeamMember）",
-    "B003（CountryLeagueSeason）",
-    "B004（CountryLeague）",
-    "B005（Future）",
-    "B007（AllLeague）",
-    "B008（RealData）",
-    "B009",
-    "B010（FinGetting）",
-    "B014",
-    "B015",
-  ];
-  const [batchCode, setBatchCode] = useState(batchCodes[0]);
+  const [batchCode, setBatchCode] = useState(BATCH_CODES[0]);
 
   const isB007 = batchCode === "B007（AllLeague）";
   const isB014 = batchCode === "B014";
@@ -408,23 +318,8 @@ export default function ManualScrapePage() {
   const b005CanRun = !isB005 || !isB005SpecificDateMode || (futureTargetDate.trim() !== "" && isFutureTargetDateInRange);
 
   // ===== B007 request =====
-  const countReq = useMemo<S3FileCountRequest>(
-    () => ({
-      batchCode: pureBatchCode,
-      scope,
-      day: null,
-    }),
-    [pureBatchCode, scope],
-  );
-
-  const listReq = useMemo<S3FileListRequest>(
-    () => ({
-      batchCode: pureBatchCode,
-      scope,
-      limit: 100,
-    }),
-    [pureBatchCode, scope],
-  );
+  const countReq = useMemo<S3FileCountRequest>(() => ({ batchCode: pureBatchCode, scope, day: null }), [pureBatchCode, scope]);
+  const listReq = useMemo<S3FileListRequest>(() => ({ batchCode: pureBatchCode, scope, limit: 100 }), [pureBatchCode, scope]);
 
   const s3CountQuery = useQuery({
     queryKey: ["s3-file-count", countReq],
@@ -503,9 +398,7 @@ export default function ManualScrapePage() {
   const teamsDone = progressQuery.data?.teamsDone ?? null;
   const teamsTotal = progressQuery.data?.teamsTotal ?? null;
 
-  const s3TotalText = typeof s3CountQuery.data?.totalCount === "number" ? s3CountQuery.data.totalCount.toLocaleString() : "-";
-  const s3CountOnDayText = typeof s3CountQuery.data?.countOnDay === "number" ? s3CountQuery.data.countOnDay.toLocaleString() : "-";
-  const s3ReturnedText = typeof s3ListQuery.data?.returnedCount === "number" ? s3ListQuery.data.returnedCount.toLocaleString() : "-";
+  const numText = (v: number | null | undefined) => (typeof v === "number" ? v.toLocaleString() : "-");
 
   const runButtonDisabled = runMutation.isPending || isRunning || masterMutation.isPending || nextDayMutation.isPending || !b014CanRun || !b005CanRun;
 
@@ -527,436 +420,345 @@ export default function ManualScrapePage() {
                   : `B005 の未来日は ${tomorrowDateStr} 〜 ${maxFutureDateStr} の範囲で指定してください`
                 : undefined;
 
+  const status = progressQuery.data?.status;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-4 md:p-8">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
-          <div className="flex items-center gap-4">
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 rounded-2xl shadow-lg">
-              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16M4 12h16M4 17h16" />
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-3xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">スクレイピング管理</h1>
-              <p className="text-sm text-gray-600 mt-1">ECS起動（RUN）と進捗監視、B005は特定日（未来/過去）・翌日取得、B007はS3成果物からマスタ登録まで、B014は国・リーグ指定実行に対応</p>
-            </div>
-          </div>
+    <div>
+      <ConsoleToolbar
+        title="スクレイピング管理"
+        info="ECS起動（RUN）と進捗監視"
+        description="B005 は特定日（未来 / 過去）・翌日取得、B007 は S3 成果物からマスタ登録まで、B014 は国・リーグ指定実行に対応しています。"
+      >
+        <StatusBadge tone={statusTone(status)}>{status ?? "-"}</StatusBadge>
+        {busy ? <StatusBadge tone="warn">処理中…</StatusBadge> : <StatusBadge tone="neutral">待機中</StatusBadge>}
+        <ConsoleButton onClick={() => void progressQuery.refetch()} disabled={busy} loading={progressQuery.isFetching}>
+          {!progressQuery.isFetching && <RefreshCw className="h-3.5 w-3.5" />}
+          更新
+        </ConsoleButton>
+        <ConsoleButton variant="primary" onClick={() => runMutation.mutate()} disabled={runButtonDisabled} loading={runMutation.isPending} title={runButtonTitle}>
+          {!runMutation.isPending && <Play className="h-3.5 w-3.5" />}
+          {isRunning ? "実行中" : "実行"}
+        </ConsoleButton>
+      </ConsoleToolbar>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            <Badge tone="blue">Batch {batchCode}</Badge>
-            <Badge tone={statusTone(progressQuery.data?.status)}>{progressQuery.data?.status ?? "-"}</Badge>
-            {busy ? <Badge tone="amber">処理中…</Badge> : <Badge tone="emerald">待機中</Badge>}
-            {lastTaskArn ? <Badge tone="gray">lastTaskArn: {lastTaskArn}</Badge> : null}
-          </div>
-        </div>
+      {lastTaskArn && (
+        <ConsoleNotice tone="ok" title="直近に起動したタスク" onClose={() => setLastTaskArn(null)}>
+          {lastTaskArn}
+        </ConsoleNotice>
+      )}
+      {runMutation.isError && (
+        <ConsoleNotice tone="ng" title="起動エラー">
+          {(runMutation.error as Error).message}
+        </ConsoleNotice>
+      )}
+      {progressQuery.isError && (
+        <ConsoleNotice tone="ng" title="進捗取得エラー">
+          {(progressQuery.error as Error).message}
+        </ConsoleNotice>
+      )}
+      {masterMutation.isError && (
+        <ConsoleNotice tone="ng" title="マスタ登録エラー">
+          {(masterMutation.error as Error).message}
+        </ConsoleNotice>
+      )}
 
-        {/* Controls */}
-        <Card className="p-6">
-          <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
-            <div>
-              <div className="text-lg font-extrabold text-gray-900">操作</div>
-              <div className="text-sm text-gray-600 mt-1">RUN/更新、B005は実行モード指定＋翌日取得ボタン、B007はS3確認・マスタ登録、B014は国とリーグを指定して実行</div>
-            </div>
-
-            <div className="flex gap-2 flex-wrap">
-              <Button onClick={() => runMutation.mutate()} disabled={runButtonDisabled} loading={runMutation.isPending} title={runButtonTitle}>
-                {isRunning ? "実行中" : "実行"}
-              </Button>
-
-              <Button variant="secondary" onClick={() => progressQuery.refetch()} disabled={progressQuery.isFetching || busy} loading={progressQuery.isFetching}>
-                更新
-              </Button>
-
-              {isB007 ? (
-                <>
-                  <Button
-                    variant="secondary"
-                    onClick={() => {
-                      s3CountQuery.refetch();
-                      s3ListQuery.refetch();
-                    }}
-                    disabled={busy || s3CountQuery.isFetching || s3ListQuery.isFetching}
-                    loading={s3CountQuery.isFetching || s3ListQuery.isFetching}
-                    title="S3のファイル状況を再取得します"
-                  >
-                    S3確認
-                  </Button>
-
-                  <Button
-                    variant="danger"
-                    onClick={() => setIsMasterModalOpen(true)}
-                    disabled={busy || isRunning || !canRegisterMaster}
-                    title={isRunning ? "RUNNING中はマスタ登録できません" : !canRegisterMaster ? "S3にcsvがちょうど1つ必要です" : undefined}
-                  >
-                    マスタ登録
-                  </Button>
-                </>
-              ) : null}
-            </div>
-          </div>
-
-          <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-            <div className="grid gap-2">
-              <label className="text-sm font-extrabold text-gray-900">Batch</label>
-              <select
-                value={batchCode}
-                onChange={(e) => setBatchCode(e.target.value)}
+      {/* ===== 操作 ===== */}
+      <ConsolePanel
+        title="操作"
+        right={
+          isB007 ? (
+            <>
+              <StatusBadge tone={canRegisterMaster ? "ok" : "ng"}>判定: {canRegisterMaster ? "OK（csv=1）" : `NG（csv=${csvItems.length}）`}</StatusBadge>
+              <ConsoleButton
+                size="sm"
+                onClick={() => {
+                  void s3CountQuery.refetch();
+                  void s3ListQuery.refetch();
+                }}
                 disabled={busy}
-                className="w-full px-4 py-3 rounded-xl border bg-white text-sm font-semibold hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                loading={s3CountQuery.isFetching || s3ListQuery.isFetching}
+                title="S3のファイル状況を再取得します"
               >
-                {batchCodes.map((b) => (
-                  <option key={b} value={b}>
-                    {b}
-                  </option>
-                ))}
-              </select>
-            </div>
+                {!(s3CountQuery.isFetching || s3ListQuery.isFetching) && <Search className="h-3 w-3" />}
+                S3確認
+              </ConsoleButton>
+              <ConsoleButton
+                size="sm"
+                variant="danger"
+                onClick={() => setIsMasterModalOpen(true)}
+                disabled={busy || isRunning || !canRegisterMaster}
+                title={isRunning ? "RUNNING中はマスタ登録できません" : !canRegisterMaster ? "S3にcsvがちょうど1つ必要です" : undefined}
+              >
+                <Database className="h-3 w-3" />
+                マスタ登録
+              </ConsoleButton>
+            </>
+          ) : undefined
+        }
+      >
+        <div className="flex flex-wrap items-end gap-2.5">
+          <ConsoleField label="Batch">
+            <ConsoleSelect value={batchCode} onChange={(e) => setBatchCode(e.target.value)} disabled={busy} className="w-56 font-mono">
+              {BATCH_CODES.map((b) => (
+                <option key={b} value={b}>
+                  {b}
+                </option>
+              ))}
+            </ConsoleSelect>
+          </ConsoleField>
 
-            {isB007 ? (
-              <div className="grid gap-2">
-                <label className="text-sm font-extrabold text-gray-900">Prefix scope（B007）</label>
-                <select
-                  value={scope}
-                  onChange={(e) => setScope(e.target.value as S3PrefixScope)}
-                  disabled={busy}
-                  className="w-full px-4 py-3 rounded-xl border bg-white text-sm font-semibold hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="DEFAULT">json/（DEFAULT）</option>
-                  <option value="ROOT">ルート（ROOT）</option>
-                </select>
-              </div>
-            ) : (
-              <div className="hidden md:block" />
-            )}
+          {isB007 && (
+            <ConsoleField label="Prefix scope（B007）">
+              <ConsoleSelect value={scope} onChange={(e) => setScope(e.target.value as S3PrefixScope)} disabled={busy} className="w-48">
+                <option value="DEFAULT">json/（DEFAULT）</option>
+                <option value="ROOT">ルート（ROOT）</option>
+              </ConsoleSelect>
+            </ConsoleField>
+          )}
 
-            {isB007 ? (
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge tone={canRegisterMaster ? "emerald" : "rose"}>判定: {canRegisterMaster ? "OK（csv=1）" : `NG（csv=${csvItems.length}）`}</Badge>
-                <Badge tone="gray">scope: {scope}</Badge>
-              </div>
-            ) : isB014 ? (
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge tone={country ? "blue" : "gray"}>country: {country || "-"}</Badge>
-                <Badge tone={league ? "violet" : "gray"}>league: {league || "-"}</Badge>
-                <Badge tone="gray">season: {season || "-"}</Badge>
-              </div>
-            ) : isB005 ? (
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge tone="blue">mode: {futureRunModeLabel(futureRunMode)}</Badge>
-                {isB005SpecificDateMode ? <Badge tone={futureTargetDate && isFutureTargetDateInRange ? "emerald" : "rose"}>date: {futureTargetDate || "未指定"}</Badge> : null}
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge tone="gray">progress poll: 5s</Badge>
-              </div>
-            )}
-          </div>
-
-          {isB005 ? (
-            <div className="mt-5 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="grid gap-2">
-                  <label className="text-sm font-extrabold text-gray-900">実行モード</label>
-                  <select
-                    value={futureRunMode}
-                    onChange={(e) => setFutureRunMode(e.target.value as FutureRunModeUi)}
+          {isB005 && (
+            <>
+              <ConsoleField label="実行モード（B005）">
+                <ConsoleSelect value={futureRunMode} onChange={(e) => setFutureRunMode(e.target.value as FutureRunModeUi)} disabled={busy} className="w-64">
+                  <option value="WEEK">1週間分（従来通り）</option>
+                  <option value="NEXT_DAY_ONLY">翌日のみ</option>
+                  <option value="SPECIFIC_DATE_FUTURE">特定の未来日を指定</option>
+                  <option value="SPECIFIC_DATE_PAST">特定の過去日を指定（終了済試合）</option>
+                </ConsoleSelect>
+              </ConsoleField>
+              {isB005SpecificDateMode && (
+                <ConsoleField label="対象日">
+                  <ConsoleInput
+                    type="date"
+                    value={futureTargetDate}
+                    onChange={(e) => setFutureTargetDate(e.target.value)}
                     disabled={busy}
-                    className="w-full px-4 py-3 rounded-xl border bg-white text-sm font-semibold hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="WEEK">1週間分（従来通り）</option>
-                    <option value="NEXT_DAY_ONLY">翌日のみ</option>
-                    <option value="SPECIFIC_DATE_FUTURE">特定の未来日を指定</option>
-                    <option value="SPECIFIC_DATE_PAST">特定の過去日を指定（終了済試合）</option>
-                  </select>
-                </div>
+                    min={futureRunMode === "SPECIFIC_DATE_PAST" ? minPastDateStr : tomorrowDateStr}
+                    max={futureRunMode === "SPECIFIC_DATE_PAST" ? todayDateStr : maxFutureDateStr}
+                    className={futureTargetDate && !isFutureTargetDateInRange ? "!border-red-400" : ""}
+                  />
+                </ConsoleField>
+              )}
+              <ConsoleButton
+                onClick={() => nextDayMutation.mutate()}
+                disabled={runMutation.isPending || masterMutation.isPending || isRunning}
+                loading={nextDayMutation.isPending}
+                title="実行モードの選択に関わらず、翌日分を即時取得します"
+              >
+                {!nextDayMutation.isPending && <CalendarClock className="h-3.5 w-3.5" />}
+                次の日取得
+              </ConsoleButton>
+            </>
+          )}
 
-                {isB005SpecificDateMode ? (
-                  <div className="grid gap-2">
-                    <label className="text-sm font-extrabold text-gray-900">対象日</label>
-                    <input
-                      type="date"
-                      value={futureTargetDate}
-                      onChange={(e) => setFutureTargetDate(e.target.value)}
-                      disabled={busy}
-                      min={futureRunMode === "SPECIFIC_DATE_PAST" ? minPastDateStr : futureRunMode === "SPECIFIC_DATE_FUTURE" ? tomorrowDateStr : undefined}
-                      max={futureRunMode === "SPECIFIC_DATE_PAST" ? todayDateStr : futureRunMode === "SPECIFIC_DATE_FUTURE" ? maxFutureDateStr : undefined}
-                      className="w-full px-4 py-3 rounded-xl border bg-white text-sm font-semibold hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                    <div className="text-xs text-gray-500">
-                      {futureRunMode === "SPECIFIC_DATE_PAST"
-                        ? `過去日は最大7日前（${minPastDateStr} 〜 ${todayDateStr}）までしか指定できません（Flashscore側の制約。「終了した試合」タブから自動取得します）。`
-                        : `未来日は最大7日後（${tomorrowDateStr} 〜 ${maxFutureDateStr}）まで指定できます。`}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="hidden md:block" />
-                )}
-
-                <div className="hidden md:block" />
-              </div>
-
-              <div className="flex items-center gap-3 flex-wrap rounded-xl border border-dashed border-gray-300 bg-gray-50/60 p-4">
-                <Button
-                  variant="secondary"
-                  onClick={() => nextDayMutation.mutate()}
-                  disabled={runMutation.isPending || masterMutation.isPending || isRunning || nextDayMutation.isPending}
-                  loading={nextDayMutation.isPending}
-                  title="実行モードの選択に関わらず、翌日分を即時取得します"
-                >
-                  次の日取得
-                </Button>
-                <div className="text-xs text-gray-600">上のプルダウンの選択に関わらず、翌日分を即座に取得します。</div>
-              </div>
-
-              {nextDayMutation.isError ? <Alert type="error" title="翌日データ取得エラー" message={(nextDayMutation.error as Error).message} /> : null}
-            </div>
-          ) : null}
-
-          {isB014 ? (
-            <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="grid gap-2">
-                <label className="text-sm font-extrabold text-gray-900">Country</label>
-                <select
-                  value={country}
-                  onChange={(e) => setCountry(e.target.value)}
-                  disabled={busy || statOptionsQuery.isLoading}
-                  className="w-full px-4 py-3 rounded-xl border bg-white text-sm font-semibold hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
+          {isB014 && (
+            <>
+              <ConsoleField label="Country（B014）">
+                <ConsoleSelect value={country} onChange={(e) => setCountry(e.target.value)} disabled={busy || statOptionsQuery.isLoading} className="w-44">
                   <option value="">選択してください</option>
                   {countryOptions.map((c) => (
                     <option key={c.country} value={c.country}>
                       {c.country}
                     </option>
                   ))}
-                </select>
-              </div>
-
-              <div className="grid gap-2">
-                <label className="text-sm font-extrabold text-gray-900">League</label>
-                <select
-                  value={league}
-                  onChange={(e) => setLeague(e.target.value)}
-                  disabled={busy || statOptionsQuery.isLoading || !country}
-                  className="w-full px-4 py-3 rounded-xl border bg-white text-sm font-semibold hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
+                </ConsoleSelect>
+              </ConsoleField>
+              <ConsoleField label="League">
+                <ConsoleSelect value={league} onChange={(e) => setLeague(e.target.value)} disabled={busy || statOptionsQuery.isLoading || !country} className="w-48">
                   <option value="">選択してください</option>
                   {leagueOptions.map((lg) => (
                     <option key={lg} value={lg}>
                       {lg}
                     </option>
                   ))}
-                </select>
-              </div>
+                </ConsoleSelect>
+              </ConsoleField>
+              <ConsoleField label="Season（任意）">
+                <ConsoleInput value={season} onChange={(e) => setSeason(e.target.value)} disabled={busy} placeholder="例: 2025" className="w-28" />
+              </ConsoleField>
+            </>
+          )}
+        </div>
 
-              <div className="grid gap-2">
-                <label className="text-sm font-extrabold text-gray-900">Season（任意）</label>
-                <input
-                  value={season}
-                  onChange={(e) => setSeason(e.target.value)}
-                  disabled={busy}
-                  placeholder="例: 2025"
-                  className="w-full px-4 py-3 rounded-xl border bg-white text-sm font-semibold hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+        {/* 補足・実行条件 */}
+        <div className="mt-2 text-[11px] text-gray-500">
+          {isB005 ? (
+            <>
+              mode: <b>{futureRunModeLabel(futureRunMode)}</b>
+              {isB005SpecificDateMode &&
+                (futureRunMode === "SPECIFIC_DATE_PAST"
+                  ? ` ／ 過去日は最大7日前（${minPastDateStr} 〜 ${todayDateStr}）まで。Flashscore側の制約で「終了した試合」タブから自動取得します。`
+                  : ` ／ 未来日は最大7日後（${tomorrowDateStr} 〜 ${maxFutureDateStr}）まで指定できます。`)}
+              {" ／ 「次の日取得」は上の選択に関わらず翌日分を即座に取得します。"}
+            </>
+          ) : isB007 ? (
+            <>scope: {scope}</>
+          ) : isB014 ? null : (
+            <>進捗は5秒ごとに自動更新します。</>
+          )}
+        </div>
+
+        {nextDayMutation.isError && (
+          <ConsoleNotice tone="ng" title="翌日データ取得エラー" className="mb-0 mt-2.5">
+            {(nextDayMutation.error as Error).message}
+          </ConsoleNotice>
+        )}
+
+        {isB005 && !b005CanRun && (
+          <ConsoleNotice tone="warn" title="B005の実行条件" className="mb-0 mt-2.5">
+            {isB005SpecificDateMode && futureTargetDate.trim() && !isFutureTargetDateInRange
+              ? futureRunMode === "SPECIFIC_DATE_PAST"
+                ? `過去日は ${minPastDateStr} 〜 ${todayDateStr} の範囲で指定してください（Flashscore側の制約で最大7日前までしか遡れません）。`
+                : `未来日は ${tomorrowDateStr} 〜 ${maxFutureDateStr} の範囲で指定してください。`
+              : "「特定の未来日を指定」または「特定の過去日を指定」モードを選んだ場合は、対象日を指定してください。"}
+          </ConsoleNotice>
+        )}
+
+        {isB014 && statOptionsQuery.isError && (
+          <ConsoleNotice tone="ng" title="B014選択肢取得エラー" className="mb-0 mt-2.5">
+            {(statOptionsQuery.error as Error).message}
+          </ConsoleNotice>
+        )}
+        {isB014 && !statOptionsQuery.isLoading && !statOptionsQuery.isError && !countryOptions.length && (
+          <ConsoleNotice tone="warn" title="B014選択肢なし" className="mb-0 mt-2.5">
+            国・リーグの選択肢が取得できませんでした。マスタデータをご確認ください。
+          </ConsoleNotice>
+        )}
+        {isB014 && !b014CanRun && !statOptionsQuery.isLoading && !statOptionsQuery.isError && countryOptions.length > 0 && (
+          <ConsoleNotice tone="warn" title="B014の実行条件" className="mb-0 mt-2.5">
+            B014を実行するには、国とリーグの両方を選択してください。
+          </ConsoleNotice>
+        )}
+      </ConsolePanel>
+
+      {/* ===== 進捗 ===== */}
+      <ConsolePanel
+        title="進捗"
+        info="5秒ごとに更新"
+        right={
+          <span className="flex flex-wrap gap-2 font-mono text-[11px] text-gray-500">
+            <span>task: {progressQuery.data?.taskId ?? "-"}</span>
+            <span>time: {progressQuery.data?.logTime ?? "-"}</span>
+          </span>
+        }
+      >
+        <div className="flex items-baseline gap-2">
+          <span className="text-[17px] font-bold tabular-nums text-gray-900">{percent != null ? `${percent.toFixed(1)}%` : "-"}</span>
+          <span className="text-xs text-gray-500">
+            {percent != null ? (teamsDone != null && teamsTotal != null ? `${teamsDone} / ${teamsTotal} teams` : "") : (progressQuery.data?.message ?? "進捗情報なし")}
+          </span>
+        </div>
+        <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-gray-100">
+          <div className={`h-full transition-[width] duration-300 ${isRunning ? "bg-indigo-600" : "bg-gray-400"}`} style={{ width: `${percentSafe}%` }} />
+        </div>
+
+        {progressQuery.data?.logLine && (
+          <div className="mt-3">
+            <div className="mb-1 flex items-center gap-2">
+              <span className="text-xs font-bold text-gray-700">Latest Log</span>
+              <ConsoleButton size="sm" variant="ghost" className="ml-auto" onClick={() => void navigator.clipboard.writeText(String(progressQuery.data?.logLine ?? ""))}>
+                <Copy className="h-3 w-3" />
+                ログコピー
+              </ConsoleButton>
             </div>
-          ) : null}
+            <pre className="m-0 max-h-64 overflow-auto whitespace-pre-wrap rounded-lg bg-slate-900 p-3 font-mono text-[11px] leading-relaxed text-slate-200">{progressQuery.data.logLine}</pre>
+          </div>
+        )}
+      </ConsolePanel>
 
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
-            {runMutation.isError ? <Alert type="error" title="起動エラー" message={(runMutation.error as Error).message} /> : null}
-            {progressQuery.isError ? <Alert type="error" title="進捗取得エラー" message={(progressQuery.error as Error).message} /> : null}
-            {masterMutation.isError ? <Alert type="error" title="マスタ登録エラー" message={(masterMutation.error as Error).message} /> : null}
+      {/* ===== S3（B007のみ） ===== */}
+      {isB007 && (
+        <>
+          <div className="mb-1.5 flex flex-wrap items-center gap-2">
+            <h2 className="m-0 text-sm font-bold text-gray-900">S3 成果物確認（B007）</h2>
+            <span className="font-mono text-[11px] text-gray-500">
+              {s3CountQuery.data?.bucket ?? "-"} / {s3CountQuery.data?.prefix ?? "-"}（recursive {String(s3CountQuery.data?.recursive ?? "-")}）
+            </span>
           </div>
 
-          {isB005 && !b005CanRun ? (
-            <div className="mt-4">
-              <Alert
-                type="warning"
-                title="B005の実行条件"
-                message={
-                  isB005SpecificDateMode && futureTargetDate.trim() && !isFutureTargetDateInRange
-                    ? futureRunMode === "SPECIFIC_DATE_PAST"
-                      ? `過去日は ${minPastDateStr} 〜 ${todayDateStr} の範囲で指定してください（Flashscore側の制約で最大7日前までしか遡れません）。`
-                      : `未来日は ${tomorrowDateStr} 〜 ${maxFutureDateStr} の範囲で指定してください。`
-                    : "「特定の未来日を指定」または「特定の過去日を指定」モードを選んだ場合は、対象日を指定してください。"
-                }
-              />
-            </div>
-          ) : null}
+          {(s3CountQuery.isError || s3ListQuery.isError) && (
+            <ConsoleNotice tone="ng" title="S3取得エラー">
+              {((s3CountQuery.error as Error)?.message || (s3ListQuery.error as Error)?.message) ?? "unknown"}
+            </ConsoleNotice>
+          )}
 
-          {isB014 && statOptionsQuery.isError ? (
-            <div className="mt-4">
-              <Alert type="error" title="B014選択肢取得エラー" message={(statOptionsQuery.error as Error).message} />
-            </div>
-          ) : null}
+          <StatChips
+            loading={s3CountQuery.isLoading}
+            items={[
+              { label: "Total（prefix配下）", value: numText(s3CountQuery.data?.totalCount) },
+              { label: "指定日（countOnDay）", value: numText(s3CountQuery.data?.countOnDay) },
+              { label: "CSV files", value: csvItems.length.toLocaleString(), tone: canRegisterMaster ? "ok" : "ng" },
+              { label: "Returned（list）", value: numText(s3ListQuery.data?.returnedCount) },
+            ]}
+          />
 
-          {isB014 && !statOptionsQuery.isLoading && !statOptionsQuery.isError && !countryOptions.length ? (
-            <div className="mt-4">
-              <Alert type="warning" title="B014選択肢なし" message="国・リーグの選択肢が取得できませんでした。マスタデータをご確認ください。" />
-            </div>
-          ) : null}
+          {!canRegisterMaster && <ConsoleNotice tone="warn" title={`マスタ登録するには、S3に csv がちょうど 1つ必要です（現在: ${csvItems.length}）。`} />}
 
-          {isB014 && !b014CanRun && !statOptionsQuery.isLoading && !statOptionsQuery.isError ? (
-            <div className="mt-4">
-              <Alert type="warning" title="B014の実行条件" message="B014を実行するには、国とリーグの両方を選択してください。" />
+          {(s3CountQuery.data?.message || s3ListQuery.data?.message) && (
+            <div className="mb-2 text-[11px] text-gray-600">
+              {s3CountQuery.data?.message && (
+                <div>
+                  <b>count:</b> {s3CountQuery.data.message}
+                </div>
+              )}
+              {s3ListQuery.data?.message && (
+                <div>
+                  <b>list:</b> {s3ListQuery.data.message}
+                </div>
+              )}
             </div>
-          ) : null}
-        </Card>
+          )}
 
-        {/* Progress */}
-        <Card className="p-6">
-          <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
-            <div>
-              <div className="text-lg font-extrabold text-gray-900">進捗</div>
-              <div className="text-sm text-gray-600 mt-1">最新の進捗とログを表示します（5秒ごとに更新）</div>
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <Badge tone={statusTone(progressQuery.data?.status)}>{progressQuery.data?.status ?? "-"}</Badge>
-              <Badge tone="gray">task: {progressQuery.data?.taskId ?? "-"}</Badge>
-              <Badge tone="gray">time: {progressQuery.data?.logTime ?? "-"}</Badge>
-            </div>
+          <ConsoleTable
+            columns={S3_COLUMNS}
+            rows={s3ListQuery.data?.items ?? []}
+            rowKey={(it) => it.key}
+            loading={s3ListQuery.isLoading}
+            emptyText="ファイルがありません"
+            rowClassName={(it) => (it.key.toLowerCase().endsWith(".csv") ? "!bg-indigo-50/70" : "")}
+          />
+        </>
+      )}
+
+      <div className="mt-3 text-center text-[11px] text-gray-400">取得できない場合は、管理者権限・セッション（credentials: include）・API到達性をご確認ください。</div>
+
+      {/* マスタ登録の確認 */}
+      <ConsoleModal
+        open={isMasterModalOpen}
+        title="マスタ登録"
+        onClose={() => {
+          if (!masterMutation.isPending) setIsMasterModalOpen(false);
+        }}
+        busy={masterMutation.isPending}
+        width={520}
+        footer={
+          <div className="ml-auto flex gap-1.5">
+            <ConsoleButton onClick={() => setIsMasterModalOpen(false)} disabled={masterMutation.isPending}>
+              やめる
+            </ConsoleButton>
+            <ConsoleButton
+              variant="danger"
+              onClick={() => masterMutation.mutate()}
+              disabled={!canRegisterMaster}
+              loading={masterMutation.isPending}
+              title={!canRegisterMaster ? "条件を満たしていないため実行できません" : undefined}
+            >
+              登録する
+            </ConsoleButton>
           </div>
-
-          <div className="mt-5">
-            <div className="text-sm font-extrabold text-gray-900">Progress</div>
-            <div className="mt-1 text-sm text-gray-700 font-semibold">
-              {percent != null ? `${percent.toFixed(1)}% ${teamsDone != null && teamsTotal != null ? `(${teamsDone}/${teamsTotal})` : ""}` : (progressQuery.data?.message ?? "進捗情報なし")}
-            </div>
-
-            <div className="mt-3 h-3 rounded-full bg-gray-200 overflow-hidden">
-              <div className="h-full bg-blue-600 transition-[width] duration-300" style={{ width: `${percentSafe}%` }} />
-            </div>
+        }
+      >
+        {canRegisterMaster ? (
+          <div className="text-[13px] text-gray-700">
+            マスタに登録しますか？
+            <div className="mt-2 break-all rounded-md bg-gray-50 px-2 py-1.5 font-mono text-xs">{csvItems[0]?.key ?? ""}</div>
           </div>
-
-          {progressQuery.data?.logLine ? (
-            <div className="mt-5">
-              <div className="flex items-center justify-between gap-3">
-                <div className="text-sm font-extrabold text-gray-900">Latest Log</div>
-                <Button variant="secondary" className="px-3 py-2 text-xs" onClick={() => navigator.clipboard.writeText(String(progressQuery.data?.logLine ?? ""))}>
-                  ログコピー
-                </Button>
-              </div>
-
-              <pre className="mt-3 rounded-2xl border border-gray-900/10 bg-[#0b1020] text-gray-100 p-4 text-xs leading-relaxed whitespace-pre-wrap">{progressQuery.data.logLine}</pre>
-            </div>
-          ) : null}
-        </Card>
-
-        {/* S3 Panel（B007 only） */}
-        {isB007 ? (
-          <Card className="p-6">
-            <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
-              <div>
-                <div className="text-lg font-extrabold text-gray-900">S3 成果物確認（B007）</div>
-                <div className="text-sm text-gray-600 mt-1">prefix 配下の件数と list（最大100）を確認します</div>
-              </div>
-
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge tone="gray">{s3CountQuery.data?.bucket ?? "-"}</Badge>
-                <Badge tone="gray">{s3CountQuery.data?.prefix ?? "-"}</Badge>
-                <Badge tone="blue">recursive {String(s3CountQuery.data?.recursive ?? "-")}</Badge>
-              </div>
-            </div>
-
-            {s3CountQuery.isError || s3ListQuery.isError ? (
-              <div className="mt-4">
-                <Alert type="error" title="S3取得エラー" message={((s3CountQuery.error as Error)?.message || (s3ListQuery.error as Error)?.message) ?? "unknown"} />
-              </div>
-            ) : null}
-
-            <div className="mt-5 grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="rounded-2xl border bg-gradient-to-br from-white to-gray-50 p-5">
-                <div className="text-xs text-gray-600 font-semibold">Total（prefix配下）</div>
-                <div className="mt-2 text-3xl font-extrabold text-gray-900">{s3TotalText}</div>
-              </div>
-
-              <div className="rounded-2xl border bg-gradient-to-br from-white to-amber-50 p-5">
-                <div className="text-xs text-gray-600 font-semibold">指定日（countOnDay）</div>
-                <div className="mt-2 text-3xl font-extrabold text-gray-900">{s3CountOnDayText}</div>
-              </div>
-
-              <div className="rounded-2xl border bg-gradient-to-br from-white to-blue-50 p-5">
-                <div className="text-xs text-gray-600 font-semibold">CSV files</div>
-                <div className="mt-2 text-3xl font-extrabold text-gray-900">{csvItems.length.toLocaleString()}</div>
-              </div>
-
-              <div className="rounded-2xl border bg-gradient-to-br from-white to-gray-50 p-5">
-                <div className="text-xs text-gray-600 font-semibold">Returned（list）</div>
-                <div className="mt-2 text-3xl font-extrabold text-gray-900">{s3ReturnedText}</div>
-              </div>
-            </div>
-
-            {!canRegisterMaster ? (
-              <div className="mt-4">
-                <Alert type="warning" title="マスタ登録の条件" message={`マスタ登録するには、S3に csv がちょうど 1つ必要です（現在: ${csvItems.length}）。`} />
-              </div>
-            ) : null}
-
-            {s3CountQuery.data?.message ? (
-              <div className="mt-4 text-sm text-gray-700">
-                <span className="font-extrabold">count message:</span> {s3CountQuery.data.message}
-              </div>
-            ) : null}
-
-            {s3ListQuery.data?.message ? (
-              <div className="mt-2 text-sm text-gray-700">
-                <span className="font-extrabold">list message:</span> {s3ListQuery.data.message}
-              </div>
-            ) : null}
-
-            <div className="mt-5 overflow-x-auto rounded-2xl border bg-white">
-              <table className="w-full border-collapse text-sm">
-                <thead>
-                  <tr className="text-left border-b bg-gray-50">
-                    <th className="px-5 py-3 text-xs font-extrabold text-gray-600 min-w-[520px]">key</th>
-                    <th className="px-5 py-3 text-xs font-extrabold text-gray-600 min-w-[140px]">size</th>
-                    <th className="px-5 py-3 text-xs font-extrabold text-gray-600 min-w-[220px]">lastModifiedIso</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(s3ListQuery.data?.items ?? []).map((it) => {
-                    const isCsv = it.key.toLowerCase().endsWith(".csv");
-                    return (
-                      <tr key={it.key} className={`border-b hover:bg-gray-50 transition-colors ${isCsv ? "bg-blue-50/60" : ""}`}>
-                        <td className="px-5 py-3 align-top">
-                          <code className="text-xs font-semibold break-all">{it.key}</code>
-                        </td>
-                        <td className="px-5 py-3 align-top">{typeof it.size === "number" ? it.size.toLocaleString() : "-"}</td>
-                        <td className="px-5 py-3 align-top">{it.lastModifiedIso ?? "-"}</td>
-                      </tr>
-                    );
-                  })}
-                  {(s3ListQuery.data?.items ?? []).length === 0 ? (
-                    <tr>
-                      <td colSpan={3} className="px-5 py-6 text-sm text-gray-500">
-                        ファイルがありません
-                      </td>
-                    </tr>
-                  ) : null}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        ) : null}
-
-        {/* Confirm Modal */}
-        <ConfirmModal
-          open={isMasterModalOpen}
-          title="マスタ登録"
-          message={canRegisterMaster ? `マスタに登録しますか？\n対象CSV: ${csvItems[0]?.key ?? ""}` : `マスタ登録できません。\nS3に csv がちょうど 1つ必要です（現在: ${csvItems.length}）。`}
-          onClose={() => {
-            if (!masterMutation.isPending) setIsMasterModalOpen(false);
-          }}
-          onConfirm={() => masterMutation.mutate()}
-          isLoading={masterMutation.isPending}
-          confirmText="登録する"
-          cancelText="やめる"
-          confirmDisabled={!canRegisterMaster}
-        />
-
-        <div className="text-center text-xs text-gray-500">取得できない場合は、管理者権限・セッション（credentials: include）・API到達性をご確認ください。</div>
-      </div>
+        ) : (
+          <ConsoleNotice tone="warn" title="マスタ登録できません" className="mb-0">
+            {`S3に csv がちょうど 1つ必要です（現在: ${csvItems.length}）。`}
+          </ConsoleNotice>
+        )}
+      </ConsoleModal>
     </div>
   );
 }

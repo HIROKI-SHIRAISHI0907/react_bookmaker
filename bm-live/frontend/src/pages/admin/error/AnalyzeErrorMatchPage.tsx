@@ -1,4 +1,24 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Download, RefreshCw, Search } from "lucide-react";
+import {
+  BadgeTone,
+  ConsoleButton,
+  ConsoleColumn,
+  ConsoleDrawer,
+  ConsoleField,
+  ConsoleInput,
+  ConsoleNotice,
+  ConsolePanel,
+  ConsoleSelect,
+  ConsoleTable,
+  ConsoleTextarea,
+  ConsoleToolbar,
+  DetailRow,
+  SegmentedTabs,
+  StatChips,
+  StatusBadge,
+  fmtNum,
+} from "../../../api/commonAdminDesign";
 
 /* ===================================================================
  * 統計処理で登録できなかった試合（analyze_error_match）の管理画面
@@ -74,7 +94,6 @@ type AnalyzeErrorBatchResponse = {
 
 type StatusFilter = "unresolved" | "resolved" | "all";
 type ViewMode = "table" | "card";
-type StatusTone = "gray" | "blue" | "emerald" | "amber" | "rose";
 
 type Filters = {
   status: StatusFilter;
@@ -203,17 +222,17 @@ function formatDateTimeJst(value?: string | null): string {
   }).format(date);
 }
 
-function getResolvedStatus(e: AnalyzeError): { label: string; tone: StatusTone } {
-  if (!e.resolvedFlg) return { label: "未対応", tone: "rose" };
-  if (e.resolvedBy === "AUTO") return { label: "自動で解決", tone: "blue" };
-  return { label: "対応済み", tone: "emerald" };
+function getResolvedStatus(e: AnalyzeError): { label: string; tone: BadgeTone } {
+  if (!e.resolvedFlg) return { label: "未対応", tone: "ng" };
+  if (e.resolvedBy === "AUTO") return { label: "自動で解決", tone: "info" };
+  return { label: "対応済み", tone: "ok" };
 }
 
-function getTypeTone(errorType?: string): StatusTone {
-  if (!errorType) return "gray";
-  if (errorType.startsWith("SEASON_") || errorType === "INVALID_CATEGORY") return "amber";
-  if (errorType === "MISSING_VALUE" || errorType === "INVALID_VALUE") return "rose";
-  return "gray";
+function getTypeTone(errorType?: string): BadgeTone {
+  if (!errorType) return "neutral";
+  if (errorType.startsWith("SEASON_") || errorType === "INVALID_CATEGORY") return "warn";
+  if (errorType === "MISSING_VALUE" || errorType === "INVALID_VALUE") return "ng";
+  return "neutral";
 }
 
 function splitFields(errorField?: string): string[] {
@@ -236,288 +255,21 @@ function countryLeagueLabel(country?: string, league?: string): string {
   return `${country || "-"} / ${league || "-"}`;
 }
 
-/* ---------- スタイル（試合予定一覧と同じ） ---------- */
-
-const pageStyle: React.CSSProperties = {
-  padding: 16,
-  fontSize: 12,
-  color: "#0f172a",
-  background: "#f8fafc",
-  minHeight: "100vh",
-  boxSizing: "border-box",
-};
-
-const sectionStyle: React.CSSProperties = {
-  background: "#ffffff",
-  border: "1px solid #e2e8f0",
-  borderRadius: 12,
-  padding: 16,
-  marginBottom: 16,
-};
-
-const buttonStyle: React.CSSProperties = {
-  height: 32,
-  padding: "0 12px",
-  borderRadius: 8,
-  border: "1px solid #cbd5e1",
-  background: "#fff",
-  cursor: "pointer",
-  fontSize: 12,
-  whiteSpace: "nowrap",
-};
-
-const primaryButtonStyle: React.CSSProperties = {
-  ...buttonStyle,
-  background: "#2563eb",
-  color: "#fff",
-  border: "1px solid #2563eb",
-};
-
-const successButtonStyle: React.CSSProperties = {
-  ...buttonStyle,
-  background: "#15803d",
-  color: "#fff",
-  border: "1px solid #15803d",
-};
-
-const dangerButtonStyle: React.CSSProperties = {
-  ...buttonStyle,
-  background: "#b91c1c",
-  border: "1px solid #b91c1c",
-  color: "#ffffff",
-};
-
-const disabledButtonStyle: React.CSSProperties = {
-  ...buttonStyle,
-  opacity: 0.45,
-  cursor: "not-allowed",
-};
-
-const linkButtonStyle: React.CSSProperties = {
-  border: "none",
-  background: "transparent",
-  color: "#2563eb",
-  cursor: "pointer",
-  fontSize: 12,
-  fontWeight: 600,
-  padding: 0,
-};
-
-const inputStyle: React.CSSProperties = {
-  height: 32,
-  border: "1px solid #94a3b8",
-  borderRadius: 8,
-  padding: "4px 8px",
-  fontSize: 12,
-  boxSizing: "border-box",
-  background: "#fff",
-};
-
-const labelStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 4,
-  fontSize: 11,
-  color: "#64748b",
-};
-
-const badgeStyle: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  minHeight: 28,
-  padding: "0 10px",
-  borderRadius: 9999,
-  background: "#f1f5f9",
-  color: "#334155",
-  fontSize: 12,
-  border: "1px solid #e2e8f0",
-};
-
-const fieldChipStyle: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  minHeight: 22,
-  padding: "0 8px",
-  borderRadius: 6,
-  background: "#eef2ff",
-  color: "#3730a3",
-  border: "1px solid #c7d2fe",
-  fontSize: 11,
-  fontWeight: 700,
-  fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-};
-
-const infoCardStyle: React.CSSProperties = {
-  background: "#ffffff",
-  border: "1px solid #e2e8f0",
-  borderRadius: 12,
-  padding: 14,
-  minWidth: 180,
-  flex: "1 1 180px",
-};
-
-const infoLabelStyle: React.CSSProperties = {
-  fontSize: 11,
-  color: "#64748b",
-  marginBottom: 6,
-};
-
-const infoValueStyle: React.CSSProperties = {
-  fontSize: 20,
-  fontWeight: 700,
-  color: "#0f172a",
-  lineHeight: 1.3,
-};
-
-const tableWrapperStyle: React.CSSProperties = {
-  overflowX: "auto",
-  border: "1px solid #e2e8f0",
-  borderRadius: 10,
-  marginTop: 10,
-};
-
-const tableStyle: React.CSSProperties = {
-  width: "100%",
-  borderCollapse: "collapse",
-  fontSize: 12,
-};
-
-const thTdStyle: React.CSSProperties = {
-  borderBottom: "1px solid #e2e8f0",
-  padding: "8px 10px",
-  fontSize: 12,
-  verticalAlign: "top",
-  lineHeight: 1.5,
-  textAlign: "left",
-};
-
-const thStyle: React.CSSProperties = {
-  ...thTdStyle,
-  background: "#f8fafc",
-  fontWeight: 700,
-  whiteSpace: "nowrap",
-};
-
-const matchCardStyle: React.CSSProperties = {
-  border: "1px solid #e2e8f0",
-  borderRadius: 12,
-  padding: 14,
-  background: "#fff",
-};
-
-const statusPillBaseStyle: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  minHeight: 26,
-  minWidth: 64,
-  padding: "0 10px",
-  borderRadius: 9999,
-  fontSize: 12,
-  fontWeight: 700,
-  whiteSpace: "nowrap",
-};
-
-const tabContainerStyle: React.CSSProperties = {
-  display: "inline-flex",
-  gap: 8,
-  padding: 4,
-  background: "#f8fafc",
-  border: "1px solid #e2e8f0",
-  borderRadius: 12,
-};
-
-const tabBaseStyle: React.CSSProperties = {
-  height: 36,
-  padding: "0 14px",
-  borderRadius: 10,
-  border: "1px solid transparent",
-  background: "transparent",
-  cursor: "pointer",
-  fontSize: 12,
-  fontWeight: 700,
-  color: "#475569",
-};
-
-const preStyle: React.CSSProperties = {
-  margin: 0,
-  padding: 10,
-  background: "#0f172a",
-  color: "#e2e8f0",
-  borderRadius: 8,
-  fontSize: 11,
-  lineHeight: 1.5,
-  maxHeight: 280,
-  overflow: "auto",
-  whiteSpace: "pre-wrap",
-  wordBreak: "break-all",
-};
-
-const overlayStyle: React.CSSProperties = {
-  position: "fixed",
-  inset: 0,
-  background: "rgba(15, 23, 42, 0.45)",
-  display: "flex",
-  justifyContent: "flex-end",
-  zIndex: 1000,
-};
-
-const drawerStyle: React.CSSProperties = {
-  width: "min(720px, 100%)",
-  height: "100%",
-  background: "#fff",
-  boxShadow: "-4px 0 16px rgba(15, 23, 42, 0.15)",
-  padding: 20,
-  overflowY: "auto",
-  boxSizing: "border-box",
-};
-
-function getTabStyle(active: boolean): React.CSSProperties {
-  return active
-    ? {
-        ...tabBaseStyle,
-        background: "#2563eb",
-        color: "#ffffff",
-        border: "1px solid #2563eb",
-        boxShadow: "0 1px 2px rgba(37, 99, 235, 0.2)",
-      }
-    : tabBaseStyle;
-}
-
-function getStatusPillStyle(tone: StatusTone): React.CSSProperties {
-  const colors: Record<StatusTone, [string, string, string]> = {
-    blue: ["#dbeafe", "#1d4ed8", "#bfdbfe"],
-    emerald: ["#dcfce7", "#15803d", "#bbf7d0"],
-    amber: ["#fef3c7", "#b45309", "#fde68a"],
-    rose: ["#fee2e2", "#b91c1c", "#fecaca"],
-    gray: ["#e2e8f0", "#475569", "#cbd5e1"],
-  };
-  const [bg, fg, border] = colors[tone];
-  return { ...statusPillBaseStyle, background: bg, color: fg, border: `1px solid ${border}` };
-}
-
 /* ---------- 部品 ---------- */
 
 const FieldChips: React.FC<{ errorField?: string }> = ({ errorField }) => {
   const fields = splitFields(errorField);
-  if (fields.length === 0) return <span style={{ color: "#94a3b8" }}>-</span>;
+  if (fields.length === 0) return <span className="text-gray-300">-</span>;
   return (
-    <span style={{ display: "inline-flex", gap: 4, flexWrap: "wrap" }}>
+    <span className="inline-flex flex-wrap gap-1">
       {fields.map((f) => (
-        <span key={f} style={fieldChipStyle}>
+        <span key={f} className="inline-flex h-5 items-center rounded border border-indigo-200 bg-indigo-50 px-1.5 font-mono text-[11px] font-bold text-indigo-800">
           {f}
         </span>
       ))}
     </span>
   );
 };
-
-const DetailRow: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
-  <div style={{ display: "grid", gridTemplateColumns: "140px 1fr", gap: 8, padding: "6px 0", borderBottom: "1px solid #f1f5f9" }}>
-    <div style={{ color: "#64748b" }}>{label}</div>
-    <div style={{ wordBreak: "break-all" }}>{children}</div>
-  </div>
-);
 
 /* ---------- 画面 ---------- */
 
@@ -613,7 +365,7 @@ const AnalyzeErrorMatchesPage: React.FC = () => {
       errorField: splitFields(s.errorField)[0] ?? "",
     });
 
-  /* ----- 集計から作る選択肢・カード ----- */
+  /* ----- 集計から作る選択肢・件数 ----- */
 
   const options = useMemo(() => {
     const bm = new Set<string>();
@@ -661,9 +413,6 @@ const AnalyzeErrorMatchesPage: React.FC = () => {
   const currentOffset = response?.offset ?? offset;
   const currentLimit = response?.limit ?? PAGE_SIZE;
   const currentPage = Math.floor(currentOffset / currentLimit) + 1;
-  const totalPages = Math.max(1, Math.ceil(total / currentLimit));
-  const canPrev = currentOffset > 0 && !loading;
-  const canNext = currentOffset + currentLimit < total && !loading;
 
   /* ----- 選択 ----- */
 
@@ -793,454 +542,388 @@ const AnalyzeErrorMatchesPage: React.FC = () => {
     }
   };
 
+  const closeDetail = useCallback(() => setDetail(null), []);
+
+  /* ----- 表の列 ----- */
+
+  const summaryColumns: ConsoleColumn<AnalyzeErrorSummary>[] = [
+    { key: "bm", header: "BM", mono: true, cell: (s) => toDisplay(s.bmNumber) },
+    { key: "type", header: "種別", cell: (s) => <StatusBadge tone={getTypeTone(s.errorType)}>{toDisplay(s.errorTypeLabel ?? s.errorType)}</StatusBadge> },
+    { key: "cl", header: "国 / リーグ", cell: (s) => countryLeagueLabel(s.country, s.league) },
+    { key: "field", header: "原因の項目", cell: (s) => <FieldChips errorField={s.errorField} /> },
+    { key: "unresolved", header: "未対応", align: "right", cell: (s) => <b className="text-red-700 tabular-nums">{s.unresolvedCount ?? 0}</b> },
+    { key: "occurred", header: "発生回数", align: "right", cell: (s) => <span className="tabular-nums">{s.occurredTotal ?? 0}</span> },
+    { key: "last", header: "最終発生", mono: true, cell: (s) => formatDateTimeJst(s.lastOccurredAt) },
+    { key: "msg", header: "最新の内容", wrap: true, className: "min-w-[240px] max-w-[360px] text-gray-600", cell: (s) => toDisplay(s.latestMessage) },
+  ];
+
+  const listColumns: ConsoleColumn<AnalyzeError>[] = [
+    {
+      key: "check",
+      header: <input type="checkbox" checked={allOnPageSelected} onChange={toggleAll} aria-label="このページをすべて選択" className="accent-indigo-600" />,
+      cell: (e) => <input type="checkbox" checked={selected.has(e.seq)} onChange={() => toggleOne(e.seq)} aria-label={`${e.seq} を選択`} className="accent-indigo-600" />,
+    },
+    {
+      key: "status",
+      header: "状態",
+      cell: (e) => {
+        const s = getResolvedStatus(e);
+        return <StatusBadge tone={s.tone}>{s.label}</StatusBadge>;
+      },
+    },
+    { key: "last", header: "最終発生", mono: true, cell: (e) => formatDateTimeJst(e.lastOccurredAt) },
+    { key: "bm", header: "BM", mono: true, cell: (e) => toDisplay(e.bmNumber) },
+    { key: "type", header: "種別", cell: (e) => <StatusBadge tone={getTypeTone(e.errorType)}>{toDisplay(e.errorTypeLabel ?? e.errorType)}</StatusBadge> },
+    { key: "cl", header: "国 / リーグ", cell: (e) => countryLeagueLabel(e.country, e.league) },
+    {
+      key: "match",
+      header: "試合",
+      wrap: true,
+      className: "min-w-[200px]",
+      cell: (e) => (
+        <>
+          <div className="font-bold">{matchLabel(e)}</div>
+          <div className="text-[11px] text-gray-500">{toDisplay(e.dataCategory)}</div>
+        </>
+      ),
+    },
+    { key: "field", header: "原因の項目", cell: (e) => <FieldChips errorField={e.errorField} /> },
+    { key: "value", header: "値", wrap: true, className: "max-w-[240px] break-all font-mono text-[12px]", cell: (e) => toDisplay(e.errorValue) },
+    { key: "count", header: "回数", align: "right", cell: (e) => <span className="tabular-nums">{e.occurredCount ?? 0}</span> },
+    {
+      key: "open",
+      header: "詳細",
+      cell: (e) => (
+        <button type="button" className="text-xs font-bold text-indigo-600 hover:underline" onClick={() => void openDetail(e.seq)}>
+          開く
+        </button>
+      ),
+    },
+  ];
+
+  const pagingProps = {
+    page: currentPage,
+    pageSize: currentLimit,
+    total,
+    onChange: (p: number) => setOffset((p - 1) * currentLimit),
+  };
+
   /* ----- 描画 ----- */
 
   return (
-    <div style={pageStyle}>
-      {/* ===== 見出し・集計 ===== */}
-      <div style={sectionStyle}>
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: 24, lineHeight: 1.3 }}>登録できなかった試合</h1>
-            <p style={{ margin: "6px 0 0", color: "#475569", fontSize: 12 }}>
-              統計処理（BM）で登録できなかった試合と、その原因（項目・値）を表示します。直ったら「対応済み」にしてください。
-              同じエラーが再発すると自動で未対応に戻り、正常に登録できると自動で解決（AUTO）になります。
-            </p>
-          </div>
-          <div style={{ display: "flex", gap: 8, alignItems: "flex-start", flexWrap: "wrap" }}>
-            {totals.unresolved > 0 && (
-              <button
-                type="button"
-                onClick={downloadUnresolved}
-                style={downloading ? disabledButtonStyle : dangerButtonStyle}
-                disabled={downloading}
-                title="絞り込みに関係なく、未対応のエラーをすべて CSV で保存します"
-              >
-                {downloading ? "作成中..." : `未対応の明細をダウンロード（${totals.unresolved}件）`}
-              </button>
-            )}
-            <button type="button" onClick={reloadAll} style={loading ? disabledButtonStyle : primaryButtonStyle} disabled={loading}>
-              {loading ? "読込中..." : "再読み込み"}
-            </button>
-          </div>
-        </div>
-
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
-          <div style={infoCardStyle}>
-            <div style={infoLabelStyle}>未対応</div>
-            <div style={{ ...infoValueStyle, color: totals.unresolved > 0 ? "#b91c1c" : "#15803d" }}>{totals.unresolved}件</div>
-            <div style={{ marginTop: 8, color: "#475569", fontSize: 12 }}>未対応がある BM: {totals.bmCount}</div>
-          </div>
-          <div style={infoCardStyle}>
-            <div style={infoLabelStyle}>記録されたエラー（対応済みを含む）</div>
-            <div style={infoValueStyle}>{totals.rows}件</div>
-          </div>
-          <div style={infoCardStyle}>
-            <div style={infoLabelStyle}>発生回数の合計</div>
-            <div style={infoValueStyle}>{totals.occurred}回</div>
-            <div style={{ marginTop: 8, color: "#475569", fontSize: 12 }}>同じ試合の再発は1件にまとめて回数を数えます</div>
-          </div>
-        </div>
-
-        <h3 style={{ margin: "0 0 8px", fontSize: 14 }}>未対応が多い組み合わせ</h3>
-        {topSummary.length === 0 ? (
-          <div style={{ color: "#475569", background: "#f8fafc", padding: 12, borderRadius: 10 }}>未対応のエラーはありません。</div>
-        ) : (
-          <div style={tableWrapperStyle}>
-            <table style={tableStyle}>
-              <thead>
-                <tr>
-                  <th style={thStyle}>BM</th>
-                  <th style={thStyle}>種別</th>
-                  <th style={thStyle}>国 / リーグ</th>
-                  <th style={thStyle}>原因の項目</th>
-                  <th style={thStyle}>未対応</th>
-                  <th style={thStyle}>発生回数</th>
-                  <th style={thStyle}>最終発生</th>
-                  <th style={thStyle}>最新の内容</th>
-                </tr>
-              </thead>
-              <tbody>
-                {topSummary.map((s, idx) => (
-                  <tr
-                    key={`${s.bmNumber}-${s.errorType}-${s.country}-${s.league}-${s.errorField}-${idx}`}
-                    onClick={() => handleSummaryClick(s)}
-                    style={{ cursor: "pointer" }}
-                    title="クリックでこの条件に絞り込み"
-                  >
-                    <td style={thTdStyle}>{toDisplay(s.bmNumber)}</td>
-                    <td style={thTdStyle}>
-                      <span style={getStatusPillStyle(getTypeTone(s.errorType))}>{toDisplay(s.errorTypeLabel ?? s.errorType)}</span>
-                    </td>
-                    <td style={thTdStyle}>{countryLeagueLabel(s.country, s.league)}</td>
-                    <td style={thTdStyle}>
-                      <FieldChips errorField={s.errorField} />
-                    </td>
-                    <td style={{ ...thTdStyle, fontWeight: 700, color: "#b91c1c" }}>{s.unresolvedCount ?? 0}</td>
-                    <td style={thTdStyle}>{s.occurredTotal ?? 0}</td>
-                    <td style={thTdStyle}>{formatDateTimeJst(s.lastOccurredAt)}</td>
-                    <td style={{ ...thTdStyle, maxWidth: 320 }}>{toDisplay(s.latestMessage)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+    <div>
+      <ConsoleToolbar
+        title="登録できなかった試合"
+        info="analyze_error_match"
+        description="統計処理（BM）で登録できなかった試合と、その原因（項目・値）を表示します。直ったら「対応済み」にしてください。同じエラーが再発すると自動で未対応に戻り、正常に登録できると自動で解決（AUTO）になります。"
+      >
+        {totals.unresolved > 0 && (
+          <ConsoleButton variant="danger" onClick={downloadUnresolved} loading={downloading} title="絞り込みに関係なく、未対応のエラーをすべて CSV で保存します">
+            {!downloading && <Download className="h-3.5 w-3.5" />}
+            未対応の明細（{fmtNum(totals.unresolved)}件）
+          </ConsoleButton>
         )}
-      </div>
+        <ConsoleButton variant="primary" onClick={reloadAll} loading={loading}>
+          {!loading && <RefreshCw className="h-3.5 w-3.5" />}
+          再読み込み
+        </ConsoleButton>
+      </ConsoleToolbar>
+
+      <StatChips
+        items={[
+          { label: "未対応", value: `${fmtNum(totals.unresolved)}件`, tone: totals.unresolved > 0 ? "ng" : "ok" },
+          { label: "未対応がある BM", value: fmtNum(totals.bmCount) },
+          { label: "記録されたエラー（対応済みを含む）", value: `${fmtNum(totals.rows)}件` },
+          { label: "発生回数の合計", value: `${fmtNum(totals.occurred)}回` },
+        ]}
+      />
+
+      {error && (
+        <ConsoleNotice tone="ng" onClose={() => setError(null)}>
+          {error}
+        </ConsoleNotice>
+      )}
+      {notice && (
+        <ConsoleNotice tone="ok" onClose={() => setNotice(null)}>
+          {notice}
+        </ConsoleNotice>
+      )}
+
+      {/* ===== 集計 ===== */}
+      <ConsolePanel title="未対応が多い組み合わせ" info="行をクリックするとその条件で絞り込みます" flush>
+        <div className="p-2">
+          <ConsoleTable
+            columns={summaryColumns}
+            rows={topSummary}
+            rowKey={(s, i) => `${s.bmNumber}-${s.errorType}-${s.country}-${s.league}-${s.errorField}-${i}`}
+            onRowClick={handleSummaryClick}
+            emptyText="未対応のエラーはありません。"
+          />
+        </div>
+      </ConsolePanel>
 
       {/* ===== 絞り込み ===== */}
-      <div style={sectionStyle}>
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "center", marginBottom: 12 }}>
-          <h2 style={{ margin: 0, fontSize: 18 }}>絞り込み</h2>
-          <div style={tabContainerStyle}>
-            <button type="button" style={getTabStyle(filters.status === "unresolved")} onClick={() => handleStatusTab("unresolved")}>
-              未対応
-            </button>
-            <button type="button" style={getTabStyle(filters.status === "resolved")} onClick={() => handleStatusTab("resolved")}>
-              対応済み
-            </button>
-            <button type="button" style={getTabStyle(filters.status === "all")} onClick={() => handleStatusTab("all")}>
-              すべて
-            </button>
-          </div>
-        </div>
-
-        <form onSubmit={handleSearch} style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end" }}>
-          <label style={labelStyle}>
-            BM
-            <select value={draft.bmNumber} onChange={(e) => setDraft({ ...draft, bmNumber: e.target.value })} style={{ ...inputStyle, width: 170 }}>
+      <ConsolePanel
+        title="絞り込み"
+        right={
+          <SegmentedTabs<StatusFilter>
+            value={filters.status}
+            onChange={handleStatusTab}
+            options={[
+              { value: "unresolved", label: "未対応" },
+              { value: "resolved", label: "対応済み" },
+              { value: "all", label: "すべて" },
+            ]}
+          />
+        }
+      >
+        <form onSubmit={handleSearch} className="flex flex-wrap items-end gap-2">
+          <ConsoleField label="BM">
+            <ConsoleSelect value={draft.bmNumber} onChange={(e) => setDraft({ ...draft, bmNumber: e.target.value })} className="w-40">
               <option value="">すべて</option>
               {options.bm.map((b) => (
                 <option key={b} value={b}>
                   {b}
                 </option>
               ))}
-            </select>
-          </label>
+            </ConsoleSelect>
+          </ConsoleField>
 
-          <label style={labelStyle}>
-            種別
-            <select value={draft.errorType} onChange={(e) => setDraft({ ...draft, errorType: e.target.value })} style={{ ...inputStyle, width: 200 }}>
+          <ConsoleField label="種別">
+            <ConsoleSelect value={draft.errorType} onChange={(e) => setDraft({ ...draft, errorType: e.target.value })} className="w-48">
               <option value="">すべて</option>
               {options.types.map(([code, label]) => (
                 <option key={code} value={code}>
                   {label}
                 </option>
               ))}
-            </select>
-          </label>
+            </ConsoleSelect>
+          </ConsoleField>
 
-          <label style={labelStyle}>
-            国
-            <input
-              list="analyze-error-countries"
-              value={draft.country}
-              onChange={(e) => setDraft({ ...draft, country: e.target.value, league: "" })}
-              style={{ ...inputStyle, width: 140 }}
-              placeholder="完全一致"
-            />
+          <ConsoleField label="国">
+            <ConsoleInput list="analyze-error-countries" value={draft.country} onChange={(e) => setDraft({ ...draft, country: e.target.value, league: "" })} placeholder="完全一致" className="w-36" />
             <datalist id="analyze-error-countries">
               {options.countries.map((c) => (
                 <option key={c} value={c} />
               ))}
             </datalist>
-          </label>
+          </ConsoleField>
 
-          <label style={labelStyle}>
-            リーグ
-            <input list="analyze-error-leagues" value={draft.league} onChange={(e) => setDraft({ ...draft, league: e.target.value })} style={{ ...inputStyle, width: 160 }} placeholder="完全一致" />
+          <ConsoleField label="リーグ">
+            <ConsoleInput list="analyze-error-leagues" value={draft.league} onChange={(e) => setDraft({ ...draft, league: e.target.value })} placeholder="完全一致" className="w-40" />
             <datalist id="analyze-error-leagues">
               {options.leagues.map((l) => (
                 <option key={l} value={l} />
               ))}
             </datalist>
-          </label>
+          </ConsoleField>
 
-          <label style={labelStyle}>
-            原因の項目
-            <select value={draft.errorField} onChange={(e) => setDraft({ ...draft, errorField: e.target.value })} style={{ ...inputStyle, width: 160 }}>
+          <ConsoleField label="原因の項目">
+            <ConsoleSelect value={draft.errorField} onChange={(e) => setDraft({ ...draft, errorField: e.target.value })} className="w-40">
               <option value="">すべて</option>
               {options.fields.map((f) => (
                 <option key={f} value={f}>
                   {f}
                 </option>
               ))}
-            </select>
-          </label>
+            </ConsoleSelect>
+          </ConsoleField>
 
-          <label style={{ ...labelStyle, flex: "1 1 220px" }}>
-            キーワード（チーム名・キー・内容・マッチID・値）
-            <input value={draft.keyword} onChange={(e) => setDraft({ ...draft, keyword: e.target.value })} style={{ ...inputStyle, width: "100%" }} />
-          </label>
+          <ConsoleField label="キーワード（チーム名・キー・内容・マッチID・値）" className="min-w-[220px] flex-1">
+            <ConsoleInput value={draft.keyword} onChange={(e) => setDraft({ ...draft, keyword: e.target.value })} className="w-full" />
+          </ConsoleField>
 
-          <button type="submit" style={loading ? disabledButtonStyle : primaryButtonStyle} disabled={loading}>
+          <ConsoleButton type="submit" variant="primary" disabled={loading}>
+            <Search className="h-3.5 w-3.5" />
             検索
-          </button>
-          <button type="button" onClick={handleClear} style={buttonStyle}>
-            条件クリア
-          </button>
+          </ConsoleButton>
+          <ConsoleButton onClick={handleClear}>条件クリア</ConsoleButton>
         </form>
-      </div>
+      </ConsolePanel>
 
       {/* ===== 一覧 ===== */}
-      <div style={sectionStyle}>
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 12, alignItems: "center" }}>
-          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-            <h2 style={{ margin: 0, fontSize: 18 }}>一覧</h2>
-            <span style={badgeStyle}>全 {total} 件</span>
-            <span style={badgeStyle}>
-              page: {currentPage} / {totalPages}
-            </span>
-            <button type="button" onClick={() => canPrev && setOffset(Math.max(0, currentOffset - currentLimit))} style={canPrev ? buttonStyle : disabledButtonStyle} disabled={!canPrev}>
-              前へ
-            </button>
-            <button type="button" onClick={() => canNext && setOffset(currentOffset + currentLimit)} style={canNext ? buttonStyle : disabledButtonStyle} disabled={!canNext}>
-              次へ
-            </button>
-          </div>
-
-          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-            <button
-              type="button"
-              onClick={downloadFiltered}
-              style={total > 0 && !downloading ? buttonStyle : disabledButtonStyle}
-              disabled={total === 0 || downloading}
-              title="今の絞り込み条件に合う明細を、ページをまたいで CSV で保存します（スタックトレースを含む）"
-            >
-              {downloading ? "作成中..." : `明細をダウンロード（CSV・${total}件）`}
-            </button>
-            <div style={tabContainerStyle}>
-              <button type="button" style={getTabStyle(viewMode === "table")} onClick={() => setViewMode("table")}>
-                一覧テーブル
-              </button>
-              <button type="button" style={getTabStyle(viewMode === "card")} onClick={() => setViewMode("card")}>
-                カード表示
-              </button>
-            </div>
-          </div>
+      <div className="mb-2 flex flex-wrap items-center gap-2">
+        <h2 className="m-0 text-sm font-bold text-gray-900">一覧</h2>
+        <span className="text-xs text-gray-500">全 {fmtNum(total)} 件</span>
+        <div className="ml-auto flex flex-wrap items-center gap-1.5">
+          <ConsoleButton onClick={downloadFiltered} disabled={total === 0} loading={downloading} title="今の絞り込み条件に合う明細を、ページをまたいで CSV で保存します（スタックトレースを含む）">
+            {!downloading && <Download className="h-3.5 w-3.5" />}
+            明細をダウンロード（{fmtNum(total)}件）
+          </ConsoleButton>
+          <SegmentedTabs<ViewMode>
+            value={viewMode}
+            onChange={setViewMode}
+            options={[
+              { value: "table", label: "表" },
+              { value: "card", label: "カード" },
+            ]}
+          />
         </div>
-
-        {error && <div style={{ marginBottom: 12, color: "#b91c1c", background: "#fee2e2", padding: 10, borderRadius: 8 }}>{error}</div>}
-        {notice && <div style={{ marginBottom: 12, color: "#15803d", background: "#dcfce7", padding: 10, borderRadius: 8 }}>{notice}</div>}
-
-        {/* まとめて更新 */}
-        <div
-          style={{
-            display: "flex",
-            gap: 8,
-            alignItems: "center",
-            flexWrap: "wrap",
-            padding: 10,
-            background: selected.size > 0 ? "#eff6ff" : "#f8fafc",
-            border: `1px solid ${selected.size > 0 ? "#bfdbfe" : "#e2e8f0"}`,
-            borderRadius: 10,
-          }}
-        >
-          <span style={{ fontWeight: 700 }}>選択中: {selected.size}件</span>
-          <input value={bulkNote} onChange={(e) => setBulkNote(e.target.value)} placeholder="メモ（任意。選択した行に上書きされます）" style={{ ...inputStyle, flex: "1 1 240px" }} />
-          <button type="button" onClick={() => void updateBatch(true)} style={selected.size > 0 && !saving ? successButtonStyle : disabledButtonStyle} disabled={selected.size === 0 || saving}>
-            対応済みにする
-          </button>
-          <button type="button" onClick={() => void updateBatch(false)} style={selected.size > 0 && !saving ? buttonStyle : disabledButtonStyle} disabled={selected.size === 0 || saving}>
-            未対応に戻す
-          </button>
-          <button type="button" onClick={downloadSelected} style={selected.size > 0 && !downloading ? buttonStyle : disabledButtonStyle} disabled={selected.size === 0 || downloading}>
-            選択した行をダウンロード
-          </button>
-        </div>
-
-        {viewMode === "table" ? (
-          <div style={tableWrapperStyle}>
-            <table style={tableStyle}>
-              <thead>
-                <tr>
-                  <th style={thStyle}>
-                    <input type="checkbox" checked={allOnPageSelected} onChange={toggleAll} aria-label="このページをすべて選択" />
-                  </th>
-                  <th style={thStyle}>状態</th>
-                  <th style={thStyle}>最終発生</th>
-                  <th style={thStyle}>BM</th>
-                  <th style={thStyle}>種別</th>
-                  <th style={thStyle}>国 / リーグ</th>
-                  <th style={thStyle}>試合</th>
-                  <th style={thStyle}>原因の項目</th>
-                  <th style={thStyle}>値</th>
-                  <th style={thStyle}>回数</th>
-                  <th style={thStyle}>詳細</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.length === 0 ? (
-                  <tr>
-                    <td colSpan={11} style={thTdStyle}>
-                      {loading ? "読込中..." : "対象データがありません。"}
-                    </td>
-                  </tr>
-                ) : (
-                  items.map((e) => {
-                    const status = getResolvedStatus(e);
-                    return (
-                      <tr key={e.seq} style={{ background: selected.has(e.seq) ? "#eff6ff" : undefined }}>
-                        <td style={thTdStyle}>
-                          <input type="checkbox" checked={selected.has(e.seq)} onChange={() => toggleOne(e.seq)} aria-label={`${e.seq} を選択`} />
-                        </td>
-                        <td style={thTdStyle}>
-                          <span style={getStatusPillStyle(status.tone)}>{status.label}</span>
-                        </td>
-                        <td style={{ ...thTdStyle, whiteSpace: "nowrap" }}>{formatDateTimeJst(e.lastOccurredAt)}</td>
-                        <td style={{ ...thTdStyle, whiteSpace: "nowrap" }}>{toDisplay(e.bmNumber)}</td>
-                        <td style={thTdStyle}>
-                          <span style={getStatusPillStyle(getTypeTone(e.errorType))}>{toDisplay(e.errorTypeLabel ?? e.errorType)}</span>
-                        </td>
-                        <td style={thTdStyle}>{countryLeagueLabel(e.country, e.league)}</td>
-                        <td style={thTdStyle}>
-                          <div style={{ fontWeight: 600 }}>{matchLabel(e)}</div>
-                          <div style={{ color: "#64748b", fontSize: 11 }}>{toDisplay(e.dataCategory)}</div>
-                        </td>
-                        <td style={thTdStyle}>
-                          <FieldChips errorField={e.errorField} />
-                        </td>
-                        <td style={{ ...thTdStyle, maxWidth: 240, wordBreak: "break-all" }}>{toDisplay(e.errorValue)}</td>
-                        <td style={thTdStyle}>{e.occurredCount ?? 0}</td>
-                        <td style={thTdStyle}>
-                          <button type="button" style={linkButtonStyle} onClick={() => void openDetail(e.seq)}>
-                            開く
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        ) : items.length === 0 ? (
-          <div style={{ color: "#475569", background: "#f8fafc", padding: 12, borderRadius: 10, marginTop: 10 }}>{loading ? "読込中..." : "表示対象のエラーがありません。"}</div>
-        ) : (
-          <div style={{ display: "grid", gap: 12, marginTop: 10 }}>
-            {items.map((e) => {
-              const status = getResolvedStatus(e);
-              return (
-                <div key={e.seq} style={{ ...matchCardStyle, borderColor: selected.has(e.seq) ? "#93c5fd" : "#e2e8f0" }}>
-                  <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                    <input type="checkbox" checked={selected.has(e.seq)} onChange={() => toggleOne(e.seq)} aria-label={`${e.seq} を選択`} style={{ marginTop: 4 }} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>
-                        seq: {e.seq} / {toDisplay(e.bmNumber)} / {countryLeagueLabel(e.country, e.league)}
-                      </div>
-                      <div style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.4 }}>{matchLabel(e)}</div>
-                      <div style={{ fontSize: 11, color: "#64748b" }}>{toDisplay(e.dataCategory)}</div>
-
-                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10, alignItems: "center" }}>
-                        <span style={getStatusPillStyle(status.tone)}>{status.label}</span>
-                        <span style={getStatusPillStyle(getTypeTone(e.errorType))}>{toDisplay(e.errorTypeLabel ?? e.errorType)}</span>
-                        <FieldChips errorField={e.errorField} />
-                        <span style={badgeStyle}>発生 {e.occurredCount ?? 0}回</span>
-                        <span style={badgeStyle}>最終発生: {formatDateTimeJst(e.lastOccurredAt)}</span>
-                      </div>
-
-                      {e.errorValue && <div style={{ marginTop: 8, fontFamily: "ui-monospace, Menlo, monospace" }}>{e.errorValue}</div>}
-                      {e.errorMessage && <div style={{ marginTop: 6, color: "#475569" }}>{e.errorMessage}</div>}
-                      {e.note && <div style={{ marginTop: 6, color: "#334155" }}>メモ: {e.note}</div>}
-
-                      <div style={{ marginTop: 10 }}>
-                        <button type="button" style={linkButtonStyle} onClick={() => void openDetail(e.seq)}>
-                          詳細を開く
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
       </div>
 
-      {/* ===== 詳細 ===== */}
-      {detail && (
-        <div style={overlayStyle} onClick={() => setDetail(null)}>
-          <div style={drawerStyle} onClick={(ev) => ev.stopPropagation()} role="dialog" aria-modal="true">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-              <h2 style={{ margin: 0, fontSize: 18 }}>エラーの詳細</h2>
-              <div style={{ display: "flex", gap: 8 }}>
-                <button type="button" style={detailLoading || downloading ? disabledButtonStyle : buttonStyle} disabled={detailLoading || downloading} onClick={() => downloadOne(detail.seq)}>
-                  この明細をダウンロード
-                </button>
-                <button type="button" style={buttonStyle} onClick={() => setDetail(null)}>
-                  閉じる
-                </button>
+      {/* まとめて更新 */}
+      <div className={["mb-2 flex flex-wrap items-center gap-2 rounded-xl border px-3 py-2", selected.size > 0 ? "border-indigo-200 bg-indigo-50" : "border-gray-200 bg-white"].join(" ")}>
+        <span className="text-[13px] font-bold text-gray-900">選択中: {selected.size}件</span>
+        <ConsoleInput value={bulkNote} onChange={(e) => setBulkNote(e.target.value)} placeholder="メモ（任意。選択した行に上書きされます）" className="min-w-[240px] flex-1" />
+        <ConsoleButton variant="success" onClick={() => void updateBatch(true)} disabled={selected.size === 0} loading={saving}>
+          対応済みにする
+        </ConsoleButton>
+        <ConsoleButton onClick={() => void updateBatch(false)} disabled={selected.size === 0 || saving}>
+          未対応に戻す
+        </ConsoleButton>
+        <ConsoleButton onClick={downloadSelected} disabled={selected.size === 0 || downloading}>
+          選択した行をダウンロード
+        </ConsoleButton>
+      </div>
+
+      {viewMode === "table" ? (
+        <ConsoleTable
+          columns={listColumns}
+          rows={items}
+          rowKey={(e) => e.seq}
+          loading={loading}
+          emptyText="対象データがありません。"
+          rowClassName={(e) => (selected.has(e.seq) ? "!bg-indigo-50" : "")}
+          paging={pagingProps}
+        />
+      ) : (
+        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+          {items.length === 0 ? (
+            <div className="px-4 py-10 text-center text-sm text-gray-400">{loading ? "読み込み中…" : "表示対象のエラーがありません。"}</div>
+          ) : (
+            items.map((e) => {
+              const status = getResolvedStatus(e);
+              return (
+                <div key={e.seq} className={`flex gap-2.5 border-t border-gray-100 px-3 py-2.5 first:border-t-0 ${selected.has(e.seq) ? "bg-indigo-50" : ""}`}>
+                  <input type="checkbox" checked={selected.has(e.seq)} onChange={() => toggleOne(e.seq)} aria-label={`${e.seq} を選択`} className="mt-1 accent-indigo-600" />
+                  <div className="min-w-0 flex-1">
+                    <div className="font-mono text-[11px] text-gray-500">
+                      seq: {e.seq} / {toDisplay(e.bmNumber)} / {countryLeagueLabel(e.country, e.league)}
+                    </div>
+                    <div className="text-[14px] font-bold text-gray-900">{matchLabel(e)}</div>
+                    <div className="text-[11px] text-gray-500">{toDisplay(e.dataCategory)}</div>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                      <StatusBadge tone={status.tone}>{status.label}</StatusBadge>
+                      <StatusBadge tone={getTypeTone(e.errorType)}>{toDisplay(e.errorTypeLabel ?? e.errorType)}</StatusBadge>
+                      <FieldChips errorField={e.errorField} />
+                      <span className="text-xs text-gray-500">発生 {e.occurredCount ?? 0}回</span>
+                      <span className="font-mono text-xs text-gray-500">最終 {formatDateTimeJst(e.lastOccurredAt)}</span>
+                    </div>
+                    {e.errorValue && <div className="mt-1 break-all font-mono text-xs">{e.errorValue}</div>}
+                    {e.errorMessage && <div className="mt-1 text-xs text-gray-600">{e.errorMessage}</div>}
+                    {e.note && <div className="mt-1 text-xs text-gray-700">メモ: {e.note}</div>}
+                  </div>
+                  <button type="button" className="self-start text-xs font-bold text-indigo-600 hover:underline" onClick={() => void openDetail(e.seq)}>
+                    詳細
+                  </button>
+                </div>
+              );
+            })
+          )}
+          {total > 0 && (
+            <div className="flex items-center justify-between gap-2 border-t border-gray-200 px-2.5 py-2 text-xs text-gray-500">
+              <span>
+                {currentPage} / {Math.max(1, Math.ceil(total / currentLimit))} ページ
+              </span>
+              <div className="flex gap-1.5">
+                <ConsoleButton size="sm" disabled={currentOffset <= 0 || loading} onClick={() => setOffset(Math.max(0, currentOffset - currentLimit))}>
+                  前へ
+                </ConsoleButton>
+                <ConsoleButton size="sm" disabled={currentOffset + currentLimit >= total || loading} onClick={() => setOffset(currentOffset + currentLimit)}>
+                  次へ
+                </ConsoleButton>
               </div>
             </div>
-
-            {detailLoading ? (
-              <div>読込中...</div>
-            ) : (
-              <>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
-                  <span style={getStatusPillStyle(getResolvedStatus(detail).tone)}>{getResolvedStatus(detail).label}</span>
-                  <span style={getStatusPillStyle(getTypeTone(detail.errorType))}>{toDisplay(detail.errorTypeLabel ?? detail.errorType)}</span>
-                  <span style={badgeStyle}>{toDisplay(detail.bmNumber)}</span>
-                </div>
-
-                <DetailRow label="seq">{detail.seq}</DetailRow>
-                <DetailRow label="試合">{matchLabel(detail)}</DetailRow>
-                <DetailRow label="キー">{toDisplay(detail.dataCategory)}</DetailRow>
-                <DetailRow label="国 / リーグ">{countryLeagueLabel(detail.country, detail.league)}</DetailRow>
-                <DetailRow label="シーズン">{toDisplay(detail.season)}</DetailRow>
-                <DetailRow label="マッチID">{toDisplay(detail.matchId)}</DetailRow>
-                <DetailRow label="原因の項目">
-                  <FieldChips errorField={detail.errorField} />
-                </DetailRow>
-                <DetailRow label="値">
-                  <span style={{ fontFamily: "ui-monospace, Menlo, monospace" }}>{toDisplay(detail.errorValue)}</span>
-                </DetailRow>
-                <DetailRow label="エラー内容">{toDisplay(detail.errorMessage)}</DetailRow>
-                <DetailRow label="補足">{toDisplay(detail.detail)}</DetailRow>
-                <DetailRow label="発生回数">{detail.occurredCount ?? 0}回</DetailRow>
-                <DetailRow label="最初の発生">{formatDateTimeJst(detail.firstOccurredAt)}</DetailRow>
-                <DetailRow label="最後の発生">{formatDateTimeJst(detail.lastOccurredAt)}</DetailRow>
-                <DetailRow label="対応">{detail.resolvedFlg ? `${formatDateTimeJst(detail.resolvedAt)} / ${toDisplay(detail.resolvedBy)}` : "-"}</DetailRow>
-                <DetailRow label="例外">{toDisplay(detail.exceptionClass)}</DetailRow>
-
-                {detail.stackTrace && (
-                  <div style={{ marginTop: 12 }}>
-                    <div style={{ color: "#64748b", marginBottom: 6 }}>スタックトレース（先頭のみ）</div>
-                    <pre style={preStyle}>{detail.stackTrace}</pre>
-                  </div>
-                )}
-
-                <div style={{ marginTop: 16 }}>
-                  <label style={labelStyle}>
-                    メモ
-                    <textarea
-                      value={detailNote}
-                      onChange={(e) => setDetailNote(e.target.value)}
-                      rows={3}
-                      style={{ ...inputStyle, height: "auto", padding: 8, resize: "vertical" }}
-                      placeholder="対応内容など（マスタに追加した、など）"
-                    />
-                  </label>
-                  <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
-                    {!detail.resolvedFlg ? (
-                      <button type="button" style={saving ? disabledButtonStyle : successButtonStyle} disabled={saving} onClick={() => void updateDetail(true)}>
-                        対応済みにする
-                      </button>
-                    ) : (
-                      <button type="button" style={saving ? disabledButtonStyle : buttonStyle} disabled={saving} onClick={() => void updateDetail(false)}>
-                        未対応に戻す
-                      </button>
-                    )}
-                    <button type="button" style={saving ? disabledButtonStyle : buttonStyle} disabled={saving} onClick={() => void updateDetail(null)}>
-                      メモだけ保存
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
+          )}
         </div>
       )}
+
+      {/* ===== 詳細 ===== */}
+      <ConsoleDrawer
+        open={detail !== null}
+        title="エラーの詳細"
+        onClose={closeDetail}
+        actions={
+          detail && (
+            <ConsoleButton size="sm" disabled={detailLoading} loading={downloading} onClick={() => downloadOne(detail.seq)}>
+              {!downloading && <Download className="h-3.5 w-3.5" />}
+              この明細をダウンロード
+            </ConsoleButton>
+          )
+        }
+      >
+        {detail &&
+          (detailLoading ? (
+            <div className="py-10 text-center text-sm text-gray-400">読み込み中…</div>
+          ) : (
+            <>
+              <div className="mb-2 flex flex-wrap gap-1.5">
+                <StatusBadge tone={getResolvedStatus(detail).tone}>{getResolvedStatus(detail).label}</StatusBadge>
+                <StatusBadge tone={getTypeTone(detail.errorType)}>{toDisplay(detail.errorTypeLabel ?? detail.errorType)}</StatusBadge>
+                <StatusBadge tone="neutral" dot={false}>
+                  {toDisplay(detail.bmNumber)}
+                </StatusBadge>
+              </div>
+
+              <DetailRow label="seq">
+                <span className="font-mono">{detail.seq}</span>
+              </DetailRow>
+              <DetailRow label="試合">{matchLabel(detail)}</DetailRow>
+              <DetailRow label="キー">{toDisplay(detail.dataCategory)}</DetailRow>
+              <DetailRow label="国 / リーグ">{countryLeagueLabel(detail.country, detail.league)}</DetailRow>
+              <DetailRow label="シーズン">{toDisplay(detail.season)}</DetailRow>
+              <DetailRow label="マッチID">
+                <span className="font-mono">{toDisplay(detail.matchId)}</span>
+              </DetailRow>
+              <DetailRow label="原因の項目">
+                <FieldChips errorField={detail.errorField} />
+              </DetailRow>
+              <DetailRow label="値">
+                <span className="font-mono">{toDisplay(detail.errorValue)}</span>
+              </DetailRow>
+              <DetailRow label="エラー内容">{toDisplay(detail.errorMessage)}</DetailRow>
+              <DetailRow label="補足">{toDisplay(detail.detail)}</DetailRow>
+              <DetailRow label="発生回数">{detail.occurredCount ?? 0}回</DetailRow>
+              <DetailRow label="最初の発生">
+                <span className="font-mono">{formatDateTimeJst(detail.firstOccurredAt)}</span>
+              </DetailRow>
+              <DetailRow label="最後の発生">
+                <span className="font-mono">{formatDateTimeJst(detail.lastOccurredAt)}</span>
+              </DetailRow>
+              <DetailRow label="対応">{detail.resolvedFlg ? `${formatDateTimeJst(detail.resolvedAt)} / ${toDisplay(detail.resolvedBy)}` : "-"}</DetailRow>
+              <DetailRow label="例外">
+                <span className="font-mono">{toDisplay(detail.exceptionClass)}</span>
+              </DetailRow>
+
+              {detail.stackTrace && (
+                <div className="mt-3">
+                  <div className="mb-1 text-xs text-gray-500">スタックトレース（先頭のみ）</div>
+                  <pre className="m-0 max-h-72 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-slate-900 p-2.5 text-[11px] leading-relaxed text-slate-200">{detail.stackTrace}</pre>
+                </div>
+              )}
+
+              <div className="mt-4">
+                <ConsoleField label="メモ">
+                  <ConsoleTextarea value={detailNote} onChange={(e) => setDetailNote(e.target.value)} rows={3} placeholder="対応内容など（マスタに追加した、など）" className="w-full resize-y" />
+                </ConsoleField>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {!detail.resolvedFlg ? (
+                    <ConsoleButton variant="success" loading={saving} onClick={() => void updateDetail(true)}>
+                      対応済みにする
+                    </ConsoleButton>
+                  ) : (
+                    <ConsoleButton loading={saving} onClick={() => void updateDetail(false)}>
+                      未対応に戻す
+                    </ConsoleButton>
+                  )}
+                  <ConsoleButton disabled={saving} onClick={() => void updateDetail(null)}>
+                    メモだけ保存
+                  </ConsoleButton>
+                </div>
+              </div>
+            </>
+          ))}
+      </ConsoleDrawer>
     </div>
   );
 };

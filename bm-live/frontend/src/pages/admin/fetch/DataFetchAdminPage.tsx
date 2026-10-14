@@ -1,5 +1,20 @@
-// src/pages/admin/DataFetchAdminPage.tsx
-import React, { useEffect, useMemo, useState } from "react";
+// src/pages/admin/fetch/DataFetchAdminPage.tsx
+import { useEffect, useMemo, useState } from "react";
+import { ChevronDown, ChevronUp, Copy, Link2, Play, RefreshCw } from "lucide-react";
+import {
+  BadgeTone,
+  ConsoleButton,
+  ConsoleField,
+  ConsoleInput,
+  ConsoleNotice,
+  ConsolePanel,
+  ConsoleSelect,
+  ConsoleToolbar,
+  NoticeTone,
+  SegmentedTabs,
+  StatChips,
+  StatusBadge,
+} from "../../../api/commonAdminDesign";
 
 /** ============ Types ============ */
 type StatRequestResource = {
@@ -66,6 +81,9 @@ type SelectOption = {
 
 type Tone = "gray" | "blue" | "emerald" | "amber" | "rose";
 
+/** 旧トーン → 共通バッジのトーン */
+const TONE: Record<Tone, BadgeTone> = { gray: "neutral", blue: "info", emerald: "ok", amber: "warn", rose: "ng" };
+
 /**
  * 画面上の「実行単位」。
  * B014 は readyFlg=true / false の2つの実行単位に分かれる。
@@ -80,6 +98,9 @@ type RunUnit = {
 
 type ViewMode = "compact" | "detail";
 type FilterMode = "all" | "runnable" | "blocked";
+type AlertType = "info" | "success" | "error" | "warning";
+
+const ALERT_TONE: Record<AlertType, NoticeTone> = { info: "info", success: "ok", error: "ng", warning: "warn" };
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 const STAT_OPTIONS_ENDPOINT = "/v1/api/admin/stat/options";
@@ -237,7 +258,7 @@ function getTaskFileStatusMap(data: BatchFileCheckResponseResource | null | unde
   return map;
 }
 
-function getFileBadgeTone(task?: BatchFileCheckTaskResource): "gray" | "emerald" | "amber" | "rose" {
+function getFileBadgeTone(task?: BatchFileCheckTaskResource): Tone {
   if (!task) return "gray";
   if (task.ready) return "emerald";
   return "rose";
@@ -268,20 +289,13 @@ function getItemStatusText(item: BatchFileCheckItemResource): string {
   return "未存在";
 }
 
-function getItemIcon(item: BatchFileCheckItemResource): string {
-  if (item.kind === "count") return "📊";
-  if (item.exists) return "✅";
-  if (item.required) return "❌";
-  return "⚪";
-}
-
 function canRunTask(task: TaskDef, isRunning: boolean, fileCheck?: BatchFileCheckTaskResource): boolean {
   if (isRunning) return false;
   if (task.precheckMode === "always") return true;
   return !!fileCheck?.ready;
 }
 
-function getEffectiveFileBadgeTone(task: TaskDef, fileCheck?: BatchFileCheckTaskResource): "gray" | "emerald" | "amber" | "rose" {
+function getEffectiveFileBadgeTone(task: TaskDef, fileCheck?: BatchFileCheckTaskResource): Tone {
   if (task.precheckMode === "always") return "emerald";
   return getFileBadgeTone(fileCheck);
 }
@@ -296,154 +310,14 @@ function getPrecheckPanelSummary(task: TaskDef, fileCheck?: BatchFileCheckTaskRe
   return fileCheck?.summary ?? "未確認";
 }
 
-/** ============ Common UI Components ============ */
-type CardProps = { children: React.ReactNode; className?: string };
-const Card = ({ children, className = "" }: CardProps) => <div className={`bg-white/90 backdrop-blur rounded-2xl shadow-sm border border-gray-100 ${className}`}>{children}</div>;
+/** ============ 小さな部品 ============ */
 
-type ButtonVariant = "primary" | "secondary" | "success" | "danger";
-type ButtonProps = {
-  children: React.ReactNode;
-  onClick?: React.MouseEventHandler<HTMLButtonElement>;
-  variant?: ButtonVariant;
-  disabled?: boolean;
-  loading?: boolean;
-  icon?: React.ReactNode;
-  className?: string;
-  title?: string;
-};
-const Button = ({ children, onClick, variant = "primary", disabled, loading, icon, className = "", title }: ButtonProps) => {
-  const variantClasses: Record<ButtonVariant, string> = {
-    primary: "bg-blue-600 hover:bg-blue-700 text-white border-blue-600 focus:ring-blue-500",
-    secondary: "bg-gray-50 hover:bg-gray-100 text-gray-800 border-gray-200 focus:ring-gray-300",
-    success: "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600 focus:ring-emerald-500",
-    danger: "bg-rose-600 hover:bg-rose-700 text-white border-rose-600 focus:ring-rose-500",
-  };
-
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled || loading}
-      title={title}
-      className={`
-        inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold
-        transition-all duration-200 shadow-sm hover:shadow-md
-        disabled:opacity-50 disabled:cursor-not-allowed
-        focus:outline-none focus:ring-2 focus:ring-offset-2
-        ${variantClasses[variant]}
-        ${className}
-      `}
-    >
-      {loading && (
-        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24" aria-hidden="true">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-        </svg>
-      )}
-      {!loading && icon}
-      {children}
-    </button>
-  );
-};
-
-type InputProps = {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-  hint?: string;
-};
-const Input = ({ label, value, onChange, placeholder = "", hint }: InputProps) => (
-  <div>
-    <label className="block text-sm font-semibold text-gray-800 mb-2">{label}</label>
-    <input
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      className="
-        w-full px-4 py-3 rounded-xl border border-gray-200 bg-white
-        transition-colors duration-200
-        hover:border-gray-300
-        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-      "
-    />
-    {hint && <p className="mt-2 text-xs text-gray-500">{hint}</p>}
-  </div>
-);
-
-type SelectProps = {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  options: SelectOption[];
-  placeholder?: string;
-  hint?: string;
-  disabled?: boolean;
-};
-const Select = ({ label, value, onChange, options, placeholder = "選択してください", hint, disabled = false }: SelectProps) => (
-  <div>
-    <label className="block text-sm font-semibold text-gray-800 mb-2">{label}</label>
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      disabled={disabled}
-      className="
-        w-full px-4 py-3 rounded-xl border border-gray-200 bg-white
-        transition-colors duration-200
-        hover:border-gray-300
-        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-        disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed
-      "
-    >
-      <option value="">{placeholder}</option>
-      {options.map((opt) => (
-        <option key={opt.value} value={opt.value}>
-          {opt.label}
-        </option>
-      ))}
-    </select>
-    {hint && <p className="mt-2 text-xs text-gray-500">{hint}</p>}
-  </div>
-);
-
-type AlertType = "info" | "success" | "error" | "warning";
-const Alert = ({ type, title, message, onClose, className = "" }: { type: AlertType; title: string; message: string; onClose?: () => void; className?: string }) => {
-  const typeClasses: Record<AlertType, string> = {
-    info: "bg-blue-50 border-blue-200 text-blue-900",
-    success: "bg-emerald-50 border-emerald-200 text-emerald-900",
-    error: "bg-rose-50 border-rose-200 text-rose-900",
-    warning: "bg-amber-50 border-amber-200 text-amber-900",
-  };
-  return (
-    <div className={`border rounded-2xl p-4 flex gap-3 items-start ${typeClasses[type]} ${className}`}>
-      <div className="mt-0.5">
-        {type === "info" && "💡"}
-        {type === "success" && "✅"}
-        {type === "error" && "❌"}
-        {type === "warning" && "⚠️"}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="font-bold text-sm">{title}</div>
-        <pre className="mt-1 whitespace-pre-wrap break-all text-xs leading-relaxed max-h-60 overflow-auto">{message}</pre>
-      </div>
-      {onClose && (
-        <button onClick={onClose} className="text-gray-500 hover:text-gray-800 transition-colors">
-          ✕
-        </button>
-      )}
-    </div>
-  );
-};
-
-const toneClasses: Record<Tone, string> = {
-  gray: "bg-gray-100 text-gray-700 border-gray-200",
-  blue: "bg-blue-100 text-blue-800 border-blue-200",
-  emerald: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  amber: "bg-amber-100 text-amber-800 border-amber-200",
-  rose: "bg-rose-100 text-rose-800 border-rose-200",
-};
-
-const Badge = ({ children, tone = "gray" }: { children: React.ReactNode; tone?: Tone }) => {
-  return <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border whitespace-nowrap ${toneClasses[tone]}`}>{children}</span>;
+const CHIP_TONE: Record<Tone, string> = {
+  gray: "border-gray-200 bg-gray-50 text-gray-600",
+  blue: "border-indigo-200 bg-indigo-50 text-indigo-700",
+  emerald: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  amber: "border-amber-200 bg-amber-50 text-amber-700",
+  rose: "border-red-200 bg-red-50 text-red-700",
 };
 
 /** 事前確認アイテムを1行に収まる小さなチップで表示 */
@@ -454,13 +328,15 @@ const ItemChip = ({ item }: { item: BatchFileCheckItemResource }) => {
     .join("\n");
 
   return (
-    <span title={tooltip} className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-medium whitespace-nowrap ${toneClasses[tone]}`}>
-      <span aria-hidden="true">{getItemIcon(item)}</span>
+    <span title={tooltip} className={`inline-flex items-center gap-1 whitespace-nowrap rounded border px-1.5 py-px text-[11px] font-medium ${CHIP_TONE[tone]}`}>
+      <span className="h-1.5 w-1.5 rounded-full bg-current" />
       <span>{item.label ?? "-"}</span>
-      {item.kind === "count" && <span className="font-bold">: {item.count ?? 0}</span>}
+      {item.kind === "count" && <span className="font-bold tabular-nums">: {item.count ?? 0}</span>}
     </span>
   );
 };
+
+const copyText = (text: string) => void navigator.clipboard.writeText(text);
 
 /** ============ Page ============ */
 export default function DataFetchAdminPage() {
@@ -700,11 +576,7 @@ export default function DataFetchAdminPage() {
 
     try {
       const url = `${API_BASE}${FILE_CHECKS_ENDPOINT}`;
-      console.log("[file-checks] url =", url);
-
       const data = await getJsonSafe<BatchFileCheckResponseResource>(url);
-      console.log("[file-checks] response =", data);
-
       const normalized = normalizeBatchFileChecksResponse(data);
       setFileChecks(getTaskFileStatusMap(normalized));
     } catch (e: unknown) {
@@ -849,88 +721,91 @@ export default function DataFetchAdminPage() {
   });
 
   const statOptionsBadgeTone: Tone = statOptionsError ? "rose" : statOptionsLoading ? "amber" : "emerald";
+  const statOptionsBadgeLabel = statOptionsError ? "候補取得失敗" : statOptionsLoading ? "候補取得中…" : `候補API OK（${countryOptions.length} countries）`;
 
-  const statOptionsBadgeLabel = statOptionsError ? "候補取得失敗" : statOptionsLoading ? "候補取得中..." : `候補API OK (${countryOptions.length} countries)`;
-
-  const renderFileCheckPanel = (task: TaskDef, fileCheck?: BatchFileCheckTaskResource) => {
-    return (
-      <div className="mt-4 rounded-2xl border border-gray-100 bg-slate-50 p-4">
-        <div className="flex items-center justify-between gap-2">
-          <div className="text-sm font-bold text-gray-900">{task.precheckMode === "always" ? "実行前確認（参考）" : "事前ファイル確認"}</div>
-          <div className="text-xs text-gray-500">{getPrecheckPanelSummary(task, fileCheck)}</div>
-        </div>
-
-        {fileCheck?.items?.length ? (
-          <div className="mt-3 grid grid-cols-1 lg:grid-cols-2 gap-2">
-            {fileCheck.items.map((item, idx) => (
-              <div key={`${task.code}-${idx}`} className="rounded-xl border border-gray-100 bg-white p-3">
-                <div className="flex items-start gap-3">
-                  <div className="text-lg leading-none pt-0.5">{getItemIcon(item)}</div>
-
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-semibold text-gray-900">{item.label ?? "-"}</span>
-                      <Badge tone={getItemTone(item)}>{getItemStatusText(item)}</Badge>
-                      {item.type && <Badge tone="gray">{item.type}</Badge>}
-                      {item.required && <Badge tone="amber">必須</Badge>}
-                    </div>
-
-                    <div className="mt-2 text-xs text-gray-600 space-y-1 break-all">
-                      {item.bucket && <div>Bucket: {item.bucket}</div>}
-                      {item.key && <div>Key: {item.key}</div>}
-                      {item.kind === "count" && <div>Count: {item.count ?? 0}</div>}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : task.precheckMode === "always" ? (
-          <div className="mt-3 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2">このタスクは必須の事前条件なしで実行できます。</div>
-        ) : (
-          <div className="mt-3 text-xs text-gray-500">確認情報がありません</div>
-        )}
-
-        {task.precheckMode !== "always" && !!fileCheck && !fileCheck.ready && (
-          <div className="mt-3 text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2">必須条件が満たされていないため、このタスクは実行できません。</div>
-        )}
+  /** 事前確認の詳細 */
+  const renderFileCheckPanel = (task: TaskDef, fileCheck?: BatchFileCheckTaskResource) => (
+    <div className="mt-2.5 rounded-lg border border-gray-200 bg-gray-50 p-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="text-xs font-bold text-gray-900">{task.precheckMode === "always" ? "実行前確認（参考）" : "事前ファイル確認"}</div>
+        <div className="text-[11px] text-gray-500">{getPrecheckPanelSummary(task, fileCheck)}</div>
       </div>
-    );
-  };
 
+      {fileCheck?.items?.length ? (
+        <div className="mt-2 overflow-hidden rounded-md border border-gray-200 bg-white">
+          <table className="w-full border-collapse text-[12px]">
+            <tbody>
+              {fileCheck.items.map((item, idx) => (
+                <tr key={`${task.code}-${idx}`} className="border-t border-gray-100 first:border-t-0">
+                  <td className="whitespace-nowrap px-2 py-1 font-bold text-gray-900">{item.label ?? "-"}</td>
+                  <td className="whitespace-nowrap px-2 py-1">
+                    <span className="inline-flex flex-wrap gap-1">
+                      <StatusBadge tone={TONE[getItemTone(item)]}>{getItemStatusText(item)}</StatusBadge>
+                      {item.type && (
+                        <StatusBadge tone="neutral" dot={false}>
+                          {item.type}
+                        </StatusBadge>
+                      )}
+                      {item.required && (
+                        <StatusBadge tone="warn" dot={false}>
+                          必須
+                        </StatusBadge>
+                      )}
+                    </span>
+                  </td>
+                  <td className="w-full break-all px-2 py-1 font-mono text-[11px] text-gray-500">
+                    {item.bucket && <div>Bucket: {item.bucket}</div>}
+                    {item.key && <div>Key: {item.key}</div>}
+                    {item.kind === "count" && <div>Count: {item.count ?? 0}</div>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : task.precheckMode === "always" ? (
+        <div className="mt-2 text-[11px] text-emerald-700">このタスクは必須の事前条件なしで実行できます。</div>
+      ) : (
+        <div className="mt-2 text-[11px] text-gray-500">確認情報がありません</div>
+      )}
+
+      {task.precheckMode !== "always" && !!fileCheck && !fileCheck.ready && (
+        <div className="mt-2 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-[11px] text-red-700">必須条件が満たされていないため、このタスクは実行できません。</div>
+      )}
+    </div>
+  );
+
+  /** 実行結果 */
   const renderResultPanel = (result?: StatResponseResource | null) => {
     if (!result) return null;
 
     return (
-      <div className="mt-4 rounded-2xl border border-gray-100 bg-gray-50 p-4">
+      <div className="mt-2.5 rounded-lg border border-gray-200 bg-white p-2.5">
         <div className="flex items-center justify-between gap-2">
-          <div className="text-sm font-bold text-gray-900">結果</div>
-          <div className="flex gap-2">
-            <Button variant="secondary" icon="📋" onClick={() => navigator.clipboard.writeText(JSON.stringify(result, null, 2))} className="px-3 py-2 text-xs">
-              JSONコピー
-            </Button>
-          </div>
+          <div className="text-xs font-bold text-gray-900">結果</div>
+          <ConsoleButton size="sm" onClick={() => copyText(JSON.stringify(result, null, 2))}>
+            <Copy className="h-3 w-3" />
+            JSONコピー
+          </ConsoleButton>
         </div>
 
-        <div className="mt-3 grid gap-2 text-sm text-gray-800">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-gray-500">returnCd</span>
-            <code className="px-2 py-1 rounded-lg bg-white border border-gray-200">{result.returnCd ?? "-"}</code>
+        <div className="mt-1.5 grid gap-1 text-[12px]">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="w-14 text-[11px] text-gray-500">returnCd</span>
+            <code className="rounded bg-gray-100 px-1.5 font-mono">{result.returnCd ?? "-"}</code>
           </div>
-
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-gray-500">taskArn</span>
-            <code className="px-2 py-1 rounded-lg bg-white border border-gray-200 break-all">{result.taskArn ?? "-"}</code>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="w-14 text-[11px] text-gray-500">taskArn</span>
+            <code className="break-all rounded bg-gray-100 px-1.5 font-mono">{result.taskArn ?? "-"}</code>
             {result.taskArn && (
-              <Button variant="secondary" icon="📋" onClick={() => navigator.clipboard.writeText(String(result.taskArn))} className="px-3 py-2 text-xs">
-                コピー
-              </Button>
+              <ConsoleButton size="sm" variant="ghost" onClick={() => copyText(String(result.taskArn))} title="taskArn をコピー">
+                <Copy className="h-3 w-3" />
+              </ConsoleButton>
             )}
           </div>
-
-          <details className="mt-2">
-            <summary className="cursor-pointer text-xs font-semibold text-gray-700 select-none">詳細JSONを表示</summary>
-            <pre className="mt-2 text-xs whitespace-pre-wrap text-gray-700">{JSON.stringify(result, null, 2)}</pre>
+          <details>
+            <summary className="cursor-pointer select-none text-[11px] font-bold text-gray-600">詳細JSONを表示</summary>
+            <pre className="m-0 mt-1 whitespace-pre-wrap rounded bg-gray-50 p-2 font-mono text-[11px] text-gray-700">{JSON.stringify(result, null, 2)}</pre>
           </details>
         </div>
       </div>
@@ -941,7 +816,7 @@ export default function DataFetchAdminPage() {
   const renderItemChips = (task: TaskDef, fileCheck?: BatchFileCheckTaskResource) => {
     if (fileCheck?.items?.length) {
       return (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1">
           {fileCheck.items.map((item, idx) => (
             <ItemChip key={`${task.code}-chip-${idx}`} item={item} />
           ))}
@@ -954,284 +829,271 @@ export default function DataFetchAdminPage() {
     return <span className="text-[11px] text-gray-400">確認情報なし</span>;
   };
 
-  /** ===== コンパクト表示: 1タスク = 1行 ===== */
-  const renderCompactRow = (s: (typeof unitStates)[number]) => {
-    const { u, isRunning, result, err, fileCheck, canRun, runTone, runLabel } = s;
+  /** 展開したときの中身（説明・Endpoint・事前確認・エラー・結果） */
+  const renderExpanded = (s: (typeof unitStates)[number]) => {
+    const { u, err, fileCheck, result } = s;
     const t = u.display;
-    const isOpen = expanded.has(u.key) || !!err;
-
     return (
-      <div key={u.key} className={`rounded-xl border bg-white transition-colors ${s.runnable ? "border-gray-100" : "border-rose-100"}`}>
-        <div className="flex flex-col md:flex-row md:items-center gap-3 px-4 py-3">
-          {/* 左: コード + タイトル + チップ */}
-          <div className="flex items-start gap-3 min-w-0 flex-1">
-            <div className="w-20 shrink-0 pt-0.5">
-              <Badge tone="blue">{t.code}</Badge>
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-sm font-bold text-gray-900 truncate" title={`${t.title}\n${t.description}\n${t.endpoint}`}>
-                {t.title}
-              </div>
-              <div className="mt-1.5">{renderItemChips(t, fileCheck)}</div>
-            </div>
-          </div>
-
-          {/* 右: 状態 + 操作 */}
-          <div className="flex items-center gap-2 flex-wrap md:flex-nowrap md:justify-end shrink-0">
-            <Badge tone={runTone}>{runLabel}</Badge>
-            <Badge tone={getEffectiveFileBadgeTone(t, fileCheck)}>{getEffectiveFileBadgeLabel(t, fileCheck)}</Badge>
-            <Button onClick={() => runUnit(u)} loading={isRunning} disabled={!canRun} icon={!isRunning ? "▶️" : undefined} className="px-3 py-1.5 text-xs">
-              {isRunning ? "実行中" : "実行"}
-            </Button>
-            <Button variant="secondary" onClick={() => navigator.clipboard.writeText(`${API_BASE}${u.baseTask.endpoint}`)} className="px-2.5 py-1.5 text-xs" title="URLコピー">
-              📎
-            </Button>
-            <Button variant="secondary" onClick={() => toggleExpanded(u.key)} className="px-2.5 py-1.5 text-xs" title="詳細">
-              {isOpen ? "▲" : "▼"}
-            </Button>
-          </div>
+      <div className="border-t border-gray-100 bg-gray-50/50 px-3 pb-3 pt-2">
+        <div className="text-xs text-gray-600">{t.description}</div>
+        <div className="mt-1 text-[11px] text-gray-500">
+          Endpoint: <code className="break-all rounded bg-gray-100 px-1.5 font-mono">{u.baseTask.endpoint}</code>
         </div>
-
-        {isOpen && (
-          <div className="border-t border-gray-100 px-4 pb-4">
-            <div className="mt-3 text-xs text-gray-600">{t.description}</div>
-            <div className="mt-2 text-xs text-gray-500">
-              Endpoint: <code className="px-2 py-0.5 rounded-lg bg-gray-100 border border-gray-200 break-all">{u.baseTask.endpoint}</code>
-            </div>
-
-            {renderFileCheckPanel(t, fileCheck)}
-
-            {err && (
-              <div className="mt-4">
-                <Alert type="error" title="エラー" message={err} />
-              </div>
-            )}
-
-            {renderResultPanel(result)}
-          </div>
+        {renderFileCheckPanel(t, fileCheck)}
+        {err && (
+          <ConsoleNotice tone="ng" title="エラー" className="mb-0 mt-2.5">
+            {err}
+          </ConsoleNotice>
         )}
+        {renderResultPanel(result)}
       </div>
     );
   };
 
-  /** ===== 詳細表示: 従来のカード（事前確認は折りたたみ） ===== */
+  /** ===== 一覧表示: 1タスク = 1行 ===== */
+  const renderCompactRow = (s: (typeof unitStates)[number]) => {
+    const { u, isRunning, err, fileCheck, canRun, runTone, runLabel } = s;
+    const t = u.display;
+    const isOpen = expanded.has(u.key) || !!err;
+
+    return (
+      <div key={u.key} className={`border-t border-gray-100 first:border-t-0 ${s.runnable ? "" : "bg-red-50/30"}`}>
+        <div className="flex flex-col gap-2 px-3 py-2 md:flex-row md:items-center">
+          <div className="flex min-w-0 flex-1 items-start gap-2.5">
+            <code className="w-[72px] shrink-0 pt-0.5 font-mono text-xs font-bold text-indigo-700">{t.code}</code>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-[13px] font-bold text-gray-900" title={`${t.title}\n${t.description}\n${t.endpoint}`}>
+                {t.title}
+              </div>
+              <div className="mt-1">{renderItemChips(t, fileCheck)}</div>
+            </div>
+          </div>
+
+          <div className="flex shrink-0 flex-wrap items-center gap-1.5 md:flex-nowrap md:justify-end">
+            <StatusBadge tone={TONE[runTone]}>{runLabel}</StatusBadge>
+            <StatusBadge tone={TONE[getEffectiveFileBadgeTone(t, fileCheck)]} dot={false}>
+              {getEffectiveFileBadgeLabel(t, fileCheck)}
+            </StatusBadge>
+            <ConsoleButton size="sm" variant="primary" onClick={() => void runUnit(u)} loading={isRunning} disabled={!canRun}>
+              {!isRunning && <Play className="h-3 w-3" />}
+              {isRunning ? "実行中" : "実行"}
+            </ConsoleButton>
+            <ConsoleButton size="sm" variant="ghost" onClick={() => copyText(`${API_BASE}${u.baseTask.endpoint}`)} title="URLコピー">
+              <Link2 className="h-3.5 w-3.5" />
+            </ConsoleButton>
+            <ConsoleButton size="sm" variant="ghost" onClick={() => toggleExpanded(u.key)} title="詳細">
+              {isOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+            </ConsoleButton>
+          </div>
+        </div>
+
+        {isOpen && renderExpanded(s)}
+      </div>
+    );
+  };
+
+  /** ===== カード表示 ===== */
   const renderDetailCard = (s: (typeof unitStates)[number]) => {
     const { u, isRunning, result, err, fileCheck, canRun, runTone, runLabel } = s;
     const t = u.display;
     const isOpen = expanded.has(u.key) || !!err || !s.runnable;
 
     return (
-      <Card key={u.key} className="p-5">
-        <div className="flex items-start justify-between gap-4">
+      <div key={u.key} className={`rounded-xl border bg-white p-3 ${s.runnable ? "border-gray-200" : "border-red-200"}`}>
+        <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <Badge tone="blue">{t.code}</Badge>
-              <Badge tone={runTone}>{runLabel}</Badge>
-              <Badge tone={getEffectiveFileBadgeTone(t, fileCheck)}>{getEffectiveFileBadgeLabel(t, fileCheck)}</Badge>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <code className="font-mono text-xs font-bold text-indigo-700">{t.code}</code>
+              <StatusBadge tone={TONE[runTone]}>{runLabel}</StatusBadge>
+              <StatusBadge tone={TONE[getEffectiveFileBadgeTone(t, fileCheck)]} dot={false}>
+                {getEffectiveFileBadgeLabel(t, fileCheck)}
+              </StatusBadge>
             </div>
-
-            <div className="mt-2 text-base font-extrabold text-gray-900 truncate" title={t.title}>
+            <div className="mt-1 truncate text-[14px] font-bold text-gray-900" title={t.title}>
               {t.title}
             </div>
-            <div className="mt-1 text-sm text-gray-600">{t.description}</div>
-
-            <div className="mt-2 text-xs text-gray-500">
-              Endpoint: <code className="px-2 py-0.5 rounded-lg bg-gray-100 border border-gray-200 break-all">{u.baseTask.endpoint}</code>
+            <div className="mt-0.5 text-xs text-gray-600">{t.description}</div>
+            <div className="mt-1 text-[11px] text-gray-500">
+              Endpoint: <code className="break-all rounded bg-gray-100 px-1.5 font-mono">{u.baseTask.endpoint}</code>
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 shrink-0">
-            <Button onClick={() => runUnit(u)} loading={isRunning} disabled={!canRun} icon={!isRunning ? "▶️" : undefined} className="px-3 py-2 text-xs">
-              {isRunning ? "実行中..." : "実行"}
-            </Button>
-            <Button variant="secondary" icon="📎" onClick={() => navigator.clipboard.writeText(`${API_BASE}${u.baseTask.endpoint}`)} className="px-3 py-2 text-xs">
+          <div className="flex shrink-0 flex-col gap-1.5">
+            <ConsoleButton size="sm" variant="primary" onClick={() => void runUnit(u)} loading={isRunning} disabled={!canRun}>
+              {!isRunning && <Play className="h-3 w-3" />}
+              {isRunning ? "実行中…" : "実行"}
+            </ConsoleButton>
+            <ConsoleButton size="sm" onClick={() => copyText(`${API_BASE}${u.baseTask.endpoint}`)}>
+              <Link2 className="h-3 w-3" />
               URLコピー
-            </Button>
+            </ConsoleButton>
           </div>
         </div>
 
-        <div className="mt-3">{renderItemChips(t, fileCheck)}</div>
+        <div className="mt-2">{renderItemChips(t, fileCheck)}</div>
 
-        <button type="button" onClick={() => toggleExpanded(u.key)} className="mt-3 text-xs font-semibold text-blue-700 hover:underline">
+        <button type="button" onClick={() => toggleExpanded(u.key)} className="mt-2 text-[11px] font-bold text-indigo-600 hover:underline">
           {isOpen ? "▲ 事前確認の詳細を閉じる" : "▼ 事前確認の詳細を開く"}
         </button>
 
         {isOpen && renderFileCheckPanel(t, fileCheck)}
 
         {err && (
-          <div className="mt-4">
-            <Alert type="error" title="エラー" message={err} />
-          </div>
+          <ConsoleNotice tone="ng" title="エラー" className="mb-0 mt-2.5">
+            {err}
+          </ConsoleNotice>
         )}
 
         {renderResultPanel(result)}
-      </Card>
+      </div>
     );
   };
 
-  const segmentBtn = (active: boolean) => `px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${active ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"}`;
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-4 md:p-8">
-      <div className="max-w-6xl mx-auto space-y-4">
-        {/* Header */}
-        <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
-          <div className="flex items-center gap-4">
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 rounded-2xl shadow-lg">
-              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16M4 12h16M4 17h16" />
-              </svg>
+    <div>
+      <ConsoleToolbar title="データ取得管理" info="バッチ起動（POST）と事前確認">
+        <StatusBadge tone={API_BASE ? "ok" : "warn"} dot={false}>
+          {API_BASE ? `API: ${API_BASE}` : "API_BASE 未設定"}
+        </StatusBadge>
+        <StatusBadge tone={TONE[statOptionsBadgeTone]}>{statOptionsBadgeLabel}</StatusBadge>
+        <ConsoleButton onClick={() => void loadStatOptions()} loading={statOptionsLoading}>
+          候補更新
+        </ConsoleButton>
+        <ConsoleButton variant="primary" onClick={() => void loadFileChecks()} loading={fileChecksLoading}>
+          {!fileChecksLoading && <RefreshCw className="h-3.5 w-3.5" />}
+          状態更新
+        </ConsoleButton>
+      </ConsoleToolbar>
+
+      {fileChecksError && (
+        <ConsoleNotice tone="warn" title="事前確認の取得に失敗" onClose={() => setFileChecksError(null)}>
+          {fileChecksError}
+        </ConsoleNotice>
+      )}
+      {statOptionsError && (
+        <ConsoleNotice tone="warn" title="国・リーグ候補の取得に失敗" onClose={() => setStatOptionsError(null)}>
+          {statOptionsError}
+        </ConsoleNotice>
+      )}
+
+      {/* リクエストパラメータ（折りたたみ） */}
+      <ConsolePanel
+        title={
+          <button type="button" onClick={() => setParamsOpen((v) => !v)} className="inline-flex items-center gap-1 text-sm font-bold text-gray-900">
+            {paramsOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+            リクエストパラメータ
+          </button>
+        }
+        info={<code className="inline-block max-w-[50vw] truncate rounded bg-gray-100 px-1.5 align-middle font-mono text-[11px] text-gray-700">{JSON.stringify(requestBody)}</code>}
+        right={
+          <>
+            <ConsoleButton
+              size="sm"
+              onClick={() => {
+                setCountry("");
+                setLeague("");
+                setSeason("");
+              }}
+            >
+              クリア
+            </ConsoleButton>
+            <ConsoleButton size="sm" onClick={() => copyText(JSON.stringify(requestBody, null, 2))}>
+              <Copy className="h-3 w-3" />
+              body をコピー
+            </ConsoleButton>
+          </>
+        }
+        flush={!paramsOpen}
+      >
+        {paramsOpen && (
+          <>
+            <div className="mb-2 text-xs text-gray-500">country を選ぶと、その国に紐づく league のみ選択できます。入力した値は各タスクの request body に入れて送信します。</div>
+            <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
+              <ConsoleField label="country" hint="B006-each で利用する国を選択">
+                <ConsoleSelect value={country} onChange={(e) => handleCountryChange(e.target.value)} disabled={statOptionsLoading || countryOptions.length === 0} className="w-full">
+                  <option value="">{statOptionsLoading ? "読込中…" : countryOptions.length > 0 ? "国を選択" : "候補なし"}</option>
+                  {countryOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </ConsoleSelect>
+              </ConsoleField>
+
+              <ConsoleField label="league" hint="選択した国に紐づくリーグのみ表示">
+                <ConsoleSelect value={league} onChange={(e) => setLeague(e.target.value)} disabled={statOptionsLoading || !country || leagueOptions.length === 0} className="w-full">
+                  <option value="">{!country ? "先に国を選択" : leagueOptions.length > 0 ? "リーグを選択" : "候補なし"}</option>
+                  {leagueOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </ConsoleSelect>
+              </ConsoleField>
+
+              <ConsoleField label="season" hint="必要な場合のみ指定">
+                <ConsoleInput value={season} onChange={(e) => setSeason(e.target.value)} placeholder="例: 2025" className="w-full" />
+              </ConsoleField>
             </div>
-            <div>
-              <h1 className="text-3xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">データ取得管理</h1>
-              <p className="text-sm text-gray-600 mt-1">バッチ起動（POST）と事前確認</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 flex-wrap">
-            <Badge tone={API_BASE ? "emerald" : "amber"}>{API_BASE ? `API: ${API_BASE}` : "API_BASE 未設定"}</Badge>
-            <Badge tone={statOptionsBadgeTone}>{statOptionsBadgeLabel}</Badge>
-          </div>
-        </div>
-
-        {/* File-check alert */}
-        {fileChecksError && <Alert type="warning" title="事前確認の取得に失敗" message={fileChecksError} onClose={() => setFileChecksError(null)} />}
-
-        {/* Options alert */}
-        {statOptionsError && <Alert type="warning" title="国・リーグ候補の取得に失敗" message={statOptionsError} onClose={() => setStatOptionsError(null)} />}
-
-        {/* Request params（折りたたみ） */}
-        <Card className="p-4">
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <button type="button" onClick={() => setParamsOpen((v) => !v)} className="flex items-center gap-2 text-left min-w-0">
-              <span className="text-sm font-bold text-gray-900">{paramsOpen ? "▲" : "▼"} リクエストパラメータ</span>
-              <code className="px-2 py-0.5 rounded-lg bg-gray-100 border border-gray-200 text-xs text-gray-700 truncate max-w-[50vw]">{JSON.stringify(requestBody)}</code>
-            </button>
-
-            <div className="flex gap-2 flex-wrap">
-              <Button
-                variant="secondary"
-                icon="🧹"
-                className="px-3 py-1.5 text-xs"
-                onClick={() => {
-                  setCountry("");
-                  setLeague("");
-                  setSeason("");
-                }}
-              >
-                クリア
-              </Button>
-
-              <Button variant="secondary" icon="📋" className="px-3 py-1.5 text-xs" onClick={() => navigator.clipboard.writeText(JSON.stringify(requestBody, null, 2))}>
-                body をコピー
-              </Button>
-            </div>
-          </div>
-
-          {paramsOpen && (
-            <>
-              <div className="mt-2 text-xs text-gray-600">country を選ぶと、その国に紐づく league のみ選択できます。入力した値は各タスクの request body に入れて送信します。</div>
-
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Select
-                  label="🏳️ country"
-                  value={country}
-                  onChange={handleCountryChange}
-                  options={countryOptions}
-                  placeholder={statOptionsLoading ? "読込中..." : countryOptions.length > 0 ? "国を選択" : "候補なし"}
-                  hint="B006-each で利用する国を選択"
-                  disabled={statOptionsLoading || countryOptions.length === 0}
-                />
-
-                <Select
-                  label="🏆 league"
-                  value={league}
-                  onChange={setLeague}
-                  options={leagueOptions}
-                  placeholder={!country ? "先に国を選択" : leagueOptions.length > 0 ? "リーグを選択" : "候補なし"}
-                  hint="選択した国に紐づくリーグのみ表示"
-                  disabled={statOptionsLoading || !country || leagueOptions.length === 0}
-                />
-
-                <Input label="📅 season" value={season} onChange={setSeason} placeholder="例: 2025" hint="必要な場合のみ指定" />
-              </div>
-
-              <div className="mt-3 text-xs text-gray-500">※ Spring側で env に詰める想定なら「入力 → request body → runner 側で env 反映」の流れにできます。</div>
-            </>
-          )}
-        </Card>
-
-        {/* Toolbar（スクロールしても上に固定） */}
-        <div className="sticky top-0 z-20">
-          <div className="rounded-2xl border border-gray-100 bg-white/90 backdrop-blur shadow-sm px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
-            <div className="flex items-center gap-2 flex-wrap">
-              <Badge tone="blue">タスク数: {unitStates.length}</Badge>
-              <Badge tone="emerald">実行可: {runnableCount}</Badge>
-              <Badge tone={blockedCount > 0 ? "rose" : "gray"}>必須不足: {blockedCount}</Badge>
-            </div>
-
-            <div className="flex items-center gap-2 flex-wrap">
-              {/* フィルタ */}
-              <div className="inline-flex rounded-xl bg-gray-100 p-1">
-                <button type="button" className={segmentBtn(filterMode === "all")} onClick={() => setFilterMode("all")}>
-                  すべて
-                </button>
-                <button type="button" className={segmentBtn(filterMode === "runnable")} onClick={() => setFilterMode("runnable")}>
-                  実行可のみ
-                </button>
-                <button type="button" className={segmentBtn(filterMode === "blocked")} onClick={() => setFilterMode("blocked")}>
-                  必須不足のみ
-                </button>
-              </div>
-
-              {/* 表示切替 */}
-              <div className="inline-flex rounded-xl bg-gray-100 p-1">
-                <button type="button" className={segmentBtn(viewMode === "compact")} onClick={() => changeViewMode("compact")}>
-                  ☰ 一覧
-                </button>
-                <button type="button" className={segmentBtn(viewMode === "detail")} onClick={() => changeViewMode("detail")}>
-                  ▦ カード
-                </button>
-              </div>
-
-              <Button variant="secondary" className="px-3 py-1.5 text-xs" onClick={() => setExpanded(new Set(units.map((u) => u.key)))}>
-                すべて開く
-              </Button>
-              <Button variant="secondary" className="px-3 py-1.5 text-xs" onClick={() => setExpanded(new Set())}>
-                すべて閉じる
-              </Button>
-
-              <Button variant="secondary" icon="🗂️" loading={statOptionsLoading} onClick={loadStatOptions} className="px-3 py-1.5 text-xs">
-                {statOptionsLoading ? "候補読込中..." : "候補更新"}
-              </Button>
-
-              <Button variant="secondary" icon="🔄" loading={fileChecksLoading} onClick={loadFileChecks} className="px-3 py-1.5 text-xs">
-                {fileChecksLoading ? "確認中..." : "状態更新"}
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Tasks */}
-        {visibleStates.length === 0 ? (
-          <Card className="p-6 text-center text-sm text-gray-500">条件に一致するタスクはありません。</Card>
-        ) : viewMode === "compact" ? (
-          <div className="space-y-2">{visibleStates.map(renderCompactRow)}</div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4 items-start">{visibleStates.map(renderDetailCard)}</div>
+          </>
         )}
+      </ConsolePanel>
 
-        {/* Footer */}
-        <div className="text-center text-xs text-gray-500 pt-2">
-          ブラウザから叩けない場合は、Spring側の <span className="font-semibold">CORS</span> / <span className="font-semibold">認証</span> / <span className="font-semibold">CSRF</span>{" "}
-          を確認してください。
+      {/* 集計・絞り込み（スクロールしても上に固定） */}
+      <div className="sticky top-0 z-20 mb-2 flex flex-wrap items-center gap-2 rounded-xl border border-gray-200 bg-white/95 px-3 pt-2.5 backdrop-blur">
+        <StatChips
+          items={[
+            { label: "タスク数", value: unitStates.length },
+            { label: "実行可", value: runnableCount, tone: "ok" },
+            { label: "必須不足", value: blockedCount, tone: blockedCount > 0 ? "ng" : "default" },
+          ]}
+        />
+        <div className="mb-2.5 ml-auto flex flex-wrap items-center gap-1.5">
+          <SegmentedTabs<FilterMode>
+            value={filterMode}
+            onChange={setFilterMode}
+            options={[
+              { value: "all", label: "すべて" },
+              { value: "runnable", label: "実行可のみ" },
+              { value: "blocked", label: "必須不足のみ" },
+            ]}
+          />
+          <SegmentedTabs<ViewMode>
+            value={viewMode}
+            onChange={changeViewMode}
+            options={[
+              { value: "compact", label: "一覧" },
+              { value: "detail", label: "カード" },
+            ]}
+          />
+          <ConsoleButton size="sm" onClick={() => setExpanded(new Set(units.map((u) => u.key)))}>
+            すべて開く
+          </ConsoleButton>
+          <ConsoleButton size="sm" onClick={() => setExpanded(new Set())}>
+            すべて閉じる
+          </ConsoleButton>
         </div>
       </div>
 
-      {/* 実行結果メッセージ（画面右下に固定表示。スクロール位置に関係なく見える） */}
+      {/* タスク */}
+      {visibleStates.length === 0 ? (
+        <div className="rounded-xl border border-gray-200 bg-white px-4 py-10 text-center text-sm text-gray-400">条件に一致するタスクはありません。</div>
+      ) : viewMode === "compact" ? (
+        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">{visibleStates.map(renderCompactRow)}</div>
+      ) : (
+        <div className="grid grid-cols-1 items-start gap-3 lg:grid-cols-2 2xl:grid-cols-3">{visibleStates.map(renderDetailCard)}</div>
+      )}
+
+      <div className="pt-3 text-center text-[11px] text-gray-400">
+        ブラウザから叩けない場合は、Spring側の <b>CORS</b> / <b>認証</b> / <b>CSRF</b> を確認してください。
+      </div>
+
+      {/* 実行結果メッセージ（画面右下に固定表示） */}
       {globalMessage && (
-        <div className="fixed bottom-4 right-4 z-50 w-[min(28rem,calc(100vw-2rem))] shadow-xl rounded-2xl">
-          <Alert type={globalMessage.type} title={globalMessage.title} message={globalMessage.message} onClose={() => setGlobalMessage(null)} />
+        <div className="fixed bottom-4 right-4 z-50 w-[min(28rem,calc(100vw-2rem))] shadow-xl">
+          <ConsoleNotice tone={ALERT_TONE[globalMessage.type]} title={globalMessage.title} onClose={() => setGlobalMessage(null)} className="mb-0">
+            {globalMessage.message}
+          </ConsoleNotice>
         </div>
       )}
     </div>

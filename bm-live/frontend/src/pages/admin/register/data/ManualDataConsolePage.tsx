@@ -1,158 +1,21 @@
 import React, { useMemo, useState } from "react";
+import { ChevronRight, ClipboardPaste, Download, Eraser, Save } from "lucide-react";
+import {
+  ConsoleButton,
+  ConsoleField,
+  ConsoleInput,
+  ConsoleModal,
+  ConsoleNotice,
+  ConsolePanel,
+  ConsoleTextarea,
+  ConsoleToolbar,
+  NoticeTone,
+  SegmentedTabs,
+  StatusBadge,
+} from "../../../../api/commonAdminDesign";
 
-/** ===== 共通UI ===== */
+/** ===== 共通 ===== */
 type Mode = "create" | "update";
-
-type Tone = "gray" | "blue" | "emerald" | "amber" | "rose";
-
-function Badge({ children, tone = "gray" }: { children: React.ReactNode; tone?: Tone }) {
-  const cls: Record<Tone, string> = {
-    gray: "bg-gray-100 text-gray-700 ring-gray-200",
-    blue: "bg-blue-100 text-blue-800 ring-blue-200",
-    emerald: "bg-emerald-100 text-emerald-800 ring-emerald-200",
-    amber: "bg-amber-100 text-amber-900 ring-amber-200",
-    rose: "bg-rose-100 text-rose-800 ring-rose-200",
-  };
-  return <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ring-1 ring-inset ${cls[tone]}`}>{children}</span>;
-}
-
-function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <div className={`rounded-2xl border bg-white/85 backdrop-blur shadow-sm ${className}`}>{children}</div>;
-}
-
-function Alert({ type, title, message, onClose }: { type: "info" | "success" | "error"; title: string; message: string; onClose?: () => void }) {
-  const cls = type === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : type === "error" ? "border-rose-200 bg-rose-50 text-rose-900" : "border-blue-200 bg-blue-50 text-blue-900";
-  const icon = type === "success" ? "✅" : type === "error" ? "❌" : "💡";
-
-  return (
-    <div className={`rounded-2xl border p-4 flex items-start gap-3 ${cls}`}>
-      <div className="mt-0.5">{icon}</div>
-      <div className="min-w-0 flex-1">
-        <div className="text-sm font-extrabold">{title}</div>
-        <pre className="mt-1 text-xs whitespace-pre-wrap leading-relaxed">{message}</pre>
-      </div>
-      {onClose ? (
-        <button onClick={onClose} className="text-gray-500 hover:text-gray-800 transition-colors">
-          ✕
-        </button>
-      ) : null}
-    </div>
-  );
-}
-
-function Spinner() {
-  return (
-    <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24" aria-hidden="true">
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-    </svg>
-  );
-}
-
-function Button({
-  children,
-  onClick,
-  type = "button",
-  disabled,
-  loading,
-  variant = "primary",
-}: {
-  children: React.ReactNode;
-  onClick?: React.MouseEventHandler<HTMLButtonElement>;
-  type?: "button" | "submit";
-  disabled?: boolean;
-  loading?: boolean;
-  variant?: "primary" | "secondary";
-}) {
-  const base =
-    "inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-extrabold transition-all shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
-  const v = variant === "primary" ? "bg-gray-900 text-white border-gray-900 focus:ring-gray-400" : "bg-white text-gray-900 border-gray-200 hover:bg-gray-50 focus:ring-gray-300";
-
-  return (
-    <button type={type} onClick={onClick} disabled={disabled || loading} className={`${base} ${v}`}>
-      {loading ? <Spinner /> : null}
-      {children}
-    </button>
-  );
-}
-
-function SegButton({ active, children, onClick }: { active: boolean; children: React.ReactNode; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`
-        px-4 py-2 text-sm font-extrabold transition-colors
-        ${active ? "bg-gray-900 text-white" : "bg-white text-gray-900 hover:bg-gray-50"}
-      `}
-    >
-      {children}
-    </button>
-  );
-}
-
-function PillTab({ active, children, onClick }: { active: boolean; children: React.ReactNode; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`
-        px-3 py-1.5 rounded-full border text-sm font-extrabold transition-all
-        ${active ? "bg-blue-600 text-white border-blue-600 shadow-sm" : "bg-white text-gray-900 border-gray-200 hover:bg-gray-50"}
-      `}
-    >
-      {children}
-    </button>
-  );
-}
-
-function Section({ title, children, open = true }: { title: string; children: React.ReactNode; open?: boolean }) {
-  return (
-    <details open={open} className="rounded-2xl border bg-white overflow-hidden">
-      <summary className="cursor-pointer select-none px-5 py-4 bg-gradient-to-r from-white to-gray-50 border-b font-extrabold text-gray-900">{title}</summary>
-      <div className="p-5 grid gap-4">{children}</div>
-    </details>
-  );
-}
-
-function Field({
-  label,
-  value,
-  onChange,
-  placeholder,
-  type = "text",
-  required,
-  disabled,
-}: {
-  label: string;
-  value: string | number | "";
-  onChange: (v: string) => void;
-  placeholder?: string;
-  type?: "text" | "number";
-  required?: boolean;
-  disabled?: boolean;
-}) {
-  return (
-    <div className="grid gap-2">
-      <label className="text-sm font-extrabold text-gray-900">
-        {label} {required ? <span className="text-rose-600">*</span> : null}
-      </label>
-      <input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        type={type}
-        disabled={disabled}
-        className={`
-          w-full px-4 py-3 rounded-xl border bg-white text-sm
-          transition-colors
-          ${disabled ? "bg-gray-50 text-gray-500" : "hover:border-gray-300"}
-          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-        `}
-      />
-    </div>
-  );
-}
 
 async function fetchJson(url: string, init?: RequestInit) {
   const res = await fetch(url, init);
@@ -373,8 +236,160 @@ const initFuture: FutureForm = {
 
 type TabKey = "DataEntity" | "CountryLeagueMaster" | "CountryLeagueSeasonMaster" | "TeamMemberMaster" | "FutureEntity";
 
-function entityLabel(k: TabKey) {
-  return k;
+const TABS: TabKey[] = ["DataEntity", "CountryLeagueMaster", "CountryLeagueSeasonMaster", "TeamMemberMaster", "FutureEntity"];
+
+/** ===== 入力欄の定義（タブごと・まとまりごと） ===== */
+type FieldDef = { key: string; label?: string; placeholder?: string; required?: boolean; type?: "text" | "number" };
+type SectionDef = { title: string; open: boolean; cols: number; fields: FieldDef[] };
+
+const SECTIONS: Record<TabKey, SectionDef[]> = {
+  DataEntity: [
+    {
+      title: "DataEntity（基本）",
+      open: true,
+      cols: 4,
+      fields: [
+        { key: "gameId", required: true },
+        { key: "matchId", required: true },
+        { key: "seq", required: true },
+        { key: "addManualFlg", placeholder: "手動=1推奨" },
+        { key: "times", placeholder: "例: 2026-02-11 19:00" },
+        { key: "recordTime", placeholder: "例: 2026-02-11 21:00" },
+        { key: "homeTeamName", required: true },
+        { key: "awayTeamName", required: true },
+        { key: "homeScore" },
+        { key: "awayScore" },
+        { key: "noticeFlg", placeholder: "0/1" },
+      ],
+    },
+    {
+      title: "DataEntity（その他）",
+      open: false,
+      cols: 4,
+      fields: [
+        { key: "file" },
+        { key: "dataCategory" },
+        { key: "gameLink" },
+        { key: "judge" },
+        { key: "goalTime" },
+        { key: "goalTeamMember" },
+        { key: "probablity" },
+        { key: "predictionScoreTime" },
+        { key: "timeSortSeconds", type: "number" },
+        { key: "fileCount", type: "number" },
+      ],
+    },
+  ],
+  CountryLeagueMaster: [
+    {
+      title: "CountryLeagueMasterEntity",
+      open: true,
+      cols: 3,
+      fields: [{ key: "id", placeholder: "更新は上のID欄推奨" }, { key: "country" }, { key: "league" }, { key: "team" }, { key: "link" }, { key: "delFlg", placeholder: "0/1" }],
+    },
+  ],
+  CountryLeagueSeasonMaster: [
+    {
+      title: "CountryLeagueSeasonMasterEntity",
+      open: true,
+      cols: 4,
+      fields: [
+        { key: "id" },
+        { key: "country" },
+        { key: "league" },
+        { key: "seasonYear", placeholder: "例: 2025/2026" },
+        { key: "startSeasonDate", placeholder: "例: 2025-08-01" },
+        { key: "endSeasonDate", placeholder: "例: 2026-05-20" },
+        { key: "round" },
+        { key: "path" },
+        { key: "icon" },
+        { key: "validFlg", placeholder: "0/1" },
+        { key: "delFlg", placeholder: "0/1" },
+      ],
+    },
+  ],
+  TeamMemberMaster: [
+    {
+      title: "基本",
+      open: true,
+      cols: 4,
+      fields: [{ key: "id" }, { key: "file" }, { key: "member" }, { key: "country" }, { key: "league" }, { key: "team" }, { key: "position" }, { key: "jersey" }, { key: "score" }, { key: "loanBelong" }],
+    },
+    {
+      title: "詳細",
+      open: false,
+      cols: 4,
+      fields: [
+        { key: "birth" },
+        { key: "age" },
+        { key: "height" },
+        { key: "weight" },
+        { key: "marketValue" },
+        { key: "injury" },
+        { key: "facePicPath" },
+        { key: "belongList" },
+        { key: "versusTeamScoreData" },
+        { key: "retireFlg", placeholder: "0/1" },
+        { key: "deadline", placeholder: "0/1" },
+        { key: "deadlineContractDate" },
+        { key: "latestInfoDate" },
+        { key: "updStamp" },
+        { key: "delFlg", placeholder: "0/1" },
+      ],
+    },
+  ],
+  FutureEntity: [
+    {
+      title: "基本",
+      open: true,
+      cols: 4,
+      fields: [
+        { key: "file" },
+        { key: "seq" },
+        { key: "futureTime", placeholder: "例: 2026-02-11 19:00" },
+        { key: "gameTeamCategory" },
+        { key: "homeTeamName" },
+        { key: "awayTeamName" },
+        { key: "homeRank" },
+        { key: "awayRank" },
+        { key: "startFlg", placeholder: "0/1" },
+      ],
+    },
+    {
+      title: "成績・リンク・取得時刻",
+      open: false,
+      cols: 4,
+      fields: [
+        { key: "homeMaxGettingScorer" },
+        { key: "awayMaxGettingScorer" },
+        { key: "gameLink" },
+        { key: "dataTime" },
+        { key: "homeTeamHomeScore" },
+        { key: "homeTeamHomeLost" },
+        { key: "awayTeamHomeScore" },
+        { key: "awayTeamHomeLost" },
+        { key: "homeTeamAwayScore" },
+        { key: "homeTeamAwayLost" },
+        { key: "awayTeamAwayScore" },
+        { key: "awayTeamAwayLost" },
+      ],
+    },
+  ],
+};
+
+const GRID_COLS: Record<number, string> = { 2: "md:grid-cols-2", 3: "md:grid-cols-3", 4: "md:grid-cols-4" };
+
+/** 開閉できるまとまり */
+function FormSection({ title, open, children }: { title: string; open: boolean; children: React.ReactNode }) {
+  return (
+    <details open={open} className="group mb-3 overflow-hidden rounded-xl border border-gray-200 bg-white">
+      <summary className="flex cursor-pointer select-none list-none items-center gap-1.5 border-b border-transparent px-3.5 py-2 text-sm font-bold text-gray-900 group-open:border-gray-200 [&::-webkit-details-marker]:hidden">
+        <ChevronRight className="h-3.5 w-3.5 text-gray-400 transition-transform group-open:rotate-90" />
+        {title}
+      </summary>
+      <div className="px-3.5 py-3">{children}</div>
+    </details>
+  );
 }
 
 /** ===== メインページ ===== */
@@ -382,8 +397,13 @@ export default function ManualDataConsolePage() {
   const [mode, setMode] = useState<Mode>("create");
   const [tab, setTab] = useState<TabKey>("DataEntity");
 
-  const [msg, setMsg] = useState<{ type: "info" | "success" | "error"; text: string } | null>(null);
+  const [msg, setMsg] = useState<{ type: NoticeTone; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
+
+  // JSON貼り付け（prompt の代わりにモーダルで入力）
+  const [jsonOpen, setJsonOpen] = useState(false);
+  const [jsonText, setJsonText] = useState("");
+  const [jsonError, setJsonError] = useState<string | null>(null);
 
   // update mode用キー
   const [updateKey, setUpdateKey] = useState({
@@ -455,16 +475,22 @@ export default function ManualDataConsolePage() {
     }
   };
 
-  const onPasteJson = () => {
+  const openPasteJson = () => {
     setMsg(null);
-    const txt = window.prompt(`${entityLabel(tab)} のJSONを貼り付けてください`);
-    if (!txt) return;
+    setJsonText("");
+    setJsonError(null);
+    setJsonOpen(true);
+  };
+
+  const applyPasteJson = () => {
+    if (!jsonText.trim()) return;
     try {
-      const obj = JSON.parse(txt);
+      const obj = JSON.parse(jsonText);
       setCurrent(obj);
-      setMsg({ type: "success", text: "JSONを反映しました。" });
+      setJsonOpen(false);
+      setMsg({ type: "ok", text: "JSONを反映しました。" });
     } catch {
-      setMsg({ type: "error", text: "JSONのパースに失敗しました。" });
+      setJsonError("JSONのパースに失敗しました。");
     }
   };
 
@@ -528,9 +554,9 @@ export default function ManualDataConsolePage() {
         setFuture((p) => ({ ...p, ...(obj ?? {}) }));
       }
 
-      setMsg({ type: "success", text: "取得しました。編集して更新してください。" });
+      setMsg({ type: "ok", text: "取得しました。編集して更新してください。" });
     } catch (e: any) {
-      setMsg({ type: "error", text: `取得に失敗しました: ${e?.message ?? "unknown"}` });
+      setMsg({ type: "ng", text: `取得に失敗しました: ${e?.message ?? "unknown"}` });
     } finally {
       setBusy(false);
     }
@@ -550,7 +576,7 @@ export default function ManualDataConsolePage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(current),
         });
-        setMsg({ type: "success", text: "登録しました。" });
+        setMsg({ type: "ok", text: "登録しました。" });
         clearCurrent();
         return;
       }
@@ -577,343 +603,182 @@ export default function ManualDataConsolePage() {
         });
       }
 
-      setMsg({ type: "success", text: "更新しました。" });
+      setMsg({ type: "ok", text: "更新しました。" });
     } catch (e: any) {
-      setMsg({ type: "error", text: `${mode === "create" ? "登録" : "更新"}に失敗しました: ${e?.message ?? "unknown"}` });
+      setMsg({ type: "ng", text: `${mode === "create" ? "登録" : "更新"}に失敗しました: ${e?.message ?? "unknown"}` });
     } finally {
       setBusy(false);
     }
   };
 
-  /** ===== タブ別フォーム ===== */
-  const renderForm = () => {
-    if (tab === "CountryLeagueMaster") {
-      return (
-        <Section title="CountryLeagueMasterEntity">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Field label="id" value={clm.id} onChange={(v) => setClm((p) => ({ ...p, id: v }))} placeholder="updateは上のID欄推奨" disabled={busy} />
-            <Field label="country" value={clm.country} onChange={(v) => setClm((p) => ({ ...p, country: v }))} disabled={busy} />
-            <Field label="league" value={clm.league} onChange={(v) => setClm((p) => ({ ...p, league: v }))} disabled={busy} />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Field label="team" value={clm.team} onChange={(v) => setClm((p) => ({ ...p, team: v }))} disabled={busy} />
-            <Field label="link" value={clm.link} onChange={(v) => setClm((p) => ({ ...p, link: v }))} disabled={busy} />
-            <Field label="delFlg" value={clm.delFlg} onChange={(v) => setClm((p) => ({ ...p, delFlg: v }))} placeholder="0/1" disabled={busy} />
-          </div>
-        </Section>
-      );
-    }
-
-    if (tab === "CountryLeagueSeasonMaster") {
-      return (
-        <Section title="CountryLeagueSeasonMasterEntity">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Field label="id" value={cls.id} onChange={(v) => setCls((p) => ({ ...p, id: v }))} disabled={busy} />
-            <Field label="country" value={cls.country} onChange={(v) => setCls((p) => ({ ...p, country: v }))} disabled={busy} />
-            <Field label="league" value={cls.league} onChange={(v) => setCls((p) => ({ ...p, league: v }))} disabled={busy} />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Field label="seasonYear" value={cls.seasonYear} onChange={(v) => setCls((p) => ({ ...p, seasonYear: v }))} placeholder="例: 2025/2026" disabled={busy} />
-            <Field label="startSeasonDate" value={cls.startSeasonDate} onChange={(v) => setCls((p) => ({ ...p, startSeasonDate: v }))} placeholder="例: 2025-08-01" disabled={busy} />
-            <Field label="endSeasonDate" value={cls.endSeasonDate} onChange={(v) => setCls((p) => ({ ...p, endSeasonDate: v }))} placeholder="例: 2026-05-20" disabled={busy} />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Field label="round" value={cls.round} onChange={(v) => setCls((p) => ({ ...p, round: v }))} disabled={busy} />
-            <Field label="path" value={cls.path} onChange={(v) => setCls((p) => ({ ...p, path: v }))} disabled={busy} />
-            <Field label="icon" value={cls.icon} onChange={(v) => setCls((p) => ({ ...p, icon: v }))} disabled={busy} />
-            <Field label="validFlg" value={cls.validFlg} onChange={(v) => setCls((p) => ({ ...p, validFlg: v }))} placeholder="0/1" disabled={busy} />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="delFlg" value={cls.delFlg} onChange={(v) => setCls((p) => ({ ...p, delFlg: v }))} placeholder="0/1" disabled={busy} />
-          </div>
-        </Section>
-      );
-    }
-
-    if (tab === "TeamMemberMaster") {
-      return (
-        <>
-          <Section title="基本" open>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Field label="id" value={tmm.id} onChange={(v) => setTmm((p) => ({ ...p, id: v }))} disabled={busy} />
-              <Field label="file" value={tmm.file} onChange={(v) => setTmm((p) => ({ ...p, file: v }))} disabled={busy} />
-              <Field label="member" value={tmm.member} onChange={(v) => setTmm((p) => ({ ...p, member: v }))} disabled={busy} />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Field label="country" value={tmm.country} onChange={(v) => setTmm((p) => ({ ...p, country: v }))} disabled={busy} />
-              <Field label="league" value={tmm.league} onChange={(v) => setTmm((p) => ({ ...p, league: v }))} disabled={busy} />
-              <Field label="team" value={tmm.team} onChange={(v) => setTmm((p) => ({ ...p, team: v }))} disabled={busy} />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Field label="position" value={tmm.position} onChange={(v) => setTmm((p) => ({ ...p, position: v }))} disabled={busy} />
-              <Field label="jersey" value={tmm.jersey} onChange={(v) => setTmm((p) => ({ ...p, jersey: v }))} disabled={busy} />
-              <Field label="score" value={tmm.score} onChange={(v) => setTmm((p) => ({ ...p, score: v }))} disabled={busy} />
-              <Field label="loanBelong" value={tmm.loanBelong} onChange={(v) => setTmm((p) => ({ ...p, loanBelong: v }))} disabled={busy} />
-            </div>
-          </Section>
-
-          <Section title="詳細" open={false}>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Field label="birth" value={tmm.birth} onChange={(v) => setTmm((p) => ({ ...p, birth: v }))} disabled={busy} />
-              <Field label="age" value={tmm.age} onChange={(v) => setTmm((p) => ({ ...p, age: v }))} disabled={busy} />
-              <Field label="height" value={tmm.height} onChange={(v) => setTmm((p) => ({ ...p, height: v }))} disabled={busy} />
-              <Field label="weight" value={tmm.weight} onChange={(v) => setTmm((p) => ({ ...p, weight: v }))} disabled={busy} />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Field label="marketValue" value={tmm.marketValue} onChange={(v) => setTmm((p) => ({ ...p, marketValue: v }))} disabled={busy} />
-              <Field label="injury" value={tmm.injury} onChange={(v) => setTmm((p) => ({ ...p, injury: v }))} disabled={busy} />
-              <Field label="facePicPath" value={tmm.facePicPath} onChange={(v) => setTmm((p) => ({ ...p, facePicPath: v }))} disabled={busy} />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="belongList" value={tmm.belongList} onChange={(v) => setTmm((p) => ({ ...p, belongList: v }))} disabled={busy} />
-              <Field label="versusTeamScoreData" value={tmm.versusTeamScoreData} onChange={(v) => setTmm((p) => ({ ...p, versusTeamScoreData: v }))} disabled={busy} />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Field label="retireFlg" value={tmm.retireFlg} onChange={(v) => setTmm((p) => ({ ...p, retireFlg: v }))} placeholder="0/1" disabled={busy} />
-              <Field label="deadline" value={tmm.deadline} onChange={(v) => setTmm((p) => ({ ...p, deadline: v }))} placeholder="0/1" disabled={busy} />
-              <Field label="deadlineContractDate" value={tmm.deadlineContractDate} onChange={(v) => setTmm((p) => ({ ...p, deadlineContractDate: v }))} disabled={busy} />
-              <Field label="latestInfoDate" value={tmm.latestInfoDate} onChange={(v) => setTmm((p) => ({ ...p, latestInfoDate: v }))} disabled={busy} />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Field label="updStamp" value={tmm.updStamp} onChange={(v) => setTmm((p) => ({ ...p, updStamp: v }))} disabled={busy} />
-              <Field label="delFlg" value={tmm.delFlg} onChange={(v) => setTmm((p) => ({ ...p, delFlg: v }))} placeholder="0/1" disabled={busy} />
-            </div>
-          </Section>
-        </>
-      );
-    }
-
-    if (tab === "FutureEntity") {
-      return (
-        <>
-          <Section title="基本" open>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Field label="file" value={future.file} onChange={(v) => setFuture((p) => ({ ...p, file: v }))} disabled={busy} />
-              <Field label="seq" value={future.seq} onChange={(v) => setFuture((p) => ({ ...p, seq: v }))} disabled={busy} />
-              <Field label="futureTime" value={future.futureTime} onChange={(v) => setFuture((p) => ({ ...p, futureTime: v }))} placeholder="例: 2026-02-11 19:00" disabled={busy} />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="homeTeamName" value={future.homeTeamName} onChange={(v) => setFuture((p) => ({ ...p, homeTeamName: v }))} disabled={busy} />
-              <Field label="awayTeamName" value={future.awayTeamName} onChange={(v) => setFuture((p) => ({ ...p, awayTeamName: v }))} disabled={busy} />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Field label="gameTeamCategory" value={future.gameTeamCategory} onChange={(v) => setFuture((p) => ({ ...p, gameTeamCategory: v }))} disabled={busy} />
-              <Field label="homeRank" value={future.homeRank} onChange={(v) => setFuture((p) => ({ ...p, homeRank: v }))} disabled={busy} />
-              <Field label="awayRank" value={future.awayRank} onChange={(v) => setFuture((p) => ({ ...p, awayRank: v }))} disabled={busy} />
-              <Field label="startFlg" value={future.startFlg} onChange={(v) => setFuture((p) => ({ ...p, startFlg: v }))} placeholder="0/1" disabled={busy} />
-            </div>
-          </Section>
-
-          <Section title="成績・リンク・取得時刻" open={false}>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Field label="homeMaxGettingScorer" value={future.homeMaxGettingScorer} onChange={(v) => setFuture((p) => ({ ...p, homeMaxGettingScorer: v }))} disabled={busy} />
-              <Field label="awayMaxGettingScorer" value={future.awayMaxGettingScorer} onChange={(v) => setFuture((p) => ({ ...p, awayMaxGettingScorer: v }))} disabled={busy} />
-              <Field label="gameLink" value={future.gameLink} onChange={(v) => setFuture((p) => ({ ...p, gameLink: v }))} disabled={busy} />
-              <Field label="dataTime" value={future.dataTime} onChange={(v) => setFuture((p) => ({ ...p, dataTime: v }))} disabled={busy} />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Field label="homeTeamHomeScore" value={future.homeTeamHomeScore} onChange={(v) => setFuture((p) => ({ ...p, homeTeamHomeScore: v }))} disabled={busy} />
-              <Field label="homeTeamHomeLost" value={future.homeTeamHomeLost} onChange={(v) => setFuture((p) => ({ ...p, homeTeamHomeLost: v }))} disabled={busy} />
-              <Field label="awayTeamHomeScore" value={future.awayTeamHomeScore} onChange={(v) => setFuture((p) => ({ ...p, awayTeamHomeScore: v }))} disabled={busy} />
-              <Field label="awayTeamHomeLost" value={future.awayTeamHomeLost} onChange={(v) => setFuture((p) => ({ ...p, awayTeamHomeLost: v }))} disabled={busy} />
-
-              <Field label="homeTeamAwayScore" value={future.homeTeamAwayScore} onChange={(v) => setFuture((p) => ({ ...p, homeTeamAwayScore: v }))} disabled={busy} />
-              <Field label="homeTeamAwayLost" value={future.homeTeamAwayLost} onChange={(v) => setFuture((p) => ({ ...p, homeTeamAwayLost: v }))} disabled={busy} />
-              <Field label="awayTeamAwayScore" value={future.awayTeamAwayScore} onChange={(v) => setFuture((p) => ({ ...p, awayTeamAwayScore: v }))} disabled={busy} />
-              <Field label="awayTeamAwayLost" value={future.awayTeamAwayLost} onChange={(v) => setFuture((p) => ({ ...p, awayTeamAwayLost: v }))} disabled={busy} />
-            </div>
-          </Section>
-        </>
-      );
-    }
-
-    // DataEntity（簡易版）
+  /** 1つの入力欄（値はタブの現在のフォームから取り出す） */
+  const renderField = (f: FieldDef) => {
+    const value = (current as any)?.[f.key] ?? "";
     return (
-      <>
-        <Section title="DataEntity（基本）" open>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Field label="gameId" value={data.gameId} onChange={(v) => setData((p) => ({ ...p, gameId: v }))} required disabled={busy} />
-            <Field label="matchId" value={data.matchId} onChange={(v) => setData((p) => ({ ...p, matchId: v }))} required disabled={busy} />
-            <Field label="seq" value={data.seq} onChange={(v) => setData((p) => ({ ...p, seq: v }))} required disabled={busy} />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="times" value={data.times} onChange={(v) => setData((p) => ({ ...p, times: v }))} placeholder="例: 2026-02-11 19:00" disabled={busy} />
-            <Field label="recordTime" value={data.recordTime} onChange={(v) => setData((p) => ({ ...p, recordTime: v }))} placeholder="例: 2026-02-11 21:00" disabled={busy} />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="homeTeamName" value={data.homeTeamName} onChange={(v) => setData((p) => ({ ...p, homeTeamName: v }))} required disabled={busy} />
-            <Field label="awayTeamName" value={data.awayTeamName} onChange={(v) => setData((p) => ({ ...p, awayTeamName: v }))} required disabled={busy} />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Field label="homeScore" value={data.homeScore} onChange={(v) => setData((p) => ({ ...p, homeScore: v }))} disabled={busy} />
-            <Field label="awayScore" value={data.awayScore} onChange={(v) => setData((p) => ({ ...p, awayScore: v }))} disabled={busy} />
-            <Field label="noticeFlg" value={data.noticeFlg} onChange={(v) => setData((p) => ({ ...p, noticeFlg: v }))} placeholder="0/1" disabled={busy} />
-            <Field label="addManualFlg" value={data.addManualFlg} onChange={(v) => setData((p) => ({ ...p, addManualFlg: v }))} placeholder="手動=1推奨" disabled={busy} />
-          </div>
-        </Section>
-
-        <Section title="DataEntity（その他）" open={false}>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Field label="file" value={data.file} onChange={(v) => setData((p) => ({ ...p, file: v }))} disabled={busy} />
-            <Field label="dataCategory" value={data.dataCategory} onChange={(v) => setData((p) => ({ ...p, dataCategory: v }))} disabled={busy} />
-            <Field label="gameLink" value={data.gameLink} onChange={(v) => setData((p) => ({ ...p, gameLink: v }))} disabled={busy} />
-            <Field label="judge" value={data.judge} onChange={(v) => setData((p) => ({ ...p, judge: v }))} disabled={busy} />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Field label="goalTime" value={data.goalTime} onChange={(v) => setData((p) => ({ ...p, goalTime: v }))} disabled={busy} />
-            <Field label="goalTeamMember" value={data.goalTeamMember} onChange={(v) => setData((p) => ({ ...p, goalTeamMember: v }))} disabled={busy} />
-            <Field label="probablity" value={data.probablity} onChange={(v) => setData((p) => ({ ...p, probablity: v }))} disabled={busy} />
-            <Field label="predictionScoreTime" value={data.predictionScoreTime} onChange={(v) => setData((p) => ({ ...p, predictionScoreTime: v }))} disabled={busy} />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="timeSortSeconds" value={data.timeSortSeconds} onChange={(v) => setData((p) => ({ ...p, timeSortSeconds: v === "" ? "" : Number(v) }))} type="number" disabled={busy} />
-            <Field label="fileCount" value={data.fileCount} onChange={(v) => setData((p) => ({ ...p, fileCount: v === "" ? "" : Number(v) }))} type="number" disabled={busy} />
-          </div>
-        </Section>
-      </>
+      <ConsoleField
+        key={f.key}
+        label={
+          <>
+            <span className="font-mono">{f.label ?? f.key}</span>
+            {f.required && <span className="ml-0.5 text-red-600">*</span>}
+          </>
+        }
+      >
+        <ConsoleInput
+          value={value}
+          type={f.type ?? "text"}
+          placeholder={f.placeholder}
+          disabled={busy}
+          onChange={(e) => {
+            const v = e.target.value;
+            setCurrent({ [f.key]: f.type === "number" ? (v === "" ? "" : Number(v)) : v });
+          }}
+          className="w-full"
+        />
+      </ConsoleField>
     );
   };
 
+  /** 更新時のキー入力欄 */
+  const keyInput = (label: string, value: string, onChange: (v: string) => void) => (
+    <ConsoleField key={label} label={<span className="font-mono">{label}</span>}>
+      <ConsoleInput value={value} onChange={(e) => onChange(e.target.value)} disabled={busy} className="w-44" />
+    </ConsoleField>
+  );
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-4 md:p-8">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
-          <div className="flex items-center gap-4">
-            <div className="bg-gradient-to-r from-gray-900 to-gray-700 text-white p-3 rounded-2xl shadow-lg">
-              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16M4 12h16M4 17h16" />
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-3xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">手動登録 / 更新コンソール</h1>
-              <p className="text-sm text-gray-600 mt-1">Entityを切り替えて、登録（POST）/更新（GET→PUT）を実行します。</p>
-            </div>
+    <div>
+      <ConsoleToolbar title="手動登録 / 更新コンソール" info="Entity を切り替えて、登録（POST）/ 更新（GET → PUT）を実行">
+        <SegmentedTabs<Mode>
+          value={mode}
+          onChange={setMode}
+          disabled={busy}
+          options={[
+            { value: "create", label: "登録" },
+            { value: "update", label: "更新" },
+          ]}
+        />
+        <ConsoleButton onClick={openPasteJson} disabled={busy}>
+          <ClipboardPaste className="h-3.5 w-3.5" />
+          JSON貼り付け
+        </ConsoleButton>
+      </ConsoleToolbar>
+
+      {msg && (
+        <ConsoleNotice tone={msg.type} title={msg.type === "ok" ? "完了" : msg.type === "ng" ? "エラー" : "情報"} onClose={() => setMsg(null)}>
+          {msg.text}
+        </ConsoleNotice>
+      )}
+
+      {/* 対象 Entity */}
+      <div className="mb-3 flex flex-wrap items-center gap-1.5">
+        <span className="mr-1 text-xs font-bold text-gray-500">Entity</span>
+        {TABS.map((k) => {
+          const active = tab === k;
+          return (
+            <button
+              key={k}
+              type="button"
+              onClick={() => setTab(k)}
+              disabled={busy}
+              className={[
+                "h-7 rounded-full border px-3 font-mono text-xs font-bold transition-colors disabled:opacity-50",
+                active ? "border-gray-900 bg-gray-900 text-white" : "border-gray-300 bg-white text-gray-800 hover:bg-gray-50",
+              ].join(" ")}
+            >
+              {k}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* 更新: 対象データ取得 */}
+      {mode === "update" && (
+        <ConsolePanel
+          title="更新：対象データ取得"
+          info="キーを指定して GET → フォームに反映 → 編集 → PUT"
+          right={<StatusBadge tone={canFetchUpdate ? "ok" : "warn"}>{canFetchUpdate ? "READY" : "KEY REQUIRED"}</StatusBadge>}
+        >
+          <div className="flex flex-wrap items-end gap-2">
+            {tab === "DataEntity" ? (
+              <>
+                {keyInput("gameId", updateKey.gameId, (v) => setUpdateKey((p) => ({ ...p, gameId: v })))}
+                {keyInput("matchId", updateKey.matchId, (v) => setUpdateKey((p) => ({ ...p, matchId: v })))}
+                {keyInput("seq", updateKey.seq, (v) => setUpdateKey((p) => ({ ...p, seq: v })))}
+              </>
+            ) : tab === "FutureEntity" ? (
+              <>
+                {keyInput("file（フォームの値）", future.file, (v) => setFuture((p) => ({ ...p, file: v })))}
+                {keyInput("seq（フォームの値）", future.seq, (v) => setFuture((p) => ({ ...p, seq: v })))}
+              </>
+            ) : (
+              keyInput("id", updateKey.id, (v) => setUpdateKey((p) => ({ ...p, id: v })))
+            )}
+            <ConsoleButton variant="primary" onClick={() => void onFetchForUpdate()} disabled={!canFetchUpdate} loading={busy}>
+              {!busy && <Download className="h-3.5 w-3.5" />}
+              取得
+            </ConsoleButton>
           </div>
+          <div className="mt-2 text-[11px] text-gray-400">※ 取得後に下のフォームを編集して「更新」を押してください。</div>
+        </ConsolePanel>
+      )}
 
-          <div className="flex items-center gap-2 flex-wrap">
-            <Badge tone={mode === "create" ? "emerald" : "amber"}>{mode === "create" ? "CREATE" : "UPDATE"}</Badge>
-            <Badge tone="blue">{tab}</Badge>
+      {/* フォーム */}
+      <form onSubmit={onSubmit}>
+        {SECTIONS[tab].map((s) => (
+          <FormSection key={`${tab}-${s.title}`} title={s.title} open={s.open}>
+            <div className={`grid grid-cols-1 gap-2.5 ${GRID_COLS[s.cols] ?? "md:grid-cols-4"}`}>{s.fields.map(renderField)}</div>
+          </FormSection>
+        ))}
 
-            <div className="inline-flex rounded-2xl border overflow-hidden bg-white">
-              <SegButton active={mode === "create"} onClick={() => setMode("create")}>
-                登録
-              </SegButton>
-              <SegButton active={mode === "update"} onClick={() => setMode("update")}>
-                更新
-              </SegButton>
-            </div>
-
-            <Button variant="secondary" onClick={onPasteJson} disabled={busy}>
-              JSON貼り付け
-            </Button>
+        <div className="sticky bottom-0 z-10 flex flex-wrap items-center gap-2 rounded-xl border border-gray-200 bg-white/95 px-3.5 py-2.5 backdrop-blur">
+          <StatusBadge tone={mode === "create" ? "ok" : "warn"} dot={false}>
+            {mode === "create" ? "POST" : "PUT"}
+          </StatusBadge>
+          <span className="font-mono text-xs font-bold text-gray-700">{tab}</span>
+          {busy ? <StatusBadge tone="warn">処理中…</StatusBadge> : <StatusBadge tone="neutral">待機中</StatusBadge>}
+          <div className="ml-auto flex gap-1.5">
+            <ConsoleButton onClick={clearCurrent} disabled={busy}>
+              <Eraser className="h-3.5 w-3.5" />
+              クリア
+            </ConsoleButton>
+            <ConsoleButton type="submit" variant="primary" loading={busy}>
+              {!busy && <Save className="h-3.5 w-3.5" />}
+              {mode === "create" ? "登録" : "更新"}
+            </ConsoleButton>
           </div>
         </div>
+      </form>
 
-        {/* Message */}
-        {msg ? <Alert type={msg.type} title={msg.type === "success" ? "完了" : msg.type === "error" ? "エラー" : "情報"} message={msg.text} onClose={() => setMsg(null)} /> : null}
-
-        {/* Entity tabs */}
-        <Card className="p-5">
-          <div className="flex items-center justify-between gap-4 flex-col md:flex-row">
-            <div>
-              <div className="text-lg font-extrabold text-gray-900">Entity</div>
-              <div className="text-sm text-gray-600 mt-1">タブで対象テーブル（DTO）を切り替えます</div>
-            </div>
-            <div className="flex gap-2 flex-wrap">
-              {(["DataEntity", "CountryLeagueMaster", "CountryLeagueSeasonMaster", "TeamMemberMaster", "FutureEntity"] as TabKey[]).map((k) => (
-                <PillTab key={k} active={tab === k} onClick={() => setTab(k)}>
-                  {entityLabel(k)}
-                </PillTab>
-              ))}
-            </div>
+      {/* JSON貼り付け */}
+      <ConsoleModal
+        open={jsonOpen}
+        title={`${tab} のJSONを貼り付け`}
+        description="貼り付けた内容を今のフォームに上書きします（含まれない項目はそのまま）。"
+        onClose={() => setJsonOpen(false)}
+        width={720}
+        footer={
+          <div className="ml-auto flex gap-1.5">
+            <ConsoleButton onClick={() => setJsonOpen(false)}>キャンセル</ConsoleButton>
+            <ConsoleButton variant="primary" onClick={applyPasteJson} disabled={!jsonText.trim()}>
+              反映する
+            </ConsoleButton>
           </div>
-        </Card>
-
-        {/* Update fetch panel */}
-        {mode === "update" ? (
-          <Card className="p-5">
-            <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
-              <div>
-                <div className="text-lg font-extrabold text-gray-900">更新：対象データ取得</div>
-                <div className="text-sm text-gray-600 mt-1">キーを指定して GET → フォームに反映 → 編集 → PUT</div>
-              </div>
-              <Badge tone={canFetchUpdate ? "emerald" : "amber"}>{canFetchUpdate ? "READY" : "KEY REQUIRED"}</Badge>
-            </div>
-
-            <div className="mt-5">
-              {tab === "DataEntity" ? (
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                  <Field label="gameId" value={updateKey.gameId} onChange={(v) => setUpdateKey((p) => ({ ...p, gameId: v }))} disabled={busy} />
-                  <Field label="matchId" value={updateKey.matchId} onChange={(v) => setUpdateKey((p) => ({ ...p, matchId: v }))} disabled={busy} />
-                  <Field label="seq" value={updateKey.seq} onChange={(v) => setUpdateKey((p) => ({ ...p, seq: v }))} disabled={busy} />
-                  <Button onClick={onFetchForUpdate} disabled={!canFetchUpdate} loading={busy}>
-                    取得
-                  </Button>
-                </div>
-              ) : tab === "FutureEntity" ? (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                  <Field label="file（フォームの値）" value={future.file} onChange={(v) => setFuture((p) => ({ ...p, file: v }))} disabled={busy} />
-                  <Field label="seq（フォームの値）" value={future.seq} onChange={(v) => setFuture((p) => ({ ...p, seq: v }))} disabled={busy} />
-                  <Button onClick={onFetchForUpdate} disabled={!canFetchUpdate} loading={busy}>
-                    取得
-                  </Button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-                  <Field label="id" value={updateKey.id} onChange={(v) => setUpdateKey((p) => ({ ...p, id: v }))} disabled={busy} />
-                  <Button onClick={onFetchForUpdate} disabled={!canFetchUpdate} loading={busy}>
-                    取得
-                  </Button>
-                </div>
-              )}
-
-              <div className="mt-3 text-xs text-gray-500">※ 取得後に下のフォームを編集して「更新」を押してください。</div>
-            </div>
-          </Card>
-        ) : null}
-
-        {/* Form */}
-        <form onSubmit={onSubmit} className="space-y-4">
-          {renderForm()}
-
-          <Card className="p-5">
-            <div className="flex items-center justify-between gap-3 flex-col md:flex-row">
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge tone={mode === "create" ? "emerald" : "amber"}>{mode === "create" ? "POST" : "PUT"}</Badge>
-                <Badge tone="blue">{tab}</Badge>
-                {busy ? <Badge tone="amber">処理中…</Badge> : <Badge tone="gray">待機中</Badge>}
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Button type="submit" disabled={busy} loading={busy}>
-                  {mode === "create" ? "登録" : "更新"}
-                </Button>
-                <Button variant="secondary" onClick={clearCurrent} disabled={busy}>
-                  クリア
-                </Button>
-              </div>
-            </div>
-          </Card>
-        </form>
-      </div>
+        }
+      >
+        {jsonError && <ConsoleNotice tone="ng" title={jsonError} />}
+        <ConsoleTextarea
+          autoFocus
+          value={jsonText}
+          onChange={(e) => {
+            setJsonText(e.target.value);
+            setJsonError(null);
+          }}
+          rows={14}
+          placeholder='{ "gameId": "...", "matchId": "..." }'
+          className="w-full resize-y font-mono text-xs"
+        />
+      </ConsoleModal>
     </div>
   );
 }

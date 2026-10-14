@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { ConsoleButton, ConsoleField, ConsoleInput, ConsoleNotice, ConsolePanel, ConsoleSelect, ConsoleToolbar } from "../../../api/commonAdminDesign";
 
 type SubInput = {
   optionNum: string;
@@ -12,6 +13,8 @@ type ApiErrorResponse = {
 };
 
 const API_URL = "/v1/api/admin/sub-input";
+
+const EMPTY_FORM: SubInput = { optionNum: "1", options: "", validFlg: "0" };
 
 function validateSubInput(input: SubInput): string[] {
   const errors: string[] = [];
@@ -81,12 +84,7 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
 }
 
 export default function AdminSubInputPage() {
-  const [form, setForm] = useState<SubInput>({
-    optionNum: "1",
-    options: "",
-    validFlg: "0",
-  });
-
+  const [form, setForm] = useState<SubInput>(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [clientErrors, setClientErrors] = useState<string[]>([]);
   const [serverMessage, setServerMessage] = useState<string | null>(null);
@@ -99,15 +97,11 @@ export default function AdminSubInputPage() {
   }, [form.optionNum]);
 
   const handleChange = (key: keyof SubInput) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setForm((prev) => ({
-      ...prev,
-      [key]: e.target.value,
-    }));
+    setForm((prev) => ({ ...prev, [key]: e.target.value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     setServerMessage(null);
     setServerError(null);
 
@@ -117,15 +111,9 @@ export default function AdminSubInputPage() {
 
     setSubmitting(true);
     try {
-      await postJson(API_URL, {
-        subList: [form],
-      });
+      await postJson(API_URL, { subList: [form] });
       setServerMessage("登録しました。");
-      setForm({
-        optionNum: "1",
-        options: "",
-        validFlg: "0",
-      });
+      setForm(EMPTY_FORM);
       setClientErrors([]);
     } catch (err: any) {
       setServerError(String(err?.message ?? err));
@@ -134,185 +122,77 @@ export default function AdminSubInputPage() {
     }
   };
 
+  const handleClear = () => {
+    setForm(EMPTY_FORM);
+    setClientErrors([]);
+    setServerMessage(null);
+    setServerError(null);
+  };
+
   return (
-    <div style={{ display: "grid", gap: 16, maxWidth: 760 }}>
-      <div>
-        <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800 }}>選択肢登録</h1>
-        <p style={{ marginTop: 8, color: "#666", fontSize: 14 }}>SubInput（optionNum / options / validFlg）を管理画面から登録します。</p>
-      </div>
+    <div className="max-w-4xl">
+      <ConsoleToolbar title="選択肢登録" info="SubInput（optionNum / options / validFlg）を登録します" />
 
-      <div
-        style={{
-          border: "1px solid #e5e7eb",
-          borderRadius: 16,
-          background: "#fff",
-          padding: 20,
-        }}
-      >
-        <form onSubmit={handleSubmit} style={{ display: "grid", gap: 16 }}>
-          <div style={{ display: "grid", gap: 6 }}>
-            <label style={{ fontWeight: 700 }}>選択肢No. (optionNum)</label>
-            <select
-              value={form.optionNum}
-              onChange={handleChange("optionNum")}
-              style={{
-                padding: "10px 12px",
-                borderRadius: 8,
-                border: "1px solid #d1d5db",
-                background: "#fff",
-              }}
-            >
-              <option value="1">1 : スコア形式</option>
-              <option value="2">2 : 国:リーグ形式</option>
-            </select>
+      {clientErrors.length > 0 && (
+        <ConsoleNotice tone="ng" title="入力エラー" onClose={() => setClientErrors([])}>
+          {clientErrors.map((err) => `・${err}`).join("\n")}
+        </ConsoleNotice>
+      )}
+      {serverMessage && (
+        <ConsoleNotice tone="ok" title={serverMessage} onClose={() => setServerMessage(null)} />
+      )}
+      {serverError && (
+        <ConsoleNotice tone="ng" title="登録に失敗しました" onClose={() => setServerError(null)}>
+          {serverError}
+        </ConsoleNotice>
+      )}
+
+      <ConsolePanel title="登録内容">
+        <form onSubmit={handleSubmit} className="grid gap-3">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-[200px_1fr_160px]">
+            <ConsoleField label="選択肢No.（optionNum）">
+              <ConsoleSelect value={form.optionNum} onChange={handleChange("optionNum")}>
+                <option value="1">1 : スコア形式</option>
+                <option value="2">2 : 国:リーグ形式</option>
+              </ConsoleSelect>
+            </ConsoleField>
+
+            <ConsoleField label="選択肢（options）" hint={form.optionNum === "1" ? "optionNum=1 の場合は 例: 1-2" : "optionNum=2 の場合は 例: 日本:J1 リーグ"}>
+              <ConsoleInput type="text" value={form.options} onChange={handleChange("options")} placeholder={placeholder} />
+            </ConsoleField>
+
+            <ConsoleField label="有効フラグ（validFlg）">
+              <ConsoleSelect value={form.validFlg} onChange={handleChange("validFlg")}>
+                <option value="0">0 : 有効</option>
+                <option value="1">1 : 無効</option>
+              </ConsoleSelect>
+            </ConsoleField>
           </div>
 
-          <div style={{ display: "grid", gap: 6 }}>
-            <label style={{ fontWeight: 700 }}>選択肢 (options)</label>
-            <input
-              type="text"
-              value={form.options}
-              onChange={handleChange("options")}
-              placeholder={placeholder}
-              style={{
-                padding: "10px 12px",
-                borderRadius: 8,
-                border: "1px solid #d1d5db",
-                outline: "none",
-              }}
-            />
-            <div style={{ fontSize: 12, color: "#666" }}>{form.optionNum === "1" ? "optionNum=1 の場合は 例: 1-2" : "optionNum=2 の場合は 例: 日本:J1 リーグ"}</div>
-          </div>
-
-          <div style={{ display: "grid", gap: 6 }}>
-            <label style={{ fontWeight: 700 }}>有効フラグ (validFlg)</label>
-            <select
-              value={form.validFlg}
-              onChange={handleChange("validFlg")}
-              style={{
-                padding: "10px 12px",
-                borderRadius: 8,
-                border: "1px solid #d1d5db",
-                background: "#fff",
-              }}
-            >
-              <option value="0">0 : 有効</option>
-              <option value="1">1 : 無効</option>
-            </select>
-          </div>
-
-          {clientErrors.length > 0 && (
-            <div
-              style={{
-                border: "1px solid #fecaca",
-                background: "#fef2f2",
-                color: "#991b1b",
-                borderRadius: 12,
-                padding: 12,
-              }}
-            >
-              <div style={{ fontWeight: 700, marginBottom: 6 }}>入力エラー</div>
-              <ul style={{ margin: 0, paddingLeft: 18 }}>
-                {clientErrors.map((err, idx) => (
-                  <li key={idx}>{err}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {serverMessage && (
-            <div
-              style={{
-                border: "1px solid #bbf7d0",
-                background: "#f0fdf4",
-                color: "#166534",
-                borderRadius: 12,
-                padding: 12,
-                fontWeight: 700,
-              }}
-            >
-              {serverMessage}
-            </div>
-          )}
-
-          {serverError && (
-            <pre
-              style={{
-                margin: 0,
-                whiteSpace: "pre-wrap",
-                border: "1px solid #fecaca",
-                background: "#fef2f2",
-                color: "#991b1b",
-                borderRadius: 12,
-                padding: 12,
-                fontSize: 12,
-              }}
-            >
-              {serverError}
-            </pre>
-          )}
-
-          <div style={{ display: "flex", gap: 12 }}>
-            <button
-              type="submit"
-              disabled={submitting}
-              style={{
-                padding: "10px 16px",
-                borderRadius: 8,
-                border: "1px solid #111827",
-                background: submitting ? "#9ca3af" : "#111827",
-                color: "#fff",
-                cursor: submitting ? "default" : "pointer",
-                fontWeight: 700,
-              }}
-            >
-              {submitting ? "登録中..." : "登録"}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setForm({ optionNum: "1", options: "", validFlg: "0" });
-                setClientErrors([]);
-                setServerMessage(null);
-                setServerError(null);
-              }}
-              style={{
-                padding: "10px 16px",
-                borderRadius: 8,
-                border: "1px solid #d1d5db",
-                background: "#fff",
-                cursor: "pointer",
-                fontWeight: 700,
-              }}
-            >
+          <div className="flex gap-1.5">
+            <ConsoleButton type="submit" variant="primary" loading={submitting}>
+              {submitting ? "登録中…" : "登録"}
+            </ConsoleButton>
+            <ConsoleButton onClick={handleClear} disabled={submitting}>
               クリア
-            </button>
+            </ConsoleButton>
           </div>
         </form>
-      </div>
+      </ConsolePanel>
 
-      <div
-        style={{
-          border: "1px solid #e5e7eb",
-          borderRadius: 16,
-          background: "#fff",
-          padding: 16,
-        }}
-      >
-        <div style={{ fontWeight: 700, marginBottom: 10 }}>入力例</div>
-        <ul style={{ margin: 0, paddingLeft: 18, color: "#444", lineHeight: 1.8 }}>
+      <ConsolePanel title="入力例">
+        <ul className="m-0 grid gap-1 pl-4 text-[13px] text-gray-700">
           <li>
-            <b>optionNum=1</b> → options: <code>1-2</code>
+            <b>optionNum=1</b> → options: <code className="rounded bg-gray-100 px-1.5 font-mono text-xs">1-2</code>
           </li>
           <li>
-            <b>optionNum=2</b> → options: <code>日本:J1 リーグ</code>
+            <b>optionNum=2</b> → options: <code className="rounded bg-gray-100 px-1.5 font-mono text-xs">日本:J1 リーグ</code>
           </li>
           <li>
-            <b>validFlg</b> → <code>0</code> or <code>1</code>
+            <b>validFlg</b> → <code className="rounded bg-gray-100 px-1.5 font-mono text-xs">0</code>（有効）または <code className="rounded bg-gray-100 px-1.5 font-mono text-xs">1</code>（無効）
           </li>
         </ul>
-      </div>
+      </ConsolePanel>
     </div>
   );
 }

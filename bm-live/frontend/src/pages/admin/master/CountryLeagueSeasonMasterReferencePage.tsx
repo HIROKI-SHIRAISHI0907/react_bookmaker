@@ -1,5 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { RefreshCw, Trash2 } from "lucide-react";
+import {
+  BadgeTone,
+  ClickEditCell,
+  ConsoleButton,
+  ConsoleColumn,
+  ConsoleInput,
+  ConsoleModal,
+  ConsoleNotice,
+  ConsoleTable,
+  ConsoleToolbar,
+  StatChips,
+  StatusBadge,
+  fmtNum,
+} from "../../../api/commonAdminDesign";
 
 type CountryLeagueSeasonDTO = {
   id?: number;
@@ -77,6 +91,16 @@ type EditingCell = {
 const PAGE_SIZE = 10;
 const MASTER_NAME = "country_league_season_master";
 
+/** モーダルで編集できる列（シーズン状態は end の後ろに差し込む） */
+const MODAL_EDIT_FIELDS_BEFORE: { field: keyof CountryLeagueSeasonMasterEntity; label: string }[] = [
+  { field: "country", label: "country" },
+  { field: "league", label: "league" },
+  { field: "seasonYear", label: "seasonYear" },
+  { field: "startSeasonDate", label: "start" },
+  { field: "endSeasonDate", label: "end" },
+];
+const MODAL_EDIT_FIELDS_AFTER: (keyof CountryLeagueSeasonMasterEntity)[] = ["round", "validFlg", "delFlg", "registerId", "registerTime", "updateId", "updateTime"];
+
 async function fetchJsonStrict<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   const response = await fetch(input, {
     credentials: "include",
@@ -100,158 +124,6 @@ async function fetchJsonStrict<T>(input: RequestInfo | URL, init?: RequestInit):
 
   return JSON.parse(rawText) as T;
 }
-
-const pageStyle: React.CSSProperties = {
-  padding: 16,
-  fontSize: 12,
-  color: "#0f172a",
-};
-
-const sectionStyle: React.CSSProperties = {
-  background: "#ffffff",
-  border: "1px solid #e2e8f0",
-  borderRadius: 10,
-  padding: 14,
-};
-
-const overlayStyle: React.CSSProperties = {
-  position: "fixed",
-  inset: 0,
-  background: "rgba(15, 23, 42, 0.42)",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  zIndex: 2147483647,
-};
-
-const modalStyle: React.CSSProperties = {
-  width: "min(1080px, 94vw)",
-  maxHeight: "86vh",
-  overflow: "auto",
-  background: "#fff",
-  borderRadius: 12,
-  boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
-  padding: 16,
-};
-
-const tableWrapperStyle: React.CSSProperties = {
-  overflowX: "auto",
-  border: "1px solid #e2e8f0",
-  borderRadius: 10,
-  marginTop: 10,
-};
-
-const tableStyle: React.CSSProperties = {
-  width: "100%",
-  borderCollapse: "collapse",
-  fontSize: 12,
-  tableLayout: "auto",
-};
-
-const thTdStyle: React.CSSProperties = {
-  borderBottom: "1px solid #e2e8f0",
-  padding: "7px 8px",
-  fontSize: 12,
-  verticalAlign: "top",
-  lineHeight: 1.4,
-};
-
-const thStyle: React.CSSProperties = {
-  ...thTdStyle,
-  position: "sticky",
-  top: 0,
-  background: "#f8fafc",
-  zIndex: 1,
-  fontWeight: 700,
-  whiteSpace: "nowrap",
-};
-
-const cellTextStyle: React.CSSProperties = {
-  display: "block",
-  maxWidth: 160,
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  whiteSpace: "nowrap",
-};
-
-const wideCellTextStyle: React.CSSProperties = {
-  ...cellTextStyle,
-  maxWidth: 220,
-};
-
-const buttonStyle: React.CSSProperties = {
-  height: 30,
-  padding: "0 10px",
-  borderRadius: 7,
-  border: "1px solid #cbd5e1",
-  background: "#fff",
-  cursor: "pointer",
-  fontSize: 12,
-  whiteSpace: "nowrap",
-};
-
-const primaryButtonStyle: React.CSSProperties = {
-  ...buttonStyle,
-  background: "#2563eb",
-  color: "#fff",
-  border: "1px solid #2563eb",
-};
-
-const okButtonStyle: React.CSSProperties = {
-  ...buttonStyle,
-  background: "#16a34a",
-  color: "#fff",
-  border: "1px solid #16a34a",
-  minWidth: 80,
-};
-
-const dangerButtonStyle: React.CSSProperties = {
-  ...buttonStyle,
-  background: "#dc2626",
-  color: "#fff",
-  border: "1px solid #dc2626",
-  minWidth: 120,
-};
-
-const disabledButtonStyle: React.CSSProperties = {
-  ...buttonStyle,
-  opacity: 0.45,
-  cursor: "not-allowed",
-};
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  minWidth: 180,
-  height: 30,
-  border: "1px solid #94a3b8",
-  borderRadius: 6,
-  padding: "4px 8px",
-  fontSize: 12,
-  boxSizing: "border-box",
-};
-
-const badgeStyle: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  height: 26,
-  padding: "0 10px",
-  borderRadius: 9999,
-  background: "#f1f5f9",
-  color: "#334155",
-  fontSize: 12,
-};
-
-const seasonStatusBadgeBaseStyle: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 6,
-  height: 24,
-  padding: "0 10px",
-  borderRadius: 9999,
-  fontSize: 12,
-  fontWeight: 700,
-  whiteSpace: "nowrap",
-};
 
 function toDisplay(value: unknown): string {
   if (value === null || value === undefined || value === "") return "-";
@@ -325,48 +197,21 @@ function isCurrentSeason(seasonYear?: string): boolean {
   return value.includes(currentYear);
 }
 
-function getSeasonStatus(params: { seasonYear?: string; startSeasonDate?: string; endSeasonDate?: string }): { label: string; icon: string; style: React.CSSProperties } {
+function getSeasonStatus(params: { seasonYear?: string; startSeasonDate?: string; endSeasonDate?: string }): { label: string; tone: BadgeTone } {
   const today = getTokyoTodayDateOnly();
   const start = normalizeDateOnly(params.startSeasonDate);
   const end = normalizeDateOnly(params.endSeasonDate);
   const currentSeason = isCurrentSeason(params.seasonYear);
 
   if (currentSeason && start && today < start) {
-    return {
-      label: "シーズン開始前",
-      icon: "🟡",
-      style: {
-        ...seasonStatusBadgeBaseStyle,
-        background: "#fef3c7",
-        color: "#92400e",
-        border: "1px solid #fcd34d",
-      },
-    };
+    return { label: "シーズン開始前", tone: "warn" };
   }
 
   if (start && end && today >= start && today <= end) {
-    return {
-      label: "シーズン中",
-      icon: "🟢",
-      style: {
-        ...seasonStatusBadgeBaseStyle,
-        background: "#dcfce7",
-        color: "#166534",
-        border: "1px solid #86efac",
-      },
-    };
+    return { label: "シーズン中", tone: "ok" };
   }
 
-  return {
-    label: "シーズンオフ",
-    icon: "⚪",
-    style: {
-      ...seasonStatusBadgeBaseStyle,
-      background: "#f1f5f9",
-      color: "#475569",
-      border: "1px solid #cbd5e1",
-    },
-  };
+  return { label: "シーズンオフ", tone: "neutral" };
 }
 
 function formatTokyoDate(date: Date): string {
@@ -383,85 +228,12 @@ function formatTokyoDate(date: Date): string {
   }).formatToParts(date);
 
   const map = Object.fromEntries(parts.map((part) => [part.type, part.value]));
-  return `${map.year}-${map.month}-${map.day}（${map.weekday}） ${map.hour}:${map.minute}:${map.second} Asia/Tokyo`;
+  return `${map.year}-${map.month}-${map.day}（${map.weekday}） ${map.hour}:${map.minute}:${map.second}`;
 }
 
-type EditableCellProps = {
-  rowIndex: number;
-  field: keyof CountryLeagueSeasonMasterEntity;
-  value: unknown;
-  editingCell: EditingCell;
-  editingValue: string;
-  wide?: boolean;
-  onStartEdit: (rowIndex: number, field: keyof CountryLeagueSeasonMasterEntity, currentValue: unknown) => void;
-  onChangeValue: (value: string) => void;
-  onCommit: () => void;
-  onCancel: () => void;
-};
-
-const EditableCell: React.FC<EditableCellProps> = ({ rowIndex, field, value, editingCell, editingValue, wide, onStartEdit, onChangeValue, onCommit, onCancel }) => {
-  const isEditing = editingCell?.rowIndex === rowIndex && editingCell?.field === field;
-
-  if (isEditing) {
-    return (
-      <input
-        autoFocus
-        value={editingValue}
-        onChange={(e) => onChangeValue(e.target.value)}
-        onBlur={onCommit}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") onCommit();
-          if (e.key === "Escape") onCancel();
-        }}
-        style={inputStyle}
-      />
-    );
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={() => onStartEdit(rowIndex, field, value)}
-      style={{
-        background: "transparent",
-        border: "none",
-        padding: 0,
-        cursor: "pointer",
-        textAlign: "left",
-        width: "100%",
-        color: "#0f172a",
-        fontSize: 12,
-      }}
-      title={toDisplay(value)}
-    >
-      <span style={wide ? wideCellTextStyle : cellTextStyle}>{toDisplay(value)}</span>
-    </button>
-  );
-};
-
-const SeasonCell: React.FC<{ value: unknown; wide?: boolean }> = ({ value, wide }) => (
-  <span style={wide ? wideCellTextStyle : cellTextStyle} title={toDisplay(value)}>
-    {toDisplay(value)}
-  </span>
-);
-
-const SeasonStatusBadge: React.FC<{
-  seasonYear?: string;
-  startSeasonDate?: string;
-  endSeasonDate?: string;
-}> = ({ seasonYear, startSeasonDate, endSeasonDate }) => {
-  const status = getSeasonStatus({
-    seasonYear,
-    startSeasonDate,
-    endSeasonDate,
-  });
-
-  return (
-    <span style={status.style} title={status.label}>
-      <span aria-hidden="true">{status.icon}</span>
-      <span>{status.label}</span>
-    </span>
-  );
+const SeasonStatusBadge: React.FC<{ seasonYear?: string; startSeasonDate?: string; endSeasonDate?: string }> = (props) => {
+  const status = getSeasonStatus(props);
+  return <StatusBadge tone={status.tone}>{status.label}</StatusBadge>;
 };
 
 const CountryLeagueSeasonMasterPage: React.FC = () => {
@@ -642,38 +414,11 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
   }, [load]);
 
   useEffect(() => {
-    const updateTokyoNow = () => {
-      setTokyoNowText(formatTokyoDate(new Date()));
-    };
-
+    const updateTokyoNow = () => setTokyoNowText(formatTokyoDate(new Date()));
     updateTokyoNow();
-
     const timerId = window.setInterval(updateTokyoNow, 1000);
-
-    return () => {
-      window.clearInterval(timerId);
-    };
+    return () => window.clearInterval(timerId);
   }, []);
-
-  useEffect(() => {
-    if (!modalOpen) return;
-
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !busy) {
-        closeModal();
-      }
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [modalOpen, closeModal, busy]);
 
   const filteredRows = useMemo(() => {
     const q = keyword.trim().toLowerCase();
@@ -710,16 +455,7 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
   const commitEdit = () => {
     if (!editingCell) return;
 
-    setNewRows((prev) =>
-      prev.map((row, index) =>
-        index === editingCell.rowIndex
-          ? {
-              ...row,
-              [editingCell.field]: editingValue,
-            }
-          : row,
-      ),
-    );
+    setNewRows((prev) => prev.map((row, index) => (index === editingCell.rowIndex ? { ...row, [editingCell.field]: editingValue } : row)));
 
     setEditingCell(null);
     setEditingValue("");
@@ -733,14 +469,7 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
   const rowsWithPendingEdit = useMemo(() => {
     if (editingCell == null) return newRows;
 
-    return newRows.map((row, index) =>
-      index === editingCell.rowIndex
-        ? {
-            ...row,
-            [editingCell.field]: editingValue,
-          }
-        : row,
-    );
+    return newRows.map((row, index) => (index === editingCell.rowIndex ? { ...row, [editingCell.field]: editingValue } : row));
   }, [newRows, editingCell, editingValue]);
 
   const allModalRowsSelected = useMemo(() => {
@@ -848,383 +577,156 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
     }
   }, [busy, rowsWithPendingEdit, updateEditedRowsApi, updateInitialFlg, closeModal, load]);
 
-  const modalContent =
-    modalOpen && typeof document !== "undefined"
-      ? createPortal(
-          <div
-            style={overlayStyle}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="country-league-season-modal-title"
-            onClick={(e) => {
-              if (e.target === e.currentTarget && !busy) {
-                closeModal();
-              }
-            }}
-          >
-            <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
-                <div>
-                  <h2 id="country-league-season-modal-title" style={{ margin: 0, fontSize: 18, lineHeight: 1.3 }}>
-                    新規シーズンデータ確認
-                  </h2>
-                  <p style={{ margin: "6px 0 0", color: "#475569", fontSize: 12 }}>
-                    各セルは編集できます。OK を押すと編集内容を更新し、その後 initialFlg を更新します。不要な行は複数選択して削除できます。
-                  </p>
-                </div>
-                <button type="button" style={busy ? disabledButtonStyle : buttonStyle} onClick={closeModal} disabled={busy}>
-                  閉じる
-                </button>
-              </div>
+  /* ----- 一覧の列 ----- */
+  const listColumns: ConsoleColumn<CountryLeagueSeasonDTO>[] = [
+    { key: "no", header: "No", mono: true, align: "right", cell: (_r, i) => <span className="text-gray-500">{currentPage * PAGE_SIZE + i + 1}</span> },
+    { key: "country", header: "country", cell: (r) => toDisplay(r.country) },
+    { key: "league", header: "league", cell: (r) => toDisplay(r.league) },
+    { key: "seasonYear", header: "seasonYear", mono: true, cell: (r) => toDisplay(r.seasonYear) },
+    { key: "start", header: "start", mono: true, cell: (r) => toDisplay(r.startSeasonDate) },
+    { key: "end", header: "end", mono: true, cell: (r) => toDisplay(r.endSeasonDate) },
+    { key: "status", header: "シーズン状態", cell: (r) => <SeasonStatusBadge seasonYear={r.seasonYear} startSeasonDate={r.startSeasonDate} endSeasonDate={r.endSeasonDate} /> },
+    { key: "round", header: "round", mono: true, cell: (r) => toDisplay(r.round) },
+    {
+      key: "check",
+      header: "確認",
+      align: "right",
+      cell: (r) => (
+        <ConsoleButton size="sm" onClick={() => void openModal(r)} disabled={newRowsLoading}>
+          確認
+        </ConsoleButton>
+      ),
+    },
+  ];
 
-              <div
-                style={{
-                  marginTop: 12,
-                  padding: 10,
-                  background: "#eff6ff",
-                  color: "#1d4ed8",
-                  borderRadius: 8,
-                  fontSize: 12,
-                }}
-              >
-                各セルはクリックするとその場で編集できます。Enter またはフォーカスアウトで反映、Esc でキャンセルします。
-              </div>
+  /* ----- モーダルの列 ----- */
+  const editCol = (field: keyof CountryLeagueSeasonMasterEntity, label: string, maxWidth = 160): ConsoleColumn<CountryLeagueSeasonMasterEntity> => ({
+    key: String(field),
+    header: label,
+    cell: (row, rowIndex) => (
+      <ClickEditCell
+        value={row[field]}
+        editing={editingCell?.rowIndex === rowIndex && editingCell?.field === field}
+        editingValue={editingValue}
+        onStart={() => startEdit(rowIndex, field, row[field])}
+        onChange={setEditingValue}
+        onCommit={commitEdit}
+        onCancel={cancelEdit}
+        maxWidth={maxWidth}
+        disabled={busy}
+      />
+    ),
+  });
 
-              {selectedDeleteKeys.length > 0 && (
-                <div
-                  style={{
-                    marginTop: 12,
-                    padding: 10,
-                    background: "#fef2f2",
-                    color: "#991b1b",
-                    borderRadius: 8,
-                    fontSize: 12,
-                  }}
-                >
-                  削除選択中: {selectedDeleteKeys.length}件
-                </div>
-              )}
-
-              {newRowsError && (
-                <div
-                  style={{
-                    marginTop: 12,
-                    color: "#b91c1c",
-                    background: "#fee2e2",
-                    padding: 10,
-                    borderRadius: 8,
-                    fontSize: 12,
-                  }}
-                >
-                  {newRowsError}
-                </div>
-              )}
-
-              {newRowsLoading ? (
-                <div style={{ marginTop: 16, fontSize: 12 }}>新規登録データを読み込み中です...</div>
-              ) : (
-                <div style={tableWrapperStyle}>
-                  <table style={tableStyle}>
-                    <thead>
-                      <tr>
-                        <th style={{ ...thStyle, width: 44, textAlign: "center" }}>
-                          <input type="checkbox" checked={allModalRowsSelected} onChange={toggleSelectAllRows} disabled={busy || rowsWithPendingEdit.length === 0} />
-                        </th>
-                        {["id", "country", "league", "seasonYear", "start", "end", "シーズン状態", "round", "validFlg", "delFlg", "registerId", "registerTime", "updateId", "updateTime"].map(
-                          (label) => (
-                            <th key={label} style={thStyle}>
-                              {label}
-                            </th>
-                          ),
-                        )}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {rowsWithPendingEdit.map((row, rowIndex) => {
-                        const key = seasonRowDeleteKey(row);
-                        const checked = selectedDeleteKeys.includes(key);
-
-                        return (
-                          <tr
-                            key={row.id != null ? String(row.id) : `${row.country}-${row.league}-${row.seasonYear}-${rowIndex}`}
-                            style={{ background: checked ? "#fef2f2" : rowIndex % 2 === 0 ? "#ffffff" : "#fcfcfd" }}
-                          >
-                            <td style={{ ...thTdStyle, textAlign: "center" }}>
-                              <input type="checkbox" checked={checked} onChange={() => toggleSelectRow(key)} disabled={busy} />
-                            </td>
-
-                            <td style={thTdStyle}>
-                              <SeasonCell value={row.id} />
-                            </td>
-
-                            <td style={thTdStyle}>
-                              <EditableCell
-                                rowIndex={rowIndex}
-                                field="country"
-                                value={row.country}
-                                editingCell={editingCell}
-                                editingValue={editingValue}
-                                onStartEdit={startEdit}
-                                onChangeValue={setEditingValue}
-                                onCommit={commitEdit}
-                                onCancel={cancelEdit}
-                              />
-                            </td>
-
-                            <td style={thTdStyle}>
-                              <EditableCell
-                                rowIndex={rowIndex}
-                                field="league"
-                                value={row.league}
-                                editingCell={editingCell}
-                                editingValue={editingValue}
-                                onStartEdit={startEdit}
-                                onChangeValue={setEditingValue}
-                                onCommit={commitEdit}
-                                onCancel={cancelEdit}
-                              />
-                            </td>
-
-                            <td style={thTdStyle}>
-                              <EditableCell
-                                rowIndex={rowIndex}
-                                field="seasonYear"
-                                value={row.seasonYear}
-                                editingCell={editingCell}
-                                editingValue={editingValue}
-                                onStartEdit={startEdit}
-                                onChangeValue={setEditingValue}
-                                onCommit={commitEdit}
-                                onCancel={cancelEdit}
-                              />
-                            </td>
-
-                            <td style={thTdStyle}>
-                              <EditableCell
-                                rowIndex={rowIndex}
-                                field="startSeasonDate"
-                                value={row.startSeasonDate}
-                                editingCell={editingCell}
-                                editingValue={editingValue}
-                                onStartEdit={startEdit}
-                                onChangeValue={setEditingValue}
-                                onCommit={commitEdit}
-                                onCancel={cancelEdit}
-                              />
-                            </td>
-
-                            <td style={thTdStyle}>
-                              <EditableCell
-                                rowIndex={rowIndex}
-                                field="endSeasonDate"
-                                value={row.endSeasonDate}
-                                editingCell={editingCell}
-                                editingValue={editingValue}
-                                onStartEdit={startEdit}
-                                onChangeValue={setEditingValue}
-                                onCommit={commitEdit}
-                                onCancel={cancelEdit}
-                              />
-                            </td>
-
-                            <td style={thTdStyle}>
-                              <SeasonStatusBadge seasonYear={row.seasonYear} startSeasonDate={row.startSeasonDate} endSeasonDate={row.endSeasonDate} />
-                            </td>
-
-                            {(["round", "validFlg", "delFlg", "registerId", "registerTime", "updateId", "updateTime"] as (keyof CountryLeagueSeasonMasterEntity)[]).map((field) => (
-                              <td key={String(field)} style={thTdStyle}>
-                                <EditableCell
-                                  rowIndex={rowIndex}
-                                  field={field}
-                                  value={row[field]}
-                                  wide={field === "registerTime" || field === "updateTime"}
-                                  editingCell={editingCell}
-                                  editingValue={editingValue}
-                                  onStartEdit={startEdit}
-                                  onChangeValue={setEditingValue}
-                                  onCommit={commitEdit}
-                                  onCancel={cancelEdit}
-                                />
-                              </td>
-                            ))}
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginTop: 16, flexWrap: "wrap" }}>
-                <button
-                  type="button"
-                  style={busy || selectedDeleteKeys.length === 0 ? disabledButtonStyle : dangerButtonStyle}
-                  onClick={() => void handleDeleteSelected()}
-                  disabled={busy || selectedDeleteKeys.length === 0}
-                >
-                  {deletingRows ? "削除中..." : `選択行を削除${selectedDeleteKeys.length > 0 ? ` (${selectedDeleteKeys.length})` : ""}`}
-                </button>
-
-                <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-                  <button type="button" style={busy ? disabledButtonStyle : buttonStyle} onClick={closeModal} disabled={busy}>
-                    キャンセル
-                  </button>
-                  <button type="button" style={busy ? disabledButtonStyle : okButtonStyle} onClick={() => void handleConfirmOk()} disabled={busy}>
-                    {updatingStatus ? "更新中..." : "OK"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>,
-          document.body,
-        )
-      : null;
+  const modalColumns: ConsoleColumn<CountryLeagueSeasonMasterEntity>[] = [
+    {
+      key: "check",
+      header: <input type="checkbox" checked={allModalRowsSelected} onChange={toggleSelectAllRows} disabled={busy || rowsWithPendingEdit.length === 0} className="accent-red-600" aria-label="すべて選択" />,
+      align: "center",
+      cell: (row) => {
+        const key = seasonRowDeleteKey(row);
+        return <input type="checkbox" checked={selectedDeleteKeys.includes(key)} onChange={() => toggleSelectRow(key)} disabled={busy} className="accent-red-600" aria-label="削除対象として選択" />;
+      },
+    },
+    { key: "id", header: "id", mono: true, cell: (row) => <span className="text-gray-500">{toDisplay(row.id)}</span> },
+    ...MODAL_EDIT_FIELDS_BEFORE.map((f) => editCol(f.field, f.label)),
+    { key: "status", header: "シーズン状態", cell: (row) => <SeasonStatusBadge seasonYear={row.seasonYear} startSeasonDate={row.startSeasonDate} endSeasonDate={row.endSeasonDate} /> },
+    ...MODAL_EDIT_FIELDS_AFTER.map((field) => editCol(field, String(field), field === "registerTime" || field === "updateTime" ? 220 : 160)),
+  ];
 
   return (
-    <>
-      <div style={pageStyle}>
-        <div style={sectionStyle}>
-          <div
-            style={{
-              marginBottom: 12,
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              gap: 12,
-              flexWrap: "wrap",
-            }}
-          >
-            <div>
-              <h1 style={{ margin: 0, fontSize: 22, lineHeight: 1.3 }}>country_league_season_master 確認</h1>
-              <p style={{ margin: "6px 0 0", color: "#475569", fontSize: 12 }}>このページに遷移した瞬間にモーダルを表示し、APIでは全件一括取得、画面側で10件ずつページング表示します。</p>
+    <div>
+      <ConsoleToolbar
+        title="country_league_season_master 確認"
+        info="全件を一括取得し、10件ずつ表示"
+        description="このページを開くと、最初の国リーグの新規登録データを確認するモーダルを自動で表示します。"
+      >
+        <span className="font-mono text-xs tabular-nums text-gray-500">現在 {tokyoNowText || "-"} JST</span>
+        <ConsoleInput
+          value={keyword}
+          onChange={(e) => {
+            setKeyword(e.target.value);
+            setCurrentPage(0);
+          }}
+          placeholder="country / league / seasonYear などで絞り込み"
+          className="w-72"
+        />
+        <ConsoleButton variant="primary" onClick={() => void load()} loading={loading}>
+          {!loading && <RefreshCw className="h-3.5 w-3.5" />}
+          再読み込み
+        </ConsoleButton>
+      </ConsoleToolbar>
+
+      <StatChips
+        items={[
+          { label: "総件数", value: fmtNum(rows.length) },
+          { label: "絞込件数", value: fmtNum(filteredRows.length) },
+          { label: "ページ", value: `${totalPages === 0 ? 0 : currentPage + 1} / ${totalPages}` },
+        ]}
+      />
+
+      {error && (
+        <ConsoleNotice tone="ng" onClose={() => setError(null)}>
+          {error}
+        </ConsoleNotice>
+      )}
+      {newRowsError && !modalOpen && (
+        <ConsoleNotice tone="ng" onClose={() => setNewRowsError(null)}>
+          {newRowsError}
+        </ConsoleNotice>
+      )}
+      {infoMessage && !modalOpen && <ConsoleNotice tone="info" title={infoMessage} onClose={() => setInfoMessage(null)} />}
+      {newRowsLoading && !modalOpen && <ConsoleNotice tone="info" title="新規登録データを確認中です…" />}
+
+      <ConsoleTable
+        columns={listColumns}
+        rows={pagedRows}
+        rowKey={(r, i) => `${r.country}-${r.league}-${r.seasonYear}-${i}`}
+        loading={loading}
+        emptyText="表示できるデータがありません。"
+        paging={{ page: currentPage + 1, pageSize: PAGE_SIZE, total: filteredRows.length, onChange: (p) => setCurrentPage(p - 1) }}
+      />
+
+      <ConsoleModal
+        open={modalOpen}
+        title="新規シーズンデータ確認"
+        description="OK を押すと編集内容を更新し、その後 initialFlg を更新します。不要な行は複数選択して削除できます。"
+        onClose={closeModal}
+        busy={busy}
+        width={1180}
+        footer={
+          <>
+            <ConsoleButton variant="danger" onClick={() => void handleDeleteSelected()} disabled={selectedDeleteKeys.length === 0 || updatingStatus} loading={deletingRows}>
+              {!deletingRows && <Trash2 className="h-3.5 w-3.5" />}
+              {deletingRows ? "削除中…" : `選択行を削除${selectedDeleteKeys.length > 0 ? `（${selectedDeleteKeys.length}）` : ""}`}
+            </ConsoleButton>
+            <div className="ml-auto flex gap-1.5">
+              <ConsoleButton onClick={closeModal} disabled={busy}>
+                キャンセル
+              </ConsoleButton>
+              <ConsoleButton variant="success" onClick={() => void handleConfirmOk()} disabled={deletingRows} loading={updatingStatus} className="min-w-[80px]">
+                {updatingStatus ? "更新中…" : "OK"}
+              </ConsoleButton>
             </div>
+          </>
+        }
+      >
+        <ConsoleNotice tone="info">セルをクリックするとその場で編集できます。Enter またはフォーカスアウトで反映、Esc でキャンセルします。</ConsoleNotice>
+        {selectedDeleteKeys.length > 0 && <ConsoleNotice tone="ng" title={`削除選択中: ${selectedDeleteKeys.length}件`} />}
+        {newRowsError && <ConsoleNotice tone="ng">{newRowsError}</ConsoleNotice>}
 
-            <div
-              style={{
-                fontSize: 12,
-                color: "#334155",
-                background: "#f8fafc",
-                border: "1px solid #e2e8f0",
-                borderRadius: 8,
-                padding: "8px 10px",
-                whiteSpace: "nowrap",
-              }}
-            >
-              現在日時: {tokyoNowText || "-"}
-            </div>
-          </div>
-
-          <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12, flexWrap: "wrap" }}>
-            <button type="button" onClick={() => void load()} style={primaryButtonStyle}>
-              {loading ? "読み込み中..." : "再読み込み"}
-            </button>
-            <input
-              value={keyword}
-              onChange={(e) => {
-                setKeyword(e.target.value);
-                setCurrentPage(0);
-              }}
-              placeholder="country / league / seasonYear などで絞り込み"
-              style={{ ...inputStyle, width: 300 }}
-            />
-            <span style={badgeStyle}>総件数: {rows.length}</span>
-            <span style={badgeStyle}>絞込件数: {filteredRows.length}</span>
-            <span style={badgeStyle}>
-              ページ: {totalPages === 0 ? 0 : currentPage + 1} / {totalPages}
-            </span>
-          </div>
-
-          <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10, flexWrap: "wrap" }}>
-            <button type="button" style={currentPage <= 0 ? disabledButtonStyle : buttonStyle} onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))} disabled={currentPage <= 0}>
-              前へ
-            </button>
-            <button
-              type="button"
-              style={currentPage >= totalPages - 1 || totalPages === 0 ? disabledButtonStyle : buttonStyle}
-              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))}
-              disabled={currentPage >= totalPages - 1 || totalPages === 0}
-            >
-              次へ
-            </button>
-          </div>
-
-          {error && <div style={{ marginBottom: 10, color: "#b91c1c", background: "#fee2e2", padding: 10, borderRadius: 8, fontSize: 12 }}>{error}</div>}
-          {newRowsError && !modalOpen && <div style={{ marginBottom: 10, color: "#b91c1c", background: "#fee2e2", padding: 10, borderRadius: 8, fontSize: 12 }}>{newRowsError}</div>}
-          {infoMessage && !modalOpen && <div style={{ marginBottom: 10, color: "#1d4ed8", background: "#dbeafe", padding: 10, borderRadius: 8, fontSize: 12 }}>{infoMessage}</div>}
-
-          <div style={tableWrapperStyle}>
-            <table style={tableStyle}>
-              <thead>
-                <tr>
-                  {["No", "country", "league", "seasonYear", "start", "end", "シーズン状態", "round", "確認"].map((label) => (
-                    <th key={label} style={thStyle}>
-                      {label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={10} style={thTdStyle}>
-                      読み込み中です...
-                    </td>
-                  </tr>
-                ) : pagedRows.length === 0 ? (
-                  <tr>
-                    <td colSpan={10} style={thTdStyle}>
-                      表示できるデータがありません。
-                    </td>
-                  </tr>
-                ) : (
-                  pagedRows.map((row, index) => (
-                    <tr key={`${row.country}-${row.league}-${row.seasonYear}-${index}`} style={{ background: index % 2 === 0 ? "#ffffff" : "#fcfcfd" }}>
-                      <td style={thTdStyle}>
-                        <SeasonCell value={currentPage * PAGE_SIZE + index + 1} />
-                      </td>
-                      <td style={thTdStyle}>
-                        <SeasonCell value={row.country} />
-                      </td>
-                      <td style={thTdStyle}>
-                        <SeasonCell value={row.league} />
-                      </td>
-                      <td style={thTdStyle}>
-                        <SeasonCell value={row.seasonYear} />
-                      </td>
-                      <td style={thTdStyle}>
-                        <SeasonCell value={row.startSeasonDate} />
-                      </td>
-                      <td style={thTdStyle}>
-                        <SeasonCell value={row.endSeasonDate} />
-                      </td>
-                      <td style={thTdStyle}>
-                        <SeasonStatusBadge seasonYear={row.seasonYear} startSeasonDate={row.startSeasonDate} endSeasonDate={row.endSeasonDate} />
-                      </td>
-                      <td style={thTdStyle}>
-                        <SeasonCell value={row.round} />
-                      </td>
-                      <td style={thTdStyle}>
-                        <button
-                          type="button"
-                          style={buttonStyle}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            void openModal(row);
-                          }}
-                        >
-                          確認
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      {modalContent}
-    </>
+        {newRowsLoading ? (
+          <div className="py-8 text-center text-sm text-gray-400">新規登録データを読み込み中です…</div>
+        ) : (
+          <ConsoleTable
+            columns={modalColumns}
+            rows={rowsWithPendingEdit}
+            rowKey={(row, i) => (row.id != null ? String(row.id) : `${row.country}-${row.league}-${row.seasonYear}-${i}`)}
+            rowClassName={(row) => (selectedDeleteKeys.includes(seasonRowDeleteKey(row)) ? "!bg-red-50" : "")}
+          />
+        )}
+      </ConsoleModal>
+    </div>
   );
 };
 

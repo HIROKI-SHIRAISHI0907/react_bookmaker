@@ -1,12 +1,14 @@
 // src/pages/admin/mail/MailInfoList.tsx
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Plus, RefreshCw } from "lucide-react";
 import { deleteMailInfoApi, fetchMailInfoListApi, MailInfoMasterEntity } from "../../../api/mailinfo";
+import { ConsoleButton, ConsoleColumn, ConsoleNotice, ConsoleTable, ConsoleToolbar } from "../../../api/commonAdminDesign";
 
 /**
  * メール情報一覧画面
  * 現在登録されているメール情報マスタの内容を取得して表示する。
- * 「検索」ボタン押下でGET /v1/api/admin/mailinfoを叩き直す。
+ * 「再読み込み」ボタン押下でGET /v1/api/admin/mailinfoを叩き直す。
  *
  * 削除は誤操作防止のため、ボタン押下で即削除せず、行内に確認表示を出してから
  * 「削除する」を押した場合のみ DELETE /v1/api/admin/mailinfo/{mailId} を呼ぶ。
@@ -68,234 +70,88 @@ export default function MailInfoListPage() {
     [handleSearch],
   );
 
+  const columns: ConsoleColumn<MailInfoMasterEntity>[] = [
+    { key: "mailId", header: "メールID", mono: true, cell: (item) => item.mailId },
+    { key: "mailSubject", header: "メール件名", wrap: true, className: "min-w-[180px]", cell: (item) => item.mailSubject },
+    {
+      key: "mailBody",
+      header: "メール本文",
+      wrap: true,
+      className: "min-w-[280px] max-w-[520px] text-gray-600",
+      cell: (item) => <span className="line-clamp-2">{formatBodyPreview(item.mailBody)}</span>,
+    },
+    {
+      key: "ops",
+      header: "操作",
+      align: "right",
+      cell: (item) => {
+        const isConfirming = confirmingId === item.mailId;
+        const isDeleting = deletingId === item.mailId;
+        if (isConfirming) {
+          return (
+            <span className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-2 py-1">
+              <span className="text-xs font-bold text-red-700">本当に削除しますか？</span>
+              <ConsoleButton size="sm" onClick={() => setConfirmingId(null)} disabled={isDeleting}>
+                キャンセル
+              </ConsoleButton>
+              <ConsoleButton size="sm" variant="danger" onClick={() => void handleDelete(item.mailId)} loading={isDeleting}>
+                {isDeleting ? "削除中…" : "削除する"}
+              </ConsoleButton>
+            </span>
+          );
+        }
+        return (
+          <span className="inline-flex gap-1.5">
+            <Link
+              to={`/admin/mailinfo/${encodeURIComponent(item.mailId)}/edit`}
+              className="inline-flex h-7 items-center rounded-lg border border-gray-300 bg-white px-2.5 text-xs font-bold text-gray-900 no-underline hover:bg-gray-50"
+            >
+              更新
+            </Link>
+            <ConsoleButton
+              size="sm"
+              className="!border-red-200 !text-red-700 hover:!bg-red-50"
+              onClick={() => {
+                setError(null);
+                setMessage(null);
+                setConfirmingId(item.mailId);
+              }}
+            >
+              削除
+            </ConsoleButton>
+          </span>
+        );
+      },
+    },
+  ];
+
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        <div style={styles.headerRow}>
-          <h1 style={styles.title}>メール情報一覧</h1>
-          <Link to="/admin/mailinfo/new" style={styles.primaryButtonLink}>
-            新規登録
-          </Link>
-        </div>
+    <div>
+      <ConsoleToolbar title="メール情報一覧" info={`メール情報マスタ・${list.length}件`}>
+        <ConsoleButton onClick={() => void handleSearch()} loading={loading}>
+          {!loading && <RefreshCw className="h-3.5 w-3.5" />}
+          再読み込み
+        </ConsoleButton>
+        <Link
+          to="/admin/mailinfo/new"
+          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-indigo-600 bg-indigo-600 px-3 text-[13px] font-bold text-white no-underline hover:bg-indigo-700"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          新規登録
+        </Link>
+      </ConsoleToolbar>
 
-        <div style={{ marginBottom: 16 }}>
-          <button type="button" onClick={handleSearch} disabled={loading} style={styles.secondaryButton}>
-            {loading ? "検索中..." : "検索"}
-          </button>
-        </div>
+      {error && <ConsoleNotice tone="ng" title={error} onClose={() => setError(null)} />}
+      {message && <ConsoleNotice tone="ok" title={message} onClose={() => setMessage(null)} />}
 
-        {error && <div style={styles.errorBox}>{error}</div>}
-        {message && <div style={styles.successBox}>{message}</div>}
-
-        <div style={styles.tableWrap}>
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th style={styles.th}>メールID</th>
-                <th style={styles.th}>メール件名</th>
-                <th style={styles.th}>メール本文</th>
-                <th style={styles.th}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {list.length === 0 && !loading && (
-                <tr>
-                  <td style={styles.tdEmpty} colSpan={4}>
-                    データがありません。
-                  </td>
-                </tr>
-              )}
-              {list.map((item) => {
-                const isConfirming = confirmingId === item.mailId;
-                const isDeleting = deletingId === item.mailId;
-                return (
-                  <tr key={item.mailId}>
-                    <td style={styles.td}>{item.mailId}</td>
-                    <td style={styles.td}>{item.mailSubject}</td>
-                    <td style={styles.td}>{formatBodyPreview(item.mailBody)}</td>
-                    <td style={styles.td}>
-                      {isConfirming ? (
-                        <div style={styles.confirmBox}>
-                          <div style={styles.confirmText}>本当に削除しますか？</div>
-                          <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
-                            <button
-                              type="button"
-                              onClick={() => setConfirmingId(null)}
-                              disabled={isDeleting}
-                              style={styles.secondaryButton}
-                            >
-                              キャンセル
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDelete(item.mailId)}
-                              disabled={isDeleting}
-                              style={{ ...styles.dangerButton, opacity: isDeleting ? 0.6 : 1 }}
-                            >
-                              {isDeleting ? "削除中..." : "削除する"}
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div style={{ display: "flex", gap: 8, flexWrap: "nowrap" }}>
-                          <Link to={`/admin/mailinfo/${encodeURIComponent(item.mailId)}/edit`} style={styles.linkButton}>
-                            更新
-                          </Link>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setError(null);
-                              setMessage(null);
-                              setConfirmingId(item.mailId);
-                            }}
-                            style={styles.dangerLinkButton}
-                          >
-                            削除
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <ConsoleTable
+        columns={columns}
+        rows={list}
+        rowKey={(item) => item.mailId}
+        loading={loading}
+        emptyText="データがありません。"
+        rowClassName={(item) => (confirmingId === item.mailId ? "!bg-red-50/40" : "")}
+      />
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    minHeight: "100vh",
-    padding: 24,
-    background: "#f6f7fb",
-  },
-  card: {
-    maxWidth: 960,
-    margin: "0 auto",
-    background: "white",
-    border: "1px solid #e6e8ef",
-    borderRadius: 16,
-    padding: 20,
-    boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
-  },
-  headerRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  title: { margin: 0, fontSize: 22 },
-  secondaryButton: {
-    padding: "8px 16px",
-    borderRadius: 10,
-    border: "1px solid #d7dbe7",
-    background: "white",
-    cursor: "pointer",
-    fontSize: 14,
-    fontWeight: 600,
-  },
-  primaryButtonLink: {
-    display: "inline-block",
-    padding: "8px 16px",
-    borderRadius: 10,
-    border: "none",
-    background: "#111827",
-    color: "white",
-    fontWeight: 600,
-    fontSize: 14,
-    textDecoration: "none",
-  },
-  errorBox: {
-    padding: 10,
-    borderRadius: 10,
-    background: "#fef2f2",
-    border: "1px solid #fecaca",
-    color: "#b91c1c",
-    fontSize: 13,
-    marginBottom: 16,
-  },
-  successBox: {
-    padding: 10,
-    borderRadius: 10,
-    background: "#f0fdf4",
-    border: "1px solid #bbf7d0",
-    color: "#166534",
-    fontSize: 13,
-    marginBottom: 16,
-  },
-  tableWrap: {
-    overflowX: "auto",
-  },
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-    fontSize: 14,
-  },
-  th: {
-    textAlign: "left",
-    padding: "10px 12px",
-    borderBottom: "2px solid #e6e8ef",
-    color: "#4b5563",
-    fontWeight: 600,
-    whiteSpace: "nowrap",
-  },
-  td: {
-    padding: "10px 12px",
-    borderBottom: "1px solid #eef0f5",
-    verticalAlign: "top",
-  },
-  tdEmpty: {
-    padding: "20px 12px",
-    textAlign: "center",
-    color: "#9ca3af",
-  },
-  linkButton: {
-    display: "inline-block",
-    padding: "6px 12px",
-    borderRadius: 8,
-    border: "1px solid #d7dbe7",
-    color: "#111827",
-    fontSize: 13,
-    textDecoration: "none",
-    whiteSpace: "nowrap",
-  },
-  dangerLinkButton: {
-    display: "inline-block",
-    padding: "6px 12px",
-    borderRadius: 8,
-    border: "1px solid #fecaca",
-    background: "white",
-    color: "#b91c1c",
-    fontSize: 13,
-    fontWeight: 600,
-    cursor: "pointer",
-    whiteSpace: "nowrap",
-  },
-  dangerButton: {
-    padding: "8px 14px",
-    borderRadius: 8,
-    border: "none",
-    background: "#dc2626",
-    color: "white",
-    fontSize: 13,
-    fontWeight: 700,
-    cursor: "pointer",
-    whiteSpace: "nowrap",
-  },
-  confirmBox: {
-    minWidth: 220,
-    padding: 10,
-    borderRadius: 10,
-    background: "#fef2f2",
-    border: "1px solid #fecaca",
-  },
-  confirmText: {
-    fontSize: 12,
-    color: "#991b1b",
-    fontWeight: 700,
-    marginBottom: 8,
-  },
-};

@@ -1,6 +1,19 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Plus, RefreshCw, RotateCcw, Save, Trash2 } from "lucide-react";
 import { fetchPointSettings, isValidRemarks, normalizeRemarks, savePointSettings, type PointSettingEntity, type PointSettingItem } from "../../../api/adminPointSettings";
+import {
+  ConsoleButton,
+  ConsoleCellInput,
+  ConsoleColumn,
+  ConsoleField,
+  ConsoleInput,
+  ConsoleNotice,
+  ConsoleTable,
+  ConsoleToolbar,
+  StatChips,
+  StatusBadge,
+} from "../../../api/commonAdminDesign";
 
 type EditableRow = {
   rowId: string;
@@ -126,6 +139,7 @@ export default function PointSettingsPage() {
     isError,
     error,
     refetch,
+    isFetching,
   } = useQuery({
     queryKey: ["admin-point-settings"],
     queryFn: fetchPointSettings,
@@ -151,12 +165,18 @@ export default function PointSettingsPage() {
   const filteredRows = useMemo(() => {
     return rows.filter((row) => {
       const hitCountry = !filterCountry.trim() || row.country.toLowerCase().includes(filterCountry.trim().toLowerCase());
-
       const hitLeague = !filterLeague.trim() || row.league.toLowerCase().includes(filterLeague.trim().toLowerCase());
-
       return hitCountry && hitLeague;
     });
   }, [rows, filterCountry, filterLeague]);
+
+  const counts = useMemo(
+    () => ({
+      newCount: rows.filter((r) => r.isNew).length,
+      deleteCount: rows.filter((r) => r.delFlg === "1").length,
+    }),
+    [rows],
+  );
 
   const updateRow = (rowId: string, key: keyof EditableRow, value: string) => {
     setRows((prev) => prev.map((row) => (row.rowId === rowId ? { ...row, [key]: value } : row)));
@@ -210,244 +230,137 @@ export default function PointSettingsPage() {
     await mutation.mutateAsync({ items });
   };
 
-  if (isLoading) {
-    return (
-      <div style={{ padding: 24 }}>
-        <h1>勝ち点設定</h1>
-        <p>読み込み中です...</p>
-      </div>
-    );
-  }
+  /** 文字の入力欄（既存行のキー項目は編集不可） */
+  const textCol = (key: "country" | "league" | "remarks", header: string, opts: { keyLocked: boolean; placeholder?: string; minWidth?: string }): ConsoleColumn<EditableRow> => ({
+    key,
+    header,
+    className: "py-1",
+    cell: (row) => {
+      const locked = opts.keyLocked && !row.isNew;
+      return (
+        <ConsoleCellInput
+          value={row[key]}
+          disabled={locked || row.delFlg === "1"}
+          onChange={(e) => updateRow(row.rowId, key, e.target.value)}
+          placeholder={opts.placeholder}
+          className={`${opts.minWidth ?? "min-w-[120px]"} ${locked ? "!border-transparent !bg-transparent text-gray-700" : ""}`}
+        />
+      );
+    },
+  });
 
-  if (isError) {
-    return (
-      <div style={{ padding: 24 }}>
-        <h1>勝ち点設定</h1>
-        <p style={{ color: "crimson" }}>{error instanceof Error ? error.message : "取得に失敗しました"}</p>
-        <button onClick={() => refetch()}>再読み込み</button>
-      </div>
-    );
-  }
+  /** 勝ち点の入力欄 */
+  const numCol = (key: "win" | "lose" | "draw", header: string): ConsoleColumn<EditableRow> => ({
+    key,
+    header,
+    align: "right",
+    className: "py-1",
+    cell: (row) => (
+      <ConsoleCellInput
+        value={row[key]}
+        inputMode="numeric"
+        disabled={row.delFlg === "1"}
+        onChange={(e) => updateRow(row.rowId, key, e.target.value)}
+        className="!min-w-[64px] w-16 text-right font-mono tabular-nums"
+      />
+    ),
+  });
+
+  const columns: ConsoleColumn<EditableRow>[] = [
+    textCol("country", "国", { keyLocked: true }),
+    textCol("league", "リーグ", { keyLocked: true }),
+    numCol("win", "勝ち点(勝)"),
+    numCol("lose", "勝ち点(負)"),
+    numCol("draw", "勝ち点(引分)"),
+    textCol("remarks", "備考", { keyLocked: true, placeholder: "PK勝ち=2,PK負け=1", minWidth: "min-w-[180px]" }),
+    {
+      key: "state",
+      header: "状態",
+      cell: (row) =>
+        row.delFlg === "1" ? <StatusBadge tone="ng">削除予定</StatusBadge> : row.isNew ? <StatusBadge tone="info">新規</StatusBadge> : <StatusBadge tone="neutral">既存</StatusBadge>,
+    },
+    {
+      key: "ops",
+      header: "操作",
+      align: "right",
+      cell: (row) =>
+        row.delFlg === "1" ? (
+          <ConsoleButton size="sm" onClick={() => restoreRow(row.rowId)}>
+            <RotateCcw className="h-3 w-3" />
+            削除取り消し
+          </ConsoleButton>
+        ) : (
+          <ConsoleButton size="sm" variant="ghost" className="hover:!bg-red-50 hover:!text-red-700" onClick={() => markDelete(row.rowId)}>
+            <Trash2 className="h-3 w-3" />
+            削除
+          </ConsoleButton>
+        ),
+    },
+  ];
 
   return (
-    <div style={{ padding: 24, display: "grid", gap: 16 }}>
-      <div>
-        <h1 style={{ marginBottom: 8 }}>勝ち点設定</h1>
-        <p style={{ margin: 0, color: "#555" }}>
-          備考は空欄か、<strong>PK勝ち=数値,PK負け=数値</strong> の形式で入力してください。 既存行の 国・リーグ・備考 は更新キーのため編集不可にしています。
-        </p>
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          gap: 12,
-          flexWrap: "wrap",
-          alignItems: "end",
-          border: "1px solid #ddd",
-          borderRadius: 8,
-          padding: 16,
-          background: "#fafafa",
-        }}
+    <div>
+      <ConsoleToolbar
+        title="勝ち点設定"
+        info="国・リーグごとの勝ち点"
+        description={
+          <>
+            備考は空欄か、<b>PK勝ち=数値,PK負け=数値</b> の形式で入力してください。既存行の 国・リーグ・備考 は更新キーのため編集できません。
+          </>
+        }
       >
-        <div style={{ display: "grid", gap: 6 }}>
-          <label htmlFor="filter-country">国フィルタ</label>
-          <input id="filter-country" value={filterCountry} onChange={(e) => setFilterCountry(e.target.value)} placeholder="例: 日本" style={{ minWidth: 220, padding: 8 }} />
-        </div>
-
-        <div style={{ display: "grid", gap: 6 }}>
-          <label htmlFor="filter-league">リーグフィルタ</label>
-          <input id="filter-league" value={filterLeague} onChange={(e) => setFilterLeague(e.target.value)} placeholder="例: J1" style={{ minWidth: 220, padding: 8 }} />
-        </div>
-
-        <button onClick={addRow} style={{ padding: "10px 16px" }}>
-          行追加
-        </button>
-
-        <button
-          onClick={handleSave}
-          disabled={mutation.isPending}
-          style={{
-            padding: "10px 16px",
-            background: "#0b5fff",
-            color: "#fff",
-            border: "none",
-            borderRadius: 6,
-            cursor: "pointer",
-          }}
-        >
-          {mutation.isPending ? "保存中..." : "保存"}
-        </button>
-
-        <button onClick={() => refetch()} style={{ padding: "10px 16px" }}>
+        <ConsoleButton onClick={() => void refetch()} loading={isFetching && !isLoading}>
+          {!(isFetching && !isLoading) && <RefreshCw className="h-3.5 w-3.5" />}
           再取得
-        </button>
+        </ConsoleButton>
+        <ConsoleButton onClick={addRow} disabled={isLoading || isError}>
+          <Plus className="h-3.5 w-3.5" />
+          行追加
+        </ConsoleButton>
+        <ConsoleButton variant="primary" onClick={() => void handleSave()} disabled={isLoading || isError} loading={mutation.isPending}>
+          {!mutation.isPending && <Save className="h-3.5 w-3.5" />}
+          {mutation.isPending ? "保存中…" : "保存"}
+        </ConsoleButton>
+      </ConsoleToolbar>
+
+      {saveMessage && <ConsoleNotice tone="ok" title={saveMessage} onClose={() => setSaveMessage("")} />}
+      {localErrors.length > 0 && (
+        <ConsoleNotice tone="ng" title="入力エラー" onClose={() => setLocalErrors([])}>
+          {localErrors.map((msg) => `・${msg}`).join("\n")}
+        </ConsoleNotice>
+      )}
+
+      <div className="flex flex-wrap items-end gap-2">
+        <StatChips
+          loading={isLoading}
+          items={[
+            { label: "全件", value: rows.length },
+            { label: "表示中", value: filteredRows.length },
+            { label: "新規", value: counts.newCount, tone: counts.newCount > 0 ? "info" : "default" },
+            { label: "削除予定", value: counts.deleteCount, tone: counts.deleteCount > 0 ? "ng" : "default" },
+          ]}
+        />
+        <div className="mb-2.5 ml-auto flex flex-wrap items-end gap-2">
+          <ConsoleField label="国で絞り込み">
+            <ConsoleInput value={filterCountry} onChange={(e) => setFilterCountry(e.target.value)} placeholder="例: 日本" className="w-44" />
+          </ConsoleField>
+          <ConsoleField label="リーグで絞り込み">
+            <ConsoleInput value={filterLeague} onChange={(e) => setFilterLeague(e.target.value)} placeholder="例: J1" className="w-44" />
+          </ConsoleField>
+        </div>
       </div>
 
-      {saveMessage ? (
-        <div
-          style={{
-            border: "1px solid #b7eb8f",
-            background: "#f6ffed",
-            color: "#135200",
-            padding: 12,
-            borderRadius: 8,
-          }}
-        >
-          {saveMessage}
-        </div>
-      ) : null}
-
-      {localErrors.length > 0 ? (
-        <div
-          style={{
-            border: "1px solid #ffccc7",
-            background: "#fff2f0",
-            color: "#a8071a",
-            padding: 12,
-            borderRadius: 8,
-          }}
-        >
-          <div style={{ fontWeight: 700, marginBottom: 8 }}>入力エラー</div>
-          <ul style={{ margin: 0, paddingLeft: 20 }}>
-            {localErrors.map((msg) => (
-              <li key={msg}>{msg}</li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-
-      <div style={{ overflowX: "auto", border: "1px solid #ddd", borderRadius: 8 }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1100 }}>
-          <thead>
-            <tr style={{ background: "#f5f5f5" }}>
-              <th style={thStyle}>国</th>
-              <th style={thStyle}>リーグ</th>
-              <th style={thStyle}>勝ち点(勝)</th>
-              <th style={thStyle}>勝ち点(負)</th>
-              <th style={thStyle}>勝ち点(引分)</th>
-              <th style={thStyle}>備考</th>
-              <th style={thStyle}>状態</th>
-              <th style={thStyle}>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredRows.length === 0 ? (
-              <tr>
-                <td colSpan={8} style={{ padding: 24, textAlign: "center", color: "#666" }}>
-                  データがありません
-                </td>
-              </tr>
-            ) : (
-              filteredRows.map((row) => {
-                const deleted = row.delFlg === "1";
-                const keyLocked = !row.isNew;
-
-                return (
-                  <tr
-                    key={row.rowId}
-                    style={{
-                      background: deleted ? "#fff1f0" : "#fff",
-                      opacity: deleted ? 0.7 : 1,
-                    }}
-                  >
-                    <td style={tdStyle}>
-                      <input
-                        value={row.country}
-                        disabled={keyLocked}
-                        onChange={(e) => updateRow(row.rowId, "country", e.target.value)}
-                        style={{ ...inputStyle, background: keyLocked ? "#f5f5f5" : "#fff" }}
-                      />
-                    </td>
-                    <td style={tdStyle}>
-                      <input
-                        value={row.league}
-                        disabled={keyLocked}
-                        onChange={(e) => updateRow(row.rowId, "league", e.target.value)}
-                        style={{ ...inputStyle, background: keyLocked ? "#f5f5f5" : "#fff" }}
-                      />
-                    </td>
-                    <td style={tdStyle}>
-                      <input value={row.win} onChange={(e) => updateRow(row.rowId, "win", e.target.value)} style={inputStyle} inputMode="numeric" />
-                    </td>
-                    <td style={tdStyle}>
-                      <input value={row.lose} onChange={(e) => updateRow(row.rowId, "lose", e.target.value)} style={inputStyle} inputMode="numeric" />
-                    </td>
-                    <td style={tdStyle}>
-                      <input value={row.draw} onChange={(e) => updateRow(row.rowId, "draw", e.target.value)} style={inputStyle} inputMode="numeric" />
-                    </td>
-                    <td style={tdStyle}>
-                      <input
-                        value={row.remarks}
-                        disabled={keyLocked}
-                        onChange={(e) => updateRow(row.rowId, "remarks", e.target.value)}
-                        placeholder="PK勝ち=2,PK負け=1"
-                        style={{ ...inputStyle, background: keyLocked ? "#f5f5f5" : "#fff" }}
-                      />
-                    </td>
-                    <td style={tdStyle}>
-                      {deleted ? <span style={deletedBadgeStyle}>削除予定</span> : row.isNew ? <span style={newBadgeStyle}>新規</span> : <span style={normalBadgeStyle}>既存</span>}
-                    </td>
-                    <td style={tdStyle}>{deleted ? <button onClick={() => restoreRow(row.rowId)}>削除取り消し</button> : <button onClick={() => markDelete(row.rowId)}>削除</button>}</td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+      <ConsoleTable
+        columns={columns}
+        rows={filteredRows}
+        rowKey={(row) => row.rowId}
+        loading={isLoading}
+        error={isError ? (error instanceof Error ? error.message : "取得に失敗しました") : undefined}
+        emptyText="データがありません"
+        plain
+        rowClassName={(row) => (row.delFlg === "1" ? "bg-red-50/60 opacity-70" : row.isNew ? "bg-indigo-50/40" : "")}
+        maxHeight="calc(100vh - 260px)"
+      />
     </div>
   );
 }
-
-const thStyle: React.CSSProperties = {
-  textAlign: "left",
-  padding: "12px 10px",
-  borderBottom: "1px solid #ddd",
-  whiteSpace: "nowrap",
-};
-
-const tdStyle: React.CSSProperties = {
-  padding: "10px",
-  borderBottom: "1px solid #eee",
-  verticalAlign: "top",
-};
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  minWidth: 120,
-  padding: "8px 10px",
-  borderRadius: 6,
-  border: "1px solid #ccc",
-  boxSizing: "border-box",
-};
-
-const newBadgeStyle: React.CSSProperties = {
-  display: "inline-block",
-  padding: "4px 8px",
-  borderRadius: 999,
-  background: "#e6f4ff",
-  color: "#0958d9",
-  fontSize: 12,
-  fontWeight: 700,
-};
-
-const normalBadgeStyle: React.CSSProperties = {
-  display: "inline-block",
-  padding: "4px 8px",
-  borderRadius: 999,
-  background: "#f5f5f5",
-  color: "#595959",
-  fontSize: 12,
-  fontWeight: 700,
-};
-
-const deletedBadgeStyle: React.CSSProperties = {
-  display: "inline-block",
-  padding: "4px 8px",
-  borderRadius: 999,
-  background: "#fff1f0",
-  color: "#cf1322",
-  fontSize: 12,
-  fontWeight: 700,
-};

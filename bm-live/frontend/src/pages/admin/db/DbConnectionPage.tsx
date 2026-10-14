@@ -1,4 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { RefreshCw } from "lucide-react";
+import { BadgeTone, ConsoleButton, ConsoleNotice, ConsolePanel, ConsoleToolbar, MetricGrid, StatChips, StatChipTone, StatusBadge } from "../../../api/commonAdminDesign";
 
 type PoolRuntimeMetrics = {
   poolName: string;
@@ -118,18 +120,32 @@ type ConnectionHealthLevel = "healthy" | "watch" | "warning" | "near_exhausted" 
 type ConnectionHealth = {
   level: ConnectionHealthLevel;
   label: string;
-  icon: string;
-  color: string;
-  background: string;
-  borderColor: string;
+  tone: BadgeTone;
   message: string;
 };
 
 type ConnectionAlert = {
-  icon: string;
   label: string;
-  color: string;
-  background: string;
+  tone: BadgeTone;
+};
+
+type Tone3 = "good" | "warn" | "danger";
+
+/** 状態ごとの帯の色（ConsoleNotice と同じ配色） */
+const HEALTH_BOX: Record<BadgeTone, string> = {
+  ok: "border-emerald-200 bg-emerald-50 text-emerald-800",
+  info: "border-indigo-200 bg-indigo-50 text-indigo-800",
+  warn: "border-amber-200 bg-amber-50 text-amber-800",
+  ng: "border-red-200 bg-red-50 text-red-800",
+  neutral: "border-gray-200 bg-gray-50 text-gray-700",
+};
+
+const HEALTH_DOT: Record<BadgeTone, string> = {
+  ok: "bg-emerald-500",
+  info: "bg-indigo-500",
+  warn: "bg-amber-500",
+  ng: "bg-red-500",
+  neutral: "bg-gray-400",
 };
 
 function getPoolFacts(data: DbConnectionStatusResponse) {
@@ -177,10 +193,7 @@ function getConnectionHealth(data: DbConnectionStatusResponse): ConnectionHealth
     return {
       level: "exhausted",
       label: "枯渇状態",
-      icon: "🔴",
-      color: "#b91c1c",
-      background: "#fef2f2",
-      borderColor: "#fecaca",
+      tone: "ng",
       message: "接続待ちが発生しているか、これ以上プールを広げられない状態で空き接続がありません。業務影響が出る可能性があります。",
     };
   }
@@ -189,10 +202,7 @@ function getConnectionHealth(data: DbConnectionStatusResponse): ConnectionHealth
     return {
       level: "near_exhausted",
       label: "逼迫寸前",
-      icon: "🟠",
-      color: "#c2410c",
-      background: "#fff7ed",
-      borderColor: "#fdba74",
+      tone: "ng",
       message: "接続使用率が高く、急な負荷増加で待ちが発生するおそれがあります。短時間での推移を重点監視してください。",
     };
   }
@@ -201,10 +211,7 @@ function getConnectionHealth(data: DbConnectionStatusResponse): ConnectionHealth
     return {
       level: "warning",
       label: "注意",
-      icon: "🟡",
-      color: "#a16207",
-      background: "#fefce8",
-      borderColor: "#fde68a",
+      tone: "warn",
       message: "現時点で直ちに枯渇してはいませんが、接続使用率またはDB側余力に注意が必要です。",
     };
   }
@@ -213,10 +220,7 @@ function getConnectionHealth(data: DbConnectionStatusResponse): ConnectionHealth
     return {
       level: "watch",
       label: "監視中",
-      icon: "🔵",
-      color: "#1d4ed8",
-      background: "#eff6ff",
-      borderColor: "#bfdbfe",
+      tone: "info",
       message: "接続余力はありますが、idle in transaction が存在します。接続閉じ忘れやトランザクション長期化に注意してください。",
     };
   }
@@ -224,10 +228,7 @@ function getConnectionHealth(data: DbConnectionStatusResponse): ConnectionHealth
   return {
     level: "healthy",
     label: "正常",
-    icon: "🟢",
-    color: "#15803d",
-    background: "#f0fdf4",
-    borderColor: "#bbf7d0",
+    tone: "ok",
     message: "現在のところ、コネクションプールとDB接続数は安定しています。",
   };
 }
@@ -240,86 +241,41 @@ function getConnectionAlerts(data: DbConnectionStatusResponse): ConnectionAlert[
   const idleInTxAborted = data.currentDatabase.idleInTransactionAbortedConnections || 0;
 
   if (waitingThreads > 0) {
-    alerts.push({
-      icon: "⏳",
-      label: `接続待ち発生 ${waitingThreads}件`,
-      color: "#991b1b",
-      background: "#fef2f2",
-    });
+    alerts.push({ label: `接続待ち発生 ${waitingThreads}件`, tone: "ng" });
   }
 
   if (!canGrowPool && immediateAvailable <= 1 && active > 0) {
-    alerts.push({
-      icon: "🚨",
-      label: `空き接続が少ない (${immediateAvailable})`,
-      color: "#9a3412",
-      background: "#fff7ed",
-    });
+    alerts.push({ label: `空き接続が少ない (${immediateAvailable})`, tone: "ng" });
   }
 
   if (usageRate >= 0.9) {
-    alerts.push({
-      icon: "📈",
-      label: `プール使用率高 (${Math.round(usageRate * 100)}%)`,
-      color: "#9a3412",
-      background: "#fff7ed",
-    });
+    alerts.push({ label: `プール使用率高 (${Math.round(usageRate * 100)}%)`, tone: "ng" });
   } else if (usageRate >= 0.75) {
-    alerts.push({
-      icon: "📊",
-      label: `プール使用率注意 (${Math.round(usageRate * 100)}%)`,
-      color: "#854d0e",
-      background: "#fefce8",
-    });
+    alerts.push({ label: `プール使用率注意 (${Math.round(usageRate * 100)}%)`, tone: "warn" });
   }
 
   if (idleInTx > 0) {
-    alerts.push({
-      icon: "🧵",
-      label: `idle in transaction ${idleInTx}件`,
-      color: "#1d4ed8",
-      background: "#eff6ff",
-    });
+    alerts.push({ label: `idle in transaction ${idleInTx}件`, tone: "info" });
   }
 
   if (idleInTxAborted > 0) {
-    alerts.push({
-      icon: "💥",
-      label: `idle in transaction (aborted) ${idleInTxAborted}件`,
-      color: "#991b1b",
-      background: "#fef2f2",
-    });
+    alerts.push({ label: `idle in transaction (aborted) ${idleInTxAborted}件`, tone: "ng" });
   }
 
   if (dbAvailable <= 3) {
-    alerts.push({
-      icon: "🗄️",
-      label: `DB全体の空き接続が少ない (${dbAvailable})`,
-      color: "#9a3412",
-      background: "#fff7ed",
-    });
+    alerts.push({ label: `DB全体の空き接続が少ない (${dbAvailable})`, tone: "ng" });
   } else if (dbAvailable <= 10) {
-    alerts.push({
-      icon: "🗄️",
-      label: `DB全体の空き接続に注意 (${dbAvailable})`,
-      color: "#854d0e",
-      background: "#fefce8",
-    });
+    alerts.push({ label: `DB全体の空き接続に注意 (${dbAvailable})`, tone: "warn" });
   }
 
   if (remainingPoolCapacity <= 0) {
-    alerts.push({
-      icon: "🧱",
-      label: "プール拡張余地なし",
-      color: "#6b7280",
-      background: "#f9fafb",
-    });
+    alerts.push({ label: "プール拡張余地なし", tone: "neutral" });
   }
 
   return alerts;
 }
 
-function getImmediateAvailableTone(data: DbConnectionStatusResponse): "good" | "warn" | "danger" {
+function getImmediateAvailableTone(data: DbConnectionStatusResponse): Tone3 {
   const { active, immediateAvailable, waitingThreads, dbAvailable, canGrowPool } = getPoolFacts(data);
 
   if (waitingThreads > 0 || (!canGrowPool && immediateAvailable <= 0) || dbAvailable <= 0) {
@@ -333,21 +289,16 @@ function getImmediateAvailableTone(data: DbConnectionStatusResponse): "good" | "
   return "good";
 }
 
-function getDbAvailableTone(value: number): "good" | "warn" | "danger" {
-  if (value <= 0) {
-    return "danger";
-  }
-  if (value <= 10) {
-    return "warn";
-  }
+function getDbAvailableTone(value: number): Tone3 {
+  if (value <= 0) return "danger";
+  if (value <= 10) return "warn";
   return "good";
 }
 
-function formatMeasuredAt(value: string) {
-  if (!value) {
-    return "-";
-  }
+const CHIP_TONE: Record<Tone3, StatChipTone> = { good: "ok", warn: "warn", danger: "ng" };
 
+function formatMeasuredAt(value: string) {
+  if (!value) return "-";
   try {
     return new Date(value).toLocaleString("ja-JP");
   } catch {
@@ -361,6 +312,7 @@ export default function DbConnectionStatusPage() {
   const [items, setItems] = useState<DbConnectionStatusResponse[]>([]);
   const [selectedKey, setSelectedKey] = useState("bm");
 
+  // 選択を変えても再取得しないよう、selectedKey には依存させない
   const load = useCallback(async () => {
     setLoading(true);
     setErrorMessage("");
@@ -378,17 +330,14 @@ export default function DbConnectionStatusPage() {
       const json = (await response.json()) as DbConnectionStatusListResponse;
       const nextItems = json.items ?? [];
       setItems(nextItems);
-
-      if (nextItems.length > 0 && !nextItems.some((item) => item.dataSourceKey === selectedKey)) {
-        setSelectedKey(nextItems[0].dataSourceKey);
-      }
+      setSelectedKey((prev) => (nextItems.length > 0 && !nextItems.some((item) => item.dataSourceKey === prev) ? nextItems[0].dataSourceKey : prev));
     } catch (error) {
       console.error(error);
       setErrorMessage("DBコネクション監視情報の取得に失敗しました。");
     } finally {
       setLoading(false);
     }
-  }, [selectedKey]);
+  }, []);
 
   useEffect(() => {
     void load();
@@ -402,285 +351,141 @@ export default function DbConnectionStatusPage() {
   const alerts = getConnectionAlerts(data);
 
   return (
-    <div style={{ display: "grid", gap: 16 }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          gap: 12,
-          flexWrap: "wrap",
-        }}
-      >
-        <div>
-          <h1 style={{ margin: 0, fontSize: 24 }}>DBコネクション監視</h1>
-          <p style={{ margin: "8px 0 0", color: "#6b7280" }}>HikariCP のプール状態と PostgreSQL の接続統計を表示します。</p>
-        </div>
+    <div>
+      <ConsoleToolbar title="DBコネクション監視" info="HikariCP のプール状態と PostgreSQL の接続統計">
+        <ConsoleButton variant="primary" onClick={() => void load()} loading={loading}>
+          {!loading && <RefreshCw className="h-3.5 w-3.5" />}
+          再読み込み
+        </ConsoleButton>
+      </ConsoleToolbar>
 
-        <button
-          type="button"
-          onClick={() => void load()}
-          disabled={loading}
-          style={{
-            border: "1px solid #d1d5db",
-            background: "#fff",
-            padding: "10px 14px",
-            borderRadius: 10,
-            cursor: loading ? "default" : "pointer",
-            fontWeight: 700,
-          }}
-        >
-          {loading ? "更新中..." : "再読込"}
-        </button>
-      </div>
+      {errorMessage && <ConsoleNotice tone="ng" title={errorMessage} onClose={() => setErrorMessage("")} />}
 
-      <div
-        style={{
-          display: "flex",
-          gap: 10,
-          flexWrap: "wrap",
-        }}
-      >
-        {items.map((item) => {
-          const itemHealth = getConnectionHealth(item);
-          const active = item.dataSourceKey === data.dataSourceKey;
-
-          return (
-            <button
-              key={item.dataSourceKey}
-              type="button"
-              onClick={() => setSelectedKey(item.dataSourceKey)}
-              style={{
-                border: `1px solid ${active ? itemHealth.borderColor : "#d1d5db"}`,
-                background: active ? itemHealth.background : "#fff",
-                borderRadius: 12,
-                padding: "12px 14px",
-                cursor: "pointer",
-                minWidth: 220,
-                textAlign: "left",
-              }}
-            >
-              <div style={{ fontSize: 12, color: "#6b7280" }}>監視対象</div>
-              <div style={{ marginTop: 4, fontWeight: 800, fontSize: 18 }}>{item.displayName || item.databaseName || item.dataSourceKey}</div>
-              <div style={{ marginTop: 8, fontSize: 13, color: itemHealth.color, fontWeight: 700 }}>
-                {itemHealth.icon} {itemHealth.label}
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      <div
-        style={{
-          display: "grid",
-          gap: 12,
-          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-        }}
-      >
-        <SummaryCard title="計測日時" value={formatMeasuredAt(data.measuredAt)} />
-        <SummaryCard title="DB名" value={data.displayName || data.databaseName || "-"} />
-        <SummaryCard title="即時利用可能" value={String(data.poolRuntime.immediatelyAvailableConnections)} tone={getImmediateAvailableTone(data)} />
-        <SummaryCard title="接続待ちスレッド" value={String(data.poolRuntime.threadsAwaitingConnection)} tone={data.poolRuntime.threadsAwaitingConnection > 0 ? "danger" : "good"} />
-        <SummaryCard title="DB概算空き接続" value={String(data.postgresServer.estimatedAvailableConnections)} tone={getDbAvailableTone(data.postgresServer.estimatedAvailableConnections)} />
-      </div>
-
-      <div
-        style={{
-          border: `1px solid ${health.borderColor}`,
-          background: health.background,
-          borderRadius: 12,
-          padding: 16,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 14, flexWrap: "wrap" }}>
-          <div style={{ fontSize: 34, lineHeight: 1 }}>{health.icon}</div>
-
-          <div style={{ flex: 1, minWidth: 240 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: health.color }}>コネクション状態</div>
-            <div style={{ fontSize: 26, fontWeight: 800, color: health.color, marginTop: 4 }}>{health.label}</div>
-            <div style={{ marginTop: 8, color: "#374151", lineHeight: 1.6 }}>{health.message}</div>
-          </div>
-        </div>
-
-        {alerts.length > 0 && (
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
-            {alerts.map((alert) => (
-              <span
-                key={`${alert.icon}-${alert.label}`}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "8px 10px",
-                  borderRadius: 999,
-                  background: alert.background,
-                  color: alert.color,
-                  fontSize: 13,
-                  fontWeight: 700,
-                  border: "1px solid rgba(0,0,0,0.06)",
-                }}
+      {/* 監視対象の切り替え（それぞれの状態を色の点で表示） */}
+      {items.length > 0 && (
+        <div className="mb-2.5 flex flex-wrap gap-1.5">
+          {items.map((item) => {
+            const itemHealth = getConnectionHealth(item);
+            const active = item.dataSourceKey === data.dataSourceKey;
+            return (
+              <button
+                key={item.dataSourceKey}
+                type="button"
+                onClick={() => setSelectedKey(item.dataSourceKey)}
+                className={[
+                  "inline-flex h-8 items-center gap-2 rounded-lg border px-3 text-[13px] font-bold transition-colors",
+                  active ? "border-gray-900 bg-gray-900 text-white" : "border-gray-300 bg-white text-gray-900 hover:bg-gray-50",
+                ].join(" ")}
               >
-                <span>{alert.icon}</span>
-                <span>{alert.label}</span>
-              </span>
+                <span className={`h-2 w-2 rounded-full ${HEALTH_DOT[itemHealth.tone]}`} />
+                {item.displayName || item.databaseName || item.dataSourceKey}
+                <span className={`text-xs font-normal ${active ? "text-white/70" : "text-gray-500"}`}>{itemHealth.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      <StatChips
+        loading={loading && items.length === 0}
+        items={[
+          { label: "計測日時", value: formatMeasuredAt(data.measuredAt) },
+          { label: "DB名", value: data.displayName || data.databaseName || "-" },
+          { label: "即時利用可能", value: data.poolRuntime.immediatelyAvailableConnections, tone: CHIP_TONE[getImmediateAvailableTone(data)] },
+          { label: "接続待ちスレッド", value: data.poolRuntime.threadsAwaitingConnection, tone: data.poolRuntime.threadsAwaitingConnection > 0 ? "ng" : "ok" },
+          { label: "DB概算空き接続", value: data.postgresServer.estimatedAvailableConnections, tone: CHIP_TONE[getDbAvailableTone(data.postgresServer.estimatedAvailableConnections)] },
+        ]}
+      />
+
+      {/* 総合判定 */}
+      <div className={`mb-3 rounded-xl border px-3.5 py-2.5 ${HEALTH_BOX[health.tone]}`}>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className={`h-2.5 w-2.5 rounded-full ${HEALTH_DOT[health.tone]}`} />
+          <span className="text-xs font-bold opacity-80">コネクション状態</span>
+          <span className="text-[17px] font-bold">{health.label}</span>
+        </div>
+        <div className="mt-1 text-[13px] text-gray-700">{health.message}</div>
+        {alerts.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {alerts.map((alert) => (
+              <StatusBadge key={alert.label} tone={alert.tone}>
+                {alert.label}
+              </StatusBadge>
             ))}
           </div>
         )}
       </div>
 
-      {errorMessage && (
-        <div
-          style={{
-            border: "1px solid #fecaca",
-            background: "#fef2f2",
-            color: "#991b1b",
-            borderRadius: 10,
-            padding: 12,
-          }}
-        >
-          {errorMessage}
-        </div>
-      )}
+      <div className="grid grid-cols-1 gap-x-3 xl:grid-cols-2">
+        <ConsolePanel title="HikariCP ランタイム">
+          <MetricGrid
+            items={[
+              { label: "プール名", value: data.poolRuntime.poolName || "-", mono: true },
+              { label: "総接続数", value: data.poolRuntime.totalConnections },
+              { label: "使用中接続数", value: data.poolRuntime.activeConnections },
+              { label: "アイドル接続数", value: data.poolRuntime.idleConnections },
+              { label: "接続待ちスレッド数", value: data.poolRuntime.threadsAwaitingConnection, tone: data.poolRuntime.threadsAwaitingConnection > 0 ? "ng" : "default" },
+              { label: "即時利用可能数", value: data.poolRuntime.immediatelyAvailableConnections },
+              { label: "残り余力", value: data.poolRuntime.remainingPoolCapacity },
+            ]}
+          />
+        </ConsolePanel>
 
-      <Section title="HikariCP ランタイム">
-        <MetricGrid
-          items={[
-            ["プール名", data.poolRuntime.poolName || "-"],
-            ["総接続数", data.poolRuntime.totalConnections],
-            ["使用中接続数", data.poolRuntime.activeConnections],
-            ["アイドル接続数", data.poolRuntime.idleConnections],
-            ["接続待ちスレッド数", data.poolRuntime.threadsAwaitingConnection],
-            ["即時利用可能数", data.poolRuntime.immediatelyAvailableConnections],
-            ["残り余力", data.poolRuntime.remainingPoolCapacity],
-          ]}
-        />
-      </Section>
+        <ConsolePanel title="HikariCP 設定">
+          <MetricGrid
+            items={[
+              { label: "最大プール数", value: data.poolConfig.maximumPoolSize },
+              { label: "最小アイドル数", value: data.poolConfig.minimumIdle },
+              { label: "接続取得タイムアウト(ms)", value: data.poolConfig.connectionTimeoutMs },
+              { label: "バリデーションタイムアウト(ms)", value: data.poolConfig.validationTimeoutMs },
+              { label: "アイドルタイムアウト(ms)", value: data.poolConfig.idleTimeoutMs },
+              { label: "最大生存時間(ms)", value: data.poolConfig.maxLifetimeMs },
+              { label: "リーク検知閾値(ms)", value: data.poolConfig.leakDetectionThresholdMs },
+              { label: "autoCommit", value: String(data.poolConfig.autoCommit), mono: true },
+              { label: "connectionTestQuery", value: data.poolConfig.connectionTestQuery || "-", mono: true },
+            ]}
+          />
+        </ConsolePanel>
 
-      <Section title="HikariCP 設定">
-        <MetricGrid
-          items={[
-            ["最大プール数", data.poolConfig.maximumPoolSize],
-            ["最小アイドル数", data.poolConfig.minimumIdle],
-            ["接続取得タイムアウト(ms)", data.poolConfig.connectionTimeoutMs],
-            ["バリデーションタイムアウト(ms)", data.poolConfig.validationTimeoutMs],
-            ["アイドルタイムアウト(ms)", data.poolConfig.idleTimeoutMs],
-            ["最大生存時間(ms)", data.poolConfig.maxLifetimeMs],
-            ["リーク検知閾値(ms)", data.poolConfig.leakDetectionThresholdMs],
-            ["autoCommit", String(data.poolConfig.autoCommit)],
-            ["connectionTestQuery", data.poolConfig.connectionTestQuery || "-"],
-          ]}
-        />
-      </Section>
+        <ConsolePanel title="PostgreSQL サーバ全体">
+          <MetricGrid
+            minWidth={200}
+            items={[
+              { label: "maxConnections", value: data.postgresServer.maxConnections },
+              { label: "superuserReservedConnections", value: data.postgresServer.superuserReservedConnections },
+              { label: "reservedConnections", value: data.postgresServer.reservedConnections ?? 0 },
+              { label: "totalBackendProcesses", value: data.postgresServer.totalBackendProcesses },
+              { label: "currentClientConnections", value: data.postgresServer.currentClientConnections },
+              { label: "activeConnections", value: data.postgresServer.activeConnections },
+              { label: "idleConnections", value: data.postgresServer.idleConnections },
+              { label: "idleInTransactionConnections", value: data.postgresServer.idleInTransactionConnections },
+              { label: "idleInTransactionAbortedConnections", value: data.postgresServer.idleInTransactionAbortedConnections },
+              { label: "waitingConnections", value: data.postgresServer.waitingConnections },
+              {
+                label: "estimatedAvailableConnections",
+                value: data.postgresServer.estimatedAvailableConnections,
+                tone: CHIP_TONE[getDbAvailableTone(data.postgresServer.estimatedAvailableConnections)] === "ok" ? "default" : (CHIP_TONE[getDbAvailableTone(data.postgresServer.estimatedAvailableConnections)] as "warn" | "ng"),
+              },
+            ]}
+          />
+        </ConsolePanel>
 
-      <Section title="PostgreSQL サーバ全体">
-        <MetricGrid
-          items={[
-            ["maxConnections", data.postgresServer.maxConnections],
-            ["superuserReservedConnections", data.postgresServer.superuserReservedConnections],
-            ["reservedConnections", data.postgresServer.reservedConnections ?? 0],
-            ["totalBackendProcesses", data.postgresServer.totalBackendProcesses],
-            ["currentClientConnections", data.postgresServer.currentClientConnections],
-            ["activeConnections", data.postgresServer.activeConnections],
-            ["idleConnections", data.postgresServer.idleConnections],
-            ["idleInTransactionConnections", data.postgresServer.idleInTransactionConnections],
-            ["idleInTransactionAbortedConnections", data.postgresServer.idleInTransactionAbortedConnections],
-            ["waitingConnections", data.postgresServer.waitingConnections],
-            ["estimatedAvailableConnections", data.postgresServer.estimatedAvailableConnections],
-          ]}
-        />
-      </Section>
-
-      <Section title="現在DB統計">
-        <MetricGrid
-          items={[
-            ["numBackends", data.currentDatabase.numBackends],
-            ["currentClientConnections", data.currentDatabase.currentClientConnections],
-            ["activeConnections", data.currentDatabase.activeConnections],
-            ["idleConnections", data.currentDatabase.idleConnections],
-            ["idleInTransactionConnections", data.currentDatabase.idleInTransactionConnections],
-            ["idleInTransactionAbortedConnections", data.currentDatabase.idleInTransactionAbortedConnections],
-            ["waitingConnections", data.currentDatabase.waitingConnections],
-            ["currentUserConnections", data.currentDatabase.currentUserConnections],
-          ]}
-        />
-      </Section>
-    </div>
-  );
-}
-
-function SummaryCard({ title, value, tone = "default" }: { title: string; value: string; tone?: "default" | "good" | "warn" | "danger" }) {
-  const toneStyle =
-    tone === "good"
-      ? { borderColor: "#bbf7d0", background: "#f0fdf4" }
-      : tone === "warn"
-        ? { borderColor: "#fde68a", background: "#fefce8" }
-        : tone === "danger"
-          ? { borderColor: "#fecaca", background: "#fef2f2" }
-          : { borderColor: "#e5e7eb", background: "#fff" };
-
-  return (
-    <div
-      style={{
-        border: `1px solid ${toneStyle.borderColor}`,
-        borderRadius: 12,
-        padding: 16,
-        background: toneStyle.background,
-        minWidth: 180,
-      }}
-    >
-      <div style={{ fontSize: 12, color: "#6b7280" }}>{title}</div>
-      <div style={{ fontSize: 22, fontWeight: 800, marginTop: 6, wordBreak: "break-word" }}>{value}</div>
-    </div>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div
-      style={{
-        border: "1px solid #e5e7eb",
-        borderRadius: 12,
-        background: "#fff",
-        overflow: "hidden",
-      }}
-    >
-      <div
-        style={{
-          padding: "14px 16px",
-          borderBottom: "1px solid #e5e7eb",
-          fontWeight: 800,
-        }}
-      >
-        {title}
+        <ConsolePanel title="現在DB統計">
+          <MetricGrid
+            minWidth={200}
+            items={[
+              { label: "numBackends", value: data.currentDatabase.numBackends },
+              { label: "currentClientConnections", value: data.currentDatabase.currentClientConnections },
+              { label: "activeConnections", value: data.currentDatabase.activeConnections },
+              { label: "idleConnections", value: data.currentDatabase.idleConnections },
+              { label: "idleInTransactionConnections", value: data.currentDatabase.idleInTransactionConnections },
+              { label: "idleInTransactionAbortedConnections", value: data.currentDatabase.idleInTransactionAbortedConnections },
+              { label: "waitingConnections", value: data.currentDatabase.waitingConnections },
+              { label: "currentUserConnections", value: data.currentDatabase.currentUserConnections },
+            ]}
+          />
+        </ConsolePanel>
       </div>
-      <div style={{ padding: 16 }}>{children}</div>
-    </div>
-  );
-}
-
-function MetricGrid({ items }: { items: Array<[string, string | number]> }) {
-  return (
-    <div
-      style={{
-        display: "grid",
-        gap: 12,
-        gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-      }}
-    >
-      {items.map(([label, value]) => (
-        <div
-          key={label}
-          style={{
-            border: "1px solid #f3f4f6",
-            borderRadius: 10,
-            padding: 12,
-            background: "#fafafa",
-          }}
-        >
-          <div style={{ fontSize: 12, color: "#6b7280" }}>{label}</div>
-          <div style={{ fontSize: 20, fontWeight: 800, marginTop: 4 }}>{String(value)}</div>
-        </div>
-      ))}
     </div>
   );
 }
