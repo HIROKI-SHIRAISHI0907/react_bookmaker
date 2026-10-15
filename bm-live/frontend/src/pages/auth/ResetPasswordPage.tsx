@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { resetPasswordApi, validateResetTokenApi } from "../../api/auth";
+import { resetPasswordApi, validateResetTokenApi } from "../../api/auth/auth";
 
 /**
  * パスワード再設定画面

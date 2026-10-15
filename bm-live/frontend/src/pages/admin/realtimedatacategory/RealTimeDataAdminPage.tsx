@@ -1,6 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { RefreshCw, Search } from "lucide-react";
-import { ConsoleButton, ConsoleColumn, ConsoleField, ConsoleInput, ConsoleNotice, ConsolePanel, ConsoleTable, ConsoleToolbar, StatChips, StatusBadge } from "../../../api/commonAdminDesign";
+import {
+  ConsoleButton,
+  ConsoleColumn,
+  ConsoleField,
+  ConsoleInput,
+  ConsoleNotice,
+  ConsolePanel,
+  ConsoleTable,
+  ConsoleToolbar,
+  SegmentedTabs,
+  StatChips,
+  StatusBadge,
+  type BadgeTone,
+} from "../../../api/commonAdminDesign";
 
 /** =========================
  * API base path
@@ -11,6 +24,22 @@ const API_BASE = "/v1/api/real-time-data";
 
 /** 一覧の1ページあたりの表示件数（表にしたので5件 → 20件に増やしています） */
 const PAGE_SIZE = 20;
+
+/** 国リーグ候補の表示上限（これを超える分は「+N」） */
+const MAX_CANDIDATES_SHOWN = 2;
+
+/** 国リーグ（マスタ照合）の判定（バックエンド LeagueCandidateResolver と同じ値） */
+type LeagueCheck = "一致" | "不一致" | "混在" | "不明";
+
+const LEAGUE_CHECK_TONE: Record<LeagueCheck, BadgeTone> = {
+  一致: "ok",
+  不一致: "ng",
+  混在: "warn",
+  不明: "neutral",
+};
+
+/** 一覧の絞り込みタブ */
+type ViewFilter = "all" | "mismatch" | "mixed" | "noRound";
 
 /** =========================
  * Types
@@ -24,8 +53,12 @@ type RealTimeDataDTO = {
   formattedDataCategory?: string | null;
   /** home/away の組み合わせ単位でのカテゴリ形式判定("同一カテゴリ名" または "混在") */
   categoryFormatIcon?: string | null;
-  /** グルーピング件数(search時は未設定) */
+  /** グルーピング件数 */
   cnt?: number | null;
+  /** home/away 単位の国リーグ判定（一致 / 不一致 / 混在 / 不明） */
+  leagueCheck?: LeagueCheck | null;
+  /** 「国: リーグ」の候補（一致・不一致は1件、混在は2件以上） */
+  leagueCandidates?: string[] | null;
 };
 
 /** 更新1件分(dev.web.api.bm_a025.RealTimeDataSubDTO に対応) */
@@ -52,6 +85,8 @@ type MatchGroup = {
   homeTeamName: string;
   awayTeamName: string;
   categoryFormatIcon: string | null;
+  leagueCheck: LeagueCheck | null;
+  leagueCandidates: string[];
   categories: Array<{
     dataCategory: string;
     formattedDataCategory: string | null;
@@ -127,6 +162,54 @@ function groupNeedsRoundUpdate(group: MatchGroup): boolean {
   return group.categories.some((c) => !(c.dataCategory || "").includes("ラウンド"));
 }
 
+function groupPriority(g: MatchGroup): number {
+  if (g.leagueCheck === "不一致") return 0;
+  if (g.leagueCheck === "混在") return 1;
+  if (groupNeedsRoundUpdate(g)) return 2;
+  return 3;
+}
+
+/** 「国: リーグ - ラウンド N」から「 - ラウンド N」部分を取り出す（無ければ空文字） */
+function roundPartOf(category: string): string {
+  const idx = category.indexOf(" - ");
+  return idx >= 0 ? category.slice(idx) : "";
+}
+
+/** グループ内の dataCategory から、ラウンド付きのものがあればそのラウンド部分を返す */
+function currentRoundPart(g: MatchGroup): string {
+  for (const c of g.categories) {
+    const r = roundPartOf(c.dataCategory);
+    if (r.includes("ラウンド")) return r;
+  }
+  return "";
+}
+
+/** 候補（国: リーグ）に今のラウンドを付けた値 */
+function candidateWithRound(g: MatchGroup, candidate: string): string {
+  return candidate + currentRoundPart(g);
+}
+
+/** 入力欄の初期値: 不一致なら候補＋今のラウンド、1件だけならその値 */
+function defaultEditValue(g: MatchGroup): string {
+  if (g.leagueCheck === "不一致" && g.leagueCandidates.length === 1) {
+    return candidateWithRound(g, g.leagueCandidates[0]);
+  }
+  return g.categories.length === 1 ? g.categories[0].dataCategory : "";
+}
+
+function matchesView(g: MatchGroup, v: ViewFilter): boolean {
+  switch (v) {
+    case "mismatch":
+      return g.leagueCheck === "不一致";
+    case "mixed":
+      return g.leagueCheck === "混在";
+    case "noRound":
+      return groupNeedsRoundUpdate(g);
+    default:
+      return true;
+  }
+}
+
 /** dataCategory × home × away の一覧を home/away 単位のグループにまとめる */
 function groupByMatch(rows: RealTimeDataDTO[]): MatchGroup[] {
   const map = new Map<string, MatchGroup>();
@@ -143,6 +226,8 @@ function groupByMatch(rows: RealTimeDataDTO[]): MatchGroup[] {
         homeTeamName: home,
         awayTeamName: away,
         categoryFormatIcon: row.categoryFormatIcon ?? null,
+        leagueCheck: row.leagueCheck ?? null,
+        leagueCandidates: row.leagueCandidates ?? [],
         categories: [],
       };
       map.set(key, group);
@@ -159,14 +244,17 @@ function groupByMatch(rows: RealTimeDataDTO[]): MatchGroup[] {
     if (!group.categoryFormatIcon && row.categoryFormatIcon) {
       group.categoryFormatIcon = row.categoryFormatIcon;
     }
+    if (!group.leagueCheck && row.leagueCheck) {
+      group.leagueCheck = row.leagueCheck;
+      group.leagueCandidates = row.leagueCandidates ?? [];
+    }
   }
 
-  // 「ラウンド」が付いていない（＝更新が必要な）グループを先に、
-  // 「ラウンド」が付いている（＝更新不要な）グループは後ろに表示する。
+  // 表示順: 国リーグ不一致 → 国リーグ混在 → ラウンドなし → その他。
   // 同じ優先度内はチーム名の五十音/アルファベット順。
   return Array.from(map.values()).sort((a, b) => {
-    const aPriority = groupNeedsRoundUpdate(a) ? 0 : 1;
-    const bPriority = groupNeedsRoundUpdate(b) ? 0 : 1;
+    const aPriority = groupPriority(a);
+    const bPriority = groupPriority(b);
     if (aPriority !== bPriority) return aPriority - bPriority;
     return (a.homeTeamName + a.awayTeamName).localeCompare(b.homeTeamName + b.awayTeamName);
   });
@@ -189,6 +277,8 @@ export default function RealTimeDataAdminPage() {
 
   /** 一覧のページング */
   const [page, setPage] = useState(1);
+  /** 絞り込みタブ */
+  const [view, setView] = useState<ViewFilter>("all");
 
   /** グループごとの入力中テキスト(dataCategoryの新しい値) */
   const [editValues, setEditValues] = useState<Record<string, string>>({});
@@ -204,13 +294,14 @@ export default function RealTimeDataAdminPage() {
 
   const abortRef = useRef<AbortController | null>(null);
 
-  const isFiltered = homeFilter.trim().length > 0 && awayFilter.trim().length > 0;
+  /** ホーム・アウェーのどちらか一方だけでも絞り込める */
+  const isFiltered = homeFilter.trim().length > 0 || awayFilter.trim().length > 0;
 
   const apiUrl = useMemo(() => {
     if (isFiltered) {
       const params = new URLSearchParams();
-      params.set("homeTeamName", homeFilter.trim());
-      params.set("awayTeamName", awayFilter.trim());
+      if (homeFilter.trim()) params.set("homeTeamName", homeFilter.trim());
+      if (awayFilter.trim()) params.set("awayTeamName", awayFilter.trim());
       return `${API_BASE}/search?${params.toString()}`;
     }
     return API_BASE;
@@ -253,13 +344,22 @@ export default function RealTimeDataAdminPage() {
   const groups = useMemo(() => groupByMatch(rows), [rows]);
 
   const stats = useMemo(() => {
-    const sameCount = groups.filter((g) => g.categoryFormatIcon === "同一カテゴリ名").length;
-    const mixedCount = groups.filter((g) => g.categoryFormatIcon === "混在").length;
+    const formatMixedCount = groups.filter((g) => g.categoryFormatIcon === "混在").length;
     const needsCount = groups.filter(groupNeedsRoundUpdate).length;
-    return { groupCount: groups.length, sameCount, mixedCount, needsCount };
+    const mismatchCount = groups.filter((g) => g.leagueCheck === "不一致").length;
+    const leagueMixedCount = groups.filter((g) => g.leagueCheck === "混在").length;
+    const unknownCount = groups.filter((g) => g.leagueCheck === "不明").length;
+    return { groupCount: groups.length, formatMixedCount, needsCount, mismatchCount, leagueMixedCount, unknownCount };
   }, [groups]);
 
-  const totalPages = Math.max(1, Math.ceil(groups.length / PAGE_SIZE));
+  /** タブで絞り込んだ一覧 */
+  const viewGroups = useMemo(() => groups.filter((g) => matchesView(g, view)), [groups, view]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [view]);
+
+  const totalPages = Math.max(1, Math.ceil(viewGroups.length / PAGE_SIZE));
 
   /** 更新後の再取得などで件数が減り、現在ページが範囲外になった場合に補正する */
   useEffect(() => {
@@ -268,8 +368,8 @@ export default function RealTimeDataAdminPage() {
 
   const pagedGroups = useMemo(() => {
     const start = (page - 1) * PAGE_SIZE;
-    return groups.slice(start, start + PAGE_SIZE);
-  }, [groups, page]);
+    return viewGroups.slice(start, start + PAGE_SIZE);
+  }, [viewGroups, page]);
 
   /** このページの全グループが選択済みか */
   const allOnPageSelected = pagedGroups.length > 0 && pagedGroups.every((g) => selectedKeys.has(g.key));
@@ -322,7 +422,7 @@ export default function RealTimeDataAdminPage() {
   };
 
   const handleUpdate = async (group: MatchGroup) => {
-    const newCategory = (editValues[group.key] ?? (group.categories.length === 1 ? group.categories[0].dataCategory : "")).trim();
+    const newCategory = (editValues[group.key] ?? defaultEditValue(group)).trim();
 
     if (!newCategory) {
       setUpdateState((prev) => ({ ...prev, [group.key]: { loading: false, error: "dataCategoryを入力してください。" } }));
@@ -346,6 +446,11 @@ export default function RealTimeDataAdminPage() {
 
       if (res.responseCode === "200") {
         setUpdateState((prev) => ({ ...prev, [group.key]: { loading: false, success: res.message ?? "更新成功しました。" } }));
+        setEditValues((prev) => {
+          const next = { ...prev };
+          delete next[group.key];
+          return next;
+        });
         void doFetch();
       } else {
         setUpdateState((prev) => ({ ...prev, [group.key]: { loading: false, error: res.message ?? `更新に失敗しました。(code: ${res.responseCode ?? "-"})` } }));
@@ -422,19 +527,66 @@ export default function RealTimeDataAdminPage() {
             {g.homeTeamName} <span className="font-normal text-gray-400">vs</span> {g.awayTeamName}
           </div>
           <div className="mt-1 flex flex-wrap gap-1">
-            {groupNeedsRoundUpdate(g) ? <StatusBadge tone="ng">要更新</StatusBadge> : <StatusBadge tone="neutral">更新不要</StatusBadge>}
+            {groupNeedsRoundUpdate(g) ? <StatusBadge tone="ng">ラウンドなし</StatusBadge> : <StatusBadge tone="neutral">ラウンドあり</StatusBadge>}
             {g.categoryFormatIcon === "混在" ? (
               <StatusBadge tone="warn" dot={false}>
-                混在
+                形式混在
               </StatusBadge>
             ) : g.categoryFormatIcon === "同一カテゴリ名" ? (
               <StatusBadge tone="ok" dot={false}>
-                同一カテゴリ名
+                形式統一
               </StatusBadge>
             ) : null}
           </div>
         </>
       ),
+    },
+    {
+      key: "league",
+      header: "国リーグ（マスタ照合）",
+      wrap: true,
+      className: "min-w-[220px]",
+      cell: (g) => {
+        if (!g.leagueCheck) return <span className="text-xs text-gray-400">-</span>;
+        const shown = g.leagueCandidates.slice(0, MAX_CANDIDATES_SHOWN);
+        const rest = g.leagueCandidates.length - shown.length;
+        return (
+          <div className="grid gap-1">
+            <div>
+              <StatusBadge tone={LEAGUE_CHECK_TONE[g.leagueCheck] ?? "neutral"}>{g.leagueCheck}</StatusBadge>
+            </div>
+            {shown.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {shown.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => handleEditChange(g.key, candidateWithRound(g, c))}
+                    title="クリックで「新しい dataCategory」に入れます（今のラウンドを付けます）"
+                    className={[
+                      "rounded-md border px-1.5 py-0.5 text-left text-[11px] font-bold transition-colors",
+                      g.leagueCheck === "不一致"
+                        ? "border-red-200 bg-white text-red-700 hover:bg-red-50"
+                        : g.leagueCheck === "混在"
+                          ? "border-amber-200 bg-white text-amber-800 hover:bg-amber-50"
+                          : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50",
+                    ].join(" ")}
+                  >
+                    {c}
+                  </button>
+                ))}
+                {rest > 0 && (
+                  <span className="self-center text-[11px] text-gray-400" title={g.leagueCandidates.slice(MAX_CANDIDATES_SHOWN).join(" / ")}>
+                    +{rest}
+                  </span>
+                )}
+              </div>
+            )}
+            {g.leagueCheck === "混在" && <div className="text-[10.5px] text-amber-700">同名チームが複数の国リーグにあり、自動では決められません</div>}
+            {g.leagueCheck === "不明" && <div className="text-[10.5px] text-gray-400">マスタにどちらのチームもありません</div>}
+          </div>
+        );
+      },
     },
     {
       key: "categories",
@@ -470,7 +622,7 @@ export default function RealTimeDataAdminPage() {
       className: "min-w-[320px] py-1",
       cell: (g) => {
         const state = updateState[g.key];
-        const editValue = editValues[g.key] ?? (g.categories.length === 1 ? g.categories[0].dataCategory : "");
+        const editValue = editValues[g.key] ?? defaultEditValue(g);
         return (
           <>
             <div className="flex items-center gap-1.5">
@@ -508,7 +660,7 @@ export default function RealTimeDataAdminPage() {
         </ConsoleNotice>
       )}
 
-      <ConsolePanel title="検索条件" info="ホーム・アウェーの両方を入力すると1組み合わせに絞り込みます。未入力で検索すると全件表示に戻ります">
+      <ConsolePanel title="検索条件" info="ホーム・アウェーのどちらか一方だけでも絞り込めます。未入力で検索すると全件表示に戻ります">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -541,15 +693,35 @@ export default function RealTimeDataAdminPage() {
         loading={loading && groups.length === 0}
         items={[
           { label: "組み合わせ数", value: stats.groupCount },
-          { label: "要更新", value: stats.needsCount, tone: stats.needsCount > 0 ? "ng" : "ok" },
-          { label: "同一カテゴリ名", value: stats.sameCount, tone: "ok" },
-          { label: "混在", value: stats.mixedCount, tone: stats.mixedCount > 0 ? "warn" : "default" },
+          { label: "国リーグ不一致", value: stats.mismatchCount, tone: stats.mismatchCount > 0 ? "ng" : "ok" },
+          { label: "国リーグ混在", value: stats.leagueMixedCount, tone: stats.leagueMixedCount > 0 ? "warn" : "default" },
+          { label: "マスタ不明", value: stats.unknownCount },
+          { label: "ラウンドなし", value: stats.needsCount, tone: stats.needsCount > 0 ? "ng" : "ok" },
+          { label: "形式混在", value: stats.formatMixedCount, tone: stats.formatMixedCount > 0 ? "warn" : "default" },
         ]}
       />
 
+      <div className="mb-2">
+        <SegmentedTabs<ViewFilter>
+          value={view}
+          onChange={setView}
+          options={[
+            { value: "all", label: "すべて", count: stats.groupCount },
+            { value: "mismatch", label: "不一致", count: stats.mismatchCount },
+            { value: "mixed", label: "混在", count: stats.leagueMixedCount },
+            { value: "noRound", label: "ラウンドなし", count: stats.needsCount },
+          ]}
+        />
+      </div>
+
       {/* 一括更新（ページをまたいで選択を保持） */}
       {groups.length > 0 && (
-        <div className={["mb-2 flex flex-wrap items-center gap-2 rounded-xl border px-3 py-2", selectedKeys.size > 0 ? "border-indigo-200 bg-indigo-50" : "border-gray-200 bg-white"].join(" ")}>
+        <div
+          className={[
+            "mb-2 flex flex-wrap items-center gap-2 rounded-xl border px-3 py-2",
+            selectedKeys.size > 0 ? "border-indigo-200 bg-indigo-50" : "border-gray-200 bg-white",
+          ].join(" ")}
+        >
           <span className="text-[13px] font-bold text-gray-900">選択中: {selectedKeys.size}件</span>
           <ConsoleInput
             value={bulkValue}
@@ -575,10 +747,12 @@ export default function RealTimeDataAdminPage() {
         rowKey={(g) => g.key}
         loading={loading}
         emptyText="データがありません。"
-        rowClassName={(g) => (selectedKeys.has(g.key) ? "!bg-indigo-50" : "")}
-        paging={{ page, pageSize: PAGE_SIZE, total: groups.length, onChange: setPage }}
+        rowClassName={(g) => (selectedKeys.has(g.key) ? "!bg-indigo-50" : g.leagueCheck === "不一致" ? "bg-red-50/60" : "")}
+        paging={{ page, pageSize: PAGE_SIZE, total: viewGroups.length, onChange: setPage }}
       />
-      <div className="mt-1.5 text-[11px] text-gray-400">「ラウンド」が付いていない（更新が必要な）組み合わせを先に表示しています。新しい dataCategory の欄で Enter を押しても更新できます。</div>
+      <div className="mt-1.5 text-[11px] text-gray-400">
+        国リーグ不一致 → 国リーグ混在 → ラウンドなし の順に表示しています。候補をクリックすると「新しい dataCategory」に入ります（今のラウンドを付けます）。Enter でも更新できます。
+      </div>
     </div>
   );
 }

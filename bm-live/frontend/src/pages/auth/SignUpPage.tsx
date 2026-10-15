@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { signupApi } from "../../api/auth";
+import { signupApi } from "../../api/auth/auth";
 
 type SignupForm = {
   name: string;

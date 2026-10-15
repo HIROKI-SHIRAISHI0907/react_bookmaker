@@ -8,6 +8,7 @@ import AdminProtectedRoute from "./components/AdminProtectedRoute";
 import RequireRole from "./components/RequireRole";
 import TopRedirectByRole from "./components/TopRedirectByRole";
 import AdminLayout from "./pages/admin/AdminLayout";
+import AdminMenuPage from "./pages/admin/menu/AdminMenuPage";
 import ManualScrapePage from "./pages/admin/scrape/ManualScrapePage";
 import CountryLeagueForceAdminPage from "./pages/admin/force/CountryLeagueForceAdminPage";
 import NoticeAdminPage from "./pages/admin/notice/NoticeAdminPage";
@@ -106,95 +107,99 @@ export default function App() {
 
           {/* 管理者専用 */}
           <Route element={<AdminProtectedRoute />}>
-            <Route path="admin" element={<AdminLayout />}>
-              <Route index element={<Navigate to="data/fetch" replace />} />
-              <Route path="force/update" element={<CountryLeagueForceAdminPage />} />
-              <Route path="scrape/manual" element={<ManualScrapePage />} />
-              {/* お知らせの作成・編集は担当者のみ。管理者は申請確認画面から見て承認/差し戻しするだけ。 */}
-              <Route
-                path="notices"
-                element={
-                  <RequireRole role="ADMIN_SUB">
-                    <NoticeAdminPage />
-                  </RequireRole>
-                }
-              />
-              <Route path="data/fetch" element={<DataFetchAdminPage />} />
-              <Route path="manual/data/target" element={<ManualDataTargetPage />} />
-              <Route path="manual/data/register" element={<ManualDataConsolePage />} />
-              <Route path="manual/data/defect" element={<ManualDataDefectPage />} />
-              <Route path="manual/teamColor" element={<TeamColorPage />} />
-              <Route path="ingested" element={<IngestedDataReferencePage />} />
-              <Route path="sub-input" element={<AdminSubInputPage />} />
-              <Route path="sub-league" element={<SubLeagueManualUpdatePage />} />
-              <Route path="point-setting" element={<PointSettingsPage />} />
-              <Route path="users" element={<AdminUserPage />} />
-              <Route path="csv/today" element={<TodayCreatedCsvPage />} />
-              <Route path="matches/by-date" element={<MatchDataByDatePage />} />
-              <Route path="db/connections" element={<DbConnectionPage />} />
-              <Route path="season" element={<CountryLeagueSeasonMasterReferencePage />} />
-              <Route path="team" element={<CountryLeagueMasterReferencePage />} />
-              <Route path="noecs" element={<NoEcsSlotsPage />} />
-              <Route path="future/matches" element={<FutureMatchesByDatePage />} />
-              <Route path="data-category" element={<RealTimeDataAdminPage />} />
-              <Route path="mailinfo" element={<MailInfoListPage />} />
-              <Route path="mailinfo/new" element={<MailInfoRegisterPage />} />
-              <Route path="mailinfo/:mailId/edit" element={<MailInfoUpdatePage />} />
-              <Route path="upload/realtime" element={<UploadedRealTimeDataDownloadPage />} />
-              <Route path="analyzeCsvError" element={<AnalyzeErrorMatchesPage />} />
+            <Route path="admin">
+              {/* /admin はメニューだけの画面（左メニューのレイアウトの外） */}
+              <Route index element={<AdminMenuPage />} />
+              {/* 各画面は左メニュー付きのレイアウトで表示 */}
+              <Route element={<AdminLayout />}>
+                <Route path="force/update" element={<CountryLeagueForceAdminPage />} />
+                <Route path="scrape/manual" element={<ManualScrapePage />} />
+                {/* お知らせの作成・編集は担当者のみ。管理者は申請確認画面から見て承認/差し戻しするだけ。 */}
+                <Route
+                  path="notices"
+                  element={
+                    <RequireRole role="ADMIN_SUB">
+                      <NoticeAdminPage />
+                    </RequireRole>
+                  }
+                />
+                <Route path="data/fetch" element={<DataFetchAdminPage />} />
+                <Route path="manual/data/target" element={<ManualDataTargetPage />} />
+                <Route path="manual/data/register" element={<ManualDataConsolePage />} />
+                <Route path="manual/data/defect" element={<ManualDataDefectPage />} />
+                <Route path="manual/teamColor" element={<TeamColorPage />} />
+                <Route path="ingested" element={<IngestedDataReferencePage />} />
+                <Route path="sub-input" element={<AdminSubInputPage />} />
+                <Route path="sub-league" element={<SubLeagueManualUpdatePage />} />
+                <Route path="point-setting" element={<PointSettingsPage />} />
+                <Route path="users" element={<AdminUserPage />} />
+                <Route path="csv/today" element={<TodayCreatedCsvPage />} />
+                <Route path="matches/by-date" element={<MatchDataByDatePage />} />
+                <Route path="db/connections" element={<DbConnectionPage />} />
+                <Route path="season" element={<CountryLeagueSeasonMasterReferencePage />} />
+                <Route path="team" element={<CountryLeagueMasterReferencePage />} />
+                <Route path="noecs" element={<NoEcsSlotsPage />} />
+                <Route path="future/matches" element={<FutureMatchesByDatePage />} />
+                <Route path="data-category" element={<RealTimeDataAdminPage />} />
+                <Route path="mailinfo" element={<MailInfoListPage />} />
+                <Route path="mailinfo/new" element={<MailInfoRegisterPage />} />
+                <Route path="mailinfo/:mailId/edit" element={<MailInfoUpdatePage />} />
+                <Route path="upload/realtime" element={<UploadedRealTimeDataDownloadPage />} />
+                <Route path="analyzeCsvError" element={<AnalyzeErrorMatchesPage />} />
 
-              {/* 承認フロー */}
-              <Route
-                path="approve/requests"
-                element={
-                  <RequireRole role="ADMIN">
-                    <RequestReviewPage />
-                  </RequireRole>
-                }
-              />
-              <Route
-                path="approve/instructions"
-                element={
-                  <RequireRole role="ADMIN_SUB">
-                    <InstructionConfirmPage />
-                  </RequireRole>
-                }
-              />
-              <Route
-                path="approve/myrequest"
-                element={
-                  <RequireRole role="ADMIN_SUB">
-                    <MyRequestsPage />
-                  </RequireRole>
-                }
-              />
+                {/* 承認フロー */}
+                <Route
+                  path="approve/requests"
+                  element={
+                    <RequireRole role="ADMIN">
+                      <RequestReviewPage />
+                    </RequireRole>
+                  }
+                />
+                <Route
+                  path="approve/instructions"
+                  element={
+                    <RequireRole role="ADMIN_SUB">
+                      <InstructionConfirmPage />
+                    </RequireRole>
+                  }
+                />
+                <Route
+                  path="approve/myrequest"
+                  element={
+                    <RequireRole role="ADMIN_SUB">
+                      <MyRequestsPage />
+                    </RequireRole>
+                  }
+                />
 
-              <Route
-                path="withdrawal/confirm"
-                element={
-                  <RequireRole role="ADMIN_SUB">
-                    <WithdrawalConfirmPage />
-                  </RequireRole>
-                }
-              />
-              <Route
-                path="withdrawal/complete"
-                element={
-                  <RequireRole role="ADMIN_SUB">
-                    <WithdrawalCompletePage />
-                  </RequireRole>
-                }
-              />
+                <Route
+                  path="withdrawal/confirm"
+                  element={
+                    <RequireRole role="ADMIN_SUB">
+                      <WithdrawalConfirmPage />
+                    </RequireRole>
+                  }
+                />
+                <Route
+                  path="withdrawal/complete"
+                  element={
+                    <RequireRole role="ADMIN_SUB">
+                      <WithdrawalCompletePage />
+                    </RequireRole>
+                  }
+                />
 
-              {/* AWSリソース状況（IAM・IP・DNS などアカウント情報を表示するため管理者のみ） */}
-              <Route
-                path="aws/dashboard"
-                element={
-                  <RequireRole role="ADMIN">
-                    <AwsDashboardPage />
-                  </RequireRole>
-                }
-              />
+                {/* AWSリソース状況（IAM・IP・DNS などアカウント情報を表示するため管理者のみ） */}
+                <Route
+                  path="aws/dashboard"
+                  element={
+                    <RequireRole role="ADMIN">
+                      <AwsDashboardPage />
+                    </RequireRole>
+                  }
+                />
+              </Route>
             </Route>
           </Route>
 

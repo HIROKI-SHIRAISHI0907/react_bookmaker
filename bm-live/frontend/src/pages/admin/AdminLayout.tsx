@@ -20,9 +20,9 @@ export default function AdminLayout() {
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => (activeGroupKey ? { [activeGroupKey]: true } : {}));
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // 別グループの画面へ移ったら、そのグループを開く（他のグループの開閉はそのまま）
+  // 画面を選んだら、その画面のグループだけを開き、他のグループは閉じる
   useEffect(() => {
-    if (activeGroupKey) setOpenGroups((prev) => (prev[activeGroupKey] ? prev : { ...prev, [activeGroupKey]: true }));
+    setOpenGroups(activeGroupKey ? { [activeGroupKey]: true } : {});
     setMobileOpen(false);
   }, [activeGroupKey, location.pathname]);
 

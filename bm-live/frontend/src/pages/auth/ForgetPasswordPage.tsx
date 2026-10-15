@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { forgotPasswordApi } from "../../api/auth";
+import { forgotPasswordApi } from "../../api/auth/auth";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");

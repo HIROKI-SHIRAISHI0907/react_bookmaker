@@ -1,7 +1,7 @@
 // src/api/auth.ts
 import axios from "axios";
-import { apiClient } from "./client";
-import { saveAuth } from "../utils/auth";
+import { apiClient } from "../client";
+import { saveAuth } from "../../utils/auth";
 
 export type AuthResponse = {
   responseCode?: string;

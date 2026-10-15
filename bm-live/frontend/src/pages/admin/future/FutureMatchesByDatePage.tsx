@@ -1,17 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ExternalLink, RefreshCw } from "lucide-react";
-import {
-  BadgeTone,
-  ConsoleButton,
-  ConsoleColumn,
-  ConsoleNotice,
-  ConsoleTable,
-  ConsoleToolbar,
-  DateStepper,
-  SegmentedTabs,
-  StatChips,
-  StatusBadge,
-} from "../../../api/commonAdminDesign";
+import { type BadgeTone, ConsoleButton, ConsoleColumn, ConsoleNotice, ConsoleTable, ConsoleToolbar, DateStepper, SegmentedTabs, StatChips, StatusBadge } from "../../../api/commonAdminDesign";
 
 type FutureMatchSystemData = {
   finishedCount?: number;
@@ -21,6 +10,17 @@ type FutureMatchSystemData = {
 type FutureMatchRealtimeData = {
   currentLiveCount?: number;
   lastUpdatedAt?: string | null;
+  /** S3 の延期・遅延情報（delay_postpone_<日付>*.json）の status_type（延期 / 遅延）。該当しなければ null */
+  delayStatusType?: string | null;
+  /** 延期・遅延の元の文言（例: 延期 ミジョナリオス オンセ・カルダス - -） */
+  delayStatusText?: string | null;
+  /**
+   * 画面に出す状態（バックエンドの RealtimeStatusResolver で決める）
+   * 更新中 / 終了済 / 更新なし / 延期 / 中断 / 中止 / 遅延
+   */
+  status?: string | null;
+  /** その状態になった理由（例: 試合開始から2時間30分を超えたため） */
+  statusReason?: string | null;
 };
 
 type FutureMatch = {
@@ -41,6 +41,7 @@ type FutureMatchesResponse = {
   date?: string;
   offset?: number;
   limit?: number;
+  total?: number;
   matches?: FutureMatch[];
 };
 
@@ -116,22 +117,52 @@ function getSystemDataCount(match: FutureMatch): number {
   return finished + live;
 }
 
-/** リアルタイムデータの状態（日時は別に返して、表では2行目に出す） */
-function getRealtimeDataStatus(match: FutureMatch): { label: string; tone: BadgeTone; at: string | null } {
-  const count = match.realtimeData?.currentLiveCount ?? 0;
-  const lastUpdatedAt = match.realtimeData?.lastUpdatedAt;
+type RealtimeStatus = {
+  label: string;
+  tone: BadgeTone;
+  /** 2行目に出す日時など */
+  at: string | null;
+  /** マウスを乗せたときに出す説明（延期・遅延の元の文言） */
+  title?: string;
+};
 
-  if (count > 0) {
-    return { label: "更新中", tone: "ng", at: lastUpdatedAt ? `${formatDateTimeJst(lastUpdatedAt)} 更新` : null };
-  }
+/** 状態ごとのバッジの色 */
+const REALTIME_TONE: Record<string, BadgeTone> = {
+  更新中: "ng",
+  終了済: "ok",
+  更新なし: "neutral",
+  延期: "warn",
+  中断: "warn",
+  中止: "warn",
+  遅延: "warn",
+};
 
-  // 直近30分以内の更新は無いが、過去に更新実績はある
-  // ＝実際の試合はもう進行していない（終了済）とみなす
+/**
+ * リアルタイムデータの状態（日時は別に返して、表では2行目に出す）
+ * 状態そのものはバックエンドで決めている（RealtimeStatusResolver）。
+ *   1. 延期・中断・中止 … 時間に関係なくそのまま
+ *   2. 試合開始から2時間30分を超えた … 強制的に終了済
+ *   3. 最後の記録から40分以内 … 更新中
+ *   4. 40分以上滞っている … 更新なし
+ *   5. 記録が無く遅延の情報がある … 遅延
+ *   6. それ以外 … 更新なし
+ */
+function getRealtimeDataStatus(match: FutureMatch): RealtimeStatus {
+  const rt = match.realtimeData;
+  const lastUpdatedAt = rt?.lastUpdatedAt;
+  const status = rt?.status?.trim() || "更新なし";
+  const tone = REALTIME_TONE[status] ?? "warn";
+
+  // マウスオーバーの説明: 判定理由 ＋ 延期・遅延の元の文言
+  const titleParts = [rt?.statusReason, rt?.delayStatusType ? `${rt.delayStatusType}: ${rt.delayStatusText ?? ""}` : null].filter((v): v is string => !!v && v.trim() !== "");
+  const title = titleParts.length > 0 ? titleParts.join(" / ") : undefined;
+
+  let at: string | null = null;
   if (lastUpdatedAt) {
-    return { label: "終了済", tone: "ok", at: `${formatDateTimeJst(lastUpdatedAt)} 最終更新` };
+    at = status === "更新中" ? `${formatDateTimeJst(lastUpdatedAt)} 更新` : `${formatDateTimeJst(lastUpdatedAt)} 最終更新`;
   }
 
-  return { label: "更新なし", tone: "neutral", at: null };
+  return { label: status, tone, at, title };
 }
 
 function getMatchKey(match: FutureMatch, index: number): string {
@@ -150,6 +181,13 @@ const MatchLink: React.FC<{ href?: string; label?: string }> = ({ href, label = 
   ) : (
     <span className="text-gray-300">-</span>
   );
+
+/** リアルタイムデータのバッジ（延期・遅延の元の文言をマウスオーバーで出す） */
+const RealtimeBadge: React.FC<{ status: RealtimeStatus }> = ({ status }) => (
+  <span title={status.title} className={status.title ? "cursor-help" : undefined}>
+    <StatusBadge tone={status.tone}>{status.label}</StatusBadge>
+  </span>
+);
 
 const FutureMatchesByDatePage: React.FC = () => {
   const [date, setDate] = useState(getTodayJstString());
@@ -239,7 +277,7 @@ const FutureMatchesByDatePage: React.FC = () => {
         const s = getRealtimeDataStatus(m);
         return (
           <>
-            <StatusBadge tone={s.tone}>{s.label}</StatusBadge>
+            <RealtimeBadge status={s} />
             {s.at && <div className="mt-0.5 font-mono text-[11px] text-gray-500">{s.at}</div>}
           </>
         );
@@ -251,7 +289,7 @@ const FutureMatchesByDatePage: React.FC = () => {
   const pager = (
     <>
       <span className="tabular-nums">
-        {currentPage} ページ目（{matches.length}件 / 1ページ {currentLimit}件）
+        {currentPage} ページ目（{matches.length}件 / 1ページ {currentLimit}件{response?.total != null ? ` / 全${response.total}件` : ""}）
       </span>
       <div className="flex gap-1.5">
         <ConsoleButton size="sm" onClick={handlePrev} disabled={!canPrev}>
@@ -329,8 +367,9 @@ const FutureMatchesByDatePage: React.FC = () => {
                       <StatusBadge tone={systemStatus.tone}>{systemStatus.label}</StatusBadge>
                       <span className="tabular-nums text-gray-500">{getSystemDataCount(match)}件</span>
                       <span className="ml-2 text-gray-500">リアルタイム</span>
-                      <StatusBadge tone={realtimeStatus.tone}>{realtimeStatus.label}</StatusBadge>
+                      <RealtimeBadge status={realtimeStatus} />
                       {realtimeStatus.at && <span className="font-mono text-[11px] text-gray-500">{realtimeStatus.at}</span>}
+                      {!realtimeStatus.at && realtimeStatus.title && <span className="text-[11px] text-amber-700">{realtimeStatus.title}</span>}
                     </div>
                   </div>
                   <div className="grid content-start justify-items-end gap-1">
