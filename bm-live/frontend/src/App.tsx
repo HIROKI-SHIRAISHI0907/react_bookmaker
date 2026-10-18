@@ -14,8 +14,6 @@ import CountryLeagueForceAdminPage from "./pages/admin/force/CountryLeagueForceA
 import NoticeAdminPage from "./pages/admin/notice/NoticeAdminPage";
 import DataFetchAdminPage from "./pages/admin/fetch/DataFetchAdminPage";
 import ManualDataTargetPage from "./pages/admin/target/ManualDataTargetPage";
-import ManualDataConsolePage from "./pages/admin/register/data/ManualDataConsolePage";
-import ManualDataDefectPage from "./pages/admin/defect/ManualDataDefectPage";
 import TeamColorPage from "./pages/admin/color/TeamColorPage";
 import IngestedDataReferencePage from "./pages/admin/ingest/IngestedDataReferencePage";
 import AdminSubInputPage from "./pages/admin/csvSelect/AdminSubInputPage";
@@ -33,7 +31,7 @@ import RealTimeDataAdminPage from "./pages/admin/realtimedatacategory/RealTimeDa
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import InvalidPage from "./pages/admin/invalid/InvalidPage";
 import Header from "./components/Header";
-import UploadedRealTimeDataDownloadPage from "./pages/admin/uploadRealData/UploadRealTimeDataZip";
+import UploadedRealTimeDataDownloadPage from "./pages/admin/finUploadRealData/UploadRealTimeDataZip";
 import RequestReviewPage from "./pages/admin/approve/RequestReviewPage";
 import InstructionConfirmPage from "./pages/admin/approve/InstructionConfirmPage";
 import WithdrawalConfirmPage from "./pages/admin/withdraw/WithdrawalConfirmPage";
@@ -48,6 +46,11 @@ import FavoriteEdit from "./pages/personal/favorite/FavoriteEdit";
 import TeamResults from "./pages/personal/teams/TeamResults";
 import UpcomingMatches from "./pages/personal/top/DashboardUpcomingMatches";
 import MatchDetail, { MATCH_DETAIL_PATH } from "./pages/personal/match/MatchDetail";
+import SeasonCsvUploadPage from "./pages/admin/csvUpload/SeasonCsvUploadPage";
+import TeamCsvUploadPage from "./pages/admin/csvUpload/TeamCsvUploadPage";
+import FutureCsvUploadPage from "./pages/admin/csvUpload/FutureCsvUploadPage";
+import RealtimeCsvUploadPage from "./pages/admin/csvUpload/RealtimeCsvUploadPage";
+import FileUploadStatusPage from "./pages/admin/csvUploadStatus/FileUploadStatusPage";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -125,8 +128,6 @@ export default function App() {
                 />
                 <Route path="data/fetch" element={<DataFetchAdminPage />} />
                 <Route path="manual/data/target" element={<ManualDataTargetPage />} />
-                <Route path="manual/data/register" element={<ManualDataConsolePage />} />
-                <Route path="manual/data/defect" element={<ManualDataDefectPage />} />
                 <Route path="manual/teamColor" element={<TeamColorPage />} />
                 <Route path="ingested" element={<IngestedDataReferencePage />} />
                 <Route path="sub-input" element={<AdminSubInputPage />} />
@@ -146,6 +147,11 @@ export default function App() {
                 <Route path="mailinfo/:mailId/edit" element={<MailInfoUpdatePage />} />
                 <Route path="upload/realtime" element={<UploadedRealTimeDataDownloadPage />} />
                 <Route path="analyzeCsvError" element={<AnalyzeErrorMatchesPage />} />
+                <Route path="csv-upload/season" element={<SeasonCsvUploadPage />} />
+                <Route path="csv-upload/team" element={<TeamCsvUploadPage />} />
+                <Route path="csv-upload/future" element={<FutureCsvUploadPage />} />
+                <Route path="csv-upload/realtime" element={<RealtimeCsvUploadPage />} />
+                <Route path="csv-upload/status" element={<FileUploadStatusPage />} />
 
                 {/* 承認フロー */}
                 <Route

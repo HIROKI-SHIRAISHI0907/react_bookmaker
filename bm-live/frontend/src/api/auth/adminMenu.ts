@@ -56,8 +56,11 @@ const ADMIN_MENU: AdminMenuGroup[] = [
     key: "maintenance",
     label: "データメンテナンス",
     items: [
-      { label: "手動登録 / 更新コンソール", to: "manual/data/register", desc: "Entity を指定して登録・更新" },
-      { label: "マスタデータ欠陥値修正", to: "manual/data/defect", desc: "シーズン / リーグ / 選手マスタの直接編集" },
+      { label: "シーズンデータCSVアップロード", to: "csv-upload/season", desc: "country_league_season_master の登録・更新・削除・非表示" },
+      { label: "チームデータCSVアップロード", to: "csv-upload/team", desc: "country_league_master の登録・更新・削除・非表示" },
+      { label: "試合予定データCSVアップロード", to: "csv-upload/future", desc: "future_master の登録・更新・削除・非表示" },
+      { label: "リアルタイムデータ非表示CSVアップロード", to: "csv-upload/realtime", desc: "static_data の非表示・再表示" },
+      { label: "ファイルアップロード状況管理", to: "csv-upload/status", desc: "CSVアップロードの受付と結果（エラー行）" },
       { label: "データカテゴリ変更設定", to: "data-category", desc: "対戦ごとの dataCategory 上書き" },
     ],
   },

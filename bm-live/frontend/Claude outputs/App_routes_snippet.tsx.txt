@@ -1,0 +1,12 @@
+// ===== App.tsx に追加する分（/admin 配下の <Route> の中に入れる） =====
+// import は App.tsx の先頭に追加
+import SeasonCsvUploadPage from "./pages/admin/csvUpload/SeasonCsvUploadPage";
+import TeamCsvUploadPage from "./pages/admin/csvUpload/TeamCsvUploadPage";
+import FutureCsvUploadPage from "./pages/admin/csvUpload/FutureCsvUploadPage";
+import RealtimeCsvUploadPage from "./pages/admin/csvUpload/RealtimeCsvUploadPage";
+
+// ルート（path は adminMenu.ts の to と同じ。既存の管理画面と同じ <RequireRole> で囲む）
+<Route path="csv-upload/season" element={<SeasonCsvUploadPage />} />
+<Route path="csv-upload/team" element={<TeamCsvUploadPage />} />
+<Route path="csv-upload/future" element={<FutureCsvUploadPage />} />
+<Route path="csv-upload/realtime" element={<RealtimeCsvUploadPage />} />
