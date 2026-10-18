@@ -27,11 +27,11 @@ import CountryLeagueSeasonMasterReferencePage from "./pages/admin/master/Country
 import CountryLeagueMasterReferencePage from "./pages/admin/master/CountryLeagueMasterReferencePage";
 import NoEcsSlotsPage from "./pages/admin/noecs/NoEcsSlotsPage";
 import FutureMatchesByDatePage from "./pages/admin/future/FutureMatchesByDatePage";
-import RealTimeDataAdminPage from "./pages/admin/realtimedatacategory/RealTimeDataAdminPage";
+import RealTimeDataAdminPage from "./pages/admin/realtimedatacategory/DataCategoryManage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import InvalidPage from "./pages/admin/invalid/InvalidPage";
 import Header from "./components/Header";
-import UploadedRealTimeDataDownloadPage from "./pages/admin/finUploadRealData/UploadRealTimeDataZip";
+import UploadedRealTimeDataDownloadPage from "./pages/admin/finUploadRealData/UploadedRealTimeDataDownload";
 import RequestReviewPage from "./pages/admin/approve/RequestReviewPage";
 import InstructionConfirmPage from "./pages/admin/approve/InstructionConfirmPage";
 import WithdrawalConfirmPage from "./pages/admin/withdraw/WithdrawalConfirmPage";

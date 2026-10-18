@@ -613,9 +613,9 @@ const AnalyzeErrorMatchesPage: React.FC = () => {
   return (
     <div>
       <ConsoleToolbar
-        title="登録できなかった試合"
+        title="未反映データ参照"
         info="analyze_error_match"
-        description="統計処理（BM）で登録できなかった試合と、その原因（項目・値）を表示します。直ったら「対応済み」にしてください。同じエラーが再発すると自動で未対応に戻り、正常に登録できると自動で解決（AUTO）になります。"
+        description="統計CSVデータおよび統計データについて登録できなかった試合と、その原因（項目・値）を表示します。直ったら「対応済み」にしてください。同じエラーが再発すると自動で未対応に戻り、正常に登録できると自動で解決（AUTO）になります。"
       >
         {totals.unresolved > 0 && (
           <ConsoleButton variant="danger" onClick={downloadUnresolved} loading={downloading} title="絞り込みに関係なく、未対応のエラーをすべて CSV で保存します">

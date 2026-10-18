@@ -131,16 +131,14 @@ export default function AdminSubInputPage() {
 
   return (
     <div className="max-w-4xl">
-      <ConsoleToolbar title="選択肢登録" info="SubInput（optionNum / options / validFlg）を登録します" />
+      <ConsoleToolbar title="統計用CSV作成前詳細設定" info="SubInput（optionNum / options / validFlg）を登録します" />
 
       {clientErrors.length > 0 && (
         <ConsoleNotice tone="ng" title="入力エラー" onClose={() => setClientErrors([])}>
           {clientErrors.map((err) => `・${err}`).join("\n")}
         </ConsoleNotice>
       )}
-      {serverMessage && (
-        <ConsoleNotice tone="ok" title={serverMessage} onClose={() => setServerMessage(null)} />
-      )}
+      {serverMessage && <ConsoleNotice tone="ok" title={serverMessage} onClose={() => setServerMessage(null)} />}
       {serverError && (
         <ConsoleNotice tone="ng" title="登録に失敗しました" onClose={() => setServerError(null)}>
           {serverError}

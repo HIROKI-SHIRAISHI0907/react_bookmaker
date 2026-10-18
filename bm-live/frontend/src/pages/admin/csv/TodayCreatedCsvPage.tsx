@@ -111,7 +111,7 @@ export default function TodayCreatedCsvPage() {
 
   return (
     <div>
-      <ConsoleToolbar title="作成CSV情報" info="csv_detail_manage・register_time 基準">
+      <ConsoleToolbar title="統計用CSV作成内容参照" info="csv_detail_manage・register_time 基準">
         <DateStepper value={targetDate} onChange={onChangeDate} disabled={loading} />
         <ConsoleButton variant="primary" onClick={() => load(targetDate, currentPage)} disabled={loading}>
           <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />

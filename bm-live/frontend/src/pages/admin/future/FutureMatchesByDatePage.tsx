@@ -320,7 +320,7 @@ const FutureMatchesByDatePage: React.FC = () => {
 
   return (
     <div>
-      <ConsoleToolbar title="指定日の試合予定一覧" info={`future_master・${PAGE_SIZE}件ずつ表示`}>
+      <ConsoleToolbar title="試合予定データ取得情報" info={`future_master・${PAGE_SIZE}件ずつ表示`}>
         <DateStepper value={date} onChange={handleChangeDate} disabled={loading} />
         <ConsoleButton variant="primary" onClick={handleReload} loading={loading}>
           {!loading && <RefreshCw className="h-3.5 w-3.5" />}

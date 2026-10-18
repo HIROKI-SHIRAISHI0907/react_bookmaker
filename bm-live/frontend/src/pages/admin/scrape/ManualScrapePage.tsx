@@ -425,7 +425,7 @@ export default function ManualScrapePage() {
   return (
     <div>
       <ConsoleToolbar
-        title="スクレイピング管理"
+        title="スクレイピングCSV情報取得管理"
         info="ECS起動（RUN）と進捗監視"
         description="B005 は特定日（未来 / 過去）・翌日取得、B007 は S3 成果物からマスタ登録まで、B014 は国・リーグ指定実行に対応しています。"
       >

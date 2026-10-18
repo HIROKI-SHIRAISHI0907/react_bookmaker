@@ -229,13 +229,7 @@ export default function CountryLeagueForceAdminPage() {
         const hidden = r.delFlg === "1";
         return (
           <span className="inline-flex gap-1">
-            <ConsoleButton
-              size="sm"
-              variant={hidden ? "primary" : "default"}
-              onClick={() => void toggleDelFlg(r)}
-              disabled={saving}
-              loading={saving && toggleMutation.variables?.team === r.team}
-            >
+            <ConsoleButton size="sm" variant={hidden ? "primary" : "default"} onClick={() => void toggleDelFlg(r)} disabled={saving} loading={saving && toggleMutation.variables?.team === r.team}>
               {hidden ? "表示に戻す" : "非表示にする"}
             </ConsoleButton>
             <ConsoleButton size="sm" variant="ghost" disabled={!r.link} onClick={() => r.link && void navigator.clipboard.writeText(r.link)} title="linkコピー">
@@ -249,7 +243,7 @@ export default function CountryLeagueForceAdminPage() {
 
   return (
     <div>
-      <ConsoleToolbar title="国リーグ 強制制御（del_flg）" info="del_flg=1 は「非表示」扱い。必要に応じて表示 / 非表示を切り替えます">
+      <ConsoleToolbar title="お気に入り国リーグ情報全体反映設定" info="管理者側でチーム名の表示 / 非表示を切り替えます">
         <StatusBadge tone={isFetching ? "warn" : "ok"}>{isFetching ? "更新中…" : "最新"}</StatusBadge>
         <ConsoleButton variant="primary" onClick={() => void refetch()} disabled={saving} loading={isFetching}>
           {!isFetching && <RefreshCw className="h-3.5 w-3.5" />}
@@ -343,7 +337,12 @@ export default function CountryLeagueForceAdminPage() {
               </div>
 
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                <ConsoleInput value={teamFilter} onChange={(e) => setTeamFilter(e.target.value)} placeholder="チーム / リンクで絞り込み（例: Reds / urawa / https...）" className="min-w-[260px] flex-1" />
+                <ConsoleInput
+                  value={teamFilter}
+                  onChange={(e) => setTeamFilter(e.target.value)}
+                  placeholder="チーム / リンクで絞り込み（例: Reds / urawa / https...）"
+                  className="min-w-[260px] flex-1"
+                />
                 <SegmentedTabs<ShowMode>
                   value={showMode}
                   onChange={setShowMode}

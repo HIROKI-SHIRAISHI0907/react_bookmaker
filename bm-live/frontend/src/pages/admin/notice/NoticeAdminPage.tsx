@@ -418,7 +418,7 @@ export default function NoticeAdminPage() {
 
   return (
     <div>
-      <ConsoleToolbar title="お知らせ管理" info="通常お知らせ / 注目試合お知らせ（future_master）を登録。公開は管理者への承認依頼を経て行われます">
+      <ConsoleToolbar title="お知らせ設定" info="通常お知らせ / 注目試合お知らせ（future_master）を登録。公開は管理者への承認依頼を経て行われます">
         <ConsoleButton
           variant="primary"
           loading={isRefreshing}

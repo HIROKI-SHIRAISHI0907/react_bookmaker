@@ -47,9 +47,9 @@ const ADMIN_MENU: AdminMenuGroup[] = [
     items: [
       { label: "リアルタイムデータ登録済参照", to: "matches/by-date", desc: "日付ごとの対戦データ" },
       { label: "統計用CSV作成内容参照", to: "csv/today", desc: "指定日に作成されたCSV" },
-      { label: "未来データ・リアルタイムデータ紐づき参照", to: "ingested", desc: "未来データ / 終了済データの不足確認" },
+      { label: "試合予定・リアルタイムデータ突合確認参照", to: "ingested", desc: "未来データ / 終了済データの不足確認" },
       { label: "アップロード済リアルタイムデータ参照", to: "upload/realtime", desc: "S3のzipを検索・ダウンロード" },
-      { label: "統計用CSV反映済状態参照", to: "analyzeCsvError", desc: "登録できなかった試合と原因" },
+      { label: "未反映データ参照", to: "analyzeCsvError", desc: "登録できなかった試合と原因" },
     ],
   },
   {
@@ -61,7 +61,7 @@ const ADMIN_MENU: AdminMenuGroup[] = [
       { label: "試合予定データCSVアップロード", to: "csv-upload/future", desc: "future_master の登録・更新・削除・非表示" },
       { label: "リアルタイムデータ非表示CSVアップロード", to: "csv-upload/realtime", desc: "static_data の非表示・再表示" },
       { label: "ファイルアップロード状況管理", to: "csv-upload/status", desc: "CSVアップロードの受付と結果（エラー行）" },
-      { label: "データカテゴリ変更設定", to: "data-category", desc: "対戦ごとの dataCategory 上書き" },
+      { label: "データカテゴリ統一管理", to: "data-category", desc: "対戦ごとの dataCategory 上書き" },
     ],
   },
   {
@@ -74,7 +74,7 @@ const ADMIN_MENU: AdminMenuGroup[] = [
       { label: "チームカラー情報反映設定", to: "manual/teamColor" },
       { label: "サブリーグ名反映設定", to: "sub-league", desc: "サブリーグへのチーム割り当て" },
       // お知らせの作成・編集ができる画面のため、担当者のみ。管理者は「申請確認画面」から承認/差し戻しするだけ。
-      { label: "トップメニュー通知情報設定", to: "notices", desc: "お知らせの登録と承認依頼", roles: ["ADMIN_SUB"] },
+      { label: "お知らせ設定", to: "notices", desc: "お知らせの登録と承認依頼", roles: ["ADMIN_SUB"] },
       { label: "メール情報登録設定", to: "mailinfo", desc: "メールテンプレートの登録・更新" },
     ],
   },

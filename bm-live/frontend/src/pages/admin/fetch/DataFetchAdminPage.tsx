@@ -951,7 +951,7 @@ export default function DataFetchAdminPage() {
 
   return (
     <div>
-      <ConsoleToolbar title="データ取得管理" info="バッチ起動（POST）と事前確認">
+      <ConsoleToolbar title="スクレイピングCSV情報データ登録管理" info="バッチ起動（POST）と事前確認">
         <StatusBadge tone={API_BASE ? "ok" : "warn"} dot={false}>
           {API_BASE ? `API: ${API_BASE}` : "API_BASE 未設定"}
         </StatusBadge>

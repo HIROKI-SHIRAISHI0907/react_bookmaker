@@ -647,7 +647,7 @@ export default function RealTimeDataAdminPage() {
 
   return (
     <div>
-      <ConsoleToolbar title="リアルタイムデータ管理" info="home / away の組み合わせ単位で dataCategory を確認・上書き">
+      <ConsoleToolbar title="データカテゴリ統一管理" info="home / away の組み合わせ単位で dataCategory を確認・上書き">
         <ConsoleButton variant="primary" onClick={() => void doFetch()} loading={loading}>
           {!loading && <RefreshCw className="h-3.5 w-3.5" />}
           再読み込み
@@ -716,12 +716,7 @@ export default function RealTimeDataAdminPage() {
 
       {/* 一括更新（ページをまたいで選択を保持） */}
       {groups.length > 0 && (
-        <div
-          className={[
-            "mb-2 flex flex-wrap items-center gap-2 rounded-xl border px-3 py-2",
-            selectedKeys.size > 0 ? "border-indigo-200 bg-indigo-50" : "border-gray-200 bg-white",
-          ].join(" ")}
-        >
+        <div className={["mb-2 flex flex-wrap items-center gap-2 rounded-xl border px-3 py-2", selectedKeys.size > 0 ? "border-indigo-200 bg-indigo-50" : "border-gray-200 bg-white"].join(" ")}>
           <span className="text-[13px] font-bold text-gray-900">選択中: {selectedKeys.size}件</span>
           <ConsoleInput
             value={bulkValue}

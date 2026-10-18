@@ -161,7 +161,7 @@ export default function MatchDataByDatePage() {
 
   return (
     <div>
-      <ConsoleToolbar title="対戦データ検索" info="DBに登録された対戦データを日付ごとに表示">
+      <ConsoleToolbar title="リアルタイムデータ登録済参照" info="DBに登録された対戦データを日付ごとに表示">
         <DateStepper value={targetDate} onChange={handleChangeDate} disabled={loading} />
         <ConsoleButton variant="primary" onClick={() => void fetchMatchData(targetDate, response.page || 1)} loading={loading}>
           {!loading && <RefreshCw className="h-3.5 w-3.5" />}

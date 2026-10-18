@@ -351,7 +351,7 @@ const NoEcsSlotsPage: React.FC = () => {
 
   return (
     <div>
-      <ConsoleToolbar title="No ECS Runtime Monitor" info="noEcsRun が出力した JSON から、ECS停止時間と試合時間をリアルタイム表示">
+      <ConsoleToolbar title="非稼働ECS管理" info="noEcsRun が出力した JSON から、ECS停止時間と試合時間をリアルタイム表示">
         <ConsoleInput value={batchCode} onChange={(e) => setBatchCode(e.target.value)} placeholder="batchCode" className="w-24 font-mono" />
         <ConsoleInput type="date" value={day} onChange={(e) => setDay(e.target.value)} />
         <ConsoleButton variant="primary" onClick={() => void load()} loading={loading}>

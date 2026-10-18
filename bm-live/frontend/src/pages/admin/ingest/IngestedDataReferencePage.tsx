@@ -524,7 +524,7 @@ export default function IngestedDataReferenceAdminPage() {
 
   return (
     <div>
-      <ConsoleToolbar title="投入済データ参照管理" info="国と「終了済データなし または 未来データなし」で検索">
+      <ConsoleToolbar title="試合予定・リアルタイムデータ突合確認参照" info="国と「終了済データなし または 未来データなし」で検索">
         <ConsoleButton variant="primary" onClick={() => void runB008()} disabled={busy || rows.length === 0} loading={execLoading}>
           {!execLoading && <Play className="h-3 w-3" />}
           {execLoading ? "B008起動中…" : "B008起動（このページ）"}
@@ -627,11 +627,7 @@ export default function IngestedDataReferenceAdminPage() {
         }}
       />
 
-      <ConsoleDrawer
-        open={detailRow !== null}
-        onClose={closeDetail}
-        title={detailRow ? `${getRowHome(detailRow)} vs ${getRowAway(detailRow)}` : ""}
-      >
+      <ConsoleDrawer open={detailRow !== null} onClose={closeDetail} title={detailRow ? `${getRowHome(detailRow)} vs ${getRowAway(detailRow)}` : ""}>
         {detailRow && (
           <>
             <div className="mb-2 flex flex-wrap gap-1.5">

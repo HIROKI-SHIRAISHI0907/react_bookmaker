@@ -1,16 +1,38 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { LogOut } from "lucide-react";
 import { clearAuthSession, getAccessToken, getTokenType, isLoggedIn } from "../utils/auth";
-import { useCurrentRole } from "../hooks/useCurrentRole";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 
+/** 画面最上部に固定されている帯（pathname 表示）の高さ。帯が無ければ 0 にする */
+const TOP_OFFSET = 44;
+
+/**
+ * ログアウトボタン。
+ *  - スクロール前: ページ上部に「通常の行」として置く（ツールバー等とは重ならない）
+ *  - スクロール後: 右上にフローティング表示し、コンテンツの上に覆いかぶさる
+ *  （通常の行が画面外に出たかを IntersectionObserver で判定。window / 内側のスクロール領域どちらでも動く）
+ */
 export default function Header() {
   const navigate = useNavigate();
   const [loggingOut, setLoggingOut] = useState(false);
-  const currentRole = useCurrentRole();
+  const [floating, setFloating] = useState(false);
+  const barRef = useRef<HTMLDivElement | null>(null);
+  const loggedIn = isLoggedIn();
 
-  if (!isLoggedIn()) {
+  useEffect(() => {
+    const el = barRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(([entry]) => setFloating(!entry.isIntersecting), {
+      rootMargin: `-${TOP_OFFSET}px 0px 0px 0px`,
+      threshold: 0,
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [loggedIn]);
+
+  if (!loggedIn) {
     return null;
   }
 
@@ -37,61 +59,72 @@ export default function Header() {
     }
   };
 
-  const handleGoToWithdrawal = () => {
-    navigate("/withdrawal/confirm");
-  };
-
-  // 退会ページへの遷移ボタンは担当者(ROLE_ADMIN_SUB)にのみ表示する。管理者(ROLE_ADMIN)には表示しない。
-  const canWithdraw = currentRole === "ADMIN_SUB";
-
-  return (
-    <div
+  const LogoutButton = ({ compact = false }: { compact?: boolean }) => (
+    <button
+      type="button"
+      onClick={handleLogout}
+      disabled={loggingOut}
+      title="ログアウト"
       style={{
-        position: "fixed",
-        top: 44,
-        right: 0,
-        zIndex: 9998,
-        padding: "8px 16px",
-        display: "flex",
-        gap: 8,
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        padding: compact ? "6px 12px" : "6px 14px",
+        borderRadius: compact ? 999 : 8,
+        border: "1px solid #d1d5db",
+        background: "white",
+        color: "#374151",
+        fontWeight: 700,
+        fontSize: 12.5,
+        lineHeight: 1.4,
+        cursor: loggingOut ? "default" : "pointer",
+        opacity: loggingOut ? 0.6 : 1,
+        boxShadow: compact ? "none" : "0 1px 2px rgba(0,0,0,0.05)",
       }}
     >
-      {canWithdraw && (
-        <button
-          onClick={handleGoToWithdrawal}
-          style={{
-            padding: "8px 16px",
-            borderRadius: 8,
-            border: "1px solid #d1d5db",
-            background: "white",
-            color: "#b91c1c",
-            fontWeight: 700,
-            fontSize: 13,
-            cursor: "pointer",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
-          }}
-        >
-          退会
-        </button>
-      )}
-      <button
-        onClick={handleLogout}
-        disabled={loggingOut}
+      <LogOut style={{ width: 14, height: 14 }} />
+      {loggingOut ? "ログアウト中..." : "ログアウト"}
+    </button>
+  );
+
+  return (
+    <>
+      {/* スクロール前: 通常の行（コンテンツを押し下げるので重ならない） */}
+      <div
+        ref={barRef}
         style={{
-          padding: "8px 16px",
-          borderRadius: 8,
-          border: "1px solid #d1d5db",
-          background: "white",
-          color: "#374151",
-          fontWeight: 700,
-          fontSize: 13,
-          cursor: loggingOut ? "default" : "pointer",
-          opacity: loggingOut ? 0.6 : 1,
-          boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+          display: "flex",
+          justifyContent: "flex-end",
+          padding: "0 0 8px",
+          visibility: floating ? "hidden" : "visible",
         }}
       >
-        {loggingOut ? "ログアウト中..." : "ログアウト"}
-      </button>
-    </div>
+        <LogoutButton />
+      </div>
+
+      {/* スクロール後: 右上にフローティング（コンテンツの上に重なる） */}
+      <div
+        aria-hidden={!floating}
+        style={{
+          position: "fixed",
+          top: TOP_OFFSET + 8,
+          right: 16,
+          zIndex: 9998,
+          padding: 4,
+          borderRadius: 999,
+          background: "rgba(255,255,255,0.85)",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
+          border: "1px solid rgba(229,231,235,0.9)",
+          boxShadow: "0 8px 24px rgba(15,23,42,0.12), 0 2px 6px rgba(15,23,42,0.08)",
+          opacity: floating ? 1 : 0,
+          transform: floating ? "translateY(0)" : "translateY(-8px)",
+          pointerEvents: floating ? "auto" : "none",
+          transition: "opacity 160ms ease, transform 160ms ease",
+        }}
+      >
+        <LogoutButton compact />
+      </div>
+    </>
   );
 }

@@ -1,17 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, RefreshCw, Trash2 } from "lucide-react";
-import {
-  ClickEditCell,
-  ConsoleButton,
-  ConsoleColumn,
-  ConsoleInput,
-  ConsoleModal,
-  ConsoleNotice,
-  ConsoleTable,
-  ConsoleToolbar,
-  StatChips,
-  fmtNum,
-} from "../../../api/commonAdminDesign";
+import { ClickEditCell, ConsoleButton, ConsoleColumn, ConsoleInput, ConsoleModal, ConsoleNotice, ConsoleTable, ConsoleToolbar, StatChips, fmtNum } from "../../../api/commonAdminDesign";
 
 type CountryLeagueDTO = {
   id?: string;
@@ -508,7 +497,9 @@ const CountryLeagueMasterPage: React.FC = () => {
   const modalColumns: ConsoleColumn<CountryLeagueMasterEntity>[] = [
     {
       key: "check",
-      header: <input type="checkbox" checked={allModalRowsSelected} onChange={toggleSelectAllRows} disabled={busy || rowsWithPendingEdit.length === 0} className="accent-red-600" aria-label="すべて選択" />,
+      header: (
+        <input type="checkbox" checked={allModalRowsSelected} onChange={toggleSelectAllRows} disabled={busy || rowsWithPendingEdit.length === 0} className="accent-red-600" aria-label="すべて選択" />
+      ),
       align: "center",
       cell: (row) => {
         const key = masterRowDeleteKey(row);
@@ -539,7 +530,7 @@ const CountryLeagueMasterPage: React.FC = () => {
   return (
     <div>
       <ConsoleToolbar
-        title="country_league_master 確認"
+        title="チームデータ取得情報"
         info="全件を一括取得し、国＋リーグごとにページを分けて表示"
         description="このページを開くと、最初の国リーグの新規登録データを確認するモーダルを自動で表示します。"
       >

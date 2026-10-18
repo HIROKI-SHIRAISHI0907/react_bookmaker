@@ -127,7 +127,7 @@ export default function MailInfoListPage() {
 
   return (
     <div>
-      <ConsoleToolbar title="メール情報一覧" info={`メール情報マスタ・${list.length}件`}>
+      <ConsoleToolbar title="メール情報登録設定" info={`メール情報マスタ・${list.length}件`}>
         <ConsoleButton onClick={() => void handleSearch()} loading={loading}>
           {!loading && <RefreshCw className="h-3.5 w-3.5" />}
           再読み込み

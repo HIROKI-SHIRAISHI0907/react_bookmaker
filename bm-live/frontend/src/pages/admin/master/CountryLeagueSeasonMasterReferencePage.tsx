@@ -621,7 +621,9 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
   const modalColumns: ConsoleColumn<CountryLeagueSeasonMasterEntity>[] = [
     {
       key: "check",
-      header: <input type="checkbox" checked={allModalRowsSelected} onChange={toggleSelectAllRows} disabled={busy || rowsWithPendingEdit.length === 0} className="accent-red-600" aria-label="すべて選択" />,
+      header: (
+        <input type="checkbox" checked={allModalRowsSelected} onChange={toggleSelectAllRows} disabled={busy || rowsWithPendingEdit.length === 0} className="accent-red-600" aria-label="すべて選択" />
+      ),
       align: "center",
       cell: (row) => {
         const key = seasonRowDeleteKey(row);
@@ -636,11 +638,7 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
 
   return (
     <div>
-      <ConsoleToolbar
-        title="country_league_season_master 確認"
-        info="全件を一括取得し、10件ずつ表示"
-        description="このページを開くと、最初の国リーグの新規登録データを確認するモーダルを自動で表示します。"
-      >
+      <ConsoleToolbar title="シーズンデータ取得情報" info="全件を一括取得し、10件ずつ表示" description="このページを開くと、最初の国リーグの新規登録データを確認するモーダルを自動で表示します。">
         <span className="font-mono text-xs tabular-nums text-gray-500">現在 {tokyoNowText || "-"} JST</span>
         <ConsoleInput
           value={keyword}

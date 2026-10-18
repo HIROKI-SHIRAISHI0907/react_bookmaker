@@ -123,7 +123,19 @@ const sortTeams = (a: TeamRow, b: TeamRow) => {
 };
 
 /** ドラッグできるチームの行 */
-function TeamChip({ team, onDragStart, onDragEnd, right, tone = "default" }: { team: TeamRow; onDragStart: () => void; onDragEnd: () => void; right?: React.ReactNode; tone?: "default" | "assigned" }) {
+function TeamChip({
+  team,
+  onDragStart,
+  onDragEnd,
+  right,
+  tone = "default",
+}: {
+  team: TeamRow;
+  onDragStart: () => void;
+  onDragEnd: () => void;
+  right?: React.ReactNode;
+  tone?: "default" | "assigned";
+}) {
   return (
     <div
       draggable
@@ -400,7 +412,7 @@ export default function SubLeagueManualUpdatePage() {
 
   return (
     <div>
-      <ConsoleToolbar title="Sub League 手動更新" info={<span className="font-mono">API: {API_BASE}</span>}>
+      <ConsoleToolbar title="サブリーグ名反映設定" info={<span className="font-mono">API: {API_BASE}</span>}>
         <ConsoleButton onClick={() => void load()} loading={loading}>
           {!loading && <RefreshCw className="h-3.5 w-3.5" />}
           再読み込み
@@ -592,10 +604,9 @@ export default function SubLeagueManualUpdatePage() {
               }}
               onDragLeave={() => setDropHover(null)}
               onDrop={handleDropToUnassigned}
-              className={[
-                "shrink-0 rounded-xl border-2 border-dashed px-3 py-2.5 transition-colors",
-                dropHover === "unassign" ? "border-red-500 bg-red-100/70" : "border-red-300 bg-red-50/60",
-              ].join(" ")}
+              className={["shrink-0 rounded-xl border-2 border-dashed px-3 py-2.5 transition-colors", dropHover === "unassign" ? "border-red-500 bg-red-100/70" : "border-red-300 bg-red-50/60"].join(
+                " ",
+              )}
             >
               <div className="text-[13px] font-bold text-red-800">未設定に戻す</div>
               <div className="text-[11px] text-red-700/80">所属チームをここへドラッグすると subLeague を解除します。</div>

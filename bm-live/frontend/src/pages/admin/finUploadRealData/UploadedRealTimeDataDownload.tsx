@@ -161,7 +161,7 @@ export default function UploadedRealTimeDataDownloadPage() {
 
   return (
     <div>
-      <ConsoleToolbar title="アップロード済みリアルタイムデータ" info="S3にアップロードされている試合ごとのzipファイルを検索・ダウンロード" />
+      <ConsoleToolbar title="アップロード済リアルタイムデータ参照" info="S3にアップロードされている試合ごとのzipファイルを検索・ダウンロード" />
 
       {errorMessage && <ConsoleNotice tone="ng" title={errorMessage} onClose={() => setErrorMessage("")} />}
 

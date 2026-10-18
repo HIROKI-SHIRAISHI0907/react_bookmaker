@@ -2,18 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, RefreshCw, RotateCcw, Save, Trash2 } from "lucide-react";
 import { fetchPointSettings, isValidRemarks, normalizeRemarks, savePointSettings, type PointSettingEntity, type PointSettingItem } from "../../../api/adminPointSettings";
-import {
-  ConsoleButton,
-  ConsoleCellInput,
-  ConsoleColumn,
-  ConsoleField,
-  ConsoleInput,
-  ConsoleNotice,
-  ConsoleTable,
-  ConsoleToolbar,
-  StatChips,
-  StatusBadge,
-} from "../../../api/commonAdminDesign";
+import { ConsoleButton, ConsoleCellInput, ConsoleColumn, ConsoleField, ConsoleInput, ConsoleNotice, ConsoleTable, ConsoleToolbar, StatChips, StatusBadge } from "../../../api/commonAdminDesign";
 
 type EditableRow = {
   rowId: string;
@@ -276,8 +265,7 @@ export default function PointSettingsPage() {
     {
       key: "state",
       header: "状態",
-      cell: (row) =>
-        row.delFlg === "1" ? <StatusBadge tone="ng">削除予定</StatusBadge> : row.isNew ? <StatusBadge tone="info">新規</StatusBadge> : <StatusBadge tone="neutral">既存</StatusBadge>,
+      cell: (row) => (row.delFlg === "1" ? <StatusBadge tone="ng">削除予定</StatusBadge> : row.isNew ? <StatusBadge tone="info">新規</StatusBadge> : <StatusBadge tone="neutral">既存</StatusBadge>),
     },
     {
       key: "ops",
@@ -301,7 +289,7 @@ export default function PointSettingsPage() {
   return (
     <div>
       <ConsoleToolbar
-        title="勝ち点設定"
+        title="リーグ勝ち点情報反映設定"
         info="国・リーグごとの勝ち点"
         description={
           <>
