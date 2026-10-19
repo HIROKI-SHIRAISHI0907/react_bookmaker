@@ -1,17 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import { Download, FileArchive, Upload, X } from "lucide-react";
-import {
-  ConsoleButton,
-  ConsoleColumn,
-  ConsoleModal,
-  ConsoleNotice,
-  ConsolePanel,
-  ConsoleTable,
-  ConsoleToolbar,
-  StatChips,
-  StatChipItem,
-  fmtNum,
-} from "../../../api/commonAdminDesign";
+import { ConsoleButton, ConsoleColumn, ConsoleModal, ConsoleNotice, ConsolePanel, ConsoleTable, ConsoleToolbar, StatChips, StatChipItem, fmtNum } from "../../../api/commonAdminDesign";
+import { getAccessToken, getTokenType } from "../../../utils/auth";
 
 /**
  * CSV アップロード画面の共通部品（シーズン / チーム / 試合予定 / リアルタイム）
@@ -20,9 +10,12 @@ import {
  *       GET  /v1/api/admin/csv/upload/{masterName}/format
  *   - zip のアップロード（multipart/form-data、項目名 file）
  *       POST /v1/api/admin/csv/upload/{masterName}
- *       200: 反映した / 400: ファイル名・行エラー（どの行も反映しない）/ 500: DB エラー（すべて元に戻した）
+ *       200: 受け付けた / 400: ファイル名・行エラー（どの行も反映しない）/ 401: 未ログイン / 500: サーバーエラー
+ *
+ *   どちらも Authorization: Bearer {JWT} を付けて送る（サーバーは JWT からログインユーザーを決める）。
  *
  *   zip の名前は「接頭辞_〇〇.zip」、中の CSV は zip と同じ名前（接頭辞_〇〇.csv）。
+ *   Mac の「圧縮」で付く「接頭辞_〇〇.csv.zip」も同じ扱い（中の CSV は 接頭辞_〇〇.csv）。
  *   画面でも名前を先に確かめ、合わないときはアップロードしない（サーバー側でも同じチェックをする）。
  */
 
@@ -68,6 +61,11 @@ type CsvUploadRowError = {
 
 type CsvUploadResponse = {
   masterName?: string;
+  uploadId?: number;
+  fileName?: string;
+  /** PENDING（受け付けた・判定前）/ ERROR など */
+  status?: string;
+  errorPhase?: string;
   message?: string;
   totalCount?: number;
   insertCount?: number;
@@ -86,7 +84,12 @@ type UploadResult = {
 
 const API_BASE = "/v1/api/admin/csv/upload";
 
-const SUCCESS_MESSAGE = "処理成功しました。";
+/** ログイン中の JWT を Authorization ヘッダーにする（未ログインなら付けない → サーバーが 401 を返す） */
+function authHeaders(): Record<string, string> {
+  const token = getAccessToken();
+  if (!token) return {};
+  return { Authorization: `${getTokenType() || "Bearer"} ${token}` };
+}
 
 /** Content-Disposition からファイル名を取る（filename*= と filename= の両方） */
 function fileNameFromDisposition(header: string | null, fallback: string): string {
@@ -114,8 +117,9 @@ function checkZipName(fileName: string, prefix: string): string | null {
   return null;
 }
 
+/** zip 名 → 中の CSV 名。Mac の「圧縮」で付く「〇〇.csv.zip」も「〇〇.csv」として扱う */
 function expectedCsvName(zipName: string): string {
-  return zipName.replace(/\.zip$/i, "") + ".csv";
+  return zipName.replace(/\.zip$/i, "").replace(/\.csv$/i, "") + ".csv";
 }
 
 const CsvUploadConsole: React.FC<Props> = ({ masterName, title, prefix, tableName, description, operations, columns, notes = [] }) => {
@@ -137,10 +141,13 @@ const CsvUploadConsole: React.FC<Props> = ({ masterName, title, prefix, tableNam
     setDownloadError(null);
     setDownloadedName(null);
     try {
-      const response = await fetch(`${API_BASE}/${masterName}/format`, { credentials: "include" });
+      const response = await fetch(`${API_BASE}/${masterName}/format`, {
+        credentials: "include",
+        headers: { ...authHeaders() },
+      });
       if (!response.ok) {
         const text = await response.text();
-        throw new Error(`HTTP ${response.status}: ${text || response.statusText}`);
+        throw new Error(response.status === 401 ? "ログインの有効期限が切れている可能性があります。ログインし直してください。" : `HTTP ${response.status}: ${text || response.statusText}`);
       }
       const blob = await response.blob();
       const name = fileNameFromDisposition(response.headers.get("content-disposition"), `${prefix}format.zip`);
@@ -193,10 +200,11 @@ const CsvUploadConsole: React.FC<Props> = ({ masterName, title, prefix, tableNam
       const form = new FormData();
       form.append("file", file, file.name);
 
+      // Content-Type は付けない（FormData のときはブラウザが boundary 付きで自動で付ける）
       const response = await fetch(`${API_BASE}/${masterName}`, {
         method: "POST",
         credentials: "include",
-        headers: { Accept: "application/json" },
+        headers: { Accept: "application/json", ...authHeaders() },
         body: form,
       });
 
@@ -206,7 +214,7 @@ const CsvUploadConsole: React.FC<Props> = ({ masterName, title, prefix, tableNam
         throw new Error(`HTTP ${response.status}: ${rawText.slice(0, 300) || response.statusText}`);
       }
 
-      // 400 / 500 でも結果（エラー行）を JSON で返すので、そのまま表示する
+      // 400 / 401 / 500 でも結果（メッセージ・エラー行）を JSON で返すので、そのまま表示する
       setResult({ status: response.status, body: JSON.parse(rawText) as CsvUploadResponse, fileName: file.name });
       if (response.ok) clearFile();
     } catch (e) {
@@ -220,7 +228,7 @@ const CsvUploadConsole: React.FC<Props> = ({ masterName, title, prefix, tableNam
   /* ----- 結果 ----- */
   const body = result?.body;
   const errors = body?.errors ?? [];
-  const succeeded = result != null && result.status === 200 && body?.message === SUCCESS_MESSAGE;
+  const succeeded = result != null && result.status === 200 && body?.status !== "ERROR" && errors.length === 0;
 
   const resultChips: StatChipItem[] = useMemo(
     () => [
@@ -236,7 +244,7 @@ const CsvUploadConsole: React.FC<Props> = ({ masterName, title, prefix, tableNam
   );
 
   const errorColumns: ConsoleColumn<CsvUploadRowError>[] = [
-    { key: "rowNo", header: "行", mono: true, align: "right", cell: (e) => e.rowNo },
+    { key: "rowNo", header: "行", mono: true, align: "right", cell: (e) => (e.rowNo === 0 ? "-" : e.rowNo) },
     { key: "operation", header: "処理区分", cell: (e) => e.operation || "-" },
     { key: "key", header: "キー", wrap: true, className: "min-w-[220px] break-all", cell: (e) => e.key || "-" },
     { key: "message", header: "エラー内容", wrap: true, className: "min-w-[280px]", cell: (e) => <span className="text-red-700">{e.message || "-"}</span> },
@@ -258,14 +266,20 @@ const CsvUploadConsole: React.FC<Props> = ({ masterName, title, prefix, tableNam
 
   const sampleZip = `${prefix}20261018.zip`;
 
+  /** 結果欄の見出しメッセージ */
+  const resultTitle = (() => {
+    if (body?.message) return body.message;
+    if (succeeded) return "受け付けました。";
+    if (result?.status === 401) return "ログインしてからアップロードしてください。";
+    return "反映できませんでした。";
+  })();
+
   return (
     <div>
       <ConsoleToolbar
         title={title}
         info={tableName}
-        description={
-          description ?? "フォーマットをダウンロードして行を追記し、同じ名前のまま zip にしてアップロードします。1 行でもエラーがあれば、どの行も反映しません。"
-        }
+        description={description ?? "フォーマットをダウンロードして行を追記し、同じ名前のまま zip にしてアップロードします。1 行でもエラーがあれば、どの行も反映しません。"}
       >
         <ConsoleButton onClick={() => void handleDownloadFormat()} loading={downloading}>
           {!downloading && <Download className="h-3.5 w-3.5" />}
@@ -285,16 +299,12 @@ const CsvUploadConsole: React.FC<Props> = ({ masterName, title, prefix, tableNam
       )}
 
       {/* ----- アップロード ----- */}
-      <ConsolePanel title="アップロード" info={`zip の名前は「${prefix}」で始め、中の CSV は zip と同じ名前にする（例: ${sampleZip} の中に ${expectedCsvName(sampleZip)}）`}>
+      <ConsolePanel
+        title="アップロード"
+        info={`zip の名前は「${prefix}」で始め、中の CSV は zip と同じ名前にする（例: ${sampleZip} の中に ${expectedCsvName(sampleZip)}。Mac の「圧縮」で付く 〇〇.csv.zip も可）`}
+      >
         <div className="flex flex-wrap items-center gap-2">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".zip,application/zip"
-            className="hidden"
-            onChange={(e) => handleSelectFile(e.target.files?.[0] ?? null)}
-            disabled={uploading}
-          />
+          <input ref={fileInputRef} type="file" accept=".zip,application/zip" className="hidden" onChange={(e) => handleSelectFile(e.target.files?.[0] ?? null)} disabled={uploading} />
           <ConsoleButton onClick={() => fileInputRef.current?.click()} disabled={uploading}>
             <FileArchive className="h-3.5 w-3.5" />
             zip を選ぶ
@@ -334,13 +344,13 @@ const CsvUploadConsole: React.FC<Props> = ({ masterName, title, prefix, tableNam
       {/* ----- 結果 ----- */}
       {result && (
         <ConsolePanel title="結果" info={result.fileName} right={<span className={`text-xs font-bold ${succeeded ? "text-emerald-700" : "text-red-700"}`}>HTTP {result.status}</span>}>
-          <ConsoleNotice tone={succeeded ? "ok" : "ng"} title={body?.message || (succeeded ? SUCCESS_MESSAGE : "反映できませんでした。")}>
+          <ConsoleNotice tone={succeeded ? "ok" : "ng"} title={resultTitle}>
             {!succeeded && errors.length > 0 && "下の行を直して、もう一度アップロードしてください（どの行も反映していません）。"}
+            {!succeeded && result.status === 401 && "ログインの有効期限が切れている可能性があります。ログインし直してからもう一度アップロードしてください。"}
+            {succeeded && "反映はバッチで行います。結果は「ファイルアップロード状況管理」で確認できます。"}
           </ConsoleNotice>
           <StatChips items={resultChips} />
-          {errors.length > 0 && (
-            <ConsoleTable columns={errorColumns} rows={errors} rowKey={(e, i) => `${e.rowNo}-${i}`} maxHeight="420px" emptyText="エラーはありません。" />
-          )}
+          {errors.length > 0 && <ConsoleTable columns={errorColumns} rows={errors} rowKey={(e, i) => `${e.rowNo}-${i}`} maxHeight="420px" emptyText="エラーはありません。" />}
         </ConsolePanel>
       )}
 
