@@ -1,8 +1,0 @@
-created_utc=20261017T041216Z
-rds_host=bm-postgres.chea84c4y4bn.ap-northeast-1.rds.amazonaws.com
-server_version=17.9
-pg_dump=pg_dump (PostgreSQL) 17.7
-exclude_table_data=
-db=soccer_bm tables=39 views=21 size=7.5M
-db=soccer_bm_master tables=14 views=0 size=3.4M
-db=soccer_bm_user tables=6 views=0 size=28K
