@@ -19,6 +19,7 @@ import IngestedDataReferencePage from "./pages/admin/ingest/IngestedDataReferenc
 import AdminSubInputPage from "./pages/admin/csvSelect/AdminSubInputPage";
 import SubLeagueManualUpdatePage from "./pages/admin/subLeague/SubLeagueManualUpdatePage";
 import PointSettingsPage from "./pages/admin/pointSetting/PointSettingsPage";
+import LeagueLevelPage from "./pages/admin/leagueLevel/LeagueLevelPage";
 import TodayCreatedCsvPage from "./pages/admin/csv/TodayCreatedCsvPage";
 import AdminUserPage from "./pages/admin/user/AdminUserPage";
 import MatchDataByDatePage from "./pages/admin/matches/MatchDataByDatePage";
@@ -51,6 +52,7 @@ import TeamCsvUploadPage from "./pages/admin/csvUpload/TeamCsvUploadPage";
 import FutureCsvUploadPage from "./pages/admin/csvUpload/FutureCsvUploadPage";
 import RealtimeCsvUploadPage from "./pages/admin/csvUpload/RealtimeCsvUploadPage";
 import FileUploadStatusPage from "./pages/admin/csvUploadStatus/FileUploadStatusPage";
+import UpcomingDetail, { UPCOMING_DETAIL_PATH } from "./pages/personal/upcoming/UpcomingDetail";
 
 function WhereAmI() {
   const loc = useLocation();
@@ -93,6 +95,8 @@ export default function App() {
           <Route path="/upcoming" element={<UpcomingMatches />} />
           {/* 試合詳細 /match-detail?seqKey=xxxx（ダッシュボードのライブ・注目試合から遷移） */}
           <Route path={MATCH_DETAIL_PATH} element={<MatchDetail />} />
+          {/* これからの試合の詳細 /upcoming-detail?country=&league=&home=&away=（これからの試合の一覧・トップ画面から遷移） */}
+          <Route path={UPCOMING_DETAIL_PATH} element={<UpcomingDetail />} />
 
           <Route
             path="/top"
@@ -133,6 +137,7 @@ export default function App() {
                 <Route path="sub-input" element={<AdminSubInputPage />} />
                 <Route path="sub-league" element={<SubLeagueManualUpdatePage />} />
                 <Route path="point-setting" element={<PointSettingsPage />} />
+                <Route path="league-level" element={<LeagueLevelPage />} />
                 <Route path="users" element={<AdminUserPage />} />
                 <Route path="csv/today" element={<TodayCreatedCsvPage />} />
                 <Route path="matches/by-date" element={<MatchDataByDatePage />} />

@@ -1,11 +1,13 @@
 // これからの試合（トップ画面・コンパクト版）
 //  リーグごとに直近 3 試合、最初の試合が早いリーグから 5 リーグ。残りは「全試合」画面（/upcoming）へ。
 //  チーム名 → チームの過去の結果（/team-results）
-import { Link } from "react-router-dom";
+//  行 → 試合の詳細（/upcoming-detail: 過去の対戦成績・会場・順位表・ゴール数などの統計）
+import { Link, useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import type { DashboardForecast, DashboardUpcomingLeague, DashboardUpcomingMatch } from "../../../api/dashboard/types";
 import { RankBadge, formatKickoff } from "./parts";
 import { TeamLink } from "../teams/TeamForm";
+import { upcomingDetailUrl } from "../upcoming/UpcomingDetail";
 
 export const UPCOMING_PATH = "/upcoming";
 
@@ -74,10 +76,22 @@ export default function DashboardUpcoming({ leagues, totalCount, totalLeagueCoun
   );
 }
 
-/** 1試合 = 2行（時刻 | ホーム/アウェー | 勝ち分け負けの細いバー・ゴール見込み） */
+/** 1試合 = 2行（時刻 | ホーム/アウェー | 勝ち分け負けの細いバー・ゴール見込み | ›）。行 → 試合の詳細 */
 function UpcomingRow({ m, favoriteTeams }: { m: DashboardUpcomingMatch; favoriteTeams: Set<string> }) {
+  const navigate = useNavigate();
+  const open = () => navigate(upcomingDetailUrl(m), { state: { match: m } });
   return (
-    <div className="flex items-center gap-2 px-2 py-1.5">
+    <div
+      role="link"
+      tabIndex={0}
+      onClick={open}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") open();
+      }}
+      className="flex cursor-pointer items-center gap-2 px-2 py-1.5 transition-colors hover:bg-muted/50"
+      title={`${m.home.name} vs ${m.away.name} の詳細（過去の対戦・順位表・統計）`}
+      data-testid="row-upcoming-match"
+    >
       <span className="w-10 shrink-0 font-mono text-[11px] font-bold text-emerald-600 dark:text-emerald-300">{formatKickoff(m.kickoff)}</span>
       <div className="min-w-0 flex-1 space-y-0.5 text-[13px] leading-tight">
         {[m.home, m.away].map((t, i) => (
@@ -94,6 +108,7 @@ function UpcomingRow({ m, favoriteTeams }: { m: DashboardUpcomingMatch; favorite
         <MiniWdl f={m.forecast} />
         <GoalsMini f={m.forecast} />
       </div>
+      <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
     </div>
   );
 }

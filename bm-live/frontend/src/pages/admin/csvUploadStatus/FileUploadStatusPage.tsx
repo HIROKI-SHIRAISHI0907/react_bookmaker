@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { RefreshCw, Search } from "lucide-react";
+import { Download, RefreshCw, Search } from "lucide-react";
 import {
   ConsoleButton,
   ConsoleColumn,
@@ -26,6 +26,7 @@ import { getAccessToken, getTokenType } from "../../../utils/auth";
  *
  *   GET /v1/api/admin/csv/upload/status        一覧（新しい順）
  *   GET /v1/api/admin/csv/upload/status/{id}   詳細（エラー行を含む）
+ *   GET /v1/api/admin/csv/upload/status/{id}/error-file   異常終了のファイル（{名前}_error.zip）のダウンロード
  *
  *   ?id=123 で開くと、その受付の詳細をすぐ表示する（アップロード画面の結果からのリンク）。
  */
@@ -44,6 +45,8 @@ type FileUploadStatus = {
   csvFileName?: string | null;
   fileSize?: number | null;
   status: string;
+  /** 異常終了の段階（VALIDATION / STORE / DB） */
+  errorPhase?: string | null;
   message?: string | null;
   totalCount: number;
   insertCount: number;
@@ -57,6 +60,8 @@ type FileUploadStatus = {
   startedAt?: string | null;
   finishedAt?: string | null;
   elapsedSec?: number | null;
+  /** 置いた S3 キー（uploaded/… ・ success/… ・ error/…） */
+  s3Key?: string | null;
   errors?: CsvUploadRowError[];
 };
 
@@ -89,15 +94,26 @@ export const MASTER_LABEL: Record<string, string> = {
   realtime: "リアルタイム",
 };
 
+/** 状態（file_upload_status_manage.status。B015 で PENDING → PROCESSING → SUCCESS / ERROR） */
 const STATUS_DEF: Record<string, { label: string; tone: BadgeTone }> = {
-  RECEIVED: { label: "処理中", tone: "info" },
-  SUCCESS: { label: "反映済", tone: "ok" },
-  ROW_ERROR: { label: "行エラー（未反映）", tone: "warn" },
-  FILE_ERROR: { label: "ファイルエラー（未反映）", tone: "warn" },
-  DB_ERROR: { label: "DBエラー（取消）", tone: "ng" },
+  RECEIVED: { label: "受付中", tone: "info" },
+  PENDING: { label: "判定前", tone: "info" },
+  PROCESSING: { label: "判定中", tone: "warn" },
+  SUCCESS: { label: "正常終了", tone: "ok" },
+  ERROR: { label: "異常終了", tone: "ng" },
 };
 
-const STATUS_ORDER = ["RECEIVED", "SUCCESS", "ROW_ERROR", "FILE_ERROR", "DB_ERROR"];
+/** 絞り込みに出す状態（サーバーが受け付ける値。RECEIVED は受付の途中だけなので出さない） */
+const STATUS_ORDER = ["PENDING", "PROCESSING", "SUCCESS", "ERROR"];
+
+/** 異常終了の段階 */
+const ERROR_PHASE_LABEL: Record<string, string> = {
+  VALIDATION: "受付時のチェック（反映していません）",
+  STORE: "ファイルの保管・取り出し",
+  DB: "DB チェック・反映（反映していません）",
+  DB_CHECK: "DB チェック（反映していません）",
+  APPLY: "反映（取り消しました）",
+};
 
 const EMPTY_FILTERS: Filters = { masterName: "", status: "", dateFrom: "", dateTo: "", fileName: "", loginUser: "" };
 
@@ -120,6 +136,51 @@ async function fetchJson<T>(url: string): Promise<T> {
     throw new Error(`HTTP ${response.status}: ${message || response.statusText}`);
   }
   return JSON.parse(text) as T;
+}
+
+/** エラーファイルをダウンロードできるか（異常終了で error/ にファイルを置けたもの） */
+function canDownloadErrorFile(r: Pick<FileUploadStatus, "status" | "s3Key">): boolean {
+  return r.status === "ERROR" && !!r.s3Key && r.s3Key.startsWith("error/");
+}
+
+/** Content-Disposition からファイル名（filename*=UTF-8'' を優先） */
+function fileNameFromDisposition(disposition: string | null, fallback: string): string {
+  if (!disposition) return fallback;
+  const star = /filename\*=UTF-8''([^;]+)/i.exec(disposition);
+  if (star) {
+    try {
+      return decodeURIComponent(star[1].trim());
+    } catch {
+      /* そのまま下へ */
+    }
+  }
+  const plain = /filename="?([^";]+)"?/i.exec(disposition);
+  return plain ? plain[1].trim() : fallback;
+}
+
+/** エラーファイル（{名前}_error.zip）をダウンロードする。JWT を付けるので fetch → Blob で保存する */
+async function downloadErrorFile(r: Pick<FileUploadStatus, "id" | "s3Key">): Promise<void> {
+  const response = await fetch(`${API_BASE}/${r.id}/error-file`, { credentials: "include", headers: { ...authHeader() } });
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    let message = text;
+    try {
+      message = (JSON.parse(text) as { message?: string }).message ?? text;
+    } catch {
+      /* JSON でなければそのまま */
+    }
+    throw new Error(`HTTP ${response.status}: ${message || response.statusText}`);
+  }
+  const fallback = (r.s3Key ?? "").split("/").pop() || `upload_${r.id}_error.zip`;
+  const fileName = fileNameFromDisposition(response.headers.get("Content-Disposition"), fallback);
+  const url = URL.createObjectURL(await response.blob());
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 function StatusCell({ status }: { status: string }) {
@@ -177,6 +238,21 @@ const FileUploadStatusPage: React.FC = () => {
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
 
+  const [downloadingId, setDownloadingId] = useState<number | null>(null);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+
+  const onDownload = useCallback(async (r: Pick<FileUploadStatus, "id" | "s3Key">) => {
+    setDownloadingId(r.id);
+    setDownloadError(null);
+    try {
+      await downloadErrorFile(r);
+    } catch (e) {
+      setDownloadError(e instanceof Error ? e.message : "エラーファイルをダウンロードできませんでした。");
+    } finally {
+      setDownloadingId(null);
+    }
+  }, []);
+
   /* ----- 一覧 ----- */
   const load = useCallback(async (f: Filters, p: number) => {
     setLoading(true);
@@ -196,22 +272,19 @@ const FileUploadStatusPage: React.FC = () => {
   }, [load, filters, page]);
 
   /* ----- 詳細 ----- */
-  const openDetail = useCallback(
-    async (id: number) => {
-      setDetailOpen(true);
-      setDetailLoading(true);
-      setDetailError(null);
-      setDetail(null);
-      try {
-        setDetail(await fetchJson<FileUploadStatus>(`${API_BASE}/${id}`));
-      } catch (e) {
-        setDetailError(e instanceof Error ? e.message : "詳細の取得に失敗しました。");
-      } finally {
-        setDetailLoading(false);
-      }
-    },
-    [],
-  );
+  const openDetail = useCallback(async (id: number) => {
+    setDetailOpen(true);
+    setDetailLoading(true);
+    setDetailError(null);
+    setDetail(null);
+    try {
+      setDetail(await fetchJson<FileUploadStatus>(`${API_BASE}/${id}`));
+    } catch (e) {
+      setDetailError(e instanceof Error ? e.message : "詳細の取得に失敗しました。");
+    } finally {
+      setDetailLoading(false);
+    }
+  }, []);
 
   // ?id= で開いたとき（アップロード画面の結果からのリンク）
   useEffect(() => {
@@ -288,6 +361,28 @@ const FileUploadStatusPage: React.FC = () => {
     },
     { key: "user", header: "ログインユーザー", className: "max-w-[220px] truncate", cell: (r) => <span title={r.loginUser ?? ""}>{r.loginUser || "-"}</span> },
     { key: "elapsed", header: "処理時間", mono: true, align: "right", cell: (r) => fmtElapsed(r.elapsedSec) },
+    {
+      key: "errorFile",
+      header: "エラーファイル",
+      cell: (r) =>
+        canDownloadErrorFile(r) ? (
+          <ConsoleButton
+            size="sm"
+            variant="ghost"
+            onClick={(e: React.MouseEvent) => {
+              e.stopPropagation();
+              void onDownload(r);
+            }}
+            loading={downloadingId === r.id}
+            title={r.s3Key ?? ""}
+          >
+            {downloadingId !== r.id && <Download className="h-3.5 w-3.5" />}
+            ダウンロード
+          </ConsoleButton>
+        ) : (
+          <span className="text-gray-300">-</span>
+        ),
+    },
   ];
 
   const errorColumns: ConsoleColumn<CsvUploadRowError>[] = [
@@ -341,22 +436,10 @@ const FileUploadStatusPage: React.FC = () => {
             <ConsoleInput type="date" value={draft.dateTo} onChange={draftChanged("dateTo")} />
           </ConsoleField>
           <ConsoleField label="ファイル名（部分一致）">
-            <ConsoleInput
-              value={draft.fileName}
-              onChange={draftChanged("fileName")}
-              onKeyDown={(e) => e.key === "Enter" && applySearch()}
-              placeholder="例: season_2026"
-              className="w-56"
-            />
+            <ConsoleInput value={draft.fileName} onChange={draftChanged("fileName")} onKeyDown={(e) => e.key === "Enter" && applySearch()} placeholder="例: season_2026" className="w-56" />
           </ConsoleField>
           <ConsoleField label="ログインユーザー（部分一致）">
-            <ConsoleInput
-              value={draft.loginUser}
-              onChange={draftChanged("loginUser")}
-              onKeyDown={(e) => e.key === "Enter" && applySearch()}
-              placeholder="例: taro@example.com"
-              className="w-56"
-            />
+            <ConsoleInput value={draft.loginUser} onChange={draftChanged("loginUser")} onKeyDown={(e) => e.key === "Enter" && applySearch()} placeholder="例: taro@example.com" className="w-56" />
           </ConsoleField>
           <div className="flex gap-1.5">
             <ConsoleButton variant="primary" onClick={applySearch} disabled={loading}>
@@ -385,6 +468,12 @@ const FileUploadStatusPage: React.FC = () => {
         ))}
       </div>
 
+      {downloadError && (
+        <ConsoleNotice tone="ng" title="エラーファイルをダウンロードできませんでした。" onClose={() => setDownloadError(null)}>
+          {downloadError}
+        </ConsoleNotice>
+      )}
+
       {error && (
         <ConsoleNotice tone="ng" title="一覧を取得できませんでした。" onClose={() => setError(null)}>
           {error}
@@ -398,7 +487,7 @@ const FileUploadStatusPage: React.FC = () => {
         loading={loading}
         emptyText="条件に合うアップロードはありません。"
         onRowClick={(r) => void openDetail(r.id)}
-        rowClassName={(r) => (r.status === "DB_ERROR" ? "!bg-red-50/60" : "")}
+        rowClassName={(r) => (r.status === "ERROR" ? "!bg-red-50/60" : "")}
         paging={{ page, pageSize: PAGE_SIZE, total: data?.total ?? 0, onChange: setPage }}
       />
 
@@ -407,11 +496,26 @@ const FileUploadStatusPage: React.FC = () => {
         {detailError && <ConsoleNotice tone="ng">{detailError}</ConsoleNotice>}
         {detail && (
           <>
-            <ConsoleNotice tone={detail.status === "SUCCESS" ? "ok" : detail.status === "RECEIVED" ? "info" : "ng"} title={detail.message || "-"} />
+            <ConsoleNotice tone={detail.status === "SUCCESS" ? "ok" : detail.status === "ERROR" ? "ng" : "info"} title={detail.message || "-"} />
+            {canDownloadErrorFile(detail) && (
+              <div className="mb-2.5 flex flex-wrap items-center gap-2">
+                <ConsoleButton variant="primary" onClick={() => void onDownload(detail)} loading={downloadingId === detail.id}>
+                  {downloadingId !== detail.id && <Download className="h-3.5 w-3.5" />}
+                  エラーファイルをダウンロード
+                </ConsoleButton>
+                <span className="text-xs text-gray-500">「エラー詳細」列を見て直し、その列を残したままアップロードし直せます。</span>
+              </div>
+            )}
+            {detail.status === "ERROR" && !canDownloadErrorFile(detail) && (
+              <ConsoleNotice tone="warn" title="エラーファイルはありません。">
+                ファイルを保管できなかったため、ダウンロードできません（下のエラー行を確認してください）。
+              </ConsoleNotice>
+            )}
             <ConsolePanel>
               <DetailRow label="状態">
                 <StatusCell status={detail.status} />
               </DetailRow>
+              {detail.status === "ERROR" && <DetailRow label="異常終了の段階">{detail.errorPhase ? (ERROR_PHASE_LABEL[detail.errorPhase] ?? detail.errorPhase) : "-"}</DetailRow>}
               <DetailRow label="種類">{MASTER_LABEL[detail.masterName] ?? detail.masterName}</DetailRow>
               <DetailRow label="ファイル名">
                 <span className="font-mono break-all">{detail.fileName}</span>

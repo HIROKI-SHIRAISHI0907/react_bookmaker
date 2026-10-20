@@ -112,6 +112,8 @@ const FILE_CHECKS_ENDPOINT = "/v1/api/admin/file-checks";
 const B007_ALL_LEAGUE_ENDPOINT = "/v1/api/admin/exec/task/all-league-scrape-master";
 const B013_SEASON_END_DELETE_ENDPOINT = "/v1/api/admin/exec/task/delete-season-data";
 const B014_ENDPOINT = "/v1/api/admin/exec/task/geografic";
+/** ファイルアップロード反映（CSV アップロードの判定前を DB チェック・反映する。bookmakers-batch の B015） */
+const B015_FILE_UPLOAD_STATUS_ENDPOINT = "/v1/api/admin/exec/task/file-upload-status";
 
 const B014_TRUE_STATE_KEY = "B014T";
 const B014_FALSE_STATE_KEY = "B014F";
@@ -437,6 +439,14 @@ export default function DataFetchAdminPage() {
         title: "地理情報データ処理",
         description: "b015_team_location.csv を前提に実行",
         endpoint: B014_ENDPOINT,
+        precheckMode: "required",
+      },
+      {
+        id: "B015",
+        code: "B015",
+        title: "ファイルアップロード反映",
+        description: "aws-s3-upload-check-csv の uploaded/ に判定前の zip があれば実行可能。DB チェック・反映し、success / error に振り分ける",
+        endpoint: B015_FILE_UPLOAD_STATUS_ENDPOINT,
         precheckMode: "required",
       },
     ],

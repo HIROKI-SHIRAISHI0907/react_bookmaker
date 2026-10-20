@@ -71,6 +71,7 @@ const ADMIN_MENU: AdminMenuGroup[] = [
       { label: "統計用CSV作成前詳細設定", to: "sub-input", desc: "SubInput の登録" },
       { label: "お気に入り国リーグ情報全体反映設定", to: "force/update", desc: "国リーグの表示 / 非表示（del_flg）" },
       { label: "リーグ勝ち点情報反映設定", to: "point-setting", desc: "国・リーグごとの勝ち点" },
+      { label: "リーグレベル情報反映設定", to: "league-level", desc: "国・リーグごとのリーグの格（昇格・降格の判定用）" },
       { label: "チームカラー情報反映設定", to: "manual/teamColor" },
       { label: "サブリーグ名反映設定", to: "sub-league", desc: "サブリーグへのチーム割り当て" },
       // お知らせの作成・編集ができる画面のため、担当者のみ。管理者は「申請確認画面」から承認/差し戻しするだけ。

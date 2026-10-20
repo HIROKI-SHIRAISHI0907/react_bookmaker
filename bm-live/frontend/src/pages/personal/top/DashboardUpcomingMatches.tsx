@@ -1,10 +1,11 @@
 // これからの試合（全試合画面）  /upcoming?league=国 / リーグ&hours=36|72|168&fav=1
 //  GET /v1/api/upcoming-matches
 //  期間・リーグ・チーム名・お気に入りだけ で絞り込み。チーム名 → チームの過去の結果（/team-results）
+//  カード → 試合の詳細（/upcoming-detail: 過去の対戦成績・会場・順位表・ゴール数などの統計）
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Search, Star } from "lucide-react";
+import { ArrowLeft, ChevronRight, Search, Star } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { Skeleton } from "../../../components/ui/skeleton";
 import AppHeader from "../../../components/layout/AppHeader";
@@ -13,6 +14,7 @@ import { fetchDashboardFavorites, fetchUpcomingMatches } from "../../../api/dash
 import type { DashboardUpcomingLeague, DashboardUpcomingMatch } from "../../../api/dashboard/types";
 import { GoalsBadge, RankBadge, TeamGrades, WdlBar, formatKickoff } from "./parts";
 import { TeamLink } from "../teams/TeamForm";
+import { upcomingDetailUrl } from "../upcoming/UpcomingDetail";
 
 const PERIODS = [
   { hours: 36, label: "今日・明日" },
@@ -177,9 +179,22 @@ function LeagueChip({ active, onClick, label, count }: { active: boolean; onClic
   );
 }
 
+/** 1試合のカード。カード → 試合の詳細（チーム名 → チームの過去の結果） */
 function MatchCard({ m, favoriteTeams }: { m: DashboardUpcomingMatch; favoriteTeams: Set<string> }) {
+  const navigate = useNavigate();
+  const open = () => navigate(upcomingDetailUrl(m), { state: { match: m } });
   return (
-    <div className="rounded-xl border bg-card p-3">
+    <div
+      role="link"
+      tabIndex={0}
+      onClick={open}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") open();
+      }}
+      className="cursor-pointer rounded-xl border bg-card p-3 transition-colors hover:border-emerald-500/60 hover:bg-muted/30"
+      title={`${m.home.name} vs ${m.away.name} の詳細`}
+      data-testid="card-upcoming-match"
+    >
       <div className="flex items-center justify-between gap-2">
         <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-300">{formatKickoff(m.kickoff)}</span>
         <span className="flex min-w-0 items-center gap-2">
@@ -203,6 +218,10 @@ function MatchCard({ m, favoriteTeams }: { m: DashboardUpcomingMatch; favoriteTe
       </div>
       <div className="mt-2">
         <WdlBar f={m.forecast} />
+      </div>
+      <div className="mt-2 flex items-center justify-end gap-0.5 border-t pt-1.5 text-[10px] text-muted-foreground">
+        過去の対戦・順位表・統計
+        <ChevronRight className="h-3 w-3" />
       </div>
     </div>
   );
