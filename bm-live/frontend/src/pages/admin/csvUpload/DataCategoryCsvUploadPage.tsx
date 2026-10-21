@@ -17,7 +17,7 @@ const COLUMNS: CsvColumnGuide[] = [
   { name: "アウェーチーム", key: true, requiredOnInsert: true, note: "例: 浦和レッズ" },
   { name: "現在のデータカテゴリ", key: true, note: "今の static_data.data_category（ダウンロードした値のまま）。空欄はカテゴリが入っていない行。" },
   { name: "新しいデータカテゴリ", requiredOnInsert: true, note: "「国: リーグ - ラウンド N」（サブリーグ付きも可）。区切りは半角。仮の値（XXX: YYY）・現在と同じ値は不可。" },
-  { name: "件数（参考）など", note: "件数・国リーグ判定・国リーグ候補・形式の列は参考。アップロードでは読まない（消してもよい）。" },
+  { name: "件数（参考）など", note: "件数・国リーグ判定・国リーグ候補・形式を 1 列にまとめた参考（例: 12件 / 国リーグ: 一致（日本: J1リーグ） / 形式不一致）。アップロードでは読まない（消してもよい）。" },
 ];
 
 const DataCategoryCsvUploadPage: React.FC = () => (
