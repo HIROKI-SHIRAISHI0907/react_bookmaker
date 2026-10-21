@@ -51,6 +51,7 @@ import SeasonCsvUploadPage from "./pages/admin/csvUpload/SeasonCsvUploadPage";
 import TeamCsvUploadPage from "./pages/admin/csvUpload/TeamCsvUploadPage";
 import FutureCsvUploadPage from "./pages/admin/csvUpload/FutureCsvUploadPage";
 import RealtimeCsvUploadPage from "./pages/admin/csvUpload/RealtimeCsvUploadPage";
+import DataCategoryCsvUploadPage from "./pages/admin/csvUpload/DataCategoryCsvUploadPage";
 import FileUploadStatusPage from "./pages/admin/csvUploadStatus/FileUploadStatusPage";
 import UpcomingDetail, { UPCOMING_DETAIL_PATH } from "./pages/personal/upcoming/UpcomingDetail";
 
@@ -156,6 +157,7 @@ export default function App() {
                 <Route path="csv-upload/team" element={<TeamCsvUploadPage />} />
                 <Route path="csv-upload/future" element={<FutureCsvUploadPage />} />
                 <Route path="csv-upload/realtime" element={<RealtimeCsvUploadPage />} />
+                <Route path="csv-upload/data-category" element={<DataCategoryCsvUploadPage />} />
                 <Route path="csv-upload/status" element={<FileUploadStatusPage />} />
 
                 {/* 承認フロー */}

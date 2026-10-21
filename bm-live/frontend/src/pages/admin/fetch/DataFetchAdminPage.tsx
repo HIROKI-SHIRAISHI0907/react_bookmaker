@@ -381,7 +381,7 @@ export default function DataFetchAdminPage() {
         code: "B006",
         title: "統計CSVデータ取り入れ実行",
         description: "統計CSVを取り込む",
-        endpoint: "/v1/api/stat",
+        endpoint: "/v1/api/admin/exec/task/stat-csv",
         precheckMode: "always",
       },
       {

@@ -15,6 +15,12 @@ export const REALTIME_OPERATIONS: CsvOperationGuide[] = [
   { code: "5", label: "再表示", note: "キーに該当する行（その試合のデータすべて）を表示に戻す（del_flg = 0）。" },
 ];
 
+/** データカテゴリ統一の処理区分（2 のみ。空欄の行は反映しない） */
+export const DATA_CATEGORY_OPERATIONS: CsvOperationGuide[] = [
+  { code: "2", label: "更新", note: "キー（ホームチーム + アウェーチーム + 現在のデータカテゴリ）に該当する static_data の行すべてと、同じ対戦・同じカテゴリの future_master の行を「新しいデータカテゴリ」に書き換える。" },
+  { code: "（空欄）", label: "何もしない", note: "反映しない。ダウンロードした一覧の行はそのまま残しておいてよい。" },
+];
+
 /** 共通の注意 */
 export const COMMON_NOTES: string[] = [
   "1 行でもエラーがあれば、どの行も反映しない（エラーの行番号と内容を一覧で表示する）。",

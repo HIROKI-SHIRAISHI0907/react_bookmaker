@@ -4,7 +4,7 @@ import { ConsoleButton, ConsoleColumn, ConsoleModal, ConsoleNotice, ConsolePanel
 import { getAccessToken, getTokenType } from "../../../utils/auth";
 
 /**
- * CSV アップロード画面の共通部品（シーズン / チーム / 試合予定 / リアルタイム）
+ * CSV アップロード画面の共通部品（シーズン / チーム / 試合予定 / リアルタイム / データカテゴリ統一）
  *
  *   - フォーマット（見出し行だけの CSV を zip にしたもの）のダウンロード
  *       GET  /v1/api/admin/csv/upload/{masterName}/format
@@ -19,7 +19,7 @@ import { getAccessToken, getTokenType } from "../../../utils/auth";
  *   画面でも名前を先に確かめ、合わないときはアップロードしない（サーバー側でも同じチェックをする）。
  */
 
-export type CsvMasterName = "season" | "team" | "future" | "realtime";
+export type CsvMasterName = "season" | "team" | "future" | "realtime" | "dataCategory";
 
 /** CSV の列の説明（画面の「CSV の書き方」に出す） */
 export type CsvColumnGuide = {
@@ -50,6 +50,12 @@ type Props = {
   columns: CsvColumnGuide[];
   /** 画面固有の注意書き */
   notes?: React.ReactNode[];
+  /** ツールバーに足すもの（例: 別画面へのリンク） */
+  toolbarExtra?: React.ReactNode;
+  /** フォーマットのボタンの文言（省略時は「フォーマットをダウンロード」） */
+  formatLabel?: string;
+  /** 「CSV の列」の必須欄の見出し（省略時は「登録で必須」） */
+  requiredLabel?: string;
 };
 
 type CsvUploadRowError = {
@@ -122,7 +128,7 @@ function expectedCsvName(zipName: string): string {
   return zipName.replace(/\.zip$/i, "").replace(/\.csv$/i, "") + ".csv";
 }
 
-const CsvUploadConsole: React.FC<Props> = ({ masterName, title, prefix, tableName, description, operations, columns, notes = [] }) => {
+const CsvUploadConsole: React.FC<Props> = ({ masterName, title, prefix, tableName, description, operations, columns, notes = [], toolbarExtra, formatLabel, requiredLabel = "登録で必須" }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -260,7 +266,7 @@ const CsvUploadConsole: React.FC<Props> = ({ masterName, title, prefix, tableNam
     { key: "no", header: "No", mono: true, align: "right", cell: (_c, i) => <span className="text-gray-500">{i + 1}</span> },
     { key: "name", header: "列名（1行目）", cell: (c) => <span className="font-bold">{c.name}</span> },
     { key: "key", header: "キー", align: "center", cell: (c) => (c.key ? <span className="font-bold text-indigo-700">●</span> : "") },
-    { key: "required", header: "登録で必須", align: "center", cell: (c) => (c.requiredOnInsert ? <span className="font-bold text-emerald-700">●</span> : "") },
+    { key: "required", header: requiredLabel, align: "center", cell: (c) => (c.requiredOnInsert ? <span className="font-bold text-emerald-700">●</span> : "") },
     { key: "note", header: "説明", wrap: true, className: "min-w-[320px]", cell: (c) => c.note },
   ];
 
@@ -281,9 +287,10 @@ const CsvUploadConsole: React.FC<Props> = ({ masterName, title, prefix, tableNam
         info={tableName}
         description={description ?? "フォーマットをダウンロードして行を追記し、同じ名前のまま zip にしてアップロードします。1 行でもエラーがあれば、どの行も反映しません。"}
       >
+        {toolbarExtra}
         <ConsoleButton onClick={() => void handleDownloadFormat()} loading={downloading}>
           {!downloading && <Download className="h-3.5 w-3.5" />}
-          フォーマットをダウンロード
+          {formatLabel ?? "フォーマットをダウンロード"}
         </ConsoleButton>
       </ConsoleToolbar>
 

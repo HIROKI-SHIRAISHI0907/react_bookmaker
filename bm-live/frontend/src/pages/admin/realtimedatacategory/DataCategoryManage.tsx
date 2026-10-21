@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { RefreshCw, Search } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Download, RefreshCw, Search, Upload } from "lucide-react";
+import { getAccessToken, getTokenType } from "../../../utils/auth";
 import {
   ConsoleButton,
   ConsoleColumn,
@@ -21,6 +23,12 @@ import {
  * パスを変更する場合はここだけ直せば全箇所に反映される。
  * ========================= */
 const API_BASE = "/v1/api/real-time-data";
+
+/** 一括アップロード用フォーマット（表示中のデータ入り）のダウンロード */
+const FORMAT_URL = "/v1/api/admin/csv/upload/dataCategory/format";
+
+/** 一括アップロード画面 */
+const BULK_UPLOAD_PATH = "/admin/csv-upload/data-category";
 
 /** 一覧の1ページあたりの表示件数（表にしたので5件 → 20件に増やしています） */
 const PAGE_SIZE = 20;
@@ -150,6 +158,65 @@ async function postRealTimeDataUpdate(req: RealTimeDataRequest, signal?: AbortSi
   }
 
   return body ?? { responseCode: String(res.status), message: res.statusText };
+}
+
+/** フォーマットの 1 行（dev.web.api.bm_a031.DataCategoryFormatRequest.Row に対応） */
+type DataCategoryFormatRow = {
+  homeTeamName: string;
+  awayTeamName: string;
+  currentDataCategory: string;
+  newDataCategory: string;
+  count: number | null;
+  leagueCheck: string | null;
+  leagueCandidates: string[];
+  format: string;
+};
+
+/** ログイン中の JWT（CSV アップロード画面と同じ） */
+function authHeaders(): Record<string, string> {
+  const token = getAccessToken();
+  if (!token) return {};
+  return { Authorization: `${getTokenType() || "Bearer"} ${token}` };
+}
+
+/** Content-Disposition からファイル名を取る */
+function fileNameFromDisposition(header: string | null, fallback: string): string {
+  if (!header) return fallback;
+  const star = /filename\*=(?:UTF-8'')?([^;]+)/i.exec(header);
+  if (star) {
+    try {
+      return decodeURIComponent(star[1].trim().replace(/^"|"$/g, ""));
+    } catch {
+      /* 次を試す */
+    }
+  }
+  const plain = /filename="?([^";]+)"?/i.exec(header);
+  return plain ? plain[1].trim() : fallback;
+}
+
+/** 表示中のデータ入りのフォーマット（dataCategory_〇〇.zip）をダウンロードする。保存したファイル名を返す */
+async function downloadDataCategoryFormat(rows: DataCategoryFormatRow[]): Promise<string> {
+  const res = await fetch(FORMAT_URL, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify({ rows }),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(res.status === 401 ? "ログインの有効期限が切れている可能性があります。ログインし直してください。" : `HTTP ${res.status}: ${text.slice(0, 200) || res.statusText}`);
+  }
+  const blob = await res.blob();
+  const name = fileNameFromDisposition(res.headers.get("content-disposition"), "dataCategory_format.zip");
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  return name;
 }
 
 function safeText(v: unknown) {
@@ -291,6 +358,9 @@ export default function RealTimeDataAdminPage() {
   const [bulkValue, setBulkValue] = useState("");
   /** 一括更新の処理状態 */
   const [bulkState, setBulkState] = useState<{ loading: boolean; error?: string; success?: string }>({ loading: false });
+
+  /** 一括アップロード用フォーマットのダウンロード状態 */
+  const [formatState, setFormatState] = useState<{ loading: boolean; error?: string; success?: string }>({ loading: false });
 
   const abortRef = useRef<AbortController | null>(null);
 
@@ -502,6 +572,47 @@ export default function RealTimeDataAdminPage() {
     }
   };
 
+  /**
+   * 表示中のデータ（検索・タブで絞り込んだ全ページ分。画面の並び順のまま）をフォーマットの行にする。
+   * 1 行 = ホーム・アウェー・現在の dataCategory。「新しい dataCategory」には画面で入力中の値を入れる
+   * （処理区分は、新しい値が今と違う行だけサーバー側で 2 にする）。
+   */
+  const formatRows = useMemo<DataCategoryFormatRow[]>(() => {
+    const out: DataCategoryFormatRow[] = [];
+    for (const g of viewGroups) {
+      const next = (editValues[g.key] ?? defaultEditValue(g)).trim();
+      const base = {
+        homeTeamName: g.homeTeamName,
+        awayTeamName: g.awayTeamName,
+        newDataCategory: next,
+        leagueCheck: g.leagueCheck,
+        leagueCandidates: g.leagueCandidates,
+      };
+      if (g.categories.length === 0) {
+        out.push({ ...base, currentDataCategory: "", count: null, format: "" });
+        continue;
+      }
+      for (const c of g.categories) {
+        out.push({ ...base, currentDataCategory: c.dataCategory, count: c.cnt, format: c.formattedDataCategory ? "形式一致" : "形式不一致" });
+      }
+    }
+    return out;
+  }, [viewGroups, editValues]);
+
+  const handleDownloadFormat = async () => {
+    if (formatRows.length === 0) {
+      setFormatState({ loading: false, error: "表示中のデータがありません。" });
+      return;
+    }
+    setFormatState({ loading: true });
+    try {
+      const name = await downloadDataCategoryFormat(formatRows);
+      setFormatState({ loading: false, success: `${name} をダウンロードしました（${formatRows.length} 行）。変える行の処理区分を 2 にして、同じ名前のまま zip にし直し、一括アップロード画面からアップロードしてください。` });
+    } catch (e: any) {
+      setFormatState({ loading: false, error: e?.message ?? String(e) });
+    }
+  };
+
   const columns: ConsoleColumn<MatchGroup>[] = [
     {
       key: "check",
@@ -648,11 +759,33 @@ export default function RealTimeDataAdminPage() {
   return (
     <div>
       <ConsoleToolbar title="データカテゴリ統一管理" info="home / away の組み合わせ単位で dataCategory を確認・上書き">
+        <ConsoleButton onClick={() => void handleDownloadFormat()} loading={formatState.loading} disabled={loading || formatRows.length === 0}>
+          {!formatState.loading && <Download className="h-3.5 w-3.5" />}
+          一括アップロード用フォーマット（表示中 {formatRows.length} 行）
+        </ConsoleButton>
+        <Link
+          to={BULK_UPLOAD_PATH}
+          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 text-[13px] font-bold text-gray-800 no-underline hover:bg-gray-50"
+        >
+          <Upload className="h-3.5 w-3.5" />
+          一括アップロード画面へ
+        </Link>
         <ConsoleButton variant="primary" onClick={() => void doFetch()} loading={loading}>
           {!loading && <RefreshCw className="h-3.5 w-3.5" />}
           再読み込み
         </ConsoleButton>
       </ConsoleToolbar>
+
+      {formatState.error && (
+        <ConsoleNotice tone="ng" title="フォーマットをダウンロードできませんでした" onClose={() => setFormatState({ loading: false })}>
+          {formatState.error}
+        </ConsoleNotice>
+      )}
+      {formatState.success && (
+        <ConsoleNotice tone="ok" title="一括アップロード用フォーマット" onClose={() => setFormatState({ loading: false })}>
+          {formatState.success}
+        </ConsoleNotice>
+      )}
 
       {error && (
         <ConsoleNotice tone="ng" title="取得に失敗しました" onClose={() => setError(null)}>
