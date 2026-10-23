@@ -1,6 +1,6 @@
 // src/api/client.ts
 import axios from "axios";
-import { clearAuth, getAccessToken, getTokenType } from "../utils/auth";
+import { getAccessToken, getTokenType, redirectToLogin } from "../utils/auth";
 
 /**
  * ※以前は "../utils/authStorage"(accessToken/tokenType/rolesを個別キーで持つ古い方式)
@@ -33,12 +33,10 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error?.response?.status === 401) {
-      clearAuth();
-
-      if (window.location.pathname !== "/login") {
-        window.location.replace("/login");
-      }
+    // ログイン・パスワード再設定などの認証 API の 401 は「入力ミス」なので飛ばさない
+    const url = String(error?.config?.url ?? "");
+    if (error?.response?.status === 401 && !url.includes("/api/auth/")) {
+      redirectToLogin();
     }
 
     return Promise.reject(error);

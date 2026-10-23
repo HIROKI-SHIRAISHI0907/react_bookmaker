@@ -46,8 +46,86 @@ export function clearAuthSession(): void {
   }
 }
 
+/** 期限切れ判定の余裕（秒）。期限ちょうどに API を呼んで 401 になるのを避ける */
+const EXPIRY_SKEW_SECONDS = 30;
+
+/**
+ * トークンの期限が切れているか。
+ * expiresAtEpochSecond が無い（古いログイン情報）ときは JWT の exp を読む。どちらも無ければ期限切れ扱い。
+ */
+export function isSessionExpired(session: AuthSession | null = loadAuthSession()): boolean {
+  if (!session?.accessToken?.trim()) return true;
+  const exp = session.expiresAtEpochSecond ?? readJwtExp(session.accessToken);
+  if (!exp) return true;
+  return Date.now() / 1000 >= exp - EXPIRY_SKEW_SECONDS;
+}
+
+/** 期限までのミリ秒（ログインしていなければ 0） */
+export function msUntilExpiry(): number {
+  const session = loadAuthSession();
+  if (!session?.accessToken?.trim()) return 0;
+  const exp = session.expiresAtEpochSecond ?? readJwtExp(session.accessToken);
+  if (!exp) return 0;
+  return Math.max(0, (exp - EXPIRY_SKEW_SECONDS) * 1000 - Date.now());
+}
+
+function readJwtExp(token: string): number | undefined {
+  try {
+    const payload = token.split(".")[1];
+    if (!payload) return undefined;
+    const json = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
+    return typeof json?.exp === "number" ? json.exp : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * ログイン中か（トークンがあり、期限内）。
+ * 期限切れのときはログイン情報を消して false を返す。
+ */
 export function isLoggedIn(): boolean {
-  return !!loadAuthSession()?.accessToken?.trim();
+  const session = loadAuthSession();
+  if (!session?.accessToken?.trim()) return false;
+  if (isSessionExpired(session)) {
+    clearAuthSession();
+    return false;
+  }
+  return true;
+}
+
+// =========================================================
+// ログイン画面への強制遷移
+// =========================================================
+
+/** ログイン後に戻るパス（ログイン画面へ飛ばしたときに覚えておく） */
+const LOGIN_REDIRECT_KEY = "loginRedirectFrom";
+
+/**
+ * ログイン情報を消してログイン画面へ飛ばす（いまの画面はログイン後に戻れるよう覚えておく）。
+ * React の外（fetch / axios の 401、期限切れタイマー）から呼ぶ。
+ */
+export function redirectToLogin(): void {
+  clearAuthSession();
+  const { pathname, search, hash } = window.location;
+  if (pathname === "/login") return;
+  try {
+    sessionStorage.setItem(LOGIN_REDIRECT_KEY, pathname + search + hash);
+  } catch {
+    // sessionStorage が使えなくても遷移はする
+  }
+  window.location.replace("/login");
+}
+
+/** 覚えておいた戻り先を取り出す（取り出したら消す） */
+export function consumeLoginRedirect(): string | undefined {
+  try {
+    const v = sessionStorage.getItem(LOGIN_REDIRECT_KEY) ?? undefined;
+    sessionStorage.removeItem(LOGIN_REDIRECT_KEY);
+    return v || undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 export function isAuthenticated(): boolean {

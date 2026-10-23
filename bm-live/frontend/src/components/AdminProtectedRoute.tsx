@@ -1,6 +1,7 @@
 // src/components/AdminProtectedRoute.tsx
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { isLoggedIn, isStaffUser } from "../utils/auth";
+import { useAuthExpiryRedirect } from "./useAuthExpiryRedirect";
 
 /**
  * /admin配下全体のガード。
@@ -14,9 +15,14 @@ import { isLoggedIn, isStaffUser } from "../utils/auth";
  */
 export default function AdminProtectedRoute() {
   const location = useLocation();
+  // 期限切れも未ログイン扱い（isLoggedIn が期限を見る）
+  const loggedIn = isLoggedIn();
 
-  if (!isLoggedIn()) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
+  // 画面を開いたまま期限が来たらログイン画面へ
+  useAuthExpiryRedirect();
+
+  if (!loggedIn) {
+    return <Navigate to="/login" replace state={{ from: location.pathname + location.search + location.hash }} />;
   }
 
   if (!isStaffUser()) {

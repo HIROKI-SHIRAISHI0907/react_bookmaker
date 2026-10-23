@@ -1,0 +1,120 @@
+// src/utils/auth.ts
+
+export type AuthSession = {
+  accessToken?: string;
+  tokenType?: string;
+  issuedAtEpochSecond?: number;
+  expiresAtEpochSecond?: number;
+  roles?: string[];
+  authFlg?: number;
+  email?: string;
+  name?: string;
+  userId?: number;
+};
+
+export const AUTH_STORAGE_KEY = "authSession";
+
+/**
+ * 以前のバージョンで、authSessionに統合する前に使われていた個別キー。
+ * 現在のsaveAuthSession()はこれらに書き込まないが、過去のログインで
+ * localStorageに残ったままになっている場合があるため、ログアウト時に
+ * 念のため一緒に削除する。
+ * ("theme"はログイン状態と無関係なUI設定のため、ここには含めない)
+ */
+const LEGACY_AUTH_STORAGE_KEYS = ["accessToken", "roles", "tokenType"] as const;
+
+export function saveAuthSession(session: AuthSession): void {
+  localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
+}
+
+export function loadAuthSession(): AuthSession | null {
+  try {
+    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as AuthSession;
+  } catch {
+    return null;
+  }
+}
+
+export function clearAuthSession(): void {
+  localStorage.removeItem(AUTH_STORAGE_KEY);
+  // 古いバージョンの名残りで残っている可能性がある個別キーも、
+  // ログアウト時にlocalStorageに認証情報が残らないよう合わせて削除する。
+  for (const key of LEGACY_AUTH_STORAGE_KEYS) {
+    localStorage.removeItem(key);
+  }
+}
+
+export function isLoggedIn(): boolean {
+  return !!loadAuthSession()?.accessToken?.trim();
+}
+
+export function isAuthenticated(): boolean {
+  return isLoggedIn();
+}
+
+export function isAdminUser(): boolean {
+  const session = loadAuthSession();
+  if (!session) return false;
+  return session.authFlg === 1 || (session.roles ?? []).includes("ROLE_ADMIN");
+}
+
+/**
+ * 管理画面(/admin)へ入るべきロールかどうかを判定する。
+ * ADMIN(authFlg=1)だけでなく、ADMIN_SUB(authFlg=2、担当者)も対象。
+ * ※isAdminUser()は「厳密にADMINかどうか」の判定用に残し、
+ *   ルーティング判定にはこちらを使う。
+ */
+export function isStaffUser(): boolean {
+  const session = loadAuthSession();
+  if (!session) return false;
+  if (session.authFlg === 1 || session.authFlg === 2) {
+    return true;
+  }
+  const roles = session.roles ?? [];
+  return roles.includes("ROLE_ADMIN") || roles.includes("ROLE_ADMIN_SUB");
+}
+
+export function getDefaultRouteByRole(): string {
+  return isStaffUser() ? "/admin" : "/top";
+}
+
+export function getAccessToken(): string {
+  return loadAuthSession()?.accessToken?.trim() ?? "";
+}
+
+export function getTokenType(): string {
+  return loadAuthSession()?.tokenType?.trim() || "Bearer";
+}
+
+export function getRoles(): string[] {
+  return loadAuthSession()?.roles ?? [];
+}
+
+export function getAuthFlg(): number | undefined {
+  return loadAuthSession()?.authFlg;
+}
+
+export function getCurrentEmail(): string {
+  return loadAuthSession()?.email?.trim() ?? "";
+}
+
+export function getCurrentUserId(): number | undefined {
+  return loadAuthSession()?.userId;
+}
+
+/**
+ * 互換用ラッパー
+ * 既存コードで saveAuth() を呼んでいても動くようにする
+ */
+export function saveAuth(session: AuthSession): void {
+  saveAuthSession(session);
+}
+
+/**
+ * 互換用ラッパー
+ */
+export function clearAuth(): void {
+  clearAuthSession();
+}

@@ -1,7 +1,7 @@
 // src/pages/auth/LoginPage.tsx
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { saveAuthSession } from "../../utils/auth";
+import { consumeLoginRedirect, saveAuthSession } from "../../utils/auth";
 
 type LoginResponse = {
   responseCode?: string;
@@ -74,11 +74,14 @@ export default function LoginPage() {
 
       const isAdmin = data.authFlg === 1 || data.roles?.includes("ROLE_ADMIN");
 
+      // 戻り先: ルートガードから来たときは state.from、401・期限切れで飛ばされたときは sessionStorage
       const rawFrom = location.state?.from;
-      const fromPath = typeof rawFrom === "string" ? rawFrom : rawFrom?.pathname;
+      const savedFrom = consumeLoginRedirect();
+      const fromPath = (typeof rawFrom === "string" ? rawFrom : rawFrom?.pathname) || savedFrom;
 
       if (isAdmin) {
-        navigate("/admin", { replace: true });
+        // 管理画面の途中で飛ばされたときは、その画面に戻す
+        navigate(fromPath && fromPath.startsWith("/admin") ? fromPath : "/admin", { replace: true });
         return;
       }
 

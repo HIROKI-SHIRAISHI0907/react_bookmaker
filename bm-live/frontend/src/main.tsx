@@ -3,6 +3,10 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
+import { installAuthFetchGuard } from "./utils/authFetchGuard";
+
+// 401（未ログイン・JWT 期限切れ）ならログイン画面へ飛ばす（fetch 直書きの画面も対象）
+installAuthFetchGuard();
 
 import "./styles/globals.css";
 
