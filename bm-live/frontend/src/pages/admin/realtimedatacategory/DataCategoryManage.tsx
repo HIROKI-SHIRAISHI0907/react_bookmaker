@@ -229,11 +229,65 @@ function groupNeedsRoundUpdate(group: MatchGroup): boolean {
   return group.categories.some((c) => !(c.dataCategory || "").includes("ラウンド"));
 }
 
-function groupPriority(g: MatchGroup): number {
-  if (g.leagueCheck === "不一致") return 0;
-  if (g.leagueCheck === "混在") return 1;
-  if (groupNeedsRoundUpdate(g)) return 2;
-  return 3;
+/**
+ * 「国: リーグ - ラウンド N」の形（web の CsvRowValidator.CATEGORY_PAT・B015 と同じ）。
+ * 「:」「-」・スペース・数字は半角、「: 」と「 - 」のスペースは 1 つ。
+ */
+const CATEGORY_PAT = /^[^:：\s　](?:[^:：]*[^:：\s　])?: [^\s　](?:.*[^\s　])? - ラウンド [0-9]+$/;
+
+/** dataCategory が「国: リーグ - ラウンド N」の形か */
+function isCategoryFormat(category: string): boolean {
+  return CATEGORY_PAT.test((category || "").trim());
+}
+
+/** グループ内に「国: リーグ - ラウンド N」になっていない dataCategory があるか（カテゴリなしも含む） */
+function groupHasBadFormat(g: MatchGroup): boolean {
+  if (g.categories.length === 0) return true;
+  return g.categories.some((c) => !isCategoryFormat(c.dataCategory));
+}
+
+/** 並べ替え用の比較キー（全角・半角とスペースの揺れをそろえる） */
+function sortKey(s: string): string {
+  return (s || "").normalize("NFKC").replace(/\s+/g, "");
+}
+
+/**
+ * グループの「国: リーグ」（並べ替え用）。
+ * マスタの候補が 1 件ならそれ、無ければ dataCategory から「 - ラウンド N」を外したもの。分からなければ空文字。
+ */
+function groupLeagueOf(g: MatchGroup): string {
+  if (g.leagueCandidates.length === 1) return g.leagueCandidates[0];
+  for (const c of g.categories) {
+    const cat = (c.dataCategory || "").trim();
+    if (!cat) continue;
+    const idx = cat.indexOf(" - ");
+    return idx >= 0 ? cat.slice(0, idx) : cat;
+  }
+  return g.leagueCandidates[0] ?? "";
+}
+
+/** 文字列の比較（空は最後） */
+function compareText(a: string, b: string): number {
+  if (!a && b) return 1;
+  if (a && !b) return -1;
+  return a.localeCompare(b, "ja");
+}
+
+/**
+ * 一覧・フォーマットの並び順
+ * 1. 同じ国リーグ（国リーグ順）
+ * 2. 同じホームチーム（ホームチーム順）
+ * 3. 「国: リーグ - ラウンド N」になっていないものを先に
+ * （同じなら アウェーチーム順）
+ */
+function compareGroups(a: MatchGroup, b: MatchGroup): number {
+  const league = compareText(sortKey(groupLeagueOf(a)), sortKey(groupLeagueOf(b)));
+  if (league !== 0) return league;
+  const home = compareText(sortKey(a.homeTeamName), sortKey(b.homeTeamName));
+  if (home !== 0) return home;
+  const bad = Number(groupHasBadFormat(b)) - Number(groupHasBadFormat(a));
+  if (bad !== 0) return bad;
+  return compareText(sortKey(a.awayTeamName), sortKey(b.awayTeamName));
 }
 
 /** 「国: リーグ - ラウンド N」から「 - ラウンド N」部分を取り出す（無ければ空文字） */
@@ -317,14 +371,13 @@ function groupByMatch(rows: RealTimeDataDTO[]): MatchGroup[] {
     }
   }
 
-  // 表示順: 国リーグ不一致 → 国リーグ混在 → ラウンドなし → その他。
-  // 同じ優先度内はチーム名の五十音/アルファベット順。
-  return Array.from(map.values()).sort((a, b) => {
-    const aPriority = groupPriority(a);
-    const bPriority = groupPriority(b);
-    if (aPriority !== bPriority) return aPriority - bPriority;
-    return (a.homeTeamName + a.awayTeamName).localeCompare(b.homeTeamName + b.awayTeamName);
-  });
+  // グループ内のカテゴリも「国: リーグ - ラウンド N」になっていないものを先に
+  for (const g of map.values()) {
+    g.categories.sort((x, y) => Number(isCategoryFormat(x.dataCategory)) - Number(isCategoryFormat(y.dataCategory)));
+  }
+
+  // 表示順（フォーマットのダウンロードも同じ順）: 同じ国リーグ → 同じホームチーム → 形式になっていないものを先に
+  return Array.from(map.values()).sort(compareGroups);
 }
 
 /** =========================
