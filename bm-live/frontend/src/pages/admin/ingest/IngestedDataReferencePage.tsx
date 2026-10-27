@@ -50,6 +50,8 @@ type IngestedRowDTO = {
   matchKey?: string | null;
   futureExists?: boolean | null;
   hasFinishedData?: boolean | null;
+  /** 統計詳細データ（match_detail_match）が登録済みか */
+  hasDetailData?: boolean | null;
 };
 
 type FutureMasterRowDTO = {
@@ -326,13 +328,17 @@ export default function IngestedDataReferenceAdminPage() {
     const futureCount = rows.filter((r) => r.table === "FUTURE_MASTER").length;
     const futureExistsCount = rows.filter((r) => Boolean(r.futureExists)).length;
     const finishedCount = rows.filter((r) => Boolean(r.hasFinishedData)).length;
-    const missingEitherCount = rows.filter((r) => !Boolean(r.futureExists) || !Boolean(r.hasFinishedData)).length;
+    const detailCount = rows.filter((r) => Boolean(r.hasDetailData)).length;
+    const missingEitherCount = rows.filter(
+      (r) => !Boolean(r.futureExists) || !Boolean(r.hasFinishedData) || !Boolean(r.hasDetailData),
+    ).length;
 
     return {
       dataCount,
       futureCount,
       futureExistsCount,
       finishedCount,
+      detailCount,
       missingEitherCount,
     };
   }, [rows]);
@@ -499,6 +505,11 @@ export default function IngestedDataReferenceAdminPage() {
       cell: (r) => (r.hasFinishedData ? <StatusBadge tone="info">あり</StatusBadge> : <StatusBadge tone="warn">なし</StatusBadge>),
     },
     {
+      key: "detail",
+      header: "統計詳細データ",
+      cell: (r) => (r.hasDetailData ? <StatusBadge tone="ok">あり</StatusBadge> : <StatusBadge tone="warn">なし</StatusBadge>),
+    },
+    {
       key: "same",
       header: "同一試合data",
       align: "right",
@@ -524,7 +535,7 @@ export default function IngestedDataReferenceAdminPage() {
 
   return (
     <div>
-      <ConsoleToolbar title="試合予定・リアルタイムデータ突合確認参照" info="国と「終了済データなし または 未来データなし」で検索">
+      <ConsoleToolbar title="試合予定・リアルタイムデータ突合確認参照" info="国と「未来データ・終了済データ・統計詳細データのいずれかなし」で検索">
         <ConsoleButton variant="primary" onClick={() => void runB008()} disabled={busy || rows.length === 0} loading={execLoading}>
           {!execLoading && <Play className="h-3 w-3" />}
           {execLoading ? "B008起動中…" : "B008起動（このページ）"}
@@ -576,7 +587,7 @@ export default function IngestedDataReferenceAdminPage() {
             <ConsoleInput value={countryInput} onChange={(e) => setCountryInput(e.target.value)} placeholder="例）日本" className="w-48" />
           </ConsoleField>
           <ConsoleCheck checked={onlyNeedsAttentionInput} onChange={setOnlyNeedsAttentionInput}>
-            終了済データなし または 未来データなしのみ
+            未来データ・終了済データ・統計詳細データのいずれかがないもののみ
           </ConsoleCheck>
           <ConsoleButton type="submit" variant="primary" loading={loading}>
             {!loading && <Search className="h-3.5 w-3.5" />}
@@ -607,6 +618,7 @@ export default function IngestedDataReferenceAdminPage() {
           { label: "このページ", value: fmtNum(rows.length) },
           { label: "未来データあり", value: fmtNum(stats.futureExistsCount), tone: "ok" },
           { label: "終了済あり", value: fmtNum(stats.finishedCount), tone: "info" },
+          { label: "統計詳細あり", value: fmtNum(stats.detailCount), tone: "ok" },
           { label: "不足あり", value: fmtNum(stats.missingEitherCount), tone: stats.missingEitherCount > 0 ? "warn" : "default" },
         ]}
       />
@@ -636,6 +648,7 @@ export default function IngestedDataReferenceAdminPage() {
               </StatusBadge>
               {detailRow.futureExists ? <StatusBadge tone="ok">未来データあり</StatusBadge> : <StatusBadge tone="ng">未来データなし</StatusBadge>}
               {detailRow.hasFinishedData ? <StatusBadge tone="info">終了済データあり</StatusBadge> : <StatusBadge tone="warn">終了済データなし</StatusBadge>}
+              {detailRow.hasDetailData ? <StatusBadge tone="ok">統計詳細データあり</StatusBadge> : <StatusBadge tone="warn">統計詳細データなし</StatusBadge>}
             </div>
 
             <h3 className="mb-1 mt-3 text-xs font-bold text-gray-500">共通情報</h3>

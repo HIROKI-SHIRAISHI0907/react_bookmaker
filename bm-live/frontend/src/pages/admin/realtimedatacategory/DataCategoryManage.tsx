@@ -39,6 +39,10 @@ const MAX_CANDIDATES_SHOWN = 2;
 /** 国リーグ（マスタ照合）の判定（バックエンド LeagueCandidateResolver と同じ値） */
 type LeagueCheck = "一致" | "不一致" | "混在" | "不明";
 
+/** シーズン期間の判定（バックエンド SeasonPeriodChecker と同じ値）。
+ *  static_data.record_time が country_league_season_master のシーズン（開始の1日前〜終了の7日後）に入っているか */
+type SeasonCheck = "期間内" | "期間外" | "期間不明";
+
 const LEAGUE_CHECK_TONE: Record<LeagueCheck, BadgeTone> = {
   一致: "ok",
   不一致: "ng",
@@ -67,6 +71,15 @@ type RealTimeDataDTO = {
   leagueCheck?: LeagueCheck | null;
   /** 「国: リーグ」の候補（一致・不一致は1件、混在は2件以上） */
   leagueCandidates?: string[] | null;
+  /** グループの最初・最後の記録日時（static_data.record_time。日本時間。手動取得の行は除く） */
+  minRecordTime?: string | null;
+  maxRecordTime?: string | null;
+  /** 手動取得（add_manual_flg = 1）の行の最後の記録日時（取り直した日） */
+  maxManualRecordTime?: string | null;
+  /** シーズン期間の判定（期間内 / 期間外 / 期間不明） */
+  seasonCheck?: SeasonCheck | null;
+  /** 判定の説明（例: 期間内（2026-02-14〜2026-12-06）） */
+  seasonLabel?: string | null;
 };
 
 /** 更新1件分(dev.web.api.bm_a025.RealTimeDataSubDTO に対応) */
@@ -99,6 +112,11 @@ type MatchGroup = {
     dataCategory: string;
     formattedDataCategory: string | null;
     cnt: number | null;
+    seasonCheck: SeasonCheck | null;
+    seasonLabel: string | null;
+    minRecordTime: string | null;
+    maxRecordTime: string | null;
+    maxManualRecordTime: string | null;
   }>;
 };
 
@@ -219,6 +237,11 @@ async function downloadDataCategoryFormat(rows: DataCategoryFormatRow[]): Promis
   return name;
 }
 
+/** 参考の列の値をつなぐ（空は省く） */
+function joinNote(...parts: string[]): string {
+  return parts.filter((p) => p !== "").join(" / ");
+}
+
 function safeText(v: unknown) {
   return typeof v === "string" ? v : "";
 }
@@ -240,15 +263,49 @@ function isCategoryFormat(category: string): boolean {
   return CATEGORY_PAT.test((category || "").trim());
 }
 
-/** グループ内に「国: リーグ - ラウンド N」になっていない dataCategory があるか（カテゴリなしも含む） */
+/** 仮の値（国が XXX またはリーグが YYY。例: XXX: YYY - ラウンド 0）。B015 の isPlaceholderCategory と同じ */
+function isPlaceholderCategory(category: string): boolean {
+  const n = (category || "").normalize("NFKC");
+  const colon = n.indexOf(":");
+  if (colon < 0) return false;
+  const country = n.slice(0, colon).trim();
+  const rest = n.slice(colon + 1).trim();
+  const dash = rest.indexOf(" - ");
+  const league = (dash >= 0 ? rest.slice(0, dash) : rest).trim();
+  return country.toUpperCase() === "XXX" || league.toUpperCase() === "YYY";
+}
+
+/** 正しく設定済みの dataCategory か（「国: リーグ - ラウンド N」の形で、仮の値でない）。直す必要がない */
+function isValidCategory(category: string): boolean {
+  return isCategoryFormat(category) && !isPlaceholderCategory(category);
+}
+
+/** グループ内に直す必要がある dataCategory があるか（形式になっていない・仮の値・カテゴリなし） */
 function groupHasBadFormat(g: MatchGroup): boolean {
   if (g.categories.length === 0) return true;
-  return g.categories.some((c) => !isCategoryFormat(c.dataCategory));
+  return g.categories.some((c) => !isValidCategory(c.dataCategory));
 }
 
 /** 並べ替え用の比較キー（全角・半角とスペースの揺れをそろえる） */
 function sortKey(s: string): string {
   return (s || "").normalize("NFKC").replace(/\s+/g, "");
+}
+
+/** dataCategory の「国: リーグ」部分（「 - ラウンド N」を外したもの） */
+function leagueOfCategory(category: string): string {
+  const cat = (category || "").trim();
+  const idx = cat.indexOf(" - ");
+  return idx >= 0 ? cat.slice(0, idx) : cat;
+}
+
+/**
+ * 形は正しいが、国リーグがマスタの候補と合わない dataCategory か。
+ * マスタの候補が無い（不明）ときは判定できないので false。
+ */
+function isLeagueMismatchCategory(g: MatchGroup, category: string): boolean {
+  if (g.leagueCandidates.length === 0) return false;
+  const league = sortKey(leagueOfCategory(category));
+  return !g.leagueCandidates.some((c) => sortKey(c) === league);
 }
 
 /**
@@ -359,6 +416,11 @@ function groupByMatch(rows: RealTimeDataDTO[]): MatchGroup[] {
         dataCategory: row.dataCategory,
         formattedDataCategory: row.formattedDataCategory ?? null,
         cnt: row.cnt ?? null,
+        seasonCheck: row.seasonCheck ?? null,
+        seasonLabel: row.seasonLabel ?? null,
+        minRecordTime: row.minRecordTime ?? null,
+        maxRecordTime: row.maxRecordTime ?? null,
+        maxManualRecordTime: row.maxManualRecordTime ?? null,
       });
     }
 
@@ -373,7 +435,7 @@ function groupByMatch(rows: RealTimeDataDTO[]): MatchGroup[] {
 
   // グループ内のカテゴリも「国: リーグ - ラウンド N」になっていないものを先に
   for (const g of map.values()) {
-    g.categories.sort((x, y) => Number(isCategoryFormat(x.dataCategory)) - Number(isCategoryFormat(y.dataCategory)));
+    g.categories.sort((x, y) => Number(isValidCategory(x.dataCategory)) - Number(isValidCategory(y.dataCategory)));
   }
 
   // 表示順（フォーマットのダウンロードも同じ順）: 同じ国リーグ → 同じホームチーム → 形式になっていないものを先に
@@ -627,11 +689,16 @@ export default function RealTimeDataAdminPage() {
 
   /**
    * 表示中のデータ（検索・タブで絞り込んだ全ページ分。画面の並び順のまま）をフォーマットの行にする。
+   * この画面は不正な形式を直すためのものなので、正しく設定済みの dataCategory（「国: リーグ - ラウンド N」で仮の値でない）の行は入れない。
+   * ただし形が正しくても国リーグがマスタと合わない行は入れる（修正前と修正後が同じ行は入れない）。
+   * country_league_season_master のシーズン期間外（記録日時がシーズンの開始の1日前〜終了の7日後に1日も入らない）の行も入れない
+   * （前のシーズンのデータを巻き込まない）。シーズンが未登録などで判定できない行は入れる。
    * 1 行 = ホーム・アウェー・現在の dataCategory。「新しい dataCategory」には画面で入力中の値を入れる
    * （処理区分は、新しい値が今と違う行だけサーバー側で 2 にする）。
    */
-  const formatRows = useMemo<DataCategoryFormatRow[]>(() => {
+  const { formatRows, seasonExcludedCount } = useMemo(() => {
     const out: DataCategoryFormatRow[] = [];
+    let excluded = 0;
     for (const g of viewGroups) {
       const next = (editValues[g.key] ?? defaultEditValue(g)).trim();
       const base = {
@@ -646,21 +713,49 @@ export default function RealTimeDataAdminPage() {
         continue;
       }
       for (const c of g.categories) {
-        out.push({ ...base, currentDataCategory: c.dataCategory, count: c.cnt, format: c.formattedDataCategory ? "形式一致" : "形式不一致" });
+        const same = next !== "" && sortKey(next) === sortKey(c.dataCategory);
+        const valid = isValidCategory(c.dataCategory);
+        // 形は正しい: 国リーグがマスタと合わないものだけ。修正前と修正後が同じなら入れない
+        if (valid && (!isLeagueMismatchCategory(g, c.dataCategory) || same)) continue;
+        // シーズン期間外（前のシーズンなど）は入れない
+        if (c.seasonCheck === "期間外") {
+          excluded++;
+          continue;
+        }
+        const season = c.seasonLabel ? `シーズン: ${c.seasonLabel}` : "";
+        if (valid) {
+          out.push({ ...base, currentDataCategory: c.dataCategory, count: c.cnt, format: joinNote("国リーグ不一致", season) });
+          continue;
+        }
+        // 形になっていない・仮の値: 直す必要があるので必ず入れる。
+        // 新しい値が今と同じ（画面の初期値がそのまま）なら空欄にして、書いてもらう
+        out.push({
+          ...base,
+          newDataCategory: same ? "" : next,
+          currentDataCategory: c.dataCategory,
+          count: c.cnt,
+          format: joinNote(c.formattedDataCategory ? "形式一致" : "形式不一致", season),
+        });
       }
     }
-    return out;
+    return { formatRows: out, seasonExcludedCount: excluded };
   }, [viewGroups, editValues]);
 
   const handleDownloadFormat = async () => {
     if (formatRows.length === 0) {
-      setFormatState({ loading: false, error: "表示中のデータがありません。" });
+      setFormatState({
+        loading: false,
+        error:
+          "表示中のデータに、直す必要がある dataCategory（「国: リーグ - ラウンド N」になっていないもの・仮の値・国リーグがマスタと合わないもの）がありません。" +
+          (seasonExcludedCount > 0 ? `（シーズン期間外の ${seasonExcludedCount} 行は入れていません）` : ""),
+      });
       return;
     }
     setFormatState({ loading: true });
     try {
       const name = await downloadDataCategoryFormat(formatRows);
-      setFormatState({ loading: false, success: `${name} をダウンロードしました（${formatRows.length} 行）。変える行の処理区分を 2 にして、同じ名前のまま zip にし直し、一括アップロード画面からアップロードしてください。` });
+      const excludedNote = seasonExcludedCount > 0 ? ` シーズン期間外の ${seasonExcludedCount} 行は入れていません。` : "";
+      setFormatState({ loading: false, success: `${name} をダウンロードしました（${formatRows.length} 行）。${excludedNote}変える行の処理区分を 2 にして、同じ名前のまま zip にし直し、一括アップロード画面からアップロードしてください。` });
     } catch (e: any) {
       setFormatState({ loading: false, error: e?.message ?? String(e) });
     }
@@ -773,6 +868,13 @@ export default function RealTimeDataAdminPage() {
                     形式不一致
                   </StatusBadge>
                 )}
+                {c.seasonCheck === "期間外" && (
+                  <span title={`${c.seasonLabel ?? ""} 最終記録 ${c.maxRecordTime ?? (c.maxManualRecordTime ? `${c.maxManualRecordTime}（手動取得）` : "-")}（一括アップロード用フォーマットには入れない）`}>
+                    <StatusBadge tone="neutral" dot={false}>
+                      シーズン期間外
+                    </StatusBadge>
+                  </span>
+                )}
                 <span className="min-w-0 break-words text-gray-800">{c.dataCategory}</span>
                 {c.cnt != null && <span className="shrink-0 tabular-nums text-[11px] text-gray-400">({c.cnt}件)</span>}
               </div>
@@ -814,7 +916,7 @@ export default function RealTimeDataAdminPage() {
       <ConsoleToolbar title="データカテゴリ統一管理" info="home / away の組み合わせ単位で dataCategory を確認・上書き">
         <ConsoleButton onClick={() => void handleDownloadFormat()} loading={formatState.loading} disabled={loading || formatRows.length === 0}>
           {!formatState.loading && <Download className="h-3.5 w-3.5" />}
-          一括アップロード用フォーマット（表示中 {formatRows.length} 行）
+          一括アップロード用フォーマット（直す対象 {formatRows.length} 行{seasonExcludedCount > 0 ? ` ・期間外 ${seasonExcludedCount} 行は除く` : ""}）
         </ConsoleButton>
         <Link
           to={BULK_UPLOAD_PATH}

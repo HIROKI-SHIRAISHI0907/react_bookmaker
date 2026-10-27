@@ -1,0 +1,19 @@
+{
+  "Name": "bmDetailDataAutoPosses",
+  "Description": "B016 試合詳細データ登録（bm_b016）を ecs-precheck-runner-batch 経由で起動。aws-s3-detail-data-csv に入力JSON・_done/・_skipped/ 以外があるときだけ ECS 実行",
+  "ScheduleExpression": "cron(10 1/2 * * ? *)",
+  "ScheduleExpressionTimezone": "Asia/Tokyo",
+  "FlexibleTimeWindow": {
+    "Mode": "OFF"
+  },
+  "State": "ENABLED",
+  "Target": {
+    "Arn": "arn:aws:lambda:ap-northeast-1:287190274071:function:ecs-precheck-runner-batch",
+    "RoleArn": "arn:aws:iam::287190274071:role/bmSchedulerEcsRunTaskRole",
+    "RetryPolicy": {
+      "MaximumRetryAttempts": 1,
+      "MaximumEventAgeInSeconds": 3600
+    },
+    "Input": "{\"BM_JOB\": \"B016\"}"
+  }
+}
