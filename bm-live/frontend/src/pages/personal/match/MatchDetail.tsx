@@ -3,18 +3,22 @@
 //  上: スコア（チーム名 → チームページ）
 //  左: 試合の流れ（xG の推移・ゴール）・スタッツ比較
 //  右: 勝敗確率（このままなら・ライブ中だけ）・順位の変動表・試合情報・会場（地図）
+//  統計詳細データ（GET /v1/api/match-detail/extra?matchId=。試合後に取得したもの）がある試合は、
+//  左側を「概要 / タイムライン / メンバー / 選手スタッツ」のタブにする（無ければ今までどおり）
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { Skeleton } from "../../../components/ui/skeleton";
 import AppHeader from "../../../components/layout/AppHeader";
-import { fetchMatchDetail } from "../../../api/match/matchapi";
-import type { MatchDetailResponse, MatchGoal, MatchRankChange, MatchStat } from "../../../api/match/matchtypes";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui/tabs";
+import { fetchMatchDetail, fetchMatchDetailExtra } from "../../../api/match/matchapi";
+import type { MatchDetailExtraResponse, MatchDetailResponse, MatchGoal, MatchRankChange, MatchStat } from "../../../api/match/matchtypes";
 import type { DashboardForecast } from "../../../api/dashboard/types";
 import { TeamLink } from "../teams/TeamForm";
 import MatchFlowChart from "./MatchFlowChart";
 import VenueBox from "../venue/VenueBox";
+import { DetailGoalList, EventTimeline, HalfScores, LineupView, MomentumChart, PlayerStatsTable } from "./MatchDetailExtra";
 
 export const MATCH_DETAIL_PATH = "/match-detail";
 export const matchDetailUrl = (seqKey: string) => `${MATCH_DETAIL_PATH}?seqKey=${encodeURIComponent(seqKey)}`;
@@ -36,6 +40,17 @@ export default function MatchDetail() {
   });
 
   const d = q.data;
+
+  // 統計詳細データ（試合後に取得するので、ライブ中・ハーフタイムは読まない。1回読んだら使い回す）
+  const live = d?.status === "LIVE" || d?.status === "HT";
+  const exq = useQuery({
+    queryKey: ["match-detail-extra", d?.matchId],
+    queryFn: () => fetchMatchDetailExtra(d!.matchId!),
+    enabled: !!d?.found && !!d?.matchId && !live,
+    staleTime: 10 * 60_000,
+  });
+  const ex: MatchDetailExtraResponse | null = exq.data?.found ? exq.data : null;
+
   const title = d?.found ? `${d.homeTeam ?? ""} vs ${d.awayTeam ?? ""}` : "試合詳細";
 
   return (
@@ -58,16 +73,22 @@ export default function MatchDetail() {
           <Message>試合データが見つかりません（{seqKey}）</Message>
         ) : (
           <>
-            <ScoreHeader d={d} />
+            <ScoreHeader d={d} ex={ex} />
             <div className="grid items-start gap-4 lg:grid-cols-[1fr_340px]">
               <div className="min-w-0 space-y-4">
-                <Card title="試合の流れ">
-                  <MatchFlowChart timeline={d.timeline} goals={d.goals} homeTeam={d.homeTeam ?? "ホーム"} awayTeam={d.awayTeam ?? "アウェー"} />
-                  <GoalList goals={d.goals} home={d.homeTeam ?? "ホーム"} away={d.awayTeam ?? "アウェー"} />
-                </Card>
-                <Card title="スタッツ比較">
-                  <StatsTable stats={d.stats} home={d.homeTeam ?? "ホーム"} away={d.awayTeam ?? "アウェー"} />
-                </Card>
+                {ex ? (
+                  <DetailTabs d={d} ex={ex} />
+                ) : (
+                  <>
+                    <Card title="試合の流れ">
+                      <MatchFlowChart timeline={d.timeline} goals={d.goals} homeTeam={d.homeTeam ?? "ホーム"} awayTeam={d.awayTeam ?? "アウェー"} />
+                      <GoalList goals={d.goals} home={d.homeTeam ?? "ホーム"} away={d.awayTeam ?? "アウェー"} />
+                    </Card>
+                    <Card title="スタッツ比較">
+                      <StatsTable stats={d.stats} home={d.homeTeam ?? "ホーム"} away={d.awayTeam ?? "アウェー"} />
+                    </Card>
+                  </>
+                )}
               </div>
               <aside className="space-y-4">
                 {d.forecast && (
@@ -79,7 +100,7 @@ export default function MatchDetail() {
                   <RankTable rows={d.rankChanges} home={d.homeTeam ?? "ホーム"} away={d.awayTeam ?? "アウェー"} />
                 </Card>
                 <Card title="試合情報">
-                  <InfoList d={d} />
+                  <InfoList d={d} ex={ex} />
                 </Card>
                 {d.venue && (
                   <Card title="会場">
@@ -108,6 +129,56 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
   );
 }
 
+// ===================== 統計詳細データのタブ =====================
+function DetailTabs({ d, ex }: { d: MatchDetailResponse; ex: MatchDetailExtraResponse }) {
+  const home = d.homeTeam ?? ex.homeTeam ?? "ホーム";
+  const away = d.awayTeam ?? ex.awayTeam ?? "アウェー";
+  return (
+    <Tabs defaultValue="overview" className="space-y-3">
+      <TabsList className="grid w-full grid-cols-4">
+        <TabsTrigger value="overview" className="text-xs">概要</TabsTrigger>
+        <TabsTrigger value="timeline" className="text-xs">タイムライン</TabsTrigger>
+        <TabsTrigger value="lineup" className="text-xs">メンバー</TabsTrigger>
+        <TabsTrigger value="players" className="text-xs">選手スタッツ</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="overview" className="mt-0 space-y-4">
+        <Card title="試合の流れ">
+          <MatchFlowChart timeline={d.timeline} goals={d.goals} homeTeam={home} awayTeam={away} />
+          {ex.goals.length > 0 ? <DetailGoalList goals={ex.goals} /> : <GoalList goals={d.goals} home={home} away={away} />}
+        </Card>
+        {ex.momentum.length > 0 && (
+          <Card title="勢い">
+            <MomentumChart momentum={ex.momentum} incidents={ex.momentumIncidents} homeTeam={home} awayTeam={away} />
+          </Card>
+        )}
+        <Card title="スタッツ比較">
+          <StatsTable stats={d.stats} home={home} away={away} />
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="timeline" className="mt-0">
+        <Card title="試合の出来事">
+          <EventTimeline events={ex.events} halves={ex.halves} />
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="lineup" className="mt-0">
+        <Card title="メンバー">
+          <LineupView ex={ex} homeTeam={home} awayTeam={away} />
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="players" className="mt-0">
+        <Card title="選手スタッツ">
+          <PlayerStatsTable stats={ex.playerStats} homeTeam={home} awayTeam={away} />
+        </Card>
+      </TabsContent>
+      {ex.scrapeErrors && <p className="text-[10px] text-muted-foreground">一部のデータは取得できませんでした（{ex.scrapeErrors}）。</p>}
+    </Tabs>
+  );
+}
+
 // ===================== スコア =====================
 const STATUS: Record<string, { text: (m: string | null) => string; className: string }> = {
   LIVE: { text: (m) => `LIVE ${m ?? ""}`, className: "bg-rose-500 text-white" },
@@ -116,7 +187,7 @@ const STATUS: Record<string, { text: (m: string | null) => string; className: st
   OTHER: { text: (m) => m ?? "-", className: "bg-muted text-muted-foreground" },
 };
 
-function ScoreHeader({ d }: { d: MatchDetailResponse }) {
+function ScoreHeader({ d, ex }: { d: MatchDetailResponse; ex: MatchDetailExtraResponse | null }) {
   const st = STATUS[d.status ?? "OTHER"] ?? STATUS.OTHER;
   return (
     <section className="rounded-2xl border bg-gradient-to-br from-emerald-500/10 via-card to-violet-500/10 p-5">
@@ -137,6 +208,7 @@ function ScoreHeader({ d }: { d: MatchDetailResponse }) {
         </div>
         <TeamSide name={d.awayTeam} rank={d.awayRank} country={d.country} league={d.league} align="right" />
       </div>
+      {ex && <HalfScores ex={ex} />}
       {d.venue?.stadiumName && (
         <div className="mt-3 flex items-center justify-center gap-1 text-[11px] text-muted-foreground">
           <MapPin className="h-3 w-3" />
@@ -308,8 +380,16 @@ function RankTable({ rows, home, away }: { rows: MatchRankChange[]; home: string
 }
 
 // ===================== 試合情報 =====================
-function InfoList({ d }: { d: MatchDetailResponse }) {
-  const i = d.info;
+function InfoList({ d, ex }: { d: MatchDetailResponse; ex: MatchDetailExtraResponse | null }) {
+  // 試合ページで取れなかった監督・フォーメーションは、統計詳細データ（match_detail_formation）で補う
+  const fm = (home: boolean) => ex?.formations.find((f) => (f.side ?? "").toUpperCase() === (home ? "HOME" : "AWAY"));
+  const i = {
+    ...d.info,
+    homeManager: d.info.homeManager ?? fm(true)?.coach ?? null,
+    awayManager: d.info.awayManager ?? fm(false)?.coach ?? null,
+    homeFormation: d.info.homeFormation ?? fm(true)?.formation ?? null,
+    awayFormation: d.info.awayFormation ?? fm(false)?.formation ?? null,
+  };
   const v = d.venue;
   const join = (...vals: (string | null)[]) => vals.filter(Boolean).join(" / ") || null;
   // スタジアム名で一致したときはマスタの名前（都市）を使う。それ以外は試合ページの表記のまま

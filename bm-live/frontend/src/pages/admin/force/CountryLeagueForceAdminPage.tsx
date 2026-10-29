@@ -22,7 +22,7 @@ type CountryLeagueDTO = {
   league: string;
   team: string;
   link: string;
-  delFlg: string; // "0" or "1"
+  delFlg: string; // "0" = 表示 / "1" = 非表示（admin_favorites_master。マスタの del_flg ではない）
 };
 
 type ForceAdminRequest = { country: string; league: string; team: string; delFlg: "0" | "1" };
@@ -69,8 +69,9 @@ export default function CountryLeagueForceAdminPage() {
     refetch,
     isFetching,
   } = useQuery({
-    queryKey: ["countryLeagueMasterAll"],
-    queryFn: () => getJson<CountryLeagueDTO[]>("/v1/api/country-league-master"),
+    // country_league_master の全チーム。delFlg は「admin_favorites_master で非表示か」（マスタの del_flg ではない）
+    queryKey: ["forceAdminTeams"],
+    queryFn: () => getJson<CountryLeagueDTO[]>("/v1/api/admin/force/teams"),
   });
 
   /** 全件（delFlg=1含む） */

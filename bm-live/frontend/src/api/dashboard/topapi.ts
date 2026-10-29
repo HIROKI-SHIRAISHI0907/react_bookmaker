@@ -1,5 +1,5 @@
 // Dashboard（トップ画面）の API 呼び出し
-import type { DashboardFavoriteResponse, DashboardLiveResponse, DashboardSummaryResponse, DashboardUpcomingResponse } from "./types";
+import type { DashboardFavoriteResponse, DashboardLiveResponse, DashboardResultsResponse, DashboardSummaryResponse, DashboardUpcomingResponse } from "./types";
 import { getAccessToken, getTokenType } from "../../utils/auth";
 
 const BASE = "/v1/api/dashboard";
@@ -38,3 +38,6 @@ export const fetchUpcomingMatches = (hours = 36, league?: string) => {
   return getJson<DashboardUpcomingResponse>(`?${q.toString()}`, "/v1/api/upcoming-matches");
 };
 export const fetchDashboardFavorites = () => getJson<DashboardFavoriteResponse>("/favorites");
+
+/** 本日の試合結果（今日 JST に終了した試合。未ログインでも可） */
+export const fetchDashboardResults = () => getJson<DashboardResultsResponse>("/results");

@@ -8,12 +8,13 @@ import { Skeleton } from "../../../components/ui/skeleton";
 import AppHeader from "../../../components/layout/AppHeader";
 import NoticeRibbon from "../component/notice/NoticeRibbon";
 import { isAuthenticated } from "../../../utils/auth";
-import { fetchDashboardFavorites, fetchDashboardLive, fetchDashboardSummary, fetchDashboardUpcoming } from "../../../api/dashboard/topapi";
+import { fetchDashboardFavorites, fetchDashboardLive, fetchDashboardResults, fetchDashboardSummary, fetchDashboardUpcoming } from "../../../api/dashboard/topapi";
 import DashboardKpiCards from "./DashboardKpiCards";
 import DashboardFeatured from "./DashboardFeatured";
 import DashboardLiveBoard from "./DashboardLiveBoard";
 import DashboardUpcoming from "./DashboardUpcoming";
 import DashboardFavorites, { DashboardLoginCta } from "./DashboardFavorites";
+import DashboardResults from "./DashboardResults";
 import { matchDetailUrl } from "../match/MatchDetail";
 
 /* =====================================================================
@@ -22,6 +23,7 @@ import { matchDetailUrl } from "../match/MatchDetail";
  *   - 数字カード        GET /v1/api/dashboard/summary   （60秒ごと）
  *   - 注目の試合・ライブ GET /v1/api/dashboard/live      （30秒ごと）
  *   - これからの試合     GET /v1/api/dashboard/upcoming  （5分ごと）
+ *   - 本日の試合結果     GET /v1/api/dashboard/results   （2分ごと。行 → 試合詳細）
  *   - お気に入り         GET /v1/api/dashboard/favorites （ログイン時だけ・60秒ごと）
  *   未ログインは確率・平均得点などの数値がサーバーから返らない（◎○△・バー・多い/少ないは見える）
  * ===================================================================== */
@@ -56,6 +58,13 @@ export default function Dashboard() {
     queryFn: () => fetchDashboardUpcoming(3, 5),
     staleTime: 60_000,
     refetchInterval: 300_000,
+  });
+
+  const results = useQuery({
+    queryKey: ["dashboard-results"],
+    queryFn: fetchDashboardResults,
+    staleTime: 60_000,
+    refetchInterval: 120_000,
   });
 
   const favorites = useQuery({
@@ -99,18 +108,31 @@ export default function Dashboard() {
         {live.isLoading ? <Skeleton className="h-72 w-full rounded-2xl" /> : live.data?.featured ? <DashboardFeatured m={live.data.featured} onOpen={handleOpenGameDetail} /> : null}
 
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-          {/* ライブ */}
-          {live.isLoading ? (
-            <div className="space-y-3 rounded-2xl border bg-card p-4">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-14 w-full" />
-              ))}
-            </div>
-          ) : live.error ? (
-            <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">ライブ試合の取得に失敗しました: {(live.error as Error).message}</div>
-          ) : (
-            <DashboardLiveBoard leagues={live.data?.leagues ?? []} count={live.data?.count ?? 0} favoriteTeams={favoriteTeams} loggedIn={loggedIn} onOpen={handleOpenGameDetail} />
-          )}
+          <div className="min-w-0 space-y-6">
+            {/* ライブ */}
+            {live.isLoading ? (
+              <div className="space-y-3 rounded-2xl border bg-card p-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-14 w-full" />
+                ))}
+              </div>
+            ) : live.error ? (
+              <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">ライブ試合の取得に失敗しました: {(live.error as Error).message}</div>
+            ) : (
+              <DashboardLiveBoard leagues={live.data?.leagues ?? []} count={live.data?.count ?? 0} favoriteTeams={favoriteTeams} loggedIn={loggedIn} onOpen={handleOpenGameDetail} />
+            )}
+
+            {/* 本日の試合結果（行 → 試合詳細） */}
+            <DashboardResults
+              leagues={results.data?.leagues ?? []}
+              count={results.data?.count ?? 0}
+              detailCount={results.data?.detailCount ?? 0}
+              loading={results.isLoading}
+              error={(results.error as Error) ?? null}
+              favoriteTeams={favoriteTeams}
+              onOpen={handleOpenGameDetail}
+            />
+          </div>
 
           {/* 右カラム */}
           <aside className="space-y-4">

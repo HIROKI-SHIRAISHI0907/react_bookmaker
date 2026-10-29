@@ -140,3 +140,30 @@ export type DashboardFavoriteItem = {
 export type DashboardFavoriteResponse = {
   items: DashboardFavoriteItem[];
 };
+
+// ===================== 本日の試合結果（/v1/api/dashboard/results） =====================
+export type DashboardResultMatch = {
+  /** 試合詳細（/match-detail?seqKey=）を開くキー */
+  seqKey: string;
+  matchId: string | null;
+  round: string | null;
+  homeTeam: string | null;
+  awayTeam: string | null;
+  homeScore: number | null;
+  awayScore: number | null;
+  halftimeHomeScore: number | null;
+  halftimeAwayScore: number | null;
+  /** 最後に記録された時刻（JST, "yyyy-MM-dd HH:mm:ss"） */
+  recordTime: string | null;
+  /** 統計詳細データ（メンバー・選手スタッツなど）があるか */
+  hasDetail: boolean;
+};
+
+export type DashboardResultLeague = { label: string; country: string | null; league: string | null; matches: DashboardResultMatch[] };
+
+export type DashboardResultsResponse = {
+  date: string;
+  count: number;
+  detailCount: number;
+  leagues: DashboardResultLeague[];
+};
