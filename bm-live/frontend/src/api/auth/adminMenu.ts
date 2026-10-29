@@ -70,11 +70,12 @@ const ADMIN_MENU: AdminMenuGroup[] = [
     label: "その他設定",
     items: [
       { label: "統計用CSV作成前詳細設定", to: "sub-input", desc: "SubInput の登録" },
-      { label: "お気に入り国リーグ情報全体反映設定", to: "force/update", desc: "国リーグの表示 / 非表示（del_flg）" },
+      { label: "お気に入り国リーグ情報全体反映設定", to: "force/update", desc: "お気に入りに選べるチームの表示 / 非表示（admin_favorites_master）" },
       { label: "リーグ勝ち点情報反映設定", to: "point-setting", desc: "国・リーグごとの勝ち点" },
       { label: "リーグレベル情報反映設定", to: "league-level", desc: "国・リーグごとのリーグの格（昇格・降格の判定用）" },
       { label: "チームカラー情報反映設定", to: "manual/teamColor" },
       { label: "サブリーグ名反映設定", to: "sub-league", desc: "サブリーグへのチーム割り当て" },
+      { label: "リーグ所属チーム付け替え設定", to: "league-team", desc: "リーグ名が変わったときに、所属チームを新しいリーグ名へ付け替え" },
       // お知らせの作成・編集ができる画面のため、担当者のみ。管理者は「申請確認画面」から承認/差し戻しするだけ。
       { label: "お知らせ設定", to: "notices", desc: "お知らせの登録と承認依頼", roles: ["ADMIN_SUB"] },
       { label: "メール情報登録設定", to: "mailinfo", desc: "メールテンプレートの登録・更新" },

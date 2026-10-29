@@ -18,6 +18,7 @@ import TeamColorPage from "./pages/admin/color/TeamColorPage";
 import IngestedDataReferencePage from "./pages/admin/ingest/IngestedDataReferencePage";
 import AdminSubInputPage from "./pages/admin/csvSelect/AdminSubInputPage";
 import SubLeagueManualUpdatePage from "./pages/admin/subLeague/SubLeagueManualUpdatePage";
+import LeagueTeamPage from "./pages/admin/leagueTeam/LeagueTeamPage";
 import PointSettingsPage from "./pages/admin/pointSetting/PointSettingsPage";
 import LeagueLevelPage from "./pages/admin/leagueLevel/LeagueLevelPage";
 import TodayCreatedCsvPage from "./pages/admin/csv/TodayCreatedCsvPage";
@@ -137,6 +138,7 @@ export default function App() {
                 <Route path="ingested" element={<IngestedDataReferencePage />} />
                 <Route path="sub-input" element={<AdminSubInputPage />} />
                 <Route path="sub-league" element={<SubLeagueManualUpdatePage />} />
+                <Route path="league-team" element={<LeagueTeamPage />} />
                 <Route path="point-setting" element={<PointSettingsPage />} />
                 <Route path="league-level" element={<LeagueLevelPage />} />
                 <Route path="users" element={<AdminUserPage />} />
