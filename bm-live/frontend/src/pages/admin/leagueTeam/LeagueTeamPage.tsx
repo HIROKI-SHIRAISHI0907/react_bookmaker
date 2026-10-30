@@ -22,6 +22,8 @@ import {
   StatChips,
   StatusBadge,
 } from "../../../api/commonAdminDesign";
+import { queryClient } from "../../../lib/queryClient";
+import { SETUP_STATUS_QUERY_KEY } from "../SetupGate";
 
 /** ================= Types ================= */
 type CountryRow = { country: string; leagueCount: number };
@@ -150,6 +152,7 @@ export default function LeagueTeamPage() {
       setNotice({ tone: (r.skippedTeams ?? []).length > 0 ? "warn" : "ok", title: c.mode === "move" ? "付け替えました" : "リーグから外しました", body: r.message });
       const league = c.mode === "move" ? c.req.fromLeague : c.req.league;
       setSelected((s) => ({ ...s, [league]: new Set() }));
+      void queryClient.invalidateQueries({ queryKey: SETUP_STATUS_QUERY_KEY });
       await Promise.all([detail.refetch(), countries.refetch()]);
     },
     onError: (e, c) => {

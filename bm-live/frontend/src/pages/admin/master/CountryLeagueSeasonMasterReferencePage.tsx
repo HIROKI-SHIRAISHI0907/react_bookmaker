@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { queryClient } from "../../../lib/queryClient";
+import { SETUP_STATUS_QUERY_KEY } from "../SetupGate";
 import { RefreshCw, Trash2 } from "lucide-react";
 import {
   BadgeTone,
@@ -526,6 +528,8 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
       }
 
       setInfoMessage(message);
+      // 入口チェック（未対応の件数）を取り直す
+      void queryClient.invalidateQueries({ queryKey: SETUP_STATUS_QUERY_KEY });
     } catch (e) {
       setNewRowsError(e instanceof Error ? e.message : "削除に失敗しました。");
     } finally {
@@ -570,6 +574,8 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
       closeModal();
       await load();
       setInfoMessage(finalMessage);
+      // 入口チェック（未対応の件数）を取り直す
+      void queryClient.invalidateQueries({ queryKey: SETUP_STATUS_QUERY_KEY });
     } catch (e) {
       setNewRowsError(e instanceof Error ? e.message : "更新に失敗しました。");
     } finally {

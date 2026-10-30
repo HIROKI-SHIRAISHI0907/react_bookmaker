@@ -3,10 +3,12 @@ import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { ChevronDown, LayoutGrid, Menu, X } from "lucide-react";
 import { useCurrentRole } from "../../hooks/useCurrentRole";
 import { ADMIN_BASE, adminPath, buildAdminMenu, isMenuItemActive, roleLabel } from "../../api/auth/adminMenu";
+import SetupGate from "./SetupGate";
 
 /**
  * 管理画面の共通レイアウト（左にメニュー、右に各画面）
  *   /admin（メニュー画面）はこのレイアウトの外で表示し、各画面に入ったらこのレイアウトで表示する。
+ *   右側は SetupGate で包み、未対応があるときは対応用の画面以外を開けなくする。
  */
 export default function AdminLayout() {
   const location = useLocation();
@@ -107,7 +109,10 @@ export default function AdminLayout() {
       {mobileOpen && <div className="border-b border-gray-200 bg-white px-2.5 py-2 md:hidden">{nav}</div>}
 
       <main className="min-w-0 p-4">
-        <Outlet />
+        {/* 未対応（新規データの未確認・重複など）があれば、対応用の画面以外を開けなくする */}
+        <SetupGate>
+          <Outlet />
+        </SetupGate>
       </main>
     </div>
   );
