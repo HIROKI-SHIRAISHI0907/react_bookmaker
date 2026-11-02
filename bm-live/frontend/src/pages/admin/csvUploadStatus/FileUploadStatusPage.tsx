@@ -93,6 +93,7 @@ export const MASTER_LABEL: Record<string, string> = {
   future: "試合予定",
   realtime: "リアルタイム",
   dataCategory: "データカテゴリ統一",
+  cup: "大会",
 };
 
 /** 状態（file_upload_status_manage.status。B015 で PENDING → PROCESSING → SUCCESS / ERROR） */

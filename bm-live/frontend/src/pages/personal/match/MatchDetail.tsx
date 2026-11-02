@@ -18,6 +18,7 @@ import type { DashboardForecast } from "../../../api/dashboard/types";
 import { TeamLink } from "../teams/TeamForm";
 import MatchFlowChart from "./MatchFlowChart";
 import VenueBox from "../venue/VenueBox";
+import CupFatigueBox from "../component/cupFatigue/CupFatigueBox";
 import { DetailGoalList, EventTimeline, HalfScores, LineupView, MomentumChart, PlayerStatsTable } from "./MatchDetailExtra";
 
 export const MATCH_DETAIL_PATH = "/match-detail";
@@ -91,6 +92,7 @@ export default function MatchDetail() {
                 )}
               </div>
               <aside className="space-y-4">
+                <CupFatigueBox country={d.country} league={d.league} home={d.homeTeam} away={d.awayTeam} at={d.recordTime} />
                 {d.forecast && (
                   <Card title="このままなら">
                     <ForecastBox f={d.forecast} home={d.homeTeam ?? "ホーム"} away={d.awayTeam ?? "アウェー"} loggedIn={d.loggedIn} />

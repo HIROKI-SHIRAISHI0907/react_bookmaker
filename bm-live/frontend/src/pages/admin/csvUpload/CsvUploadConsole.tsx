@@ -19,7 +19,11 @@ import { getAccessToken, getTokenType } from "../../../utils/auth";
  *   画面でも名前を先に確かめ、合わないときはアップロードしない（サーバー側でも同じチェックをする）。
  */
 
-export type CsvMasterName = "season" | "team" | "future" | "realtime" | "dataCategory";
+/** cup = 大会一括アップロード（バッチを使わず、その場で反映する） */
+export type CsvMasterName = "season" | "team" | "future" | "realtime" | "dataCategory" | "cup";
+
+/** 結果に出す件数 */
+export type CsvResultCount = "insert" | "update" | "delete" | "hide" | "show";
 
 /** CSV の列の説明（画面の「CSV の書き方」に出す） */
 export type CsvColumnGuide = {
@@ -56,6 +60,12 @@ type Props = {
   formatLabel?: string;
   /** 「CSV の列」の必須欄の見出し（省略時は「登録で必須」） */
   requiredLabel?: string;
+  /** 結果に出す件数（省略時は 登録・更新・削除・非表示・再表示） */
+  resultCounts?: CsvResultCount[];
+  /** 成功したときの説明（省略時は「反映はバッチで行います…」） */
+  successNote?: React.ReactNode;
+  /** 確認ダイアログの説明（省略時は「{tableName} に反映します。…」） */
+  confirmDescription?: string;
 };
 
 type CsvUploadRowError = {
@@ -128,7 +138,9 @@ function expectedCsvName(zipName: string): string {
   return zipName.replace(/\.zip$/i, "").replace(/\.csv$/i, "") + ".csv";
 }
 
-const CsvUploadConsole: React.FC<Props> = ({ masterName, title, prefix, tableName, description, operations, columns, notes = [], toolbarExtra, formatLabel, requiredLabel = "登録で必須" }) => {
+const ALL_COUNTS: CsvResultCount[] = ["insert", "update", "delete", "hide", "show"];
+
+const CsvUploadConsole: React.FC<Props> = ({ masterName, title, prefix, tableName, description, operations, columns, notes = [], toolbarExtra, formatLabel, requiredLabel = "登録で必須", resultCounts = ALL_COUNTS, successNote, confirmDescription }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -236,18 +248,20 @@ const CsvUploadConsole: React.FC<Props> = ({ masterName, title, prefix, tableNam
   const errors = body?.errors ?? [];
   const succeeded = result != null && result.status === 200 && body?.status !== "ERROR" && errors.length === 0;
 
-  const resultChips: StatChipItem[] = useMemo(
-    () => [
+  const resultChips: StatChipItem[] = useMemo(() => {
+    const counts: Record<CsvResultCount, StatChipItem> = {
+      insert: { label: "登録", value: fmtNum(body?.insertCount ?? 0), tone: (body?.insertCount ?? 0) > 0 ? "ok" : "default" },
+      update: { label: "更新", value: fmtNum(body?.updateCount ?? 0), tone: (body?.updateCount ?? 0) > 0 ? "ok" : "default" },
+      delete: { label: "削除", value: fmtNum(body?.deleteCount ?? 0), tone: (body?.deleteCount ?? 0) > 0 ? "warn" : "default" },
+      hide: { label: "非表示", value: fmtNum(body?.hideCount ?? 0), tone: (body?.hideCount ?? 0) > 0 ? "warn" : "default" },
+      show: { label: "再表示", value: fmtNum(body?.showCount ?? 0), tone: (body?.showCount ?? 0) > 0 ? "info" : "default" },
+    };
+    return [
       { label: "CSV行数", value: fmtNum(body?.totalCount ?? 0) },
-      { label: "登録", value: fmtNum(body?.insertCount ?? 0), tone: (body?.insertCount ?? 0) > 0 ? "ok" : "default" },
-      { label: "更新", value: fmtNum(body?.updateCount ?? 0), tone: (body?.updateCount ?? 0) > 0 ? "ok" : "default" },
-      { label: "削除", value: fmtNum(body?.deleteCount ?? 0), tone: (body?.deleteCount ?? 0) > 0 ? "warn" : "default" },
-      { label: "非表示", value: fmtNum(body?.hideCount ?? 0), tone: (body?.hideCount ?? 0) > 0 ? "warn" : "default" },
-      { label: "再表示", value: fmtNum(body?.showCount ?? 0), tone: (body?.showCount ?? 0) > 0 ? "info" : "default" },
+      ...resultCounts.map((k) => counts[k]),
       { label: "エラー", value: fmtNum(errors.length), tone: errors.length > 0 ? "ng" : "default" },
-    ],
-    [body, errors.length],
-  );
+    ];
+  }, [body, errors.length, resultCounts]);
 
   const errorColumns: ConsoleColumn<CsvUploadRowError>[] = [
     { key: "rowNo", header: "行", mono: true, align: "right", cell: (e) => (e.rowNo === 0 ? "-" : e.rowNo) },
@@ -354,7 +368,7 @@ const CsvUploadConsole: React.FC<Props> = ({ masterName, title, prefix, tableNam
           <ConsoleNotice tone={succeeded ? "ok" : "ng"} title={resultTitle}>
             {!succeeded && errors.length > 0 && "下の行を直して、もう一度アップロードしてください（どの行も反映していません）。"}
             {!succeeded && result.status === 401 && "ログインの有効期限が切れている可能性があります。ログインし直してからもう一度アップロードしてください。"}
-            {succeeded && "反映はバッチで行います。結果は「ファイルアップロード状況管理」で確認できます。"}
+            {succeeded && (successNote ?? "反映はバッチで行います。結果は「ファイルアップロード状況管理」で確認できます。")}
           </ConsoleNotice>
           <StatChips items={resultChips} />
           {errors.length > 0 && <ConsoleTable columns={errorColumns} rows={errors} rowKey={(e, i) => `${e.rowNo}-${i}`} maxHeight="420px" emptyText="エラーはありません。" />}
@@ -362,9 +376,11 @@ const CsvUploadConsole: React.FC<Props> = ({ masterName, title, prefix, tableNam
       )}
 
       {/* ----- CSV の書き方 ----- */}
-      <ConsolePanel title="処理区分" info="CSV の「処理区分」列に、値（番号）か名前のどちらかを書く" flush>
-        <ConsoleTable columns={operationColumns} rows={operations} rowKey={(o) => o.code} />
-      </ConsolePanel>
+      {operations.length > 0 && (
+        <ConsolePanel title="処理区分" info="CSV の「処理区分」列に、値（番号）か名前のどちらかを書く" flush>
+          <ConsoleTable columns={operationColumns} rows={operations} rowKey={(o) => o.code} />
+        </ConsolePanel>
+      )}
 
       <ConsolePanel title="CSV の列" info="1 行目は見出し（フォーマットのまま変えない）。文字コードは UTF-8" flush>
         <ConsoleTable columns={columnGuideColumns} rows={columns} rowKey={(c) => c.name} />
@@ -384,7 +400,7 @@ const CsvUploadConsole: React.FC<Props> = ({ masterName, title, prefix, tableNam
       <ConsoleModal
         open={confirmOpen}
         title="アップロードして反映しますか？"
-        description={`${tableName} に反映します。1 行でもエラーがあれば、どの行も反映しません。`}
+        description={confirmDescription ?? `${tableName} に反映します。1 行でもエラーがあれば、どの行も反映しません。`}
         onClose={() => setConfirmOpen(false)}
         busy={uploading}
         width={560}

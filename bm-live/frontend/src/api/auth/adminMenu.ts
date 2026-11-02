@@ -61,6 +61,7 @@ const ADMIN_MENU: AdminMenuGroup[] = [
       { label: "試合予定データCSVアップロード", to: "csv-upload/future", desc: "future_master の登録・更新・削除・非表示" },
       { label: "リアルタイムデータ非表示CSVアップロード", to: "csv-upload/realtime", desc: "static_data の非表示・再表示" },
       { label: "データカテゴリ統一CSV一括アップロード", to: "csv-upload/data-category", desc: "static_data / future_master の dataCategory をまとめて書き換え" },
+      { label: "大会一括アップロード", to: "csv-upload/cup", desc: "日程を取る大会（大会名・大会URL）を cup_competition_master にまとめて登録" },
       { label: "ファイルアップロード状況管理", to: "csv-upload/status", desc: "CSVアップロードの受付と結果（エラー行）" },
       { label: "データカテゴリ統一管理", to: "data-category", desc: "対戦ごとの dataCategory 上書き" },
     ],
@@ -76,6 +77,7 @@ const ADMIN_MENU: AdminMenuGroup[] = [
       { label: "チームカラー情報反映設定", to: "manual/teamColor" },
       { label: "サブリーグ名反映設定", to: "sub-league", desc: "サブリーグへのチーム割り当て" },
       { label: "リーグ所属チーム付け替え設定", to: "league-team", desc: "リーグ名が変わったときに、所属チームを新しいリーグ名へ付け替え" },
+      { label: "大会出場チーム登録設定", to: "cup-competition", desc: "ACL などの大会と出場チーム。試合日の翌日に出場選手を取得（疲労の目安）" },
       // お知らせの作成・編集ができる画面のため、担当者のみ。管理者は「申請確認画面」から承認/差し戻しするだけ。
       { label: "お知らせ設定", to: "notices", desc: "お知らせの登録と承認依頼", roles: ["ADMIN_SUB"] },
       { label: "メール情報登録設定", to: "mailinfo", desc: "メールテンプレートの登録・更新" },

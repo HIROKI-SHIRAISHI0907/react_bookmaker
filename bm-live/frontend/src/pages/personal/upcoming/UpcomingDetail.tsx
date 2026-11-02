@@ -17,6 +17,7 @@ import type { DashboardUpcomingMatch } from "../../../api/dashboard/types";
 import { TeamFormDots, TeamLink } from "../teams/TeamForm";
 import { GoalsBadge, RankBadge, WdlBar, formatKickoff } from "../top/parts";
 import VenueBox from "../venue/VenueBox";
+import CupFatigueBox from "../component/cupFatigue/CupFatigueBox";
 
 export const UPCOMING_DETAIL_PATH = "/upcoming-detail";
 
@@ -67,6 +68,7 @@ export default function UpcomingDetail() {
         ) : (
           <>
             <MatchHeader country={country} league={league} home={home} away={away} kickoff={kickoff} round={round} match={match} d={d} />
+            <CupFatigueBox country={country} league={league} home={home} away={away} at={kickoff ?? match?.kickoff ?? null} />
             {q.isLoading ? (
               <Skeleton className="h-64 w-full rounded-2xl" />
             ) : q.error ? (

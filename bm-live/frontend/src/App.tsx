@@ -19,6 +19,8 @@ import IngestedDataReferencePage from "./pages/admin/ingest/IngestedDataReferenc
 import AdminSubInputPage from "./pages/admin/csvSelect/AdminSubInputPage";
 import SubLeagueManualUpdatePage from "./pages/admin/subLeague/SubLeagueManualUpdatePage";
 import LeagueTeamPage from "./pages/admin/leagueTeam/LeagueTeamPage";
+import CupCompetitionPage from "./pages/admin/cup/CupCompetitionPage";
+import CupCsvUploadPage from "./pages/admin/csvUpload/CupCsvUploadPage";
 import PointSettingsPage from "./pages/admin/pointSetting/PointSettingsPage";
 import LeagueLevelPage from "./pages/admin/leagueLevel/LeagueLevelPage";
 import TodayCreatedCsvPage from "./pages/admin/csv/TodayCreatedCsvPage";
@@ -139,6 +141,7 @@ export default function App() {
                 <Route path="sub-input" element={<AdminSubInputPage />} />
                 <Route path="sub-league" element={<SubLeagueManualUpdatePage />} />
                 <Route path="league-team" element={<LeagueTeamPage />} />
+                <Route path="cup-competition" element={<CupCompetitionPage />} />
                 <Route path="point-setting" element={<PointSettingsPage />} />
                 <Route path="league-level" element={<LeagueLevelPage />} />
                 <Route path="users" element={<AdminUserPage />} />
@@ -160,6 +163,7 @@ export default function App() {
                 <Route path="csv-upload/future" element={<FutureCsvUploadPage />} />
                 <Route path="csv-upload/realtime" element={<RealtimeCsvUploadPage />} />
                 <Route path="csv-upload/data-category" element={<DataCategoryCsvUploadPage />} />
+                <Route path="csv-upload/cup" element={<CupCsvUploadPage />} />
                 <Route path="csv-upload/status" element={<FileUploadStatusPage />} />
 
                 {/* 承認フロー */}
