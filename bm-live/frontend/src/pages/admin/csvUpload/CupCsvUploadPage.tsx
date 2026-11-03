@@ -9,7 +9,7 @@ import CsvUploadConsole, { CsvColumnGuide } from "./CsvUploadConsole";
  *   どの大会（ACL など）を日程の取得対象にするかを zip（cup_〇〇.zip の中に cup_〇〇.csv）でまとめて登録する。
  *   GET  /v1/api/admin/csv/upload/cup/format
  *   POST /v1/api/admin/csv/upload/cup
- *   POST /v1/api/admin/csv/upload/cup/url-json  登録した大会の URL を S3（aws-s3-cup-schedule-json）の json/b026_cup_url.json に出力
+ *   POST /v1/api/admin/csv/upload/cup/url-json  登録した大会（大会名・URL）を S3（aws-s3-cup-schedule-csv）の b026_cup_competition.json に出力
  *   バッチは使わず、その場で反映する（1 行でもエラーがあれば、どの行も反映しない）。
  *   反映した結果は「ファイルアップロード状況管理」に 正常終了 / 異常終了 で残る（種類: 大会）。
  */
@@ -30,12 +30,12 @@ const NOTES: React.ReactNode[] = [
   "同じ大会URL がファイル内に 2 回出てくるとエラーになります。",
   "出場チームは「大会出場チーム登録設定」で選んでください。反映すると、日程スクレイパーの入力（b026_cup_competition.json）も出力し直します。",
   "アップロードの結果は「ファイルアップロード状況管理」に残ります（バッチを通さないので、反映できたものはすぐ「正常終了」になります）。",
-  "「登録したURLをJSONでアップロード」を押すと、取得対象の大会の URL を json/b026_cup_url.json に出力します。結果タブのスクレイパーはこの URL の「結果」タブを読みます。",
+  "「登録したURLをJSONでアップロード」を押すと、取得対象の大会の大会名・URL を b026_cup_competition.json に出力します（反映したときにも自動で出力します）。結果タブのスクレイパーはこの URL の「結果」タブを読み、b001_country_league.json のチームが出た試合だけを取ります。",
 ];
 
 type UrlJsonResult = { responseCode: string; message: string; count: number };
 
-/** 登録した大会の URL を JSON（json/b026_cup_url.json）で S3 に出力するボタン */
+/** 登録した大会（大会名・URL）を JSON（b026_cup_competition.json）で S3 に出力するボタン */
 const CupUrlJsonButton: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -75,7 +75,7 @@ const CupUrlJsonButton: React.FC = () => {
       <ConsoleModal
         open={open}
         title="登録したURLをJSONでアップロード"
-        description="取得対象（日程を取る）の大会の 大会名・大会URL を S3 の json/b026_cup_url.json に出力します（前の内容は置き換わります）。"
+        description="取得対象（日程を取る）の大会の 大会名・大会URL を S3 の b026_cup_competition.json に出力します（前の内容は置き換わります）。"
         onClose={() => !busy && setOpen(false)}
         busy={busy}
         width={560}
@@ -90,7 +90,7 @@ const CupUrlJsonButton: React.FC = () => {
           </>
         }
       >
-        <p className="text-[13px] text-slate-600">結果タブのスクレイパー（CupResultData_aws_S3.py）は、次の起動からこの URL の「結果」タブを読みます。</p>
+        <p className="text-[13px] text-slate-600">結果タブのスクレイパー（CupResultData_aws_S3.py）は、次の起動からこの URL の「結果」タブを読み、b001_country_league.json のチームが出た試合だけを取ります。</p>
       </ConsoleModal>
     </>
   );

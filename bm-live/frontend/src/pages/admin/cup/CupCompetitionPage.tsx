@@ -2,7 +2,7 @@
 //  ACL など、各国のリーグのチームが出る大会と、その出場チームを登録する。
 //  - 大会: Flashscore の大会ページ URL（例: https://www.flashscore.co.jp/soccer/asia/afc-champions-league/）
 //  - 出場チーム: スクレイピング対象（b001_country_league.json）のリーグにいるチームから選ぶ
-//  登録・変更のたびに S3（aws-s3-cup-schedule-json）の b026_cup_competition.json を出力する。
+//  登録・変更のたびに S3（aws-s3-cup-schedule-csv）の b026_cup_competition.json を出力する。
 //  日程は日程スクレイパー（cup-schedule-data）が b026_cup_schedule.json に出力し、
 //  試合日の翌日に Lambda（cup-schedule-runner）が B016 の試合詳細スクレイピングへ出場選手の取得を依頼する。
 //  GET  /v1/api/admin/cup-competition
