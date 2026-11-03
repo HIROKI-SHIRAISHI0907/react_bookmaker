@@ -74,7 +74,7 @@ function BlockedPage({ items }: { items: SetupItem[] }) {
           <AlertTriangle className="h-5 w-5" />
           <h2 className="m-0 text-base font-bold">先に以下の対応が必要です</h2>
         </div>
-        <p className="mb-4 text-sm text-gray-600">新しく登録されたデータの確認、または重複の解消が終わるまで、ほかの管理画面は開けません。</p>
+        <p className="mb-4 text-sm text-gray-600">新しく登録されたデータの確認・重複の解消・スクレイピング対象のアップロードなど、下の対応が終わるまで、ほかの管理画面は開けません。</p>
         <div className="space-y-3">
           {items.map((i) => (
             <PendingCard key={i.checkCode} item={i} />

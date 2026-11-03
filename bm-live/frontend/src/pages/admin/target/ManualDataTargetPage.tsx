@@ -13,6 +13,8 @@ import {
   StatChips,
   StatusBadge,
 } from "../../../api/commonAdminDesign";
+import { queryClient } from "../../../lib/queryClient";
+import { SETUP_STATUS_QUERY_KEY } from "../SetupGate";
 
 export type AllLeagueDTO = {
   country: string;
@@ -562,6 +564,8 @@ export default function ManualDataTargetPage() {
         message: "タスクを起動しました（ECSで実行中）",
         taskArn: res.taskArn,
       });
+      // リーグ所属チームの変更による「対象データアップロード実行」待ちが解消されるので、管理画面のブロックを取り直す
+      void queryClient.invalidateQueries({ queryKey: SETUP_STATUS_QUERY_KEY });
     } catch (e: any) {
       setRunState({ type: "error", message: e?.message ?? "タスク起動に失敗しました" });
     }

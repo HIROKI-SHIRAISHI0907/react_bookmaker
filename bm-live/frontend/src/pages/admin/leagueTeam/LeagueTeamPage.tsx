@@ -9,6 +9,7 @@
 //  POST /v1/api/admin/league-team/remove
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { ArrowRight, RefreshCw, Trash2 } from "lucide-react";
 import {
   ConsoleButton,
@@ -23,6 +24,7 @@ import {
   StatusBadge,
 } from "../../../api/commonAdminDesign";
 import { queryClient } from "../../../lib/queryClient";
+import { adminPath } from "../../../api/auth/adminMenu";
 import { SETUP_STATUS_QUERY_KEY } from "../SetupGate";
 
 /** ================= Types ================= */
@@ -106,6 +108,9 @@ export default function LeagueTeamPage() {
   const [targets, setTargets] = useState<Record<string, string>>({});
   const [confirm, setConfirm] = useState<Confirm | null>(null);
   const [notice, setNotice] = useState<{ tone: "ok" | "warn" | "ng"; title: string; body?: string } | null>(null);
+  // 付け替え・外したあとの案内（スクレイピング対象データ設定で「対象データアップロード実行」を押すまで、ほかの管理画面は開けない）
+  const [afterChange, setAfterChange] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const countries = useQuery({ queryKey: ["league-team-countries"], queryFn: () => getJson<CountryRow[]>(`${BASE}/countries`) });
 
@@ -153,6 +158,7 @@ export default function LeagueTeamPage() {
       const league = c.mode === "move" ? c.req.fromLeague : c.req.league;
       setSelected((s) => ({ ...s, [league]: new Set() }));
       void queryClient.invalidateQueries({ queryKey: SETUP_STATUS_QUERY_KEY });
+      if ((r.movedCount ?? 0) > 0) setAfterChange(r.message);
       await Promise.all([detail.refetch(), countries.refetch()]);
     },
     onError: (e, c) => {
@@ -416,6 +422,31 @@ export default function LeagueTeamPage() {
           </div>
         </div>
       </div>
+
+      <ConsoleModal
+        open={afterChange != null}
+        title="スクレイピング対象を最新にしてください"
+        description="所属チームを変えたので、各スクレイパーが読む対象（b001_country_league.json）を作り直す必要があります。"
+        onClose={() => setAfterChange(null)}
+        width={560}
+        footer={
+          <>
+            <ConsoleButton onClick={() => setAfterChange(null)}>この画面で続ける</ConsoleButton>
+            <ConsoleButton variant="primary" onClick={() => navigate(adminPath("manual/data/target"))}>
+              スクレイピング対象データ設定へ
+              <ArrowRight className="h-3.5 w-3.5" />
+            </ConsoleButton>
+          </>
+        }
+      >
+        <div className="space-y-2 text-[13px] text-gray-700">
+          <p className="m-0 rounded-md bg-gray-50 px-2 py-1.5 text-xs">{afterChange}</p>
+          <p className="m-0">
+            スクレイピング対象データ設定の <b className="text-red-700">「対象データアップロード実行」</b> を押すまで、ほかの管理画面は開けません
+            （この画面とスクレイピング対象データ設定は開けます）。続けて付け替える場合は、全部終わってから押してください。
+          </p>
+        </div>
+      </ConsoleModal>
 
       <ConsoleModal
         open={confirm != null}
