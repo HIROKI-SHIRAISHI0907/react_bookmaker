@@ -23,6 +23,7 @@ import CupCompetitionPage from "./pages/admin/cup/CupCompetitionPage";
 import CupCsvUploadPage from "./pages/admin/csvUpload/CupCsvUploadPage";
 import PointSettingsPage from "./pages/admin/pointSetting/PointSettingsPage";
 import LeagueLevelPage from "./pages/admin/leagueLevel/LeagueLevelPage";
+import SubLeagueSeasonPage from "./pages/admin/subLeagueSeason/SubLeagueSeasonPage";
 import TodayCreatedCsvPage from "./pages/admin/csv/TodayCreatedCsvPage";
 import AdminUserPage from "./pages/admin/user/AdminUserPage";
 import MatchDataByDatePage from "./pages/admin/matches/MatchDataByDatePage";
@@ -140,6 +141,7 @@ export default function App() {
                 <Route path="ingested" element={<IngestedDataReferencePage />} />
                 <Route path="sub-input" element={<AdminSubInputPage />} />
                 <Route path="sub-league" element={<SubLeagueManualUpdatePage />} />
+                <Route path="sub-league-season" element={<SubLeagueSeasonPage />} />
                 <Route path="league-team" element={<LeagueTeamPage />} />
                 <Route path="cup-competition" element={<CupCompetitionPage />} />
                 <Route path="point-setting" element={<PointSettingsPage />} />

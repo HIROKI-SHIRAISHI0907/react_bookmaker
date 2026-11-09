@@ -76,6 +76,7 @@ const ADMIN_MENU: AdminMenuGroup[] = [
       { label: "リーグレベル情報反映設定", to: "league-level", desc: "国・リーグごとのリーグの格（昇格・降格の判定用）" },
       { label: "チームカラー情報反映設定", to: "manual/teamColor" },
       { label: "サブリーグ名反映設定", to: "sub-league", desc: "サブリーグへのチーム割り当て" },
+      { label: "サブリーグ保有国リーグ登録設定", to: "sub-league-season", desc: "アペルトゥーラ／クラウスラ などサブリーグ単位でシーズンが分かれている国・リーグ" },
       { label: "リーグ所属チーム付け替え設定", to: "league-team", desc: "リーグ名が変わったときに、所属チームを新しいリーグ名へ付け替え" },
       { label: "大会出場チーム登録設定", to: "cup-competition", desc: "ACL などの大会と出場チーム。試合日の翌日に出場選手を取得（疲労の目安）" },
       // お知らせの作成・編集ができる画面のため、担当者のみ。管理者は「申請確認画面」から承認/差し戻しするだけ。
