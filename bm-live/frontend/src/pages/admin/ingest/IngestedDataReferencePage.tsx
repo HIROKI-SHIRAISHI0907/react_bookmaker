@@ -26,6 +26,10 @@ type FinGettingRequest = {
     matchDate: string; // YYYY-MM-DD
     matchId: string;
     matchUrl?: string;
+    /** 終了済データを取るか（false なら B008 終了済データ取得の入力に入れない。2026-11 追加） */
+    needFinished: boolean;
+    /** 統計詳細データを取るか（false なら試合詳細スクレイピングの入力に入れない。2026-11 追加） */
+    needDetail: boolean;
   }>;
 };
 
@@ -174,12 +178,27 @@ function getRowFutureTime(row: IngestedRowDTO) {
   return safeText(row.future?.futureTime) || "";
 }
 
-function buildFinGettingRequestFromRows(rows: IngestedRowDTO[]): FinGettingRequest {
+/**
+ * B008 起動のリクエストを作る。
+ * 2026-11 変更: 試合ごとに「終了済データを取るか」「統計詳細データを取るか」を付ける。
+ *   - もう「あり」のものは取らない（終了済データがある試合の終了済データを取り直さない）
+ *   - 「終了済データ」「統計詳細データ」のどちらかで絞って検索しているときは、選んだものだけ取る
+ *     （例: 統計詳細データだけで絞ったら、終了済データが無い試合でも終了済データは取らない）
+ *   - どちらも取らない試合は入れない
+ */
+function buildFinGettingRequestFromRows(rows: IngestedRowDTO[], missing: MissingFilter): FinGettingRequest {
   type Group = {
     matchDate: string | null;
     matchId: string | null;
     matchUrl: string | null;
+    hasFinished: boolean;
+    hasDetail: boolean;
   };
+
+  // 終了済・統計詳細のどちらかを選んで絞っていれば、選んだものだけ取る。それ以外（未選択・未来データだけ）は両方
+  const restrict = missing.finished || missing.detail;
+  const wantFinished = !restrict || missing.finished;
+  const wantDetail = !restrict || missing.detail;
 
   const grouped = new Map<string, Group>();
 
@@ -198,6 +217,8 @@ function buildFinGettingRequestFromRows(rows: IngestedRowDTO[]): FinGettingReque
         matchDate,
         matchId,
         matchUrl: gameLink,
+        hasFinished: Boolean(row.hasFinishedData),
+        hasDetail: Boolean(row.hasDetailData),
       });
       continue;
     }
@@ -205,6 +226,8 @@ function buildFinGettingRequestFromRows(rows: IngestedRowDTO[]): FinGettingReque
     if (!existing.matchDate && matchDate) existing.matchDate = matchDate;
     if (!existing.matchId && matchId) existing.matchId = matchId;
     if (!existing.matchUrl && gameLink) existing.matchUrl = gameLink;
+    if (row.hasFinishedData) existing.hasFinished = true;
+    if (row.hasDetailData) existing.hasDetail = true;
   }
 
   const matches: FinGettingRequest["matches"] = [];
@@ -212,9 +235,15 @@ function buildFinGettingRequestFromRows(rows: IngestedRowDTO[]): FinGettingReque
   for (const [, g] of grouped) {
     if (!g.matchDate || !g.matchId) continue;
 
-    const row: { matchDate: string; matchId: string; matchUrl?: string } = {
+    const needFinished = wantFinished && !g.hasFinished;
+    const needDetail = wantDetail && !g.hasDetail;
+    if (!needFinished && !needDetail) continue;
+
+    const row: FinGettingRequest["matches"][number] = {
       matchDate: g.matchDate,
       matchId: g.matchId,
+      needFinished,
+      needDetail,
     };
 
     if (g.matchUrl) {
@@ -228,13 +257,27 @@ function buildFinGettingRequestFromRows(rows: IngestedRowDTO[]): FinGettingReque
   return { matches };
 }
 
-function LinkText({ href }: { href: string | null | undefined }) {
-  if (!href) return <>-</>;
+/** 詳細パネルの URL 表示（別タブで開く。空なら「-」） */
+function LinkText({ href }: { href?: string | null }) {
+  const u = (href ?? "").trim();
+  if (!u) return <span className="text-gray-400">-</span>;
   return (
-    <a href={href} target="_blank" rel="noreferrer" className="break-all text-indigo-600 hover:underline">
-      {href}
+    <a href={u} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 break-all font-mono text-[12px] text-indigo-600 hover:underline">
+      {u}
+      <ExternalLink className="h-3 w-3 shrink-0" />
     </a>
   );
+}
+
+/** 「無いもの」で絞る条件（2026-11 追加） */
+type MissingFilter = { future: boolean; finished: boolean; detail: boolean };
+const NO_MISSING_FILTER: MissingFilter = { future: false, finished: false, detail: false };
+
+/** 選んだ「無いもの」の条件を検索 API のパラメータにする（何も選ばなければ付けない＝全件） */
+function setMissingParams(params: URLSearchParams, m: MissingFilter) {
+  if (m.future) params.set("missingFuture", "true");
+  if (m.finished) params.set("missingFinished", "true");
+  if (m.detail) params.set("missingDetail", "true");
 }
 
 /** =========================
@@ -242,10 +285,11 @@ function LinkText({ href }: { href: string | null | undefined }) {
  * ========================= */
 export default function IngestedDataReferenceAdminPage() {
   const [countryInput, setCountryInput] = useState("日本");
-  const [onlyNeedsAttentionInput, setOnlyNeedsAttentionInput] = useState(false);
+  // 「無いもの」で絞る条件（2026-11 変更: 未来・終了済・統計詳細を別々に選べる。選んだもののいずれかが無いもの）
+  const [missingInput, setMissingInput] = useState<MissingFilter>(NO_MISSING_FILTER);
 
   const [country, setCountry] = useState("日本");
-  const [onlyNeedsAttention, setOnlyNeedsAttention] = useState(false);
+  const [missing, setMissing] = useState<MissingFilter>(NO_MISSING_FILTER);
 
   const [offset, setOffset] = useState(0);
   const [pageSize, setPageSize] = useState(100);
@@ -281,12 +325,12 @@ export default function IngestedDataReferenceAdminPage() {
       params.set("country", country.trim());
     }
 
-    params.set("onlyNeedsAttention", String(onlyNeedsAttention));
+    setMissingParams(params, missing);
     params.set("limit", String(pageSize));
     params.set("offset", String(offset));
 
     return `/v1/api/admin/ingested?${params.toString()}`;
-  }, [country, onlyNeedsAttention, pageSize, offset]);
+  }, [country, missing, pageSize, offset]);
 
   useEffect(() => {
     return () => {
@@ -346,7 +390,7 @@ export default function IngestedDataReferenceAdminPage() {
   const handleSearch = () => {
     setOffset(0);
     setCountry(countryInput);
-    setOnlyNeedsAttention(onlyNeedsAttentionInput);
+    setMissing(missingInput);
     setSearchVersion((v) => v + 1);
   };
 
@@ -356,10 +400,10 @@ export default function IngestedDataReferenceAdminPage() {
     setExecResult(null);
 
     try {
-      const req = buildFinGettingRequestFromRows(rows);
+      const req = buildFinGettingRequestFromRows(rows, missing);
 
       if (req.matches.length === 0) {
-        setExecError("B008対象が0件です(futureTime または matchId が取れる行がありません)。");
+        setExecError("B008対象が0件です（試合日・試合IDが取れない、または終了済データ・統計詳細データがもう「あり」で取るものがありません）。");
         return;
       }
 
@@ -377,7 +421,7 @@ export default function IngestedDataReferenceAdminPage() {
     }
   };
 
-  // 現在適用中の検索条件(country / onlyNeedsAttention)で、ページングせず全件を取得する。
+  // 現在適用中の検索条件(country / missing)で、ページングせず全件を取得する。
   const fetchAllMatchingRows = async (): Promise<IngestedRowDTO[]> => {
     const bulkPageSize = 500; // 通信回数を減らすため、通常のページサイズより大きめに取得する
     let bulkOffset = 0;
@@ -392,7 +436,7 @@ export default function IngestedDataReferenceAdminPage() {
         params.set("country", country.trim());
       }
 
-      params.set("onlyNeedsAttention", String(onlyNeedsAttention));
+      setMissingParams(params, missing);
       params.set("limit", String(bulkPageSize));
       params.set("offset", String(bulkOffset));
 
@@ -424,10 +468,10 @@ export default function IngestedDataReferenceAdminPage() {
         return;
       }
 
-      const fullReq = buildFinGettingRequestFromRows(allRows);
+      const fullReq = buildFinGettingRequestFromRows(allRows, missing);
 
       if (fullReq.matches.length === 0) {
-        setBulkError("B008対象が0件です(matchDate または matchId が取れる行がありません)。");
+        setBulkError("B008対象が0件です（試合日・試合IDが取れない、または終了済データ・統計詳細データがもう「あり」で取るものがありません）。");
         return;
       }
 
@@ -535,7 +579,7 @@ export default function IngestedDataReferenceAdminPage() {
 
   return (
     <div>
-      <ConsoleToolbar title="試合予定・リアルタイムデータ突合確認参照" info="国と「未来データ・終了済データ・統計詳細データのいずれかなし」で検索">
+      <ConsoleToolbar title="試合予定・リアルタイムデータ突合確認参照" info="国と「未来データ・終了済データ・統計詳細データ」それぞれの「なし」で検索">
         <ConsoleButton variant="primary" onClick={() => void runB008()} disabled={busy || rows.length === 0} loading={execLoading}>
           {!execLoading && <Play className="h-3 w-3" />}
           {execLoading ? "B008起動中…" : "B008起動（このページ）"}
@@ -586,9 +630,19 @@ export default function IngestedDataReferenceAdminPage() {
           <ConsoleField label="国名">
             <ConsoleInput value={countryInput} onChange={(e) => setCountryInput(e.target.value)} placeholder="例）日本" className="w-48" />
           </ConsoleField>
-          <ConsoleCheck checked={onlyNeedsAttentionInput} onChange={setOnlyNeedsAttentionInput}>
-            未来データ・終了済データ・統計詳細データのいずれかがないもののみ
-          </ConsoleCheck>
+          <div className="mb-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span className="text-[12px] font-bold text-gray-600">なしのみ:</span>
+            <ConsoleCheck checked={missingInput.future} onChange={(v) => setMissingInput((m) => ({ ...m, future: v }))}>
+              未来データ
+            </ConsoleCheck>
+            <ConsoleCheck checked={missingInput.finished} onChange={(v) => setMissingInput((m) => ({ ...m, finished: v }))}>
+              終了済データ
+            </ConsoleCheck>
+            <ConsoleCheck checked={missingInput.detail} onChange={(v) => setMissingInput((m) => ({ ...m, detail: v }))}>
+              統計詳細データ
+            </ConsoleCheck>
+            <span className="text-[11px] text-gray-400">（複数選ぶと、選んだもののいずれかが「なし」）</span>
+          </div>
           <ConsoleButton type="submit" variant="primary" loading={loading}>
             {!loading && <Search className="h-3.5 w-3.5" />}
             検索
