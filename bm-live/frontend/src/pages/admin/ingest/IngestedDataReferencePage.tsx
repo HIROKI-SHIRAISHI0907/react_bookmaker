@@ -178,15 +178,18 @@ function getRowFutureTime(row: IngestedRowDTO) {
   return safeText(row.future?.futureTime) || "";
 }
 
+/** 取るデータ（2026-11 追加: 終了済データ・統計詳細データでボタンを分けた） */
+type FetchKind = "finished" | "detail";
+const FETCH_KIND_LABEL: Record<FetchKind, string> = { finished: "終了済データ", detail: "統計詳細データ" };
+
 /**
- * B008 起動のリクエストを作る。
- * 2026-11 変更: 試合ごとに「終了済データを取るか」「統計詳細データを取るか」を付ける。
- *   - もう「あり」のものは取らない（終了済データがある試合の終了済データを取り直さない）
- *   - 「終了済データ」「統計詳細データ」のどちらかで絞って検索しているときは、選んだものだけ取る
- *     （例: 統計詳細データだけで絞ったら、終了済データが無い試合でも終了済データは取らない）
- *   - どちらも取らない試合は入れない
+ * 取得のリクエストを作る（POST /v1/api/admin/fin-getting-json）。
+ * 2026-11 変更: ボタンごとに取るデータを分けた。
+ *   - finished: 終了済データが「なし」の試合だけ needFinished=true（B008 → fin_getting_data の JSON）
+ *   - detail  : 統計詳細データが「なし」の試合だけ needDetail=true（b016_game_detail_path_<連番>.json）
+ *   もう「あり」の試合は入れない。
  */
-function buildFinGettingRequestFromRows(rows: IngestedRowDTO[], missing: MissingFilter): FinGettingRequest {
+function buildFinGettingRequestFromRows(rows: IngestedRowDTO[], kind: FetchKind): FinGettingRequest {
   type Group = {
     matchDate: string | null;
     matchId: string | null;
@@ -194,11 +197,6 @@ function buildFinGettingRequestFromRows(rows: IngestedRowDTO[], missing: Missing
     hasFinished: boolean;
     hasDetail: boolean;
   };
-
-  // 終了済・統計詳細のどちらかを選んで絞っていれば、選んだものだけ取る。それ以外（未選択・未来データだけ）は両方
-  const restrict = missing.finished || missing.detail;
-  const wantFinished = !restrict || missing.finished;
-  const wantDetail = !restrict || missing.detail;
 
   const grouped = new Map<string, Group>();
 
@@ -235,8 +233,8 @@ function buildFinGettingRequestFromRows(rows: IngestedRowDTO[], missing: Missing
   for (const [, g] of grouped) {
     if (!g.matchDate || !g.matchId) continue;
 
-    const needFinished = wantFinished && !g.hasFinished;
-    const needDetail = wantDetail && !g.hasDetail;
+    const needFinished = kind === "finished" && !g.hasFinished;
+    const needDetail = kind === "detail" && !g.hasDetail;
     if (!needFinished && !needDetail) continue;
 
     const row: FinGettingRequest["matches"][number] = {
@@ -301,6 +299,9 @@ export default function IngestedDataReferenceAdminPage() {
   const [lastFetchedAt, setLastFetchedAt] = useState<string | null>(null);
 
   const [execLoading, setExecLoading] = useState(false);
+  /** 実行中・直近に実行したデータ（ボタンの表示とお知らせの文言用） */
+  const [execKind, setExecKind] = useState<FetchKind>("finished");
+  const [bulkKind, setBulkKind] = useState<FetchKind>("finished");
   const [execError, setExecError] = useState<string | null>(null);
   const [execResult, setExecResult] = useState<ExecTaskResponse | null>(null);
 
@@ -384,6 +385,9 @@ export default function IngestedDataReferenceAdminPage() {
       finishedCount,
       detailCount,
       missingEitherCount,
+      // このページで取る試合の数（試合ごと。ボタンに出す）
+      finishedNeedMatches: buildFinGettingRequestFromRows(rows, "finished").matches.length,
+      detailNeedMatches: buildFinGettingRequestFromRows(rows, "detail").matches.length,
     };
   }, [rows]);
 
@@ -394,16 +398,17 @@ export default function IngestedDataReferenceAdminPage() {
     setSearchVersion((v) => v + 1);
   };
 
-  const runB008 = async () => {
+  const runB008 = async (kind: FetchKind) => {
+    setExecKind(kind);
     setExecLoading(true);
     setExecError(null);
     setExecResult(null);
 
     try {
-      const req = buildFinGettingRequestFromRows(rows, missing);
+      const req = buildFinGettingRequestFromRows(rows, kind);
 
       if (req.matches.length === 0) {
-        setExecError("B008対象が0件です（試合日・試合IDが取れない、または終了済データ・統計詳細データがもう「あり」で取るものがありません）。");
+        setExecError(`${FETCH_KIND_LABEL[kind]}を取る試合が0件です（すべて「あり」、または試合日・試合IDが取れません）。`);
         return;
       }
 
@@ -454,7 +459,8 @@ export default function IngestedDataReferenceAdminPage() {
 
   // 現在の検索条件に合致する全件(ページ横断)を対象にB008を一括起動する。
   // 1回のリクエストが大きくなりすぎないよう、BULK_CHUNK_SIZE件ずつに分割して順番に実行する。
-  const runB008AllMatching = async () => {
+  const runB008AllMatching = async (kind: FetchKind) => {
+    setBulkKind(kind);
     setBulkLoading(true);
     setBulkError(null);
     setBulkResults([]);
@@ -468,10 +474,10 @@ export default function IngestedDataReferenceAdminPage() {
         return;
       }
 
-      const fullReq = buildFinGettingRequestFromRows(allRows, missing);
+      const fullReq = buildFinGettingRequestFromRows(allRows, kind);
 
       if (fullReq.matches.length === 0) {
-        setBulkError("B008対象が0件です（試合日・試合IDが取れない、または終了済データ・統計詳細データがもう「あり」で取るものがありません）。");
+        setBulkError(`${FETCH_KIND_LABEL[kind]}を取る試合が0件です（すべて「あり」、または試合日・試合IDが取れません）。`);
         return;
       }
 
@@ -580,34 +586,44 @@ export default function IngestedDataReferenceAdminPage() {
   return (
     <div>
       <ConsoleToolbar title="試合予定・リアルタイムデータ突合確認参照" info="国と「未来データ・終了済データ・統計詳細データ」それぞれの「なし」で検索">
-        <ConsoleButton variant="primary" onClick={() => void runB008()} disabled={busy || rows.length === 0} loading={execLoading}>
-          {!execLoading && <Play className="h-3 w-3" />}
-          {execLoading ? "B008起動中…" : "B008起動（このページ）"}
-        </ConsoleButton>
-        <ConsoleButton onClick={() => void runB008AllMatching()} disabled={busy || total === 0} loading={bulkLoading}>
-          {bulkLoading ? `一括実行中（${bulkProgress?.done ?? 0}/${bulkProgress?.total ?? "?"}バッチ）` : `全件（${fmtNum(total)}件）でB008一括起動`}
-        </ConsoleButton>
+        {(["finished", "detail"] as FetchKind[]).map((kind) => {
+          const label = FETCH_KIND_LABEL[kind];
+          const pageRunning = execLoading && execKind === kind;
+          const bulkRunning = bulkLoading && bulkKind === kind;
+          const need = kind === "finished" ? stats.finishedNeedMatches : stats.detailNeedMatches;
+          return (
+            <span key={kind} className="inline-flex flex-wrap items-center gap-1.5">
+              <ConsoleButton variant="primary" onClick={() => void runB008(kind)} disabled={busy || need === 0} loading={pageRunning}>
+                {!pageRunning && <Play className="h-3 w-3" />}
+                {pageRunning ? `${label}取得中…` : `${label}取得（このページ ${need}試合）`}
+              </ConsoleButton>
+              <ConsoleButton onClick={() => void runB008AllMatching(kind)} disabled={busy || total === 0} loading={bulkRunning}>
+                {bulkRunning ? `${label} 一括実行中（${bulkProgress?.done ?? 0}/${bulkProgress?.total ?? "?"}バッチ）` : `${label}取得（全件）`}
+              </ConsoleButton>
+            </span>
+          );
+        })}
       </ConsoleToolbar>
 
       {execError && (
-        <ConsoleNotice tone="ng" title="B008起動に失敗しました" onClose={() => setExecError(null)}>
+        <ConsoleNotice tone="ng" title={`${FETCH_KIND_LABEL[execKind]}取得の起動に失敗しました`} onClose={() => setExecError(null)}>
           {execError}
         </ConsoleNotice>
       )}
       {execResult && (
-        <ConsoleNotice tone="ok" title="B008を起動しました" onClose={() => setExecResult(null)}>
+        <ConsoleNotice tone="ok" title={`${FETCH_KIND_LABEL[execKind]}取得を起動しました`} onClose={() => setExecResult(null)}>
           {`returnCd: ${execResult.returnCd ?? "-"}${execResult.taskArn ? `\ntaskArn: ${execResult.taskArn}` : ""}${execResult.message ? `\nmessage: ${execResult.message}` : ""}`}
         </ConsoleNotice>
       )}
       {bulkError && (
-        <ConsoleNotice tone="ng" title="一括B008起動に失敗しました" onClose={() => setBulkError(null)}>
+        <ConsoleNotice tone="ng" title={`${FETCH_KIND_LABEL[bulkKind]}の一括取得に失敗しました`} onClose={() => setBulkError(null)}>
           {bulkError}
         </ConsoleNotice>
       )}
       {bulkResults.length > 0 && (
         <ConsoleNotice
           tone={bulkResults.every((r) => r.ok) ? "ok" : "ng"}
-          title={`一括B008起動: ${bulkResults.filter((r) => r.ok).length}/${bulkResults.length} バッチ成功${bulkLoading ? "（実行中…）" : ""}`}
+          title={`${FETCH_KIND_LABEL[bulkKind]}の一括取得: ${bulkResults.filter((r) => r.ok).length}/${bulkResults.length} バッチ成功${bulkLoading ? "（実行中…）" : ""}`}
           onClose={bulkLoading ? undefined : () => setBulkResults([])}
         >
           {bulkResults.map((r) => `バッチ${r.batch}(${r.size}件): ${r.ok ? "OK" : "失敗"} - ${r.detail}`).join("\n")}

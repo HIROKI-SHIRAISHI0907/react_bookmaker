@@ -168,10 +168,12 @@ const BATCH_CODES = [
   "B005（Future）",
   "B007（AllLeague）",
   "B008（RealData）",
-  "B009",
+  // B009（NoGame: 試合なし時間帯）はこの画面では使わないので外した（2026-11）
   "B010（FinGetting）",
-  "B014",
-  "B015",
+  "B014（Stat）",
+  "B015（Geografic）",
+  // 2026-11 追加: 統計詳細データ（試合詳細スクレイピング。ecs.scraper.B016 = bm-detail-data-batch）
+  "B016（MatchDetail）",
 ];
 
 const S3_COLUMNS: ConsoleColumn<S3FileItem>[] = [
@@ -184,9 +186,11 @@ const S3_COLUMNS: ConsoleColumn<S3FileItem>[] = [
 export default function ManualScrapePage() {
   const [batchCode, setBatchCode] = useState(BATCH_CODES[0]);
 
-  const isB007 = batchCode === "B007（AllLeague）";
-  const isB014 = batchCode === "B014";
-  const isB005 = batchCode === "B005（Future）";
+  // 表示名（括弧書き）を変えても判定がずれないように、素のコードで判定する
+  const isB007 = toPureBatchCode(batchCode) === "B007";
+  const isB014 = toPureBatchCode(batchCode) === "B014";
+  const isB005 = toPureBatchCode(batchCode) === "B005";
+  const isB016 = toPureBatchCode(batchCode) === "B016";
 
   // API（URL・リクエストボディ）へ渡す際は、表示用の括弧書きを取り除いた「素の」コードを使う
   const pureBatchCode = useMemo(() => toPureBatchCode(batchCode), [batchCode]);
@@ -593,7 +597,13 @@ export default function ManualScrapePage() {
             </>
           ) : isB007 ? (
             <>scope: {scope}</>
-          ) : isB014 ? null : (
+          ) : isB014 ? null : isB016 ? (
+            <>
+              aws-s3-detail-data-csv 直下の b016_game_detail_path_&lt;連番&gt;.json をすべて読み、統計詳細データを取得します（読み終わった JSON は削除）。
+              JSON は「試合予定・リアルタイムデータ突合確認参照」の「統計詳細データ取得」ボタンや B012 で作られます。
+              {" ／ 進捗は5秒ごとに自動更新します。"}
+            </>
+          ) : (
             <>進捗は5秒ごとに自動更新します。</>
           )}
         </div>
