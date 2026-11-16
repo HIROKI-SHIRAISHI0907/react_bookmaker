@@ -4,6 +4,8 @@
 //  - EventTimeline   : 試合の出来事（ハーフごと。ゴール・カード・交代など）
 //  - LineupView      : フォーメーション図・交代・控え・欠場者
 //  - PlayerStatsTable: 選手スタッツ（並べ替え・チーム切り替え）
+//  - TeamTotals      : チーム比較（選手スタッツの合計。2026-11 追加）
+//  - TopPlayers      : この試合の注目選手（評価点の高い順。2026-11 追加）
 //  ホーム = emerald / アウェー = violet（MatchFlowChart と同じ）
 import { useMemo, useState } from "react";
 import type {
@@ -17,6 +19,7 @@ import type {
   DetailPlayerStat,
   MatchDetailExtraResponse,
 } from "../../../api/match/matchtypes";
+import { positionLabel } from "../../../utils/matchDetailLabels";
 
 // ===================== 共通 =====================
 /** "12" / "6.8" / "35/40 (88%)" → 先頭の数値。無ければ null */
@@ -39,8 +42,12 @@ function incidentIcon(type: string | null | undefined): { icon: string; label: s
   if (t.includes("red")) return { icon: "🟥", label: "レッドカード" };
   if (t.includes("yellow")) return { icon: "🟨", label: "イエローカード" };
   if (t.includes("sub")) return { icon: "⇄", label: "交代" };
-  if (t.includes("var")) return { icon: "VAR", label: "VAR" };
-  return { icon: "•", label: type ?? "" };
+  if (t.includes("var")) return { icon: "VAR", label: "ビデオ判定（VAR）" };
+  if (t.includes("penalty")) return { icon: "⚽", label: "PK" };
+  if (t.includes("injur")) return { icon: "✚", label: "負傷" };
+  // 日本語で入っていればそのまま、英語の分からない種類は「その他」
+  const raw = (type ?? "").trim();
+  return { icon: "•", label: raw && !/^[\x00-\x7F]+$/.test(raw) ? raw : "その他の出来事" };
 }
 
 function Empty({ children }: { children: React.ReactNode }) {
@@ -256,11 +263,11 @@ export function EventTimeline({ events, halves }: { events: DetailEvent[]; halve
                     {sub ? (
                       <>
                         <span className="block truncate">
-                          <span className="text-emerald-700 dark:text-emerald-400">IN</span> <b>{e.player ?? "-"}</b>
+                          <span className="text-emerald-700 dark:text-emerald-400">出場</span> <b>{e.player ?? "-"}</b>
                         </span>
                         {e.subOutPlayer && (
                           <span className="block truncate text-[11px] text-muted-foreground">
-                            <span className="text-rose-600 dark:text-rose-400">OUT</span> {e.subOutPlayer}
+                            <span className="text-rose-600 dark:text-rose-400">退場</span> {e.subOutPlayer}
                           </span>
                         )}
                       </>
@@ -284,7 +291,8 @@ export function EventTimeline({ events, halves }: { events: DetailEvent[]; halve
 }
 
 // ===================== メンバー =====================
-function ratingClass(r: number | null): string {
+/** 評価点の色（チームページの選手スタッツでも使う） */
+export function ratingClass(r: number | null): string {
   if (r == null) return "bg-muted text-muted-foreground";
   if (r >= 7.5) return "bg-emerald-600 text-white";
   if (r >= 6.5) return "bg-sky-600 text-white";
@@ -473,24 +481,137 @@ export function LineupView({ ex, homeTeam, awayTeam }: { ex: MatchDetailExtraRes
 type ColDef = { key: keyof DetailPlayerStat; label: string; title: string };
 
 const COLS: ColDef[] = [
-  { key: "rating", label: "評価", title: "評価点" },
-  { key: "minutes", label: "分", title: "出場時間" },
-  { key: "goals", label: "G", title: "ゴール" },
-  { key: "assists", label: "A", title: "アシスト" },
-  { key: "xg", label: "xG", title: "ゴール期待値" },
-  { key: "xa", label: "xA", title: "アシスト期待値" },
-  { key: "shots", label: "S", title: "シュート" },
-  { key: "shotsOnTarget", label: "枠内", title: "枠内シュート" },
-  { key: "keyPasses", label: "KP", title: "キーパス" },
-  { key: "passesAccurate", label: "パス", title: "パス成功" },
-  { key: "touches", label: "タッチ", title: "ボールタッチ" },
-  { key: "dribblesWon", label: "ドリブル", title: "ドリブル成功" },
-  { key: "duelsWon", label: "デュエル", title: "デュエル勝利" },
-  { key: "tacklesWon", label: "タックル", title: "タックル成功" },
-  { key: "interceptions", label: "INT", title: "インターセプト" },
+  { key: "rating", label: "評価点", title: "評価点" },
+  { key: "minutes", label: "出場時間", title: "出場時間（分）" },
+  { key: "goals", label: "ゴール", title: "ゴール" },
+  { key: "assists", label: "アシスト", title: "アシスト" },
+  { key: "xg", label: "ゴール期待値", title: "ゴール期待値（xG）" },
+  { key: "xa", label: "アシスト期待値", title: "アシスト期待値（xA）" },
+  { key: "shots", label: "シュート", title: "シュート" },
+  { key: "shotsOnTarget", label: "枠内シュート", title: "枠内シュート" },
+  { key: "keyPasses", label: "キーパス", title: "キーパス" },
+  { key: "bigChancesCreated", label: "決定機の創出", title: "決定機の創出" },
+  { key: "passesAccurate", label: "パス成功", title: "パス成功" },
+  { key: "touches", label: "ボールタッチ", title: "ボールタッチ" },
+  { key: "dribblesWon", label: "ドリブル成功", title: "ドリブル成功" },
+  { key: "duelsWon", label: "デュエル勝利", title: "デュエル勝利" },
+  { key: "tacklesWon", label: "タックル成功", title: "タックル成功" },
+  { key: "interceptions", label: "インターセプト", title: "インターセプト" },
   { key: "clearances", label: "クリア", title: "クリア" },
-  { key: "saves", label: "セーブ", title: "セーブ（GK）" },
+  { key: "aerialsWon", label: "空中戦勝利", title: "空中戦勝利" },
+  { key: "foulsCommitted", label: "ファウル", title: "ファウル" },
+  { key: "yellowCards", label: "イエローカード", title: "イエローカード" },
+  { key: "redCards", label: "レッドカード", title: "レッドカード" },
+  { key: "saves", label: "セーブ", title: "セーブ（ゴールキーパー）" },
+  { key: "goalsPrevented", label: "防いだ失点", title: "防いだ失点（ゴールキーパー）" },
 ];
+
+// ===================== チーム比較（選手スタッツの合計。2026-11 追加） =====================
+const TOTAL_ROWS: { key: keyof DetailPlayerStat; label: string; digits?: number }[] = [
+  { key: "xg", label: "ゴール期待値", digits: 2 },
+  { key: "shots", label: "シュート" },
+  { key: "shotsOnTarget", label: "枠内シュート" },
+  { key: "bigChancesCreated", label: "決定機の創出" },
+  { key: "keyPasses", label: "キーパス" },
+  { key: "passesAccurate", label: "パス成功" },
+  { key: "touchesBox", label: "相手ボックス内タッチ" },
+  { key: "dribblesWon", label: "ドリブル成功" },
+  { key: "duelsWon", label: "デュエル勝利" },
+  { key: "aerialsWon", label: "空中戦勝利" },
+  { key: "tacklesWon", label: "タックル成功" },
+  { key: "interceptions", label: "インターセプト" },
+  { key: "clearances", label: "クリア" },
+  { key: "saves", label: "セーブ" },
+  { key: "foulsCommitted", label: "ファウル" },
+  { key: "yellowCards", label: "イエローカード" },
+  { key: "redCards", label: "レッドカード" },
+];
+
+/** 選手スタッツをチームごとに足した比較（値が両チームとも無い項目は出さない） */
+export function TeamTotals({ stats, homeTeam, awayTeam }: { stats: DetailPlayerStat[]; homeTeam: string; awayTeam: string }) {
+  const rows = useMemo(() => {
+    return TOTAL_ROWS.map((r) => {
+      let h: number | null = null;
+      let a: number | null = null;
+      for (const s of stats) {
+        const v = num(s[r.key] as string | null);
+        if (v == null) continue;
+        if (isHome(s.side)) h = (h ?? 0) + v;
+        else a = (a ?? 0) + v;
+      }
+      return { ...r, h, a };
+    }).filter((r) => r.h != null || r.a != null);
+  }, [stats]);
+  if (rows.length === 0) return <Empty>選手スタッツのデータがありません</Empty>;
+  const fmt = (v: number | null, d?: number) => (v == null ? "-" : d ? v.toFixed(d) : String(Math.round(v)));
+  return (
+    <div className="space-y-1.5">
+      <div className="flex justify-between text-[11px] font-bold">
+        <span className="truncate text-emerald-700 dark:text-emerald-400">{homeTeam}</span>
+        <span className="truncate text-violet-700 dark:text-violet-400">{awayTeam}</span>
+      </div>
+      {rows.map((r) => {
+        const h = r.h ?? 0;
+        const a = r.a ?? 0;
+        const total = h + a;
+        const hp = total > 0 ? (h / total) * 100 : 50;
+        return (
+          <div key={r.key} className="text-[12px]">
+            <div className="flex items-center justify-between">
+              <span className={`w-14 font-mono ${h > a ? "font-bold" : ""}`}>{fmt(r.h, r.digits)}</span>
+              <span className="text-[11px] text-muted-foreground">{r.label}</span>
+              <span className={`w-14 text-right font-mono ${a > h ? "font-bold" : ""}`}>{fmt(r.a, r.digits)}</span>
+            </div>
+            <div className="mt-0.5 flex h-1.5 overflow-hidden rounded-full bg-muted">
+              <span className="bg-emerald-500" style={{ width: `${hp}%` }} />
+              <span className="bg-violet-500" style={{ width: `${100 - hp}%` }} />
+            </div>
+          </div>
+        );
+      })}
+      <p className="pt-1 text-[10px] text-muted-foreground">試合後に取得した選手スタッツの合計です（取れなかった選手の分は入りません）。</p>
+    </div>
+  );
+}
+
+// ===================== この試合の注目選手（2026-11 追加） =====================
+export function TopPlayers({ stats, limit = 3 }: { stats: DetailPlayerStat[]; limit?: number }) {
+  const top = useMemo(
+    () =>
+      stats
+        .filter((s) => num(s.rating) != null)
+        .sort((x, y) => num(y.rating)! - num(x.rating)!)
+        .slice(0, limit),
+    [stats, limit],
+  );
+  if (top.length === 0) return null;
+  return (
+    <ol className="space-y-1.5">
+      {top.map((s, i) => {
+        const g = num(s.goals) ?? 0;
+        const a = num(s.assists) ?? 0;
+        return (
+          <li key={`${s.playerId ?? s.name}-${i}`} className="flex items-center gap-2 text-[12px]">
+            <span className="w-4 shrink-0 text-center font-bold text-muted-foreground">{i + 1}</span>
+            <span className={`h-2 w-2 shrink-0 rounded-full ${isHome(s.side) ? "bg-emerald-600" : "bg-violet-600 dark:bg-violet-500"}`} />
+            <span className="min-w-0 flex-1 truncate font-semibold">
+              {s.name}
+              {s.position && <span className="ml-1 text-[10px] font-normal text-muted-foreground">{positionLabel(s.position)}</span>}
+            </span>
+            {(g > 0 || a > 0) && (
+              <span className="shrink-0 font-mono text-[11px] text-muted-foreground">
+                {g > 0 ? `${g}ゴール` : ""}
+                {g > 0 && a > 0 ? "・" : ""}
+                {a > 0 ? `${a}アシスト` : ""}
+              </span>
+            )}
+            <span className={`shrink-0 rounded px-1 font-mono text-[11px] font-bold ${ratingClass(num(s.rating))}`}>{num(s.rating)!.toFixed(1)}</span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
 
 export function PlayerStatsTable({ stats, homeTeam, awayTeam }: { stats: DetailPlayerStat[]; homeTeam: string; awayTeam: string }) {
   const [team, setTeam] = useState<"ALL" | "HOME" | "AWAY">("ALL");
@@ -550,7 +671,7 @@ export function PlayerStatsTable({ stats, homeTeam, awayTeam }: { stats: DetailP
         ))}
       </div>
       <div className="overflow-x-auto rounded-lg border">
-        <table className="w-full min-w-[640px] text-[12px]">
+        <table className="w-full min-w-[960px] text-[12px]">
           <thead className="bg-muted/60 text-[11px] text-muted-foreground">
             <tr>
               <th className="sticky left-0 z-10 bg-muted px-2 py-1.5 text-left font-semibold">
@@ -581,7 +702,7 @@ export function PlayerStatsTable({ stats, homeTeam, awayTeam }: { stats: DetailP
                       </span>
                     )}
                   </div>
-                  {s.position && <div className="pl-3.5 text-[10px] text-muted-foreground">{s.position}</div>}
+                  {s.position && <div className="pl-3.5 text-[10px] text-muted-foreground">{positionLabel(s.position)}</div>}
                 </td>
                 {cols.map((c) => {
                   const raw = s[c.key] as string | null;

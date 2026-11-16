@@ -1,5 +1,5 @@
 // チームの過去の結果（/v1/api/team-results）・お気に入り編集（/v1/api/favorite-edit）の API
-import type { FavoriteEditResponse, FavoriteLeague, FavoriteTeamCandidate, TeamUpcomingResponse, TeamResultsResponse, TeamMembersResponse } from "./teamtypes";
+import type { FavoriteEditResponse, FavoriteLeague, FavoriteTeamCandidate, TeamUpcomingResponse, TeamResultsResponse, TeamMembersResponse, TeamDetailStatsResponse } from "./teamtypes";
 import { getAccessToken, getTokenType } from "../../utils/auth";
 
 /**
@@ -84,6 +84,12 @@ export const deleteFavoriteTeam = (id: number) => request<FavoriteEditResponse>(
 export const fetchTeamMembers = (country: string, league: string, team: string) => {
   const q = new URLSearchParams({ country, league, team });
   return request<TeamMembersResponse>(`/v1/api/team-results/members?${q.toString()}`);
+};
+
+/** チームの統計詳細データ（今季の試合詳細の集計。2026-11 追加） */
+export const fetchTeamDetailStats = (country: string, league: string, team: string) => {
+  const q = new URLSearchParams({ country, league, team });
+  return request<TeamDetailStatsResponse>(`/v1/api/team-detail-stats?${q.toString()}`);
 };
 
 /** チームのこれからの試合（items[0] が次節） */

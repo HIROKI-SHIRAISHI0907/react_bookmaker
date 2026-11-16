@@ -16,6 +16,7 @@ import DataFetchAdminPage from "./pages/admin/fetch/DataFetchAdminPage";
 import ManualDataTargetPage from "./pages/admin/target/ManualDataTargetPage";
 import TeamColorPage from "./pages/admin/color/TeamColorPage";
 import IngestedDataReferencePage from "./pages/admin/ingest/IngestedDataReferencePage";
+import MatchDetailReferencePage from "./pages/admin/matchDetail/MatchDetailReferencePage";
 import AdminSubInputPage from "./pages/admin/csvSelect/AdminSubInputPage";
 import SubLeagueManualUpdatePage from "./pages/admin/subLeague/SubLeagueManualUpdatePage";
 import LeagueTeamPage from "./pages/admin/leagueTeam/LeagueTeamPage";
@@ -139,6 +140,7 @@ export default function App() {
                 <Route path="manual/data/target" element={<ManualDataTargetPage />} />
                 <Route path="manual/teamColor" element={<TeamColorPage />} />
                 <Route path="ingested" element={<IngestedDataReferencePage />} />
+                <Route path="match-detail" element={<MatchDetailReferencePage />} />
                 <Route path="sub-input" element={<AdminSubInputPage />} />
                 <Route path="sub-league" element={<SubLeagueManualUpdatePage />} />
                 <Route path="sub-league-season" element={<SubLeagueSeasonPage />} />

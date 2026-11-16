@@ -13,13 +13,14 @@ import { Skeleton } from "../../../components/ui/skeleton";
 import AppHeader from "../../../components/layout/AppHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui/tabs";
 import { fetchMatchDetail, fetchMatchDetailExtra } from "../../../api/match/matchapi";
+import { scrapeErrorsLabel } from "../../../utils/matchDetailLabels";
 import type { MatchDetailExtraResponse, MatchDetailResponse, MatchGoal, MatchRankChange, MatchStat } from "../../../api/match/matchtypes";
 import type { DashboardForecast } from "../../../api/dashboard/types";
 import { TeamLink } from "../teams/TeamForm";
 import MatchFlowChart from "./MatchFlowChart";
 import VenueBox from "../venue/VenueBox";
 import CupFatigueBox from "../component/cupFatigue/CupFatigueBox";
-import { DetailGoalList, EventTimeline, HalfScores, LineupView, MomentumChart, PlayerStatsTable } from "./MatchDetailExtra";
+import { DetailGoalList, EventTimeline, HalfScores, LineupView, MomentumChart, PlayerStatsTable, TeamTotals, TopPlayers } from "./MatchDetailExtra";
 
 export const MATCH_DETAIL_PATH = "/match-detail";
 export const matchDetailUrl = (seqKey: string) => `${MATCH_DETAIL_PATH}?seqKey=${encodeURIComponent(seqKey)}`;
@@ -157,6 +158,16 @@ function DetailTabs({ d, ex }: { d: MatchDetailResponse; ex: MatchDetailExtraRes
         <Card title="スタッツ比較">
           <StatsTable stats={d.stats} home={home} away={away} />
         </Card>
+        {ex.playerStats.length > 0 && (
+          <Card title="この試合の注目選手">
+            <TopPlayers stats={ex.playerStats} />
+          </Card>
+        )}
+        {ex.playerStats.length > 0 && (
+          <Card title="チーム比較（選手スタッツの合計）">
+            <TeamTotals stats={ex.playerStats} homeTeam={home} awayTeam={away} />
+          </Card>
+        )}
       </TabsContent>
 
       <TabsContent value="timeline" className="mt-0">
@@ -176,7 +187,7 @@ function DetailTabs({ d, ex }: { d: MatchDetailResponse; ex: MatchDetailExtraRes
           <PlayerStatsTable stats={ex.playerStats} homeTeam={home} awayTeam={away} />
         </Card>
       </TabsContent>
-      {ex.scrapeErrors && <p className="text-[10px] text-muted-foreground">一部のデータは取得できませんでした（{ex.scrapeErrors}）。</p>}
+      {ex.scrapeErrors && <p className="text-[10px] text-muted-foreground">一部のデータは取得できませんでした（{scrapeErrorsLabel(ex.scrapeErrors)}）。</p>}
     </Tabs>
   );
 }

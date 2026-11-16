@@ -2,6 +2,8 @@
 //  左: 過去の結果・メンバー　右: 次節・ホームスタジアム（スマホは右側が上）
 //  GET /v1/api/team-results（surface_overview_match → 無いラウンドは static_data の「終了済」→ それも無ければ空欄）
 //  GET /v1/api/team-venue（team_location_master のホームスタジアム）
+//  2026-11 追加: 結果の行 → 試合詳細（/match-detail?seqKey=）。統計詳細データがある試合は「詳細」の印
+//                右に「今季の詳細データ」、左のメンバーの下に「今季の選手スタッツ」（GET /v1/api/team-detail-stats）
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
@@ -14,6 +16,8 @@ import { TeamFormDots, TeamLink } from "./TeamForm";
 import TeamMembers from "../teamMembers/TeamMembers";
 import TeamNextMatch from "./TeamNextMatch";
 import TeamVenue from "./TeamVenue";
+import { TeamDetailSummary, TeamPlayerStats } from "./TeamDetailStats";
+import { matchDetailUrl } from "../match/MatchDetail";
 
 const LIMITS = [5, 10, 20] as const;
 
@@ -72,6 +76,7 @@ export default function TeamResults() {
           <aside className="space-y-4 lg:sticky lg:top-4 lg:order-2">
             {ready && <TeamNextMatch country={country} league={league} team={team} />}
             {ready && <TeamVenue country={country} league={league} team={team} />}
+            {ready && <TeamDetailSummary country={country} league={league} team={team} />}
           </aside>
 
           {/* 左: 過去の結果・メンバー */}
@@ -107,7 +112,7 @@ export default function TeamResults() {
                 {/* ラウンドごと */}
                 <div className="divide-y rounded-2xl border bg-card">
                   {d.items.map((i) => (
-                    <ResultRow key={i.roundNo} i={i} country={country} league={league} />
+                    <ResultRow key={i.roundNo} i={i} country={country} league={league} onOpen={(k) => navigate(matchDetailUrl(k))} />
                   ))}
                 </div>
                 <p className="text-[11px] text-muted-foreground">空欄のラウンドは試合結果が見つからなかったラウンドです（試合が無い・データ未取得）。</p>
@@ -116,6 +121,9 @@ export default function TeamResults() {
 
             {/* メンバー（結果が無くても表示） */}
             {ready && <TeamMembers country={country} league={league} team={team} />}
+
+            {/* 今季の選手スタッツ（統計詳細データがあるときだけ） */}
+            {ready && <TeamPlayerStats country={country} league={league} team={team} />}
           </div>
         </div>
       </main>
@@ -129,7 +137,7 @@ const RESULT_STYLE: Record<"W" | "D" | "L", string> = {
   L: "bg-rose-500 text-white",
 };
 
-function ResultRow({ i, country, league }: { i: TeamResultItem; country: string; league: string }) {
+function ResultRow({ i, country, league, onOpen }: { i: TeamResultItem; country: string; league: string; onOpen: (seqKey: string) => void }) {
   if (i.source === "NONE") {
     return (
       <div className="flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground">
@@ -139,8 +147,14 @@ function ResultRow({ i, country, league }: { i: TeamResultItem; country: string;
     );
   }
   const date = i.matchTime ? i.matchTime.slice(5, 16).replace("-", "/") : "";
+  const seqKey = i.seqKey ?? null;
   return (
-    <div className="flex items-center gap-3 px-4 py-3">
+    <div
+      className={`flex items-center gap-3 px-4 py-3 ${seqKey ? "cursor-pointer hover:bg-muted/40" : ""}`}
+      onClick={seqKey ? () => onOpen(seqKey) : undefined}
+      role={seqKey ? "button" : undefined}
+      data-testid={`row-team-result-${i.roundNo}`}
+    >
       <span className="w-16 shrink-0">
         <span className="block font-mono text-xs font-bold">R{i.roundNo}</span>
         <span className="block font-mono text-[10px] text-muted-foreground">{date}</span>
@@ -160,8 +174,16 @@ function ResultRow({ i, country, league }: { i: TeamResultItem; country: string;
         <span className={`mr-1.5 rounded px-1 text-[10px] font-bold ${i.homeAway === "H" ? "bg-emerald-500/15 text-emerald-600" : "bg-violet-500/15 text-violet-600"}`}>
           {i.homeAway === "H" ? "ホーム" : "アウェー"}
         </span>
-        vs <TeamLink country={country} league={league} team={i.opponent ?? ""} className="font-semibold" />
+        vs{" "}
+        <span onClick={(e) => e.stopPropagation()}>
+          <TeamLink country={country} league={league} team={i.opponent ?? ""} className="font-semibold" />
+        </span>
       </span>
+      {i.hasDetail && (
+        <span className="shrink-0 rounded bg-sky-500/15 px-1.5 text-[10px] font-bold leading-5 text-sky-700 dark:text-sky-300" title="メンバー・選手スタッツなどの詳細データがあります">
+          詳細
+        </span>
+      )}
       {i.source === "STATIC" && (
         <span className="shrink-0 text-[10px] text-muted-foreground" title="集計前の試合データ（終了済）から">
           速報

@@ -1,11 +1,15 @@
 // チームメンバー（コンパクト表示）
 //  ポジションで絞り込み・2列・最初は 12 人まで（「全員を見る」で展開）
 //  GET /v1/api/team-results/members?country=&league=&team=
+//  2026-11 追加: 今季の統計詳細データ（GET /v1/api/team-detail-stats）に同じ名前の選手がいれば、
+//                出場数・ゴール・平均評価点を行の右に出す（名前が違う表記の選手は出ない）
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchTeamMembers } from "../../../api/team/teamapi";
 import type { PositionGroup, TeamMember } from "../../../api/team/teamtypes";
 import { Skeleton } from "../../../components/ui/skeleton";
+import type { TeamDetailPlayer } from "../../../api/team/teamtypes";
+import { nameKey, ratingClass, useTeamDetailStats } from "../teams/TeamDetailStats";
 
 const INITIAL = 12;
 
@@ -30,6 +34,14 @@ export default function TeamMembers({ country, league, team }: { country: string
   });
 
   const members = q.data?.members ?? [];
+
+  // 今季の統計詳細データ（名前で突き合わせる）
+  const ds = useTeamDetailStats(country, league, team);
+  const statsByName = useMemo(() => {
+    const m = new Map<string, TeamDetailPlayer>();
+    (ds.data?.players ?? []).forEach((p) => m.set(nameKey(p.name), p));
+    return m;
+  }, [ds.data]);
   const counts = useMemo(() => {
     const c: Record<string, number> = { ALL: members.length };
     members.forEach((m) => (c[m.positionGroup] = (c[m.positionGroup] ?? 0) + 1));
@@ -75,7 +87,7 @@ export default function TeamMembers({ country, league, team }: { country: string
         <>
           <div className="grid gap-x-4 sm:grid-cols-2">
             {shown.map((m) => (
-              <MemberRow key={`${m.name}-${m.jersey ?? ""}`} m={m} />
+              <MemberRow key={`${m.name}-${m.jersey ?? ""}`} m={m} stat={statsByName.get(nameKey(m.name))} />
             ))}
           </div>
           <div className="mt-2 flex items-center justify-between text-[10px] text-muted-foreground">
@@ -95,7 +107,7 @@ export default function TeamMembers({ country, league, team }: { country: string
 }
 
 /** 1人 = 1行（背番号・ポジション・名前・負傷/レンタル・年齢・市場価値） */
-function MemberRow({ m }: { m: TeamMember }) {
+function MemberRow({ m, stat }: { m: TeamMember; stat?: TeamDetailPlayer }) {
   const pos = POS[m.positionGroup] ?? POS.OTHER;
   const detail = [m.position, m.age != null ? `${m.age}歳` : null, m.height != null ? `${m.height}cm` : null, m.marketValue].filter(Boolean).join(" ・ ");
   return (
@@ -111,6 +123,16 @@ function MemberRow({ m }: { m: TeamMember }) {
       {m.loanFrom && (
         <span className="shrink-0 rounded bg-violet-500/15 px-1 text-[9px] font-bold leading-4 text-violet-600" title={`レンタル（${m.loanFrom}）`}>
           L
+        </span>
+      )}
+      {stat && (
+        <span
+          className="flex shrink-0 items-center gap-1 font-mono text-[10px] text-muted-foreground"
+          title={`今季（詳細データ）: ${stat.apps}試合出場${stat.minutes != null ? `・出場時間 ${stat.minutes}分` : ""}・${stat.goals ?? 0}ゴール・${stat.assists ?? 0}アシスト${stat.rating != null ? `・平均評価点 ${stat.rating.toFixed(2)}` : ""}`}
+        >
+          <span>{stat.apps}試合</span>
+          {(stat.goals ?? 0) > 0 && <span className="font-bold text-foreground">{stat.goals}ゴール</span>}
+          {stat.rating != null && <span className={`rounded px-1 font-bold ${ratingClass(stat.rating)}`}>{stat.rating.toFixed(1)}</span>}
         </span>
       )}
       <span className="w-8 shrink-0 text-right font-mono text-[10px] text-muted-foreground">{m.age ?? ""}</span>

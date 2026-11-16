@@ -14,6 +14,43 @@ export type TeamResultItem = {
   pkGoalsFor: number | null;
   pkGoalsAgainst: number | null;
   matchTime: string | null;
+  /** 試合詳細（/match-detail?seqKey=）へのキー。分からなければ null（2026-11 追加） */
+  seqKey?: string | null;
+  matchId?: string | null;
+  /** 統計詳細データ（メンバー・選手スタッツなど）がある */
+  hasDetail?: boolean;
+};
+
+// ===================== チームの統計詳細データ（/v1/api/team-detail-stats。2026-11 追加） =====================
+export type TeamDetailFormation = { formation: string; count: number };
+
+export type TeamDetailPlayer = {
+  name: string;
+  position: string | null;
+  /** 出場数（選手スタッツがある試合の数） */
+  apps: number;
+  minutes: number | null;
+  /** 平均評価点 */
+  rating: number | null;
+  goals: number | null;
+  assists: number | null;
+  xg: number | null;
+  xa: number | null;
+  shots: number | null;
+  shotsOnTarget: number | null;
+  keyPasses: number | null;
+  yellowCards: number | null;
+  redCards: number | null;
+  saves: number | null;
+};
+
+export type TeamDetailStatsResponse = {
+  country: string;
+  league: string;
+  team: string;
+  summary: { matchCount: number; latestMatchDate: string | null; averageRating: number | null; coach: string | null };
+  formations: TeamDetailFormation[];
+  players: TeamDetailPlayer[];
 };
 
 export type TeamResultsResponse = {

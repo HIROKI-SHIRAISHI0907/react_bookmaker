@@ -48,6 +48,7 @@ const ADMIN_MENU: AdminMenuGroup[] = [
       { label: "リアルタイムデータ登録済参照", to: "matches/by-date", desc: "日付ごとの対戦データ" },
       { label: "統計用CSV作成内容参照", to: "csv/today", desc: "指定日に作成されたCSV" },
       { label: "試合予定・リアルタイムデータ突合確認参照", to: "ingested", desc: "未来データ / 終了済データの不足確認" },
+      { label: "統計詳細データ参照", to: "match-detail", desc: "試合後に取得した試合詳細（メンバー・選手スタッツなど）" },
       { label: "アップロード済リアルタイムデータ参照", to: "upload/realtime", desc: "S3のzipを検索・ダウンロード" },
       { label: "未反映データ参照", to: "analyzeCsvError", desc: "登録できなかった試合と原因" },
     ],
