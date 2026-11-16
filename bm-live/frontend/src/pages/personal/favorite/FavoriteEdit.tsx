@@ -34,14 +34,25 @@ export default function FavoriteEdit() {
     staleTime: 30_000,
   });
 
-  const onDone = (r: FavoriteEditResponse) => {
-    queryClient.setQueryData(["favorite-edit-teams"], r);
+  // 追加・削除の後: 返ってきた一覧ですぐ画面を書き換え、念のためサーバーから取り直す（2026-11 変更）
+  //  返ってきた一覧に追加したチームが無いとき（直後の読み取りで見えない場合）でも、画面にはすぐ出す
+  const applyResult = (r: FavoriteEditResponse, added?: { country: string; league: string; team: string }) => {
+    let teamsNext = r.teams ?? [];
+    if (added && !teamsNext.some((t) => t.country === added.country && t.league === added.league && t.team === added.team)) {
+      // 取り直すまでの仮の行（id は負の数。削除ボタンは取り直した後に使える）
+      teamsNext = [...teamsNext, { id: -Date.now(), ...added }];
+    }
+    queryClient.setQueryData<FavoriteEditResponse>(["favorite-edit-teams"], { ...r, teams: teamsNext });
     setMessage(r.message);
-    queryClient.invalidateQueries({ queryKey: ["favorite-edit-search"] });
-    queryClient.invalidateQueries({ queryKey: ["dashboard-favorites"] });
+    void queryClient.invalidateQueries({ queryKey: ["favorite-edit-teams"] });
+    void queryClient.invalidateQueries({ queryKey: ["favorite-edit-search"] });
+    void queryClient.invalidateQueries({ queryKey: ["dashboard-favorites"] });
   };
-  const add = useMutation({ mutationFn: (t: { country: string; league: string; team: string }) => addFavoriteTeam(t.country, t.league, t.team), onSuccess: onDone });
-  const remove = useMutation({ mutationFn: (id: number) => deleteFavoriteTeam(id), onSuccess: onDone });
+  const add = useMutation({
+    mutationFn: (t: { country: string; league: string; team: string }) => addFavoriteTeam(t.country, t.league, t.team),
+    onSuccess: (r, t) => applyResult(r, t),
+  });
+  const remove = useMutation({ mutationFn: (id: number) => deleteFavoriteTeam(id), onSuccess: (r) => applyResult(r) });
 
   const grouped = useMemo(() => {
     const m = new Map<string, NonNullable<typeof teams.data>["teams"]>();
@@ -110,7 +121,7 @@ export default function FavoriteEdit() {
                         <TeamLink country={t.country} league={t.league} team={t.team} className="truncate text-sm font-semibold" />
                         <button
                           type="button"
-                          disabled={busy}
+                          disabled={busy || t.id < 0}
                           onClick={() => remove.mutate(t.id)}
                           className="rounded p-1 text-muted-foreground hover:bg-rose-50 hover:text-rose-600 disabled:opacity-40"
                           title="削除"

@@ -1,0 +1,17 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ListDetailDataBucket",
+      "Effect": "Allow",
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws:s3:::aws-s3-detail-data-csv"
+    },
+    {
+      "Sid": "PutB016InputJson",
+      "Effect": "Allow",
+      "Action": "s3:PutObject",
+      "Resource": "arn:aws:s3:::aws-s3-detail-data-csv/b016_game_detail_path_*.json"
+    }
+  ]
+}

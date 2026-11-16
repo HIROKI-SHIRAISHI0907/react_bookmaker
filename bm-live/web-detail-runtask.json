@@ -1,0 +1,33 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "RunDetailDataTask",
+      "Effect": "Allow",
+      "Action": ["ecs:RunTask"],
+      "Resource": "arn:aws:ecs:ap-northeast-1:287190274071:task-definition/bm-detail-data-batch:*"
+    },
+    {
+      "Sid": "ListDetailDataTasks",
+      "Effect": "Allow",
+      "Action": ["ecs:ListTasks", "ecs:DescribeTasks", "ecs:TagResource"],
+      "Resource": "*"
+    },
+    {
+      "Sid": "PassDetailDataRoles",
+      "Effect": "Allow",
+      "Action": "iam:PassRole",
+      "Resource": [
+        "arn:aws:iam::287190274071:role/bmDetailDataScraperTaskRole",
+        "arn:aws:iam::287190274071:role/ecsTaskExecutionRole"
+      ],
+      "Condition": { "StringEquals": { "iam:PassedToService": "ecs-tasks.amazonaws.com" } }
+    },
+    {
+      "Sid": "ReadDetailDataLogs",
+      "Effect": "Allow",
+      "Action": ["logs:GetLogEvents", "logs:FilterLogEvents", "logs:DescribeLogStreams"],
+      "Resource": "arn:aws:logs:ap-northeast-1:287190274071:log-group:/ecs/bm-detail-data-batch:*"
+    }
+  ]
+}

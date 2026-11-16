@@ -31,10 +31,17 @@ export function scrapeErrorLabel(token: string): string {
   const t = token.trim();
   if (!t) return "";
   if (ERROR_LABEL[t]) return ERROR_LABEL[t];
-  const m = t.match(/^(.+)_(timeout|exception)$/);
+  // lineups_not_found / player_stats_top_goto_failed / top_timeout など（MatchDetailData_aws_S3.py の fetch_* が返すもの）
+  const m = t.match(/^(?:player_stats_)?(.+?)_(timeout|exception|not_found|goto_failed)$/);
   if (m) {
     const tab = TAB_LABEL[m[1]] ?? "その他のページ";
-    return `${tab}（${m[2] === "timeout" ? "時間切れ" : "読み込みエラー"}）`;
+    const why: Record<string, string> = {
+      timeout: "時間切れ",
+      exception: "読み込みエラー",
+      not_found: "ページに表がない",
+      goto_failed: "ページを開けない",
+    };
+    return `${tab}（${why[m[2]]}）`;
   }
   return TAB_LABEL[t] ?? "その他のページ";
 }
