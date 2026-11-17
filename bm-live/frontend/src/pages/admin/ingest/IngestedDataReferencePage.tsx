@@ -54,9 +54,40 @@ type IngestedRowDTO = {
   matchKey?: string | null;
   futureExists?: boolean | null;
   hasFinishedData?: boolean | null;
-  /** 統計詳細データ（match_detail_match）が登録済みか */
+  /** 統計詳細データがそろっているか（必ずあるはずの 5 データがすべてある。2026-11-18 変更） */
   hasDetailData?: boolean | null;
+  /** 統計詳細データ 9 データのうち、データがある数（2026-11-18 追加） */
+  detailTableCount?: number | null;
+  /** 統計詳細データの全データ数（9） */
+  detailTableTotal?: number | null;
+  /** 統計詳細データで、データが無いもの（日本語名） */
+  detailMissingTables?: string[] | null;
 };
+
+/** 統計詳細データの「n/9」バッジ。9/9 = 緑、必要な分はある = 青、足りない = 黄、何も無い = 黄「なし」 */
+function DetailCountBadge({ row, long = false }: { row: IngestedRowDTO; long?: boolean }) {
+  const count = row.detailTableCount ?? 0;
+  const total = row.detailTableTotal ?? 9;
+  const missing = row.detailMissingTables ?? [];
+  const title = missing.length ? `無いデータ: ${missing.join("・")}` : "9 データすべてあり";
+  const prefix = long ? "統計詳細データ " : "";
+  if (count === 0) {
+    return (
+      <span title={title}>
+        <StatusBadge tone="warn">{prefix}なし</StatusBadge>
+      </span>
+    );
+  }
+  const tone = count >= total ? "ok" : row.hasDetailData ? "info" : "warn";
+  return (
+    <span title={title}>
+      <StatusBadge tone={tone}>
+        {prefix}
+        {count}/{total}
+      </StatusBadge>
+    </span>
+  );
+}
 
 type FutureMasterRowDTO = {
   gameTeamCategory?: string | null;
@@ -557,7 +588,7 @@ export default function IngestedDataReferenceAdminPage() {
     {
       key: "detail",
       header: "統計詳細データ",
-      cell: (r) => (r.hasDetailData ? <StatusBadge tone="ok">あり</StatusBadge> : <StatusBadge tone="warn">なし</StatusBadge>),
+      cell: (r) => <DetailCountBadge row={r} />,
     },
     {
       key: "same",
@@ -688,7 +719,7 @@ export default function IngestedDataReferenceAdminPage() {
           { label: "このページ", value: fmtNum(rows.length) },
           { label: "未来データあり", value: fmtNum(stats.futureExistsCount), tone: "ok" },
           { label: "終了済あり", value: fmtNum(stats.finishedCount), tone: "info" },
-          { label: "統計詳細あり", value: fmtNum(stats.detailCount), tone: "ok" },
+          { label: "統計詳細そろい", value: fmtNum(stats.detailCount), tone: "ok" },
           { label: "不足あり", value: fmtNum(stats.missingEitherCount), tone: stats.missingEitherCount > 0 ? "warn" : "default" },
         ]}
       />
@@ -718,8 +749,16 @@ export default function IngestedDataReferenceAdminPage() {
               </StatusBadge>
               {detailRow.futureExists ? <StatusBadge tone="ok">未来データあり</StatusBadge> : <StatusBadge tone="ng">未来データなし</StatusBadge>}
               {detailRow.hasFinishedData ? <StatusBadge tone="info">終了済データあり</StatusBadge> : <StatusBadge tone="warn">終了済データなし</StatusBadge>}
-              {detailRow.hasDetailData ? <StatusBadge tone="ok">統計詳細データあり</StatusBadge> : <StatusBadge tone="warn">統計詳細データなし</StatusBadge>}
+              <DetailCountBadge row={detailRow} long />
             </div>
+            {(detailRow.detailMissingTables?.length ?? 0) > 0 && (
+              <p className="mb-2 text-xs text-gray-500">
+                統計詳細データで無いもの: {detailRow.detailMissingTables!.join("・")}
+                {detailRow.hasDetailData
+                  ? "（ゴール・欠場者・モメンタムは試合によって無いことがあるため、取り直しの対象にしません）"
+                  : "（「統計詳細データ取得」で取り直します）"}
+              </p>
+            )}
 
             <h3 className="mb-1 mt-3 text-xs font-bold text-gray-500">共通情報</h3>
             <DetailRow label="seq">
