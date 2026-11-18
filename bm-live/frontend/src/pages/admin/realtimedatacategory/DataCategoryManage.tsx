@@ -331,19 +331,38 @@ function compareText(a: string, b: string): number {
 }
 
 /**
- * 一覧・フォーマットの並び順
+ * グループのラウンド番号（並べ替え用。2026-11-18 追加）
+ * dataCategory の「ラウンド N」の N（複数あれば大きい方）。ラウンドが取れない・形式になっていないものがあれば null
+ */
+function groupRoundOf(g: MatchGroup): number | null {
+  if (groupHasBadFormat(g)) return null;
+  let max: number | null = null;
+  for (const c of g.categories) {
+    const m = (c.dataCategory || "").normalize("NFKC").match(/ラウンド\s*(\d+)\s*$/);
+    if (!m) return null;
+    const n = Number(m[1]);
+    max = max === null ? n : Math.max(max, n);
+  }
+  return max;
+}
+
+/**
+ * 一覧・フォーマットの並び順（2026-11-18 変更）
  * 1. 同じ国リーグ（国リーグ順）
- * 2. 同じホームチーム（ホームチーム順）
- * 3. 「国: リーグ - ラウンド N」になっていないものを先に
- * （同じなら アウェーチーム順）
+ * 2. ラウンドが取れないもの（「国: リーグ - ラウンド N」になっていないもの）を先に
+ * 3. ラウンドの新しい順（大きい順）
+ * （同じなら ホームチーム順 → アウェーチーム順）
  */
 function compareGroups(a: MatchGroup, b: MatchGroup): number {
   const league = compareText(sortKey(groupLeagueOf(a)), sortKey(groupLeagueOf(b)));
   if (league !== 0) return league;
+  const ra = groupRoundOf(a);
+  const rb = groupRoundOf(b);
+  if (ra === null && rb !== null) return -1;
+  if (ra !== null && rb === null) return 1;
+  if (ra !== null && rb !== null && ra !== rb) return rb - ra;
   const home = compareText(sortKey(a.homeTeamName), sortKey(b.homeTeamName));
   if (home !== 0) return home;
-  const bad = Number(groupHasBadFormat(b)) - Number(groupHasBadFormat(a));
-  if (bad !== 0) return bad;
   return compareText(sortKey(a.awayTeamName), sortKey(b.awayTeamName));
 }
 
@@ -438,7 +457,7 @@ function groupByMatch(rows: RealTimeDataDTO[]): MatchGroup[] {
     g.categories.sort((x, y) => Number(isValidCategory(x.dataCategory)) - Number(isValidCategory(y.dataCategory)));
   }
 
-  // 表示順（フォーマットのダウンロードも同じ順）: 同じ国リーグ → 同じホームチーム → 形式になっていないものを先に
+  // 表示順（フォーマットのダウンロードも同じ順）: 同じ国リーグ → ラウンドが取れないものを先に → ラウンドの新しい順
   return Array.from(map.values()).sort(compareGroups);
 }
 
@@ -1044,7 +1063,7 @@ export default function RealTimeDataAdminPage() {
         paging={{ page, pageSize: PAGE_SIZE, total: viewGroups.length, onChange: setPage }}
       />
       <div className="mt-1.5 text-[11px] text-gray-400">
-        国リーグ不一致 → 国リーグ混在 → ラウンドなし の順に表示しています。候補をクリックすると「新しい dataCategory」に入ります（今のラウンドを付けます）。Enter でも更新できます。
+        国リーグごとに、ラウンドが取れないものを先に、あとはラウンドの新しい順に表示しています。候補をクリックすると「新しい dataCategory」に入ります（今のラウンドを付けます）。Enter でも更新できます。
       </div>
     </div>
   );
