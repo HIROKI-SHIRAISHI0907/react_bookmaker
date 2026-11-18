@@ -448,9 +448,12 @@ function groupByMatch(rows: RealTimeDataDTO[]): MatchGroup[] {
 export default function RealTimeDataAdminPage() {
   const [homeInput, setHomeInput] = useState("");
   const [awayInput, setAwayInput] = useState("");
+  /** ホーム・アウェーのどちらかに含むチーム名（2026-11-18 追加） */
+  const [teamInput, setTeamInput] = useState("");
 
   const [homeFilter, setHomeFilter] = useState("");
   const [awayFilter, setAwayFilter] = useState("");
+  const [teamFilter, setTeamFilter] = useState("");
   const [searchVersion, setSearchVersion] = useState(0);
 
   const [loading, setLoading] = useState(false);
@@ -480,17 +483,18 @@ export default function RealTimeDataAdminPage() {
   const abortRef = useRef<AbortController | null>(null);
 
   /** ホーム・アウェーのどちらか一方だけでも絞り込める */
-  const isFiltered = homeFilter.trim().length > 0 || awayFilter.trim().length > 0;
+  const isFiltered = homeFilter.trim().length > 0 || awayFilter.trim().length > 0 || teamFilter.trim().length > 0;
 
   const apiUrl = useMemo(() => {
     if (isFiltered) {
       const params = new URLSearchParams();
       if (homeFilter.trim()) params.set("homeTeamName", homeFilter.trim());
       if (awayFilter.trim()) params.set("awayTeamName", awayFilter.trim());
+      if (teamFilter.trim()) params.set("teamName", teamFilter.trim());
       return `${API_BASE}/search?${params.toString()}`;
     }
     return API_BASE;
-  }, [isFiltered, homeFilter, awayFilter]);
+  }, [isFiltered, homeFilter, awayFilter, teamFilter]);
 
   useEffect(() => {
     return () => {
@@ -591,6 +595,7 @@ export default function RealTimeDataAdminPage() {
   const handleSearch = () => {
     setHomeFilter(homeInput);
     setAwayFilter(awayInput);
+    setTeamFilter(teamInput);
     setSearchVersion((v) => v + 1);
   };
 
@@ -599,6 +604,8 @@ export default function RealTimeDataAdminPage() {
     setAwayInput("");
     setHomeFilter("");
     setAwayFilter("");
+    setTeamInput("");
+    setTeamFilter("");
     setSearchVersion((v) => v + 1);
   };
 
@@ -948,7 +955,7 @@ export default function RealTimeDataAdminPage() {
         </ConsoleNotice>
       )}
 
-      <ConsolePanel title="検索条件" info="ホーム・アウェーのどちらか一方だけでも絞り込めます。未入力で検索すると全件表示に戻ります">
+      <ConsolePanel title="検索条件" info="チーム名は一部だけでも検索できます（例: 高知）。「チーム名」はホーム・アウェーのどちらの試合も出します。未入力で検索すると全件表示に戻ります">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -956,6 +963,9 @@ export default function RealTimeDataAdminPage() {
           }}
           className="flex flex-wrap items-end gap-2"
         >
+          <ConsoleField label="チーム名（ホーム・アウェー両方）">
+            <ConsoleInput value={teamInput} onChange={(e) => setTeamInput(e.target.value)} placeholder="例）高知" className="w-56" />
+          </ConsoleField>
           <ConsoleField label="ホームチーム名">
             <ConsoleInput value={homeInput} onChange={(e) => setHomeInput(e.target.value)} placeholder="例）FC東京" className="w-56" />
           </ConsoleField>
