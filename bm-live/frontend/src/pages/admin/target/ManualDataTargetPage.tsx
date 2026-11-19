@@ -10,6 +10,7 @@ import {
   ConsoleNotice,
   ConsoleTable,
   ConsoleToolbar,
+  SegmentedTabs,
   StatChips,
   StatusBadge,
 } from "../../../api/commonAdminDesign";
@@ -21,7 +22,20 @@ export type AllLeagueDTO = {
   league: string;
   logicFlg: string;
   dispFlg: string; // "0"(対象) / "1"(対象外)
+  /** 登録日時（2026-11-20 追加） */
+  registerTime?: string | null;
+  /** 新しく入ってきたリーグか（登録から 30 日以内。2026-11-20 追加） */
+  newLeague?: boolean | null;
 };
+
+/**
+ * 一覧の表示（2026-11-20 追加）
+ *   target  : 今スクレイピング対象のリーグ ＋ 新しく入ってきたリーグがある国は、その国のリーグをすべて（既定）
+ *   excluded: 対象外のリーグだけ
+ *   all     : すべて
+ * 対象かどうかは「保存済みの値」で決める（チェックを変えた行がその場で消えないように）
+ */
+type ViewMode = "target" | "excluded" | "all";
 
 export type AllLeagueRequest = {
   country: string;
@@ -322,6 +336,7 @@ export default function ManualDataTargetPage() {
   const [err, setErr] = useState<string | null>(null);
 
   const [q, setQ] = useState("");
+  const [viewMode, setViewMode] = useState<ViewMode>("target");
   const [saveState, setSaveState] = useState<SaveState>({ type: "idle" });
   const [runState, setRunState] = useState<RunState>({ type: "idle" });
 
@@ -346,11 +361,43 @@ export default function ManualDataTargetPage() {
   const running = runState.type === "running";
   const modalBusy = updatingModal || deletingModalRows;
 
+  /** 新しく入ってきたリーグがある国 */
+  const newLeagueCountries = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of rows) if (r.newLeague) set.add((r.country ?? "").trim());
+    return set;
+  }, [rows]);
+
+  const newLeagueCount = useMemo(() => rows.filter((r) => r.newLeague).length, [rows]);
+
+  /** 保存済みの値で「対象か」（チェックを変えただけでは一覧から消さない） */
+  const savedIsTarget = useCallback(
+    (r: AllLeagueDTO) => isScrapeTarget(initialMap[keyOf(r)]?.dispFlg ?? r.dispFlg),
+    [initialMap],
+  );
+
+  const viewCounts = useMemo(() => {
+    let target = 0;
+    let excluded = 0;
+    for (const r of rows) {
+      const t = savedIsTarget(r);
+      if (t || newLeagueCountries.has((r.country ?? "").trim())) target++;
+      if (!t) excluded++;
+    }
+    return { target, excluded, all: rows.length };
+  }, [rows, savedIsTarget, newLeagueCountries]);
+
   const filtered = useMemo(() => {
+    let base = rows;
+    if (viewMode === "target") {
+      base = rows.filter((r) => savedIsTarget(r) || newLeagueCountries.has((r.country ?? "").trim()));
+    } else if (viewMode === "excluded") {
+      base = rows.filter((r) => !savedIsTarget(r));
+    }
     const s = q.trim().toLowerCase();
-    if (!s) return rows;
-    return rows.filter((r) => `${r.country} ${r.league}`.toLowerCase().includes(s));
-  }, [rows, q]);
+    if (!s) return base;
+    return base.filter((r) => `${r.country} ${r.league}`.toLowerCase().includes(s));
+  }, [rows, q, viewMode, savedIsTarget, newLeagueCountries]);
 
   const countryPages = useMemo(() => {
     const seen = new Set<string>();
@@ -391,7 +438,7 @@ export default function ManualDataTargetPage() {
 
   useEffect(() => {
     setCurrentCountryPage(0);
-  }, [q]);
+  }, [q, viewMode]);
 
   const changedCount = useMemo(() => {
     let cnt = 0;
@@ -701,7 +748,20 @@ export default function ManualDataTargetPage() {
   /* ----- 一覧の列 ----- */
   const columns: ConsoleColumn<AllLeagueDTO>[] = [
     { key: "country", header: "国", cell: (r) => <b>{r.country}</b> },
-    { key: "league", header: "リーグ", cell: (r) => <b>{r.league}</b> },
+    {
+      key: "league",
+      header: "リーグ",
+      cell: (r) => (
+        <span className="inline-flex items-center gap-1.5">
+          <b>{r.league}</b>
+          {r.newLeague && (
+            <span title={r.registerTime ? `登録: ${r.registerTime}` : undefined}>
+              <StatusBadge tone="warn">新規</StatusBadge>
+            </span>
+          )}
+        </span>
+      ),
+    },
     {
       key: "target",
       header: "スクレイピング対象",
@@ -816,6 +876,16 @@ export default function ManualDataTargetPage() {
             { label: "対象（現在の国）", value: targetCountVisible, tone: "ok" },
             { label: "変更", value: changedCount, tone: changedCount > 0 ? "warn" : "default" },
             { label: "未確認", value: modalRows.length, tone: modalRows.length > 0 ? "ng" : "default" },
+            { label: "新規リーグ（30日以内）", value: newLeagueCount, tone: newLeagueCount > 0 ? "warn" : "default" },
+          ]}
+        />
+        <SegmentedTabs<ViewMode>
+          value={viewMode}
+          onChange={setViewMode}
+          options={[
+            { value: "target", label: "対象＋新規リーグの国", count: viewCounts.target },
+            { value: "excluded", label: "対象外", count: viewCounts.excluded },
+            { value: "all", label: "すべて", count: viewCounts.all },
           ]}
         />
         <ConsoleInput value={q} onChange={(e) => setQ(e.target.value)} placeholder="国 / リーグで検索（例: JP, J1）" className="ml-auto mb-2.5 w-72" />
