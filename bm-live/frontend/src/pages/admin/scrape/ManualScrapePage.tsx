@@ -4,16 +4,13 @@ import { CalendarClock, Copy, Database, Play, RefreshCw, Search } from "lucide-r
 import {
   BadgeTone,
   ConsoleButton,
-  ConsoleColumn,
   ConsoleField,
   ConsoleInput,
   ConsoleModal,
   ConsoleNotice,
   ConsolePanel,
   ConsoleSelect,
-  ConsoleTable,
   ConsoleToolbar,
-  StatChips,
   StatusBadge,
 } from "../../../api/commonAdminDesign";
 
@@ -66,52 +63,14 @@ type ProgressRes = {
   message?: string | null;
 };
 
-type S3PrefixScope = "DEFAULT" | "ROOT" | "PARENT" | "CUSTOM";
 
-type S3FileCountRequest = {
-  batchCode: string;
-  day?: string | null;
-  scope?: S3PrefixScope | null;
-  prefixOverride?: string | null;
-};
+// 2026-11-20: S3 の count / list API（/v1/api/admin/s3/files/*）は廃止。B007 のマスタ登録の可否は
+//   データ取得管理画面と同じ /v1/api/admin/file-checks（B007: all_league_master.csv があるか）で判定する
+const FILE_CHECKS_URL = `/v1/api/admin/file-checks`;
 
-type S3FileCountResponse = {
-  batchCode?: string;
-  bucket?: string | null;
-  prefix?: string | null;
-  recursive?: boolean | null;
-  dayJst?: string | null;
-  totalCount?: number | null;
-  countOnDay?: number | null;
-  message?: string | null;
-};
-
-type S3FileListRequest = {
-  batchCode: string;
-  scope?: S3PrefixScope | null;
-  prefixOverride?: string | null;
-  recursiveOverride?: boolean | null;
-  limit?: number | null;
-};
-
-type S3FileItem = {
-  key: string;
-  size: number;
-  lastModifiedIso: string;
-};
-
-type S3FileListResponse = {
-  batchCode: string;
-  bucket: string;
-  prefix: string;
-  recursive: boolean;
-  returnedCount: number;
-  message: string;
-  items: S3FileItem[];
-};
-
-const COUNT_URL = `/v1/api/admin/s3/files/count`;
-const LIST_URL = `/v1/api/admin/s3/files/list`;
+type FileCheckItem = { label?: string; bucket?: string; key?: string | null; exists?: boolean };
+type FileCheckTask = { taskCode?: string; ready?: boolean; summary?: string; items?: FileCheckItem[] };
+type FileCheckResponse = { tasks?: FileCheckTask[] };
 const RUN_URL = `/v1/api/admin/scrape/ecs/run`;
 const STAT_EACH_URL = `/v1/api/stat/each`;
 const STAT_OPTIONS_URL = `/v1/api/admin/stat/options`;
@@ -176,11 +135,6 @@ const BATCH_CODES = [
   "B016（MatchDetail）",
 ];
 
-const S3_COLUMNS: ConsoleColumn<S3FileItem>[] = [
-  { key: "key", header: "key", wrap: true, className: "min-w-[420px] break-all font-mono text-[12px]", cell: (it) => it.key },
-  { key: "size", header: "size", align: "right", mono: true, cell: (it) => (typeof it.size === "number" ? it.size.toLocaleString() : "-") },
-  { key: "lastModified", header: "lastModifiedIso", mono: true, cell: (it) => it.lastModifiedIso ?? "-" },
-];
 
 /** ===================== Page ===================== */
 export default function ManualScrapePage() {
@@ -198,7 +152,6 @@ export default function ManualScrapePage() {
   const [lastTaskArn, setLastTaskArn] = useState<string | null>(null);
 
   // ===== B007 =====
-  const [scope, setScope] = useState<S3PrefixScope>("DEFAULT");
   const [isMasterModalOpen, setIsMasterModalOpen] = useState(false);
 
   // ===== B014 =====
@@ -321,30 +274,17 @@ export default function ManualScrapePage() {
   const b014CanRun = !isB014 || (country.trim() !== "" && league.trim() !== "" && !statOptionsQuery.isLoading && !statOptionsQuery.isError);
   const b005CanRun = !isB005 || !isB005SpecificDateMode || (futureTargetDate.trim() !== "" && isFutureTargetDateInRange);
 
-  // ===== B007 request =====
-  const countReq = useMemo<S3FileCountRequest>(() => ({ batchCode: pureBatchCode, scope, day: null }), [pureBatchCode, scope]);
-  const listReq = useMemo<S3FileListRequest>(() => ({ batchCode: pureBatchCode, scope, limit: 100 }), [pureBatchCode, scope]);
-
-  const s3CountQuery = useQuery({
-    queryKey: ["s3-file-count", countReq],
+  // ===== B007: all_league_master.csv があるか（/v1/api/admin/file-checks の B007） =====
+  const fileCheckQuery = useQuery({
+    queryKey: ["file-checks-b007"],
     enabled: isB007,
-    queryFn: () => postJson<S3FileCountResponse>(COUNT_URL, countReq),
+    queryFn: () => getJson<FileCheckResponse>(FILE_CHECKS_URL),
     refetchInterval: isB007 ? 15000 : false,
   });
+  const b007Check = useMemo(() => (fileCheckQuery.data?.tasks ?? []).find((t) => t.taskCode === "B007"), [fileCheckQuery.data]);
+  const b007CsvKey = (b007Check?.items ?? []).find((it) => it.exists)?.key ?? null;
 
-  const s3ListQuery = useQuery({
-    queryKey: ["s3-file-list", listReq],
-    enabled: isB007,
-    queryFn: () => postJson<S3FileListResponse>(LIST_URL, listReq),
-    refetchInterval: isB007 ? 15000 : false,
-  });
-
-  const csvItems = useMemo(() => {
-    const items = s3ListQuery.data?.items ?? [];
-    return items.filter((it) => it.key.toLowerCase().endsWith(".csv"));
-  }, [s3ListQuery.data]);
-
-  const canRegisterMaster = isB007 && csvItems.length === 1;
+  const canRegisterMaster = isB007 && Boolean(b007Check?.ready);
 
   // ===== Run =====
   const runMutation = useMutation({
@@ -390,7 +330,7 @@ export default function ManualScrapePage() {
     },
     onSuccess: async () => {
       setIsMasterModalOpen(false);
-      await Promise.all([progressQuery.refetch(), s3CountQuery.refetch(), s3ListQuery.refetch()]);
+      await Promise.all([progressQuery.refetch(), fileCheckQuery.refetch()]);
     },
   });
 
@@ -402,7 +342,6 @@ export default function ManualScrapePage() {
   const teamsDone = progressQuery.data?.teamsDone ?? null;
   const teamsTotal = progressQuery.data?.teamsTotal ?? null;
 
-  const numText = (v: number | null | undefined) => (typeof v === "number" ? v.toLocaleString() : "-");
 
   const runButtonDisabled = runMutation.isPending || isRunning || masterMutation.isPending || nextDayMutation.isPending || !b014CanRun || !b005CanRun;
 
@@ -431,7 +370,7 @@ export default function ManualScrapePage() {
       <ConsoleToolbar
         title="スクレイピングCSV情報取得管理"
         info="ECS起動（RUN）と進捗監視"
-        description="B005 は特定日（未来 / 過去）・翌日取得、B007 は S3 成果物からマスタ登録まで、B014 は国・リーグ指定実行に対応しています。"
+        description="B005 は特定日（未来 / 過去）・翌日取得、B007 は all_league_master.csv からマスタ登録まで、B014 は国・リーグ指定実行に対応しています。"
       >
         <StatusBadge tone={statusTone(status)}>{status ?? "-"}</StatusBadge>
         {busy ? <StatusBadge tone="warn">処理中…</StatusBadge> : <StatusBadge tone="neutral">待機中</StatusBadge>}
@@ -472,26 +411,25 @@ export default function ManualScrapePage() {
         right={
           isB007 ? (
             <>
-              <StatusBadge tone={canRegisterMaster ? "ok" : "ng"}>判定: {canRegisterMaster ? "OK（csv=1）" : `NG（csv=${csvItems.length}）`}</StatusBadge>
+              <StatusBadge tone={canRegisterMaster ? "ok" : "ng"}>
+                {fileCheckQuery.isError ? "判定: 確認できません" : canRegisterMaster ? "all_league_master.csv あり" : "all_league_master.csv なし"}
+              </StatusBadge>
               <ConsoleButton
                 size="sm"
-                onClick={() => {
-                  void s3CountQuery.refetch();
-                  void s3ListQuery.refetch();
-                }}
+                onClick={() => void fileCheckQuery.refetch()}
                 disabled={busy}
-                loading={s3CountQuery.isFetching || s3ListQuery.isFetching}
-                title="S3のファイル状況を再取得します"
+                loading={fileCheckQuery.isFetching}
+                title="all_league_master.csv があるかを確かめ直します"
               >
-                {!(s3CountQuery.isFetching || s3ListQuery.isFetching) && <Search className="h-3 w-3" />}
-                S3確認
+                {!fileCheckQuery.isFetching && <Search className="h-3 w-3" />}
+                再確認
               </ConsoleButton>
               <ConsoleButton
                 size="sm"
                 variant="danger"
                 onClick={() => setIsMasterModalOpen(true)}
                 disabled={busy || isRunning || !canRegisterMaster}
-                title={isRunning ? "RUNNING中はマスタ登録できません" : !canRegisterMaster ? "S3にcsvがちょうど1つ必要です" : undefined}
+                title={isRunning ? "RUNNING中はマスタ登録できません" : !canRegisterMaster ? "all_league_master.csv がありません" : undefined}
               >
                 <Database className="h-3 w-3" />
                 マスタ登録
@@ -510,15 +448,6 @@ export default function ManualScrapePage() {
               ))}
             </ConsoleSelect>
           </ConsoleField>
-
-          {isB007 && (
-            <ConsoleField label="Prefix scope（B007）">
-              <ConsoleSelect value={scope} onChange={(e) => setScope(e.target.value as S3PrefixScope)} disabled={busy} className="w-48">
-                <option value="DEFAULT">json/（DEFAULT）</option>
-                <option value="ROOT">ルート（ROOT）</option>
-              </ConsoleSelect>
-            </ConsoleField>
-          )}
 
           {isB005 && (
             <>
@@ -596,7 +525,7 @@ export default function ManualScrapePage() {
               {" ／ 「次の日取得」は上の選択に関わらず翌日分を即座に取得します。"}
             </>
           ) : isB007 ? (
-            <>scope: {scope}</>
+            <>aws-s3-all-league-csv の all_league_master.csv があれば「マスタ登録」でマスタに登録できます（確認は15秒ごと）。</>
           ) : isB014 ? null : isB016 ? (
             <>
               aws-s3-detail-data-csv 直下の b016_game_detail_path_&lt;連番&gt;.json をすべて読み、統計詳細データを取得します（読み終わった JSON は削除）。
@@ -676,59 +605,6 @@ export default function ManualScrapePage() {
         )}
       </ConsolePanel>
 
-      {/* ===== S3（B007のみ） ===== */}
-      {isB007 && (
-        <>
-          <div className="mb-1.5 flex flex-wrap items-center gap-2">
-            <h2 className="m-0 text-sm font-bold text-gray-900">S3 成果物確認（B007）</h2>
-            <span className="font-mono text-[11px] text-gray-500">
-              {s3CountQuery.data?.bucket ?? "-"} / {s3CountQuery.data?.prefix ?? "-"}（recursive {String(s3CountQuery.data?.recursive ?? "-")}）
-            </span>
-          </div>
-
-          {(s3CountQuery.isError || s3ListQuery.isError) && (
-            <ConsoleNotice tone="ng" title="S3取得エラー">
-              {((s3CountQuery.error as Error)?.message || (s3ListQuery.error as Error)?.message) ?? "unknown"}
-            </ConsoleNotice>
-          )}
-
-          <StatChips
-            loading={s3CountQuery.isLoading}
-            items={[
-              { label: "Total（prefix配下）", value: numText(s3CountQuery.data?.totalCount) },
-              { label: "指定日（countOnDay）", value: numText(s3CountQuery.data?.countOnDay) },
-              { label: "CSV files", value: csvItems.length.toLocaleString(), tone: canRegisterMaster ? "ok" : "ng" },
-              { label: "Returned（list）", value: numText(s3ListQuery.data?.returnedCount) },
-            ]}
-          />
-
-          {!canRegisterMaster && <ConsoleNotice tone="warn" title={`マスタ登録するには、S3に csv がちょうど 1つ必要です（現在: ${csvItems.length}）。`} />}
-
-          {(s3CountQuery.data?.message || s3ListQuery.data?.message) && (
-            <div className="mb-2 text-[11px] text-gray-600">
-              {s3CountQuery.data?.message && (
-                <div>
-                  <b>count:</b> {s3CountQuery.data.message}
-                </div>
-              )}
-              {s3ListQuery.data?.message && (
-                <div>
-                  <b>list:</b> {s3ListQuery.data.message}
-                </div>
-              )}
-            </div>
-          )}
-
-          <ConsoleTable
-            columns={S3_COLUMNS}
-            rows={s3ListQuery.data?.items ?? []}
-            rowKey={(it) => it.key}
-            loading={s3ListQuery.isLoading}
-            emptyText="ファイルがありません"
-            rowClassName={(it) => (it.key.toLowerCase().endsWith(".csv") ? "!bg-indigo-50/70" : "")}
-          />
-        </>
-      )}
 
       <div className="mt-3 text-center text-[11px] text-gray-400">取得できない場合は、管理者権限・セッション（credentials: include）・API到達性をご確認ください。</div>
 
@@ -761,11 +637,11 @@ export default function ManualScrapePage() {
         {canRegisterMaster ? (
           <div className="text-[13px] text-gray-700">
             マスタに登録しますか？
-            <div className="mt-2 break-all rounded-md bg-gray-50 px-2 py-1.5 font-mono text-xs">{csvItems[0]?.key ?? ""}</div>
+            <div className="mt-2 break-all rounded-md bg-gray-50 px-2 py-1.5 font-mono text-xs">{b007CsvKey ?? "all_league_master.csv"}</div>
           </div>
         ) : (
           <ConsoleNotice tone="warn" title="マスタ登録できません" className="mb-0">
-            {`S3に csv がちょうど 1つ必要です（現在: ${csvItems.length}）。`}
+            all_league_master.csv がありません（B007 のスクレイピングを先に実行してください）。
           </ConsoleNotice>
         )}
       </ConsoleModal>

@@ -380,8 +380,9 @@ export default function DataFetchAdminPage() {
         id: "B006",
         code: "B006",
         title: "統計CSVデータ取り入れ実行",
-        description: "統計CSVを取り込む",
-        endpoint: "/v1/api/admin/exec/task/stat-csv",
+        description: "統計CSVを取り込む（統計用の bookmakers-app で実行）",
+        // 2026-11-20: 以前は /stat-csv（B011 統計CSVデータ生成。bookmakers-batch）を呼んでいた
+        endpoint: "/v1/api/admin/exec/task/stat-data",
         precheckMode: "always",
       },
       {
