@@ -418,10 +418,14 @@ export default function ManualDataTargetPage() {
   const totalCountryPages = countryPages.length;
   const currentCountry = totalCountryPages > 0 ? countryPages[currentCountryPage] : "";
 
+  /** 「対象＋新規リーグの国」は国ごとに分けず、すべての国をまとめて 1 つの一覧に出す（2026-11-20） */
+  const showAllCountries = viewMode === "target";
+
   const pagedRows = useMemo(() => {
+    if (showAllCountries) return filtered;
     if (!currentCountry) return [];
     return filtered.filter((r) => (r.country ?? "").trim() === currentCountry);
-  }, [filtered, currentCountry]);
+  }, [filtered, currentCountry, showAllCountries]);
 
   useEffect(() => {
     if (totalCountryPages === 0) {
@@ -872,8 +876,8 @@ export default function ManualDataTargetPage() {
           items={[
             { label: "全件数", value: rows.length },
             { label: "絞込件数", value: filtered.length },
-            { label: "現在の国のリーグ", value: pagedRows.length },
-            { label: "対象（現在の国）", value: targetCountVisible, tone: "ok" },
+            { label: showAllCountries ? "表示中のリーグ" : "現在の国のリーグ", value: pagedRows.length },
+            { label: showAllCountries ? "対象（表示中）" : "対象（現在の国）", value: targetCountVisible, tone: "ok" },
             { label: "変更", value: changedCount, tone: changedCount > 0 ? "warn" : "default" },
             { label: "未確認", value: modalRows.length, tone: modalRows.length > 0 ? "ng" : "default" },
             { label: "新規リーグ（30日以内）", value: newLeagueCount, tone: newLeagueCount > 0 ? "warn" : "default" },
@@ -905,10 +909,16 @@ export default function ManualDataTargetPage() {
         footer={
           <>
             <span className="flex flex-wrap items-center gap-2">
-              <b className="text-[13px] text-gray-900">{currentCountry || "-"}</b>
-              <span className="tabular-nums">
-                {pageNo} / {totalCountryPages} 国
-              </span>
+              {showAllCountries ? (
+                <span className="tabular-nums">全 {totalCountryPages} 国・{pagedRows.length} リーグ</span>
+              ) : (
+                <>
+                  <b className="text-[13px] text-gray-900">{currentCountry || "-"}</b>
+                  <span className="tabular-nums">
+                    {pageNo} / {totalCountryPages} 国
+                  </span>
+                </>
+              )}
               <ConsoleButton size="sm" variant="ghost" onClick={() => setAllVisible(true)} disabled={pagedRows.length === 0 || saving || running}>
                 <CheckSquare className="h-3 w-3" />
                 全チェック
@@ -918,7 +928,7 @@ export default function ManualDataTargetPage() {
                 全チェック外し
               </ConsoleButton>
             </span>
-            <div className="flex gap-1.5">
+            <div className={`flex gap-1.5 ${showAllCountries ? "hidden" : ""}`}>
               <ConsoleButton size="sm" onClick={() => setCurrentCountryPage((prev) => Math.max(prev - 1, 0))} disabled={totalCountryPages === 0 || currentCountryPage <= 0}>
                 <ChevronLeft className="h-3.5 w-3.5" />
                 前の国
