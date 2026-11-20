@@ -22,7 +22,7 @@ type FutureMatchRealtimeData = {
   delayStatusText?: string | null;
   /**
    * リアルタイム情報（＝試合そのものの状況。バックエンドの MatchStatusResolver で決める）
-   * 開始前 / ライブ / 終了済 / 延期 / 中止 / 遅延（中断時はシステムデータの状態）
+   * 開始前 / ライブ / 中断の可能性 / 終了済 / 延期 / 中止 / 遅延（中断時はシステムデータの状態）
    */
   status?: string | null;
   /** その状態になった理由（例: 試合開始から2時間10分を超えたため） */
@@ -133,6 +133,7 @@ const STATUS_TONE: Record<string, BadgeTone> = {
   開始前: "neutral",
   延期: "warn",
   中断: "warn",
+  中断の可能性: "warn",
   中止: "warn",
   遅延: "warn",
 };
@@ -164,6 +165,8 @@ function getSystemDataStatus(match: FutureMatch): StatusView {
  * リアルタイム情報（＝試合そのものの状況）
  *   延期・中止 → 延期・中止（中断からの延期も延期） / 中断 → システムデータの状態
  *   未開始 → 開始前（遅延の情報があれば遅延） / 開始から2時間10分以内 → ライブ / それ以降 → 終了済
+ *   ライブの時間内でも、最後の記録から30分以上データが来ていない → 中断の可能性（2026-11-21）
+ *   2時間10分を超えても、最後の記録から40分以内にデータが来ていれば開始から6時間まではライブ（中断からの再開など）
  */
 function getRealtimeDataStatus(match: FutureMatch): StatusView {
   const rt = match.realtimeData;
