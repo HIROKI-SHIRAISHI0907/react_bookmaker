@@ -75,7 +75,7 @@ const ADMIN_MENU: AdminMenuGroup[] = [
       { label: "お気に入り国リーグ情報全体反映設定", to: "force/update", desc: "お気に入りに選べるチームの表示 / 非表示（admin_favorites_master）" },
       { label: "リーグ勝ち点情報反映設定", to: "point-setting", desc: "国・リーグごとの勝ち点" },
       { label: "リーグレベル情報反映設定", to: "league-level", desc: "国・リーグごとのリーグの格（昇格・降格の判定用）" },
-      { label: "チームカラー情報反映設定", to: "manual/teamColor" },
+      { label: "チームカラー情報反映設定", to: "manual/teamColor", desc: "チームごとのメイン / サブカラーの確認・更新" },
       { label: "サブリーグ名反映設定", to: "sub-league", desc: "サブリーグへのチーム割り当て" },
       { label: "サブリーグ保有国リーグ登録設定", to: "sub-league-season", desc: "アペルトゥーラ／クラウスラ などサブリーグ単位でシーズンが分かれている国・リーグ" },
       { label: "リーグ所属チーム付け替え設定", to: "league-team", desc: "リーグ名が変わったときに、所属チームを新しいリーグ名へ付け替え" },

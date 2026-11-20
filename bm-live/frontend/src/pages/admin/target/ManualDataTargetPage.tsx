@@ -390,7 +390,18 @@ export default function ManualDataTargetPage() {
   const filtered = useMemo(() => {
     let base = rows;
     if (viewMode === "target") {
-      base = rows.filter((r) => savedIsTarget(r) || newLeagueCountries.has((r.country ?? "").trim()));
+      // 並び（2026-11-20）: 国ごとに、対象（disp_flg=0）を先頭 → その国の新規リーグ → その国の残りのリーグ
+      const rank = (r: AllLeagueDTO) => (savedIsTarget(r) ? 0 : r.newLeague ? 1 : 2);
+      base = rows
+        .filter((r) => savedIsTarget(r) || newLeagueCountries.has((r.country ?? "").trim()))
+        .map((r, i) => ({ r, i }))
+        .sort((x, y) => {
+          const cx = (x.r.country ?? "").trim();
+          const cy = (y.r.country ?? "").trim();
+          if (cx !== cy) return x.i - y.i; // 国の並びは今まで（API の国・リーグ順）のまま
+          return rank(x.r) - rank(y.r) || x.i - y.i;
+        })
+        .map((x) => x.r);
     } else if (viewMode === "excluded") {
       base = rows.filter((r) => !savedIsTarget(r));
     }

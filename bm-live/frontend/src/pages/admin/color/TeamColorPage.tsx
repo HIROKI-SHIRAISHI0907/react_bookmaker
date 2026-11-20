@@ -26,6 +26,11 @@ const PAGE_SIZE = 20;
 /** 一覧の絞り込みタブ */
 type ViewFilter = "all" | "dirty" | "noMain" | "noSub";
 
+/** 有効 / 無効の絞り込み（2026-11-20 追加。del_flg: '0' = 有効 / '1' = 無効。チームデータ取得情報と同じ） */
+type ActiveFilter = "active" | "inactive" | "both";
+
+const isActive = (r: { delFlg?: string | null }) => (r.delFlg ?? "0") !== "1";
+
 /** =========================
  * Types
  * ========================= */
@@ -36,6 +41,8 @@ type TeamColorRow = {
   team: string | null;
   teamColorMainHex: string | null;
   teamColorSubHex: string | null;
+  /** '0' = 有効 / '1' = 無効（今は無いリーグ・チームなど） */
+  delFlg?: string | null;
 };
 
 type TeamColorCond = {
@@ -132,7 +139,8 @@ function isSameRow(a: TeamColorRow, b: TeamColorRow) {
     str(a.league) === str(b.league) &&
     str(a.team) === str(b.team) &&
     str(a.teamColorMainHex) === str(b.teamColorMainHex) &&
-    str(a.teamColorSubHex) === str(b.teamColorSubHex)
+    str(a.teamColorSubHex) === str(b.teamColorSubHex) &&
+    (a.delFlg ?? "0") === (b.delFlg ?? "0")
   );
 }
 
@@ -193,6 +201,7 @@ export default function TeamColorPage() {
 
   const [page, setPage] = useState(1);
   const [view, setView] = useState<ViewFilter>("all");
+  const [activeFilter, setActiveFilter] = useState<ActiveFilter>("active");
 
   const abortRef = useRef<AbortController | null>(null);
 
@@ -203,14 +212,26 @@ export default function TeamColorPage() {
 
   const dirtyRows = useMemo(() => rows.filter(isDirty), [rows, originals]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  /** 有効 / 無効で絞った行（保存済みの値で判定。チェックを変えただけでは消えない） */
+  const activeCounts = useMemo(() => {
+    let active = 0;
+    for (const r of rows) if (isActive(originals[r.id] ?? r)) active++;
+    return { active, inactive: rows.length - active, both: rows.length };
+  }, [rows, originals]);
+
+  const scopedRows = useMemo(() => {
+    if (activeFilter === "both") return rows;
+    return rows.filter((r) => isActive(originals[r.id] ?? r) === (activeFilter === "active"));
+  }, [rows, originals, activeFilter]);
+
   const stats = useMemo(
     () => ({
-      total: rows.length,
+      total: scopedRows.length,
       dirty: dirtyRows.length,
-      noMain: rows.filter((r) => !str(r.teamColorMainHex).trim()).length,
-      noSub: rows.filter((r) => !str(r.teamColorSubHex).trim()).length,
+      noMain: scopedRows.filter((r) => !str(r.teamColorMainHex).trim()).length,
+      noSub: scopedRows.filter((r) => !str(r.teamColorSubHex).trim()).length,
     }),
-    [rows, dirtyRows],
+    [scopedRows, dirtyRows],
   );
 
   const viewRows = useMemo(() => {
@@ -218,13 +239,13 @@ export default function TeamColorPage() {
       case "dirty":
         return rows.filter(isDirty);
       case "noMain":
-        return rows.filter((r) => !str(r.teamColorMainHex).trim());
+        return scopedRows.filter((r) => !str(r.teamColorMainHex).trim());
       case "noSub":
-        return rows.filter((r) => !str(r.teamColorSubHex).trim());
+        return scopedRows.filter((r) => !str(r.teamColorSubHex).trim());
       default:
-        return rows;
+        return scopedRows;
     }
-  }, [rows, view, originals]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [rows, scopedRows, view, originals]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const totalPages = Math.max(1, Math.ceil(viewRows.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -309,6 +330,7 @@ export default function TeamColorPage() {
           team: toNullableString(str(r.team)),
           teamColorMainHex: main.ok ? main.value : null,
           teamColorSubHex: sub.ok ? sub.value : null,
+          delFlg: (r.delFlg ?? "0") === "1" ? "1" : "0",
         });
         saved++;
       }
@@ -320,8 +342,12 @@ export default function TeamColorPage() {
     }
   };
 
+  // 2026-11-20: 国・リーグ・チームは更新のキー（UPDATE ... WHERE country/league/team）なので表示だけにする。
+  //   以前は入力欄になっていて、書き換えると保存しても対象の行が見つからず更新されなかった
   const textCell = (key: "country" | "league" | "team", label: string) => (r: TeamColorRow) => (
-    <ConsoleInput value={str(r[key])} onChange={(e) => updateCell(r.id, key, e.target.value)} aria-label={`${r.team ?? r.id} の ${label}`} className="h-7 w-full min-w-0 text-[12.5px]" />
+    <span className={key === "team" ? "font-bold text-gray-900" : "text-gray-700"} aria-label={`${r.team ?? r.id} の ${label}`}>
+      {str(r[key]) || "-"}
+    </span>
   );
 
   const columns: ConsoleColumn<TeamColorRow>[] = [
@@ -344,6 +370,25 @@ export default function TeamColorPage() {
       header: "サブカラー",
       className: "min-w-[180px]",
       cell: (r) => <ColorInput value={str(r.teamColorSubHex)} onChange={(v) => updateCell(r.id, "teamColorSubHex", v)} ariaLabel={`${r.team ?? r.id} のサブカラー`} />,
+    },
+    {
+      key: "active",
+      header: "有効",
+      cell: (r) => {
+        const active = isActive(r);
+        return (
+          <label className="inline-flex cursor-pointer select-none items-center gap-1.5" title="チェックなし = 無効（del_flg=1。今は無いリーグ・チームなど）">
+            <input
+              type="checkbox"
+              checked={active}
+              onChange={(e) => updateCell(r.id, "delFlg", e.target.checked ? "0" : "1")}
+              className="h-4 w-4 accent-indigo-600"
+              aria-label={`${r.team ?? r.id} を有効にする`}
+            />
+            {active ? <StatusBadge tone="ok">有効</StatusBadge> : <StatusBadge tone="neutral">無効</StatusBadge>}
+          </label>
+        );
+      },
     },
     {
       key: "status",
@@ -429,7 +474,19 @@ export default function TeamColorPage() {
         ]}
       />
 
-      <div className="mb-2">
+      <div className="mb-2 flex flex-wrap items-center gap-3">
+        <SegmentedTabs<ActiveFilter>
+          value={activeFilter}
+          onChange={(v) => {
+            setActiveFilter(v);
+            setPage(1);
+          }}
+          options={[
+            { value: "active", label: "有効", count: activeCounts.active },
+            { value: "inactive", label: "無効（del_flg=1）", count: activeCounts.inactive },
+            { value: "both", label: "有効・無効すべて", count: activeCounts.both },
+          ]}
+        />
         <SegmentedTabs<ViewFilter>
           value={view}
           onChange={(v) => {
