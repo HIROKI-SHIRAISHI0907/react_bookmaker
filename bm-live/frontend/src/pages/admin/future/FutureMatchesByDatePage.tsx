@@ -323,7 +323,16 @@ const FutureMatchesByDatePage: React.FC = () => {
 
   return (
     <div>
-      <ConsoleToolbar title="試合予定データ取得情報" info={`future_master・${PAGE_SIZE}件ずつ表示`}>
+      <ConsoleToolbar
+        title="試合予定データ取得情報"
+        info={`future_master・${PAGE_SIZE}件ずつ表示`}
+        description={
+          <>
+            ※ 対戦予定の情報が表示されていない場合は、その国・リーグが<b>シーズン期間外</b>の可能性があります
+            （シーズンデータ取得情報の開始日〜終了日の外。プレーオフなどシーズン終了後の試合は表示・登録しません）。
+          </>
+        }
+      >
         <DateStepper value={date} onChange={handleChangeDate} disabled={loading} />
         <ConsoleButton variant="primary" onClick={handleReload} loading={loading}>
           {!loading && <RefreshCw className="h-3.5 w-3.5" />}
@@ -360,11 +369,11 @@ const FutureMatchesByDatePage: React.FC = () => {
       </div>
 
       {viewMode === "table" ? (
-        <ConsoleTable columns={columns} rows={matches} rowKey={getMatchKey} loading={loading} emptyText="対象データがありません。" footer={pager} />
+        <ConsoleTable columns={columns} rows={matches} rowKey={getMatchKey} loading={loading} emptyText="対象データがありません（シーズン期間外の国・リーグの試合は表示しません）。" footer={pager} />
       ) : (
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
           {matches.length === 0 ? (
-            <div className="px-4 py-10 text-center text-sm text-gray-400">{loading ? "読み込み中…" : "表示対象の試合がありません。"}</div>
+            <div className="px-4 py-10 text-center text-sm text-gray-400">{loading ? "読み込み中…" : "表示対象の試合がありません（シーズン期間外の国・リーグの試合は表示しません）。"}</div>
           ) : (
             matches.map((match, index) => {
               const systemStatus = getSystemDataStatus(match);
