@@ -62,14 +62,25 @@ type IngestedRowDTO = {
   detailTableTotal?: number | null;
   /** 統計詳細データで、データが無いもの（日本語名） */
   detailMissingTables?: string[] | null;
+  /** 統計詳細データで、このリーグでは提供されていないもの（分母から外した。2026-11-22 追加） */
+  detailUnavailableTables?: string[] | null;
 };
 
-/** 統計詳細データの「n/9」バッジ。9/9 = 緑、必要な分はある = 青、足りない = 黄、何も無い = 黄「なし」 */
+/**
+ * 統計詳細データの「n/m」バッジ。m = その試合で取れるはずの数（2026-11-22 変更: リーグで提供されていないデータ・
+ * 無くても正常なゴール 0-0・欠場者なしは m に入れない）。n = m なら緑、必要な分はある = 青、足りない = 黄、何も無い = 黄「なし」
+ */
 function DetailCountBadge({ row, long = false }: { row: IngestedRowDTO; long?: boolean }) {
   const count = row.detailTableCount ?? 0;
   const total = row.detailTableTotal ?? 9;
   const missing = row.detailMissingTables ?? [];
-  const title = missing.length ? `無いデータ: ${missing.join("・")}` : "9 データすべてあり";
+  const unavailable = row.detailUnavailableTables ?? [];
+  const title = [
+    missing.length ? `取れていないデータ（取り直す余地あり）: ${missing.join("・")}` : `取れるはずのデータ ${total} 件すべてあり`,
+    unavailable.length ? `このリーグでは提供なし（数えない）: ${unavailable.join("・")}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
   const prefix = long ? "統計詳細データ " : "";
   if (count === 0) {
     return (

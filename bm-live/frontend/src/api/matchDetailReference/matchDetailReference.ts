@@ -27,6 +27,10 @@ export type MatchDetailReferenceRow = {
   lineupCount: number;
   missingCount: number;
   memberStatCount: number;
+  /** 取れるはずなのに無いデータ（取り直す余地あり。2026-11-22 追加）。空なら「OK」 */
+  missingTables?: string[] | null;
+  /** このリーグでは提供されていないデータ（2026-11-22 追加） */
+  unavailableTables?: string[] | null;
 };
 
 export type MatchDetailReferenceResponse = {

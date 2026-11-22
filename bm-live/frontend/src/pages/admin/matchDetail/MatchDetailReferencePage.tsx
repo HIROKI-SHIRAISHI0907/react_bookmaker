@@ -190,14 +190,24 @@ export default function MatchDetailReferencePage() {
     {
       key: "errors",
       header: "取得",
-      cell: (r) =>
-        r.scrapeErrors ? (
-          <span title={`取得できなかったページ: ${scrapeErrorsLabel(r.scrapeErrors)}`}>
-            <StatusBadge tone="warn">一部なし</StatusBadge>
+      // 2026-11-22: 取れるはずなのに無いデータがあるときだけ「一部なし」。リーグで提供されていないデータ（例: J2 のモメンタム）・
+      //   ゴール 0-0・欠場者なしは「OK」のまま（取り直しても増えないため）
+      cell: (r) => {
+        const missing = r.missingTables ?? [];
+        const unavailable = r.unavailableTables ?? [];
+        const title = [
+          missing.length ? `取れていないデータ（取り直す余地あり）: ${missing.join("・")}` : "",
+          unavailable.length ? `このリーグでは提供なし: ${unavailable.join("・")}` : "",
+          r.scrapeErrors ? `取得時の記録: ${scrapeErrorsLabel(r.scrapeErrors)}` : "",
+        ]
+          .filter(Boolean)
+          .join("\n");
+        return (
+          <span title={title || undefined}>
+            {missing.length > 0 ? <StatusBadge tone="warn">一部なし</StatusBadge> : <StatusBadge tone="ok">OK</StatusBadge>}
           </span>
-        ) : (
-          <StatusBadge tone="ok">OK</StatusBadge>
-        ),
+        );
+      },
     },
     { key: "registered", header: "登録日時", cell: (r) => <span className="text-[11px] text-gray-500">{r.registerTime ?? "-"}</span> },
     {
@@ -225,7 +235,7 @@ export default function MatchDetailReferencePage() {
       <ConsoleToolbar
         title="統計詳細データ参照"
         info="B016 が登録した試合詳細（モメンタム・出来事・メンバー・選手スタッツなど）"
-        description="行をクリックすると、その試合の統計詳細データを表示します。取れなかったページがある試合は「一部なし」になります（J3 などリーグによって取れるデータが少ないことがあります）。"
+        description="行をクリックすると、その試合の統計詳細データを表示します。取れるはずのデータが無い試合は「一部なし」になります。リーグで提供されていないデータ（J2・J3 のモメンタムなど。同じリーグの直近 50 試合で 1 割未満しか無いもの）と、ゴール 0-0・欠場者なしは「OK」のまま数えません。"
       >
         <ConsoleButton onClick={() => void q.refetch()} loading={q.isFetching && !q.isLoading}>
           {!(q.isFetching && !q.isLoading) && <RefreshCw className="h-3.5 w-3.5" />}
@@ -257,7 +267,7 @@ export default function MatchDetailReferencePage() {
           <ConsoleInput type="date" value={dateToInput} onChange={(e) => setDateToInput(e.target.value)} className="w-40" />
         </ConsoleField>
         <ConsoleCheck checked={errorsOnlyInput} onChange={setErrorsOnlyInput}>
-          取得エラーありのみ
+          取得時の記録ありのみ
         </ConsoleCheck>
         <ConsoleButton variant="primary" onClick={handleSearch} data-testid="button-search">
           <Search className="h-3.5 w-3.5" />
@@ -289,9 +299,9 @@ export default function MatchDetailReferencePage() {
           { label: "試合数", value: total },
           { label: "このページ", value: rows.length },
           {
-            label: "取得エラーあり（このページ）",
-            value: rows.filter((r) => r.scrapeErrors).length,
-            tone: rows.some((r) => r.scrapeErrors) ? "warn" : "default",
+            label: "一部なし（このページ）",
+            value: rows.filter((r) => (r.missingTables ?? []).length > 0).length,
+            tone: rows.some((r) => (r.missingTables ?? []).length > 0) ? "warn" : "default",
           },
         ]}
       />
@@ -303,7 +313,7 @@ export default function MatchDetailReferencePage() {
         loading={q.isLoading}
         emptyText="統計詳細データがありません"
         onRowClick={(r) => setSelected(r)}
-        rowClassName={(r) => (r.scrapeErrors ? "cursor-pointer bg-amber-50/40" : "cursor-pointer")}
+        rowClassName={(r) => ((r.missingTables ?? []).length > 0 ? "cursor-pointer bg-amber-50/40" : "cursor-pointer")}
         paging={{ page, pageSize, total, onChange: setPage }}
         maxHeight="calc(100vh - 340px)"
       />
