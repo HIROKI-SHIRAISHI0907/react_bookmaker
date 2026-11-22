@@ -2,6 +2,8 @@ import React, { useCallback, useMemo, useRef, useState } from "react";
 import { Download, FileArchive, Upload, X } from "lucide-react";
 import { ConsoleButton, ConsoleColumn, ConsoleModal, ConsoleNotice, ConsolePanel, ConsoleTable, ConsoleToolbar, StatChips, StatChipItem, fmtNum } from "../../../api/commonAdminDesign";
 import { getAccessToken, getTokenType } from "../../../utils/auth";
+import { queryClient } from "../../../lib/queryClient";
+import { SETUP_STATUS_QUERY_KEY } from "../SetupGate";
 
 /**
  * CSV アップロード画面の共通部品（シーズン / チーム / 試合予定 / リアルタイム / データカテゴリ統一）
@@ -234,7 +236,11 @@ const CsvUploadConsole: React.FC<Props> = ({ masterName, title, prefix, tableNam
 
       // 400 / 401 / 500 でも結果（メッセージ・エラー行）を JSON で返すので、そのまま表示する
       setResult({ status: response.status, body: JSON.parse(rawText) as CsvUploadResponse, fileName: file.name });
-      if (response.ok) clearFile();
+      if (response.ok) {
+        clearFile();
+        // 2026-11-22: 反映で未対応（大会の未登録など）が解消することがあるので、入口チェックを取り直す
+        void queryClient.invalidateQueries({ queryKey: SETUP_STATUS_QUERY_KEY });
+      }
     } catch (e) {
       setRequestError(e instanceof Error ? e.message : "アップロードに失敗しました。");
     } finally {

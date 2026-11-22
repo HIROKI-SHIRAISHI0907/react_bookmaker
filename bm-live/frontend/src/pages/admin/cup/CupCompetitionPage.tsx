@@ -15,6 +15,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { ExternalLink, Pencil, Plus, RefreshCw, RotateCcw, Trash2, Upload } from "lucide-react";
+import { queryClient } from "../../../lib/queryClient";
+import { SETUP_STATUS_QUERY_KEY } from "../SetupGate";
 import {
   ConsoleButton,
   ConsoleCheck,
@@ -157,7 +159,11 @@ export default function CupCompetitionPage() {
     return c;
   }, [matches]);
 
+  // 2026-11-22: 大会・出場チームを変えると未対応（大会出場チームの未登録）が変わるので、入口チェックも取り直す
+  const refreshSetupStatus = () => void queryClient.invalidateQueries({ queryKey: SETUP_STATUS_QUERY_KEY });
+
   const refetchAll = async () => {
+    refreshSetupStatus();
     await Promise.all([competitions.refetch(), teams.refetch(), schedule.refetch()]);
   };
 
@@ -172,6 +178,7 @@ export default function CupCompetitionPage() {
       showResult(r, "大会を保存しました", "大会を保存できませんでした");
       if (r.responseCode === "0") {
         setForm(null);
+        refreshSetupStatus();
         await competitions.refetch();
         if (r.id != null) setSelectedId(r.id);
       }
@@ -184,6 +191,7 @@ export default function CupCompetitionPage() {
     onSuccess: async (r) => {
       setDeleteTarget(null);
       showResult(r, "大会を削除しました", "大会を削除できませんでした");
+      refreshSetupStatus();
       await competitions.refetch();
     },
     onError: (e) => {
@@ -232,13 +240,27 @@ export default function CupCompetitionPage() {
     onError: (e) => setNotice({ tone: "ng", title: "取り直しにできませんでした", body: (e as Error).message }),
   });
 
-  const busy = save.isPending || remove.isPending || add.isPending || removeTeams.isPending || exportJson.isPending || retry.isPending;
+  // 2026-11-22: 試合予定（日程・結果の出場チーム）から出場チームを自動で登録する（毎時 40 分にも自動で行う）
+  const autoTeams = useMutation({
+    mutationFn: () => postJson<Result>(`${BASE}/teams/auto`, {}),
+    onSuccess: async (r) => {
+      showResult(r, "試合予定から出場チームを取り込みました", "出場チームを取り込めませんでした");
+      await refetchAll();
+    },
+    onError: (e) => setNotice({ tone: "ng", title: "出場チームを取り込めませんでした", body: (e as Error).message }),
+  });
+
+  const busy = save.isPending || remove.isPending || add.isPending || removeTeams.isPending || exportJson.isPending || retry.isPending || autoTeams.isPending;
   // 試合前・登録済みは取り直せない（取得待ちは依頼前なので不要）
   const retryable = (m: ScheduleMatch) => m.status === "REQUESTED" || m.status === "EXPIRED";
 
   return (
     <div>
       <ConsoleToolbar title="大会出場チーム登録設定" info="ACL など、各国のリーグのチームが出る大会と出場チームを登録します。試合日の翌日に出場選手を取ります">
+        <ConsoleButton onClick={() => autoTeams.mutate()} loading={autoTeams.isPending} disabled={busy} title="試合予定に出ているスクレイピング対象のリーグのチームを、出場チームに登録します（毎時 40 分にも自動で行います。外したチームは入れ直しません）">
+          {!autoTeams.isPending && <Plus className="h-3.5 w-3.5" />}
+          試合予定から出場チームを取り込む
+        </ConsoleButton>
         <ConsoleButton onClick={() => exportJson.mutate()} loading={exportJson.isPending} disabled={busy} title="大会と出場チームを S3 の b026_cup_competition.json へ出力し直します">
           {!exportJson.isPending && <Upload className="h-3.5 w-3.5" />}
           JSON を出力し直す
