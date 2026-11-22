@@ -8,6 +8,7 @@ import {
   ConsoleInput,
   ConsoleModal,
   ConsoleNotice,
+  ConsoleSelect,
   ConsoleTable,
   ConsoleToolbar,
   SegmentedTabs,
@@ -16,6 +17,14 @@ import {
 } from "../../../api/commonAdminDesign";
 import { queryClient } from "../../../lib/queryClient";
 import { SETUP_STATUS_QUERY_KEY } from "../SetupGate";
+import {
+  COUNTRIES_PER_PAGE_OPTIONS,
+  DEFAULT_COUNTRIES_PER_PAGE,
+  countriesOf,
+  filterByViewMode,
+  pageByCountries,
+  type ScrapeViewMode,
+} from "./scrapeTargetView";
 
 export type AllLeagueDTO = {
   country: string;
@@ -29,13 +38,15 @@ export type AllLeagueDTO = {
 };
 
 /**
- * 一覧の表示（2026-11-20 追加）
- *   target  : 今スクレイピング対象のリーグ ＋ 新しく入ってきたリーグがある国は、その国のリーグをすべて（既定）
- *   excluded: 対象外のリーグだけ
- *   all     : すべて
+ * 一覧の表示（2026-11-20 追加。2026-11-22 targetOnly・targetCountries を追加、中身は scrapeTargetView.ts）
+ *   targetOnly      : スクレイピング対象（dispFlg=0）のリーグだけ
+ *   target          : 今スクレイピング対象のリーグ ＋ 新しく入ってきたリーグがある国は、その国のリーグをすべて（既定）
+ *   targetCountries : 対象のリーグがある国の、その国のリーグすべて（あとから入った新しいリーグも含む）
+ *   excluded        : 対象外のリーグだけ
+ *   all             : すべて
  * 対象かどうかは「保存済みの値」で決める（チェックを変えた行がその場で消えないように）
  */
-type ViewMode = "target" | "excluded" | "all";
+type ViewMode = ScrapeViewMode;
 
 export type AllLeagueRequest = {
   country: string;
@@ -354,6 +365,8 @@ export default function ManualDataTargetPage() {
   const [deletingModalRows, setDeletingModalRows] = useState(false);
 
   const [currentCountryPage, setCurrentCountryPage] = useState(0);
+  /** 1 ページの国の数（2026-11-22: 国単位のページング） */
+  const [countriesPerPage, setCountriesPerPage] = useState<number>(DEFAULT_COUNTRIES_PER_PAGE);
 
   const autoOpenTriedRef = useRef(false);
 
@@ -384,59 +397,26 @@ export default function ManualDataTargetPage() {
       if (t || newLeagueCountries.has((r.country ?? "").trim())) target++;
       if (!t) excluded++;
     }
-    return { target, excluded, all: rows.length };
+    const targetCountries = filterByViewMode(rows, "targetCountries", savedIsTarget).length;
+    const targetOnly = rows.filter((r) => savedIsTarget(r)).length;
+    return { target, targetOnly, targetCountries, excluded, all: rows.length };
   }, [rows, savedIsTarget, newLeagueCountries]);
 
   const filtered = useMemo(() => {
-    let base = rows;
-    if (viewMode === "target") {
-      // 並び（2026-11-20）: 国ごとに、対象（disp_flg=0）を先頭 → その国の新規リーグ → その国の残りのリーグ
-      const rank = (r: AllLeagueDTO) => (savedIsTarget(r) ? 0 : r.newLeague ? 1 : 2);
-      base = rows
-        .filter((r) => savedIsTarget(r) || newLeagueCountries.has((r.country ?? "").trim()))
-        .map((r, i) => ({ r, i }))
-        .sort((x, y) => {
-          const cx = (x.r.country ?? "").trim();
-          const cy = (y.r.country ?? "").trim();
-          if (cx !== cy) return x.i - y.i; // 国の並びは今まで（API の国・リーグ順）のまま
-          return rank(x.r) - rank(y.r) || x.i - y.i;
-        })
-        .map((x) => x.r);
-    } else if (viewMode === "excluded") {
-      base = rows.filter((r) => !savedIsTarget(r));
-    }
+    const base = filterByViewMode(rows, viewMode, savedIsTarget);
     const s = q.trim().toLowerCase();
     if (!s) return base;
     return base.filter((r) => `${r.country} ${r.league}`.toLowerCase().includes(s));
-  }, [rows, q, viewMode, savedIsTarget, newLeagueCountries]);
+  }, [rows, q, viewMode, savedIsTarget]);
 
-  const countryPages = useMemo(() => {
-    const seen = new Set<string>();
-    const countries: string[] = [];
-
-    for (const row of filtered) {
-      const country = (row.country ?? "").trim();
-      if (!country) continue;
-      if (!seen.has(country)) {
-        seen.add(country);
-        countries.push(country);
-      }
-    }
-
-    return countries;
-  }, [filtered]);
-
-  const totalCountryPages = countryPages.length;
-  const currentCountry = totalCountryPages > 0 ? countryPages[currentCountryPage] : "";
-
-  /** 「対象＋新規リーグの国」は国ごとに分けず、すべての国をまとめて 1 つの一覧に出す（2026-11-20） */
-  const showAllCountries = viewMode === "target";
-
-  const pagedRows = useMemo(() => {
-    if (showAllCountries) return filtered;
-    if (!currentCountry) return [];
-    return filtered.filter((r) => (r.country ?? "").trim() === currentCountry);
-  }, [filtered, currentCountry, showAllCountries]);
+  /** 国単位のページング（2026-11-22: どの表示でも countriesPerPage か国ずつ。1 つの国のリーグはページをまたがない） */
+  const countryPages = useMemo(() => countriesOf(filtered), [filtered]);
+  const paging = useMemo(
+    () => pageByCountries(filtered, countryPages, currentCountryPage, countriesPerPage),
+    [filtered, countryPages, currentCountryPage, countriesPerPage],
+  );
+  const totalCountryPages = countryPages.length === 0 ? 0 : paging.totalPages;
+  const pagedRows = paging.rows;
 
   useEffect(() => {
     if (totalCountryPages === 0) {
@@ -453,7 +433,7 @@ export default function ManualDataTargetPage() {
 
   useEffect(() => {
     setCurrentCountryPage(0);
-  }, [q, viewMode]);
+  }, [q, viewMode, countriesPerPage]);
 
   const changedCount = useMemo(() => {
     let cnt = 0;
@@ -840,6 +820,8 @@ export default function ManualDataTargetPage() {
   ];
 
   const pageNo = totalCountryPages === 0 ? 0 : currentCountryPage + 1;
+  const firstCountryNo = countryPages.length === 0 ? 0 : currentCountryPage * countriesPerPage + 1;
+  const lastCountryNo = Math.min((currentCountryPage + 1) * countriesPerPage, countryPages.length);
 
   return (
     <div>
@@ -887,8 +869,8 @@ export default function ManualDataTargetPage() {
           items={[
             { label: "全件数", value: rows.length },
             { label: "絞込件数", value: filtered.length },
-            { label: showAllCountries ? "表示中のリーグ" : "現在の国のリーグ", value: pagedRows.length },
-            { label: showAllCountries ? "対象（表示中）" : "対象（現在の国）", value: targetCountVisible, tone: "ok" },
+            { label: "このページのリーグ", value: pagedRows.length },
+            { label: "対象（このページ）", value: targetCountVisible, tone: "ok" },
             { label: "変更", value: changedCount, tone: changedCount > 0 ? "warn" : "default" },
             { label: "未確認", value: modalRows.length, tone: modalRows.length > 0 ? "ng" : "default" },
             { label: "新規リーグ（30日以内）", value: newLeagueCount, tone: newLeagueCount > 0 ? "warn" : "default" },
@@ -898,6 +880,8 @@ export default function ManualDataTargetPage() {
           value={viewMode}
           onChange={setViewMode}
           options={[
+            { value: "targetOnly", label: "スクレイピング対象のみ", count: viewCounts.targetOnly },
+            { value: "targetCountries", label: "対象の国のリーグ", count: viewCounts.targetCountries },
             { value: "target", label: "対象＋新規リーグの国", count: viewCounts.target },
             { value: "excluded", label: "対象外", count: viewCounts.excluded },
             { value: "all", label: "すべて", count: viewCounts.all },
@@ -920,16 +904,16 @@ export default function ManualDataTargetPage() {
         footer={
           <>
             <span className="flex flex-wrap items-center gap-2">
-              {showAllCountries ? (
-                <span className="tabular-nums">全 {totalCountryPages} 国・{pagedRows.length} リーグ</span>
-              ) : (
-                <>
-                  <b className="text-[13px] text-gray-900">{currentCountry || "-"}</b>
-                  <span className="tabular-nums">
-                    {pageNo} / {totalCountryPages} 国
-                  </span>
-                </>
-              )}
+              <span className="tabular-nums">
+                全 {countryPages.length} 国中 {firstCountryNo}〜{lastCountryNo} 国目（{pageNo} / {totalCountryPages} ページ）・{pagedRows.length} リーグ
+              </span>
+              <ConsoleSelect value={countriesPerPage} onChange={(e) => setCountriesPerPage(Number(e.target.value))} className="w-28">
+                {COUNTRIES_PER_PAGE_OPTIONS.map((n) => (
+                  <option key={n} value={n}>
+                    {n} 国／ページ
+                  </option>
+                ))}
+              </ConsoleSelect>
               <ConsoleButton size="sm" variant="ghost" onClick={() => setAllVisible(true)} disabled={pagedRows.length === 0 || saving || running}>
                 <CheckSquare className="h-3 w-3" />
                 全チェック
@@ -939,13 +923,13 @@ export default function ManualDataTargetPage() {
                 全チェック外し
               </ConsoleButton>
             </span>
-            <div className={`flex gap-1.5 ${showAllCountries ? "hidden" : ""}`}>
+            <div className="flex gap-1.5">
               <ConsoleButton size="sm" onClick={() => setCurrentCountryPage((prev) => Math.max(prev - 1, 0))} disabled={totalCountryPages === 0 || currentCountryPage <= 0}>
                 <ChevronLeft className="h-3.5 w-3.5" />
-                前の国
+                前の国へ
               </ConsoleButton>
               <ConsoleButton size="sm" onClick={() => setCurrentCountryPage((prev) => Math.min(prev + 1, totalCountryPages - 1))} disabled={totalCountryPages === 0 || currentCountryPage >= totalCountryPages - 1}>
-                次の国
+                次の国へ
                 <ChevronRight className="h-3.5 w-3.5" />
               </ConsoleButton>
             </div>
