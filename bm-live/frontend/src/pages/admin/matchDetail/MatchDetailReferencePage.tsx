@@ -199,12 +199,19 @@ export default function MatchDetailReferencePage() {
           missing.length ? `取れていないデータ（取り直す余地あり）: ${missing.join("・")}` : "",
           unavailable.length ? `このリーグでは提供なし: ${unavailable.join("・")}` : "",
           r.scrapeErrors ? `取得時の記録: ${scrapeErrorsLabel(r.scrapeErrors)}` : "",
+          r.retryExpired ? "取得終了: 試合から 7 日の自動の取り直しを過ぎました（Flashscore に出なかったデータ。これ以上取りません）" : "",
         ]
           .filter(Boolean)
           .join("\n");
         return (
           <span title={title || undefined}>
-            {missing.length > 0 ? <StatusBadge tone="warn">一部なし</StatusBadge> : <StatusBadge tone="ok">OK</StatusBadge>}
+            {missing.length === 0 ? (
+              <StatusBadge tone="ok">OK</StatusBadge>
+            ) : r.retryExpired ? (
+              <StatusBadge tone="neutral">取得終了</StatusBadge>
+            ) : (
+              <StatusBadge tone="warn">一部なし</StatusBadge>
+            )}
           </span>
         );
       },
@@ -300,8 +307,8 @@ export default function MatchDetailReferencePage() {
           { label: "このページ", value: rows.length },
           {
             label: "一部なし（このページ）",
-            value: rows.filter((r) => (r.missingTables ?? []).length > 0).length,
-            tone: rows.some((r) => (r.missingTables ?? []).length > 0) ? "warn" : "default",
+            value: rows.filter((r) => (r.missingTables ?? []).length > 0 && !r.retryExpired).length,
+            tone: rows.some((r) => (r.missingTables ?? []).length > 0 && !r.retryExpired) ? "warn" : "default",
           },
         ]}
       />
@@ -313,7 +320,7 @@ export default function MatchDetailReferencePage() {
         loading={q.isLoading}
         emptyText="統計詳細データがありません"
         onRowClick={(r) => setSelected(r)}
-        rowClassName={(r) => ((r.missingTables ?? []).length > 0 ? "cursor-pointer bg-amber-50/40" : "cursor-pointer")}
+        rowClassName={(r) => ((r.missingTables ?? []).length > 0 && !r.retryExpired ? "cursor-pointer bg-amber-50/40" : "cursor-pointer")}
         paging={{ page, pageSize, total, onChange: setPage }}
         maxHeight="calc(100vh - 340px)"
       />

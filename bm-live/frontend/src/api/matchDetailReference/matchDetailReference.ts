@@ -31,6 +31,8 @@ export type MatchDetailReferenceRow = {
   missingTables?: string[] | null;
   /** このリーグでは提供されていないデータ（2026-11-22 追加） */
   unavailableTables?: string[] | null;
+  /** 取れていないデータがあるが、取り直しの期間を過ぎた（取得終了。2026-11-22 追加） */
+  retryExpired?: boolean;
 };
 
 export type MatchDetailReferenceResponse = {

@@ -64,6 +64,8 @@ type IngestedRowDTO = {
   detailMissingTables?: string[] | null;
   /** 統計詳細データで、このリーグでは提供されていないもの（分母から外した。2026-11-22 追加） */
   detailUnavailableTables?: string[] | null;
+  /** 取れていないデータがあるが、取り直しの期間（試合から 7 日）を過ぎた = 取得終了（2026-11-22 追加） */
+  detailRetryExpired?: boolean | null;
 };
 
 /**
@@ -78,6 +80,7 @@ function DetailCountBadge({ row, long = false }: { row: IngestedRowDTO; long?: b
   const title = [
     missing.length ? `取れていないデータ（取り直す余地あり）: ${missing.join("・")}` : `取れるはずのデータ ${total} 件すべてあり`,
     unavailable.length ? `このリーグでは提供なし（数えない）: ${unavailable.join("・")}` : "",
+    row.detailRetryExpired ? "取得終了: 試合から 7 日の自動の取り直しを過ぎました（Flashscore に出なかったデータ。これ以上取りません）" : "",
   ]
     .filter(Boolean)
     .join("\n");
@@ -89,7 +92,8 @@ function DetailCountBadge({ row, long = false }: { row: IngestedRowDTO; long?: b
       </span>
     );
   }
-  const tone = count >= total ? "ok" : row.hasDetailData ? "info" : "warn";
+  // 2026-11-22: 取り直しの期間を過ぎたもの（取得終了）は灰色
+  const tone = count >= total ? "ok" : row.detailRetryExpired ? "neutral" : row.hasDetailData ? "info" : "warn";
   return (
     <span title={title}>
       <StatusBadge tone={tone}>
