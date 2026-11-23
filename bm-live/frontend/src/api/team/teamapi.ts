@@ -57,6 +57,8 @@ async function request<T>(url: string, init: RequestInit = {}): Promise<T> {
     headers: { Accept: "application/json", ...(init.body ? { "Content-Type": "application/json" } : {}), ...authHeader(), ...(init.headers ?? {}) },
   });
   if (res.status === 401) throw new UnauthorizedError();
+  // 2026-11-23 スクレイピング対象外・非表示のリーグは 404
+  if (res.status === 404) throw new Error("このリーグは現在表示していません");
   if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
   const ct = res.headers.get("content-type") ?? "";
   if (!ct.includes("application/json")) throw new Error("API に届いていません（JSON 以外が返りました）");
