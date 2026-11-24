@@ -5,6 +5,8 @@
 //  確定すると、お気に入りのチーム・大会出場チームのリーグを移動先に付け替え、チームカラーを引き継ぐ。
 //  誤検知（チームマスタの取り違えなど）は「取り消し」。チームマスタは変えない。
 //  未確定が残っている間は、ほかの管理画面は開けない（未対応チェック TEAM_MOVE_UNCONFIRMED）。
+//  移動先リーグがスクレイピング対象外の移動は「保留」（一覧・入口チェックに出さない。全件表示でだけ見える）。
+//  スクレイピング対象データ設定でそのリーグを対象に戻すと、未確定として出てくる。
 //  ※ リーグ名の変更は「リーグ所属チーム付け替え設定」で付け替えると、自動で「リーグ名変更」として確定される。
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -52,6 +54,9 @@ function toRows(items: TeamLeagueMoveEntity[]): Row[] {
   }));
 }
 
+/** 確定・取り消しできる行（未確定で、移動先がスクレイピング対象） */
+const isOpen = (r: TeamLeagueMoveEntity) => r.confirmFlg === "0" && r.scrapeTarget;
+
 type Action = { kind: "confirm" | "cancel"; ids: number[] };
 
 export default function TeamLeagueMovePage() {
@@ -70,7 +75,7 @@ export default function TeamLeagueMovePage() {
   useEffect(() => {
     if (q.data) {
       setRows(toRows(q.data));
-      setSelected((prev) => new Set([...prev].filter((id) => q.data.some((e) => e.id === id && e.confirmFlg === "0"))));
+      setSelected((prev) => new Set([...prev].filter((id) => q.data.some((e) => e.id === id && isOpen(e)))));
     }
   }, [q.data]);
 
@@ -106,14 +111,15 @@ export default function TeamLeagueMovePage() {
 
   const countries = useMemo(() => Array.from(new Set(rows.map((r) => r.country))).sort((a, b) => a.localeCompare(b, "ja")), [rows]);
   const filtered = useMemo(() => rows.filter((r) => !country || r.country === country), [rows, country]);
-  const pendingFiltered = useMemo(() => filtered.filter((r) => r.confirmFlg === "0"), [filtered]);
+  const pendingFiltered = useMemo(() => filtered.filter(isOpen), [filtered]);
 
   const counts = useMemo(
     () => ({
-      pending: rows.filter((r) => r.confirmFlg === "0").length,
-      up: rows.filter((r) => r.confirmFlg === "0" && r.inputType === "UP").length,
-      down: rows.filter((r) => r.confirmFlg === "0" && r.inputType === "DOWN").length,
-      other: rows.filter((r) => r.confirmFlg === "0" && r.inputType === "OTHER").length,
+      pending: rows.filter(isOpen).length,
+      up: rows.filter((r) => isOpen(r) && r.inputType === "UP").length,
+      down: rows.filter((r) => isOpen(r) && r.inputType === "DOWN").length,
+      other: rows.filter((r) => isOpen(r) && r.inputType === "OTHER").length,
+      held: rows.filter((r) => r.confirmFlg === "0" && !r.scrapeTarget).length,
     }),
     [rows],
   );
@@ -177,7 +183,7 @@ export default function TeamLeagueMovePage() {
         />
       ),
       cell: (r) =>
-        r.confirmFlg === "0" ? (
+        isOpen(r) ? (
           <input
             type="checkbox"
             className="accent-indigo-600"
@@ -224,7 +230,7 @@ export default function TeamLeagueMovePage() {
       header: "種類",
       className: "py-1",
       cell: (r) =>
-        r.confirmFlg === "0" ? (
+        isOpen(r) ? (
           <ConsoleSelect
             value={r.inputType}
             onChange={(e) => setType(r.id, e.target.value as MoveType)}
@@ -248,7 +254,9 @@ export default function TeamLeagueMovePage() {
       key: "state",
       header: "状態",
       cell: (r) =>
-        r.confirmFlg === "0" ? (
+        r.confirmFlg === "0" && !r.scrapeTarget ? (
+          <StatusBadge tone="neutral">保留（対象外）</StatusBadge>
+        ) : r.confirmFlg === "0" ? (
           <StatusBadge tone="warn">未確定</StatusBadge>
         ) : r.confirmFlg === "1" ? (
           <StatusBadge tone="ok">確定</StatusBadge>
@@ -284,6 +292,7 @@ export default function TeamLeagueMovePage() {
             チームの所属リーグが変わると自動で記録されます。<b>昇格・降格・その他</b>を選んで<b>確定</b>してください（候補はリーグレベルから決めています）。
             確定すると、お気に入りのチーム・大会出場チームのリーグを移動先に付け替え、チームカラーを引き継ぎます。
             誤検知は<b>取り消し</b>（チームマスタは変わりません）。未確定が残っている間は、ほかの管理画面は開けません。
+            移動先がスクレイピング対象外のリーグは<b>保留</b>になり、対象に戻したときに未確定として出ます。
           </>
         }
       >
@@ -322,6 +331,7 @@ export default function TeamLeagueMovePage() {
             { label: "降格", value: counts.down },
             { label: "その他", value: counts.other },
             { label: "選択中", value: selected.size, tone: selected.size > 0 ? "info" : "default" },
+            ...(showAll ? [{ label: "保留（対象外）", value: counts.held }] : []),
             { label: "表示中", value: filtered.length },
           ]}
         />
@@ -350,7 +360,7 @@ export default function TeamLeagueMovePage() {
         error={q.isError ? (q.error instanceof Error ? q.error.message : "取得に失敗しました") : undefined}
         emptyText={showAll ? "データがありません" : "未確定の移動はありません"}
         plain
-        rowClassName={(r) => (selected.has(r.id) ? "bg-indigo-50/60" : r.confirmFlg === "0" ? "bg-red-50/30" : "text-gray-500")}
+        rowClassName={(r) => (selected.has(r.id) ? "bg-indigo-50/60" : isOpen(r) ? "bg-red-50/30" : "text-gray-500")}
         maxHeight="calc(100vh - 320px)"
       />
 

@@ -27,6 +27,8 @@ export type TeamLeagueMoveEntity = {
   detectedTime: string;
   confirmTime: string | null;
   updateId: string | null;
+  /** 移動先リーグがスクレイピング対象か（false の未確定は保留。確定できない） */
+  scrapeTarget: boolean;
 };
 
 export type TeamLeagueMoveResponse = {
