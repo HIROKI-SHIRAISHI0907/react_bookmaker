@@ -377,16 +377,12 @@ export default function TeamColorPage() {
       cell: (r) => {
         const active = isActive(r);
         return (
-          <label className="inline-flex cursor-pointer select-none items-center gap-1.5" title="チェックなし = 無効（del_flg=1。今は無いリーグ・チームなど）">
-            <input
-              type="checkbox"
-              checked={active}
-              onChange={(e) => updateCell(r.id, "delFlg", e.target.checked ? "0" : "1")}
-              className="h-4 w-4 accent-indigo-600"
-              aria-label={`${r.team ?? r.id} を有効にする`}
-            />
-            {active ? <StatusBadge tone="ok">有効</StatusBadge> : <StatusBadge tone="neutral">無効</StatusBadge>}
-          </label>
+          <span
+            className="inline-flex items-center gap-1.5"
+            title="有効 = チームマスタで今そのリーグにいるチーム（自動）。リーグから外れた・昇格降格前のリーグは無効（履歴として残す）"
+          >
+            {active ? <StatusBadge tone="ok">有効</StatusBadge> : <StatusBadge tone="neutral">無効（履歴）</StatusBadge>}
+          </span>
         );
       },
     },
@@ -409,7 +405,7 @@ export default function TeamColorPage() {
 
   return (
     <div>
-      <ConsoleToolbar title="チームカラー情報反映設定" info="チームごとのメイン / サブカラーを確認・更新">
+      <ConsoleToolbar title="チームカラー情報反映設定" info="チームごとのメイン / サブカラーを確認・更新。一覧はチームマスタと自動で同期（有効 = 今そのリーグにいるチーム）">
         <ConsoleButton onClick={revertAll} disabled={stats.dirty === 0 || saving}>
           <Undo2 className="h-3.5 w-3.5" />
           変更を破棄
