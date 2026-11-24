@@ -7,6 +7,7 @@ import {
   ClickEditCell,
   ConsoleButton,
   ConsoleColumn,
+  ConsoleField,
   ConsoleInput,
   ConsoleModal,
   ConsoleNotice,
@@ -125,6 +126,12 @@ async function fetchJsonStrict<T>(input: RequestInfo | URL, init?: RequestInit):
   }
 
   return JSON.parse(rawText) as T;
+}
+
+/** "2026-11-23 23:59:59+09:00" / "2026-11-23T…" → "2026-11-23"（読めなければ空） */
+function toYmd(value?: string): string {
+  const m = (value ?? "").trim().replace(/\//g, "-").match(/^(\d{4}-\d{2}-\d{2})/);
+  return m ? m[1] : "";
 }
 
 function toDisplay(value: unknown): string {
@@ -259,6 +266,11 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
   const hasOpenedOnMountRef = useRef(false);
 
   const busy = updatingStatus || deletingRows;
+
+  /* ----- 開始日・終了日を直す（確認済みの行も。2026-11-24 追加） ----- */
+  const [dateEdit, setDateEdit] = useState<{ row: CountryLeagueSeasonDTO; start: string; end: string } | null>(null);
+  const [dateSaving, setDateSaving] = useState(false);
+  const [dateError, setDateError] = useState<string | null>(null);
 
   const closeModal = useCallback(() => {
     setModalOpen(false);
@@ -583,6 +595,43 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
     }
   }, [busy, rowsWithPendingEdit, updateEditedRowsApi, updateInitialFlg, closeModal, load]);
 
+  const openDateEdit = (r: CountryLeagueSeasonDTO) => {
+    setDateError(null);
+    setDateEdit({ row: r, start: toYmd(r.startSeasonDate), end: toYmd(r.endSeasonDate) });
+  };
+
+  const saveDates = async () => {
+    if (!dateEdit) return;
+    const { row, start, end } = dateEdit;
+    if (!start || !end) {
+      setDateError("開始日・終了日を入力してください。");
+      return;
+    }
+    if (start > end) {
+      setDateError("開始日は終了日以前にしてください。");
+      return;
+    }
+    setDateSaving(true);
+    setDateError(null);
+    try {
+      const res = await fetch("/v1/api/country-league-season-master/dates", {
+        method: "POST",
+        credentials: "include",
+        headers: { Accept: "application/json", "Content-Type": "application/json" },
+        body: JSON.stringify({ id: String(row.id ?? ""), startSeasonDate: start, endSeasonDate: end }),
+      });
+      const body = (await res.json().catch(() => null)) as { message?: string } | null;
+      if (!res.ok) throw new Error(body?.message || `HTTP ${res.status}`);
+      setDateEdit(null);
+      await load();
+      setInfoMessage(`${row.country} / ${row.league} の日付を ${start} 〜 ${end} にしました。翌日以降のシーズン取得でも上書きされません。`);
+    } catch (e) {
+      setDateError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setDateSaving(false);
+    }
+  };
+
   /* ----- 一覧の列 ----- */
   const listColumns: ConsoleColumn<CountryLeagueSeasonDTO>[] = [
     { key: "no", header: "No", mono: true, align: "right", cell: (_r, i) => <span className="text-gray-500">{currentPage * PAGE_SIZE + i + 1}</span> },
@@ -598,9 +647,14 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
       header: "確認",
       align: "right",
       cell: (r) => (
-        <ConsoleButton size="sm" onClick={() => void openModal(r)} disabled={newRowsLoading}>
-          確認
-        </ConsoleButton>
+        <div className="flex justify-end gap-1">
+          <ConsoleButton size="sm" variant="ghost" onClick={() => openDateEdit(r)} disabled={r.id == null}>
+            日付
+          </ConsoleButton>
+          <ConsoleButton size="sm" onClick={() => void openModal(r)} disabled={newRowsLoading}>
+            確認
+          </ConsoleButton>
+        </div>
       ),
     },
   ];
@@ -728,6 +782,38 @@ const CountryLeagueSeasonMasterPage: React.FC = () => {
             rowKey={(row, i) => (row.id != null ? String(row.id) : `${row.country}-${row.league}-${row.seasonYear}-${i}`)}
             rowClassName={(row) => (selectedDeleteKeys.includes(seasonRowDeleteKey(row)) ? "!bg-red-50" : "")}
           />
+        )}
+      </ConsoleModal>
+
+      <ConsoleModal
+        open={dateEdit != null}
+        title="開始日・終了日を直す"
+        description={dateEdit ? `${dateEdit.row.country} / ${dateEdit.row.league}（${toDisplay(dateEdit.row.seasonYear)}）` : undefined}
+        onClose={() => !dateSaving && setDateEdit(null)}
+        busy={dateSaving}
+        width={460}
+        footer={
+          <div className="ml-auto flex gap-1.5">
+            <ConsoleButton onClick={() => setDateEdit(null)} disabled={dateSaving}>
+              キャンセル
+            </ConsoleButton>
+            <ConsoleButton variant="success" onClick={() => void saveDates()} loading={dateSaving} className="min-w-[80px]">
+              {dateSaving ? "保存中…" : "保存"}
+            </ConsoleButton>
+          </div>
+        }
+      >
+        <ConsoleNotice tone="info">直した日付は、同じシーズン年の間は翌日以降のシーズン取得（B003）で上書きされません。</ConsoleNotice>
+        {dateError && <ConsoleNotice tone="ng">{dateError}</ConsoleNotice>}
+        {dateEdit && (
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            <ConsoleField label="開始日">
+              <ConsoleInput id="season-date-start" type="date" value={dateEdit.start} onChange={(e) => setDateEdit({ ...dateEdit, start: e.target.value })} disabled={dateSaving} />
+            </ConsoleField>
+            <ConsoleField label="終了日">
+              <ConsoleInput id="season-date-end" type="date" value={dateEdit.end} onChange={(e) => setDateEdit({ ...dateEdit, end: e.target.value })} disabled={dateSaving} />
+            </ConsoleField>
+          </div>
         )}
       </ConsoleModal>
     </div>
