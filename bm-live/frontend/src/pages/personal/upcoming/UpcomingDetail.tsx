@@ -1,6 +1,6 @@
 // これからの試合の詳細  /upcoming-detail?country=&league=&home=&away=&kickoff=&round=
 //  GET /v1/api/upcoming-detail（未ログインでも可）
-//  上: 対戦カード（キックオフ・順位・会場。一覧から来たときは勝敗の見込みも）
+//  上: 対戦カード（キックオフ・順位・会場。一覧から来たときは勝敗の見込みも）・チームの今の状態（アイコン。2026-11-27 追加）
 //  左: 過去の対戦成績・ゴール数などの統計・順位表
 //  右: 試合情報・会場（地図）
 //  一覧（/upcoming・トップ画面）のカードから遷移。一覧の試合データは location.state.match で受け取る（再読込したときは無い）
@@ -18,6 +18,7 @@ import { TeamFormDots, TeamLink } from "../teams/TeamForm";
 import { GoalsBadge, RankBadge, WdlBar, formatKickoff } from "../top/parts";
 import VenueBox from "../venue/VenueBox";
 import CupFatigueBox from "../component/cupFatigue/CupFatigueBox";
+import TeamBadgesBox from "./TeamBadgesBox";
 
 export const UPCOMING_DETAIL_PATH = "/upcoming-detail";
 
@@ -69,6 +70,7 @@ export default function UpcomingDetail() {
           <>
             <MatchHeader country={country} league={league} home={home} away={away} kickoff={kickoff} round={round} match={match} d={d} />
             <CupFatigueBox country={country} league={league} home={home} away={away} at={kickoff ?? match?.kickoff ?? null} />
+            <TeamBadgesBox country={country} league={league} home={home} away={away} round={round} />
             {q.isLoading ? (
               <Skeleton className="h-64 w-full rounded-2xl" />
             ) : q.error ? (

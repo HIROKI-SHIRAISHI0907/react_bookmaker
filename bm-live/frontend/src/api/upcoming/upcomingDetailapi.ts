@@ -1,6 +1,6 @@
 // これからの試合の詳細の API
 import { getAccessToken, getTokenType } from "../../utils/auth";
-import type { UpcomingDetailResponse } from "./upcomingDetailtypes";
+import type { UpcomingBadgeResponse, UpcomingDetailResponse } from "./upcomingDetailtypes";
 
 function authHeader(): Record<string, string> {
   const token = getAccessToken();
@@ -26,4 +26,17 @@ export async function fetchUpcomingDetail(p: { country: string; league: string; 
   }
   if (!ct.includes("application/json")) throw new Error("API に届いていません（JSON 以外が返りました）");
   return res.json() as Promise<UpcomingDetailResponse>;
+}
+
+/** GET /v1/api/upcoming-detail/badges?country=&league=&home=&away=&round=（チームのアイコン。2026-11-27 追加） */
+export async function fetchUpcomingBadges(p: { country: string; league: string; home: string; away: string; round?: string | null }): Promise<UpcomingBadgeResponse> {
+  const q = new URLSearchParams({ country: p.country, league: p.league, home: p.home, away: p.away });
+  if (p.round) q.set("round", p.round);
+  const res = await fetch(`/v1/api/upcoming-detail/badges?${q.toString()}`, {
+    cache: "no-store",
+    headers: { Accept: "application/json", ...authHeader() },
+  });
+  const ct = res.headers.get("content-type") ?? "";
+  if (!res.ok || !ct.includes("application/json")) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+  return res.json() as Promise<UpcomingBadgeResponse>;
 }

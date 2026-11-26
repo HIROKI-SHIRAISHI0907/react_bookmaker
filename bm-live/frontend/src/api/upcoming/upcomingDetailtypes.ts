@@ -128,3 +128,27 @@ export type UpcomingDetailResponse = {
   homeStats: TeamGoalStats;
   awayStats: TeamGoalStats;
 };
+
+/** 試合予定の詳細のチームのアイコン（GET /v1/api/upcoming-detail/badges。2026-11-27 追加） */
+export type BadgeTone = "GOOD" | "BAD" | "INFO";
+
+export type TeamBadge = {
+  code: string;
+  label: string;
+  tone: BadgeTone;
+  /** 流れ・前節・今季・リーグ順位・スタイル */
+  category: string;
+  /** 根拠 */
+  detail: string;
+};
+
+export type UpcomingBadgeResponse = {
+  season: string | null;
+  round: number | null;
+  home: string;
+  away: string;
+  homeBadges: TeamBadge[];
+  awayBadges: TeamBadge[];
+  /** 出さなかった理由など */
+  notes: string[];
+};
