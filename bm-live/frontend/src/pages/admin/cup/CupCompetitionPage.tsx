@@ -14,7 +14,7 @@
 //  POST /v1/api/admin/cup-competition/schedule/retry
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { ExternalLink, Pencil, Plus, RefreshCw, RotateCcw, Trash2, Upload } from "lucide-react";
+import { CheckSquare, ExternalLink, Pencil, Plus, RefreshCw, RotateCcw, Trash2, Upload } from "lucide-react";
 import { queryClient } from "../../../lib/queryClient";
 import { SETUP_STATUS_QUERY_KEY } from "../SetupGate";
 import {
@@ -528,7 +528,29 @@ export default function CupCompetitionPage() {
                   <span className="text-[11px] text-gray-400">
                     {schedule.data?.exists ? `日程の取得: ${schedule.data.generatedAt ?? "-"}` : "日程はまだ取得されていません（チームを登録すると、次の Lambda の実行で日程を取ります）"}
                   </span>
-                  <ConsoleButton size="sm" className="ml-auto" disabled={retryMids.size === 0 || busy} loading={retry.isPending} onClick={() => retry.mutate()} title="選んだ試合の出場選手を、次の Lambda の実行でもう一度取ります">
+                  {/* 2026-11-27: 未取得の試合を一括で選ぶ（もう一度押すと外す） */}
+                  <ConsoleButton
+                    size="sm"
+                    className="ml-auto"
+                    disabled={counts.EXPIRED === 0 || busy}
+                    onClick={() =>
+                      setRetryMids((s) => {
+                        const expired = matches.filter((m) => m.status === "EXPIRED").map((m) => m.mid);
+                        const allSelected = expired.length > 0 && expired.every((mid) => s.has(mid));
+                        const n = new Set(s);
+                        expired.forEach((mid) => (allSelected ? n.delete(mid) : n.add(mid)));
+                        return n;
+                      })
+                    }
+                    title="状態が「未取得」の試合をまとめて選びます（もう一度押すと選択を外します）"
+                    data-testid="button-select-expired"
+                  >
+                    <CheckSquare className="h-3.5 w-3.5" />
+                    {matches.some((m) => m.status === "EXPIRED") && matches.filter((m) => m.status === "EXPIRED").every((m) => retryMids.has(m.mid))
+                      ? `未取得 ${counts.EXPIRED} 試合の選択を外す`
+                      : `未取得 ${counts.EXPIRED} 試合を選ぶ`}
+                  </ConsoleButton>
+                  <ConsoleButton size="sm" disabled={retryMids.size === 0 || busy} loading={retry.isPending} onClick={() => retry.mutate()} title="選んだ試合の出場選手を、次の Lambda の実行でもう一度取ります">
                     <RotateCcw className="h-3.5 w-3.5" />
                     選択 {retryMids.size} 試合を取り直す
                   </ConsoleButton>
