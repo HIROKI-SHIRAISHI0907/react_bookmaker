@@ -50,6 +50,7 @@ import MyRequestsPage from "./pages/admin/approve/MyRequestsPage";
 import AwsDashboardPage from "./pages/admin/checkData/AwsDashboardPage";
 import AnalyzeErrorMatchesPage from "./pages/admin/error/AnalyzeErrorMatchPage";
 import FavoriteEdit from "./pages/personal/favorite/FavoriteEdit";
+import Rankings, { RANKINGS_PATH } from "./pages/personal/ranking/Rankings";
 import TeamResults from "./pages/personal/teams/TeamResults";
 import UpcomingMatches from "./pages/personal/top/DashboardUpcomingMatches";
 import MatchDetail, { MATCH_DETAIL_PATH } from "./pages/personal/match/MatchDetail";
@@ -98,6 +99,7 @@ export default function App() {
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/reset-password/invalid" element={<InvalidPage />} />
           <Route path="/favorite-edit" element={<FavoriteEdit />} />
+          <Route path={RANKINGS_PATH} element={<Rankings />} />
           <Route path="/team-results" element={<TeamResults />} />
           <Route path="/upcoming" element={<UpcomingMatches />} />
           {/* 試合詳細 /match-detail?seqKey=xxxx（ダッシュボードのライブ・注目試合から遷移） */}

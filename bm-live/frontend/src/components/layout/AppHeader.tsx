@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Heart, Home, LogIn, LogOut } from "lucide-react";
+import { BarChart3, Heart, Home, LogIn, LogOut } from "lucide-react";
 import LeagueLink from "../LeagueLink";
 import ThemeToggle from "../../components/ThemeToggle";
 import { clearAuthSession, isAuthenticated } from "../../utils/auth";
@@ -50,6 +50,11 @@ export default function AppHeader({ title, subtitle, rightSlot }: Props) {
             <button type="button" onClick={() => redirectTo("/top")} className={navClass(currentPath === "/top")}>
               <Home className="h-4 w-4" />
               トップ
+            </button>
+
+            <button type="button" onClick={() => redirectTo("/rankings")} className={navClass(currentPath === "/rankings")} data-testid="nav-rankings">
+              <BarChart3 className="h-4 w-4" />
+              ランキング
             </button>
 
             <button type="button" onClick={() => redirectTo("/favorite-edit")} className={navClass(currentPath === "/favorite-edit")}>
