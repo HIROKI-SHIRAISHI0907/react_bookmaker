@@ -52,7 +52,7 @@ export default function AppHeader({ title, subtitle, rightSlot }: Props) {
               トップ
             </button>
 
-            <button type="button" onClick={() => redirectTo("/favorite")} className={navClass(currentPath === "/favorite")}>
+            <button type="button" onClick={() => redirectTo("/favorite-edit")} className={navClass(currentPath === "/favorite-edit")}>
               <Heart className="h-4 w-4" />
               お気に入り
             </button>
