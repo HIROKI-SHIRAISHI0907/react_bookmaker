@@ -134,6 +134,8 @@ export type DashboardFavoriteItem = {
   kickoff: string | null;
   winProb: number | null;
   seqKey: string | null;
+  /** 次の試合のラウンド（例: 「ラウンド 20」。試合予定の詳細を開くため） */
+  roundLabel?: string | null;
   recentForm?: ("W" | "D" | "L" | null)[] | null;
 };
 

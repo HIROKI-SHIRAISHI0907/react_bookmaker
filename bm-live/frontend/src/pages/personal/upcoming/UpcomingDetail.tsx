@@ -86,8 +86,8 @@ export default function UpcomingDetail() {
                   <Card title="ゴール数などの統計">
                     <StatsCompare hs={d.homeStats} aw={d.awayStats} />
                   </Card>
-                  <Card title="順位表" note={d.standingSeason ? `${d.standingSeason} シーズン` : undefined}>
-                    <StandingsTable rows={d.standings} country={d.country} league={d.league} />
+                  <Card title="順位表" note={d.standingSource === "STATS" && d.standingSeason ? `${d.standingSeason} シーズン` : d.standingSource === "STATIC" ? "終了済の試合から計算" : undefined}>
+                    <StandingsTable rows={d.standings} country={d.country} league={d.league} source={d.standingSource ?? null} />
                   </Card>
                 </div>
                 <aside className="space-y-4">
@@ -445,8 +445,8 @@ function CompareBar({ s }: { s: StatLine }) {
 }
 
 // ===================== 順位表 =====================
-/** 2 チームの前後に出すチーム数（例: 15位なら 13〜17位） */
-const STANDING_AROUND = 2;
+/** 2 チームの前後に出すチーム数（例: 15位なら 14〜16位。2026-11-28 に 2 → 1） */
+const STANDING_AROUND = 1;
 
 type StandingItem = { kind: "row"; r: StandingRow } | { kind: "gap"; from: number; to: number; count: number };
 
@@ -481,7 +481,7 @@ function pickStandings(rows: StandingRow[]): StandingItem[] {
   return items;
 }
 
-function StandingsTable({ rows, country, league }: { rows: StandingRow[]; country: string | null; league: string | null }) {
+function StandingsTable({ rows, country, league, source }: { rows: StandingRow[]; country: string | null; league: string | null; source: "STATS" | "STATIC" | null }) {
   const [showAll, setShowAll] = useState(false);
   if (rows.length === 0) return <div className="text-xs text-muted-foreground">このリーグの順位のデータがありません（カップ戦など）</div>;
   const sideClass = (s: StandingRow["side"]) => (s === "H" ? "bg-emerald-500/10" : s === "A" ? "bg-violet-500/10" : "");
@@ -502,7 +502,7 @@ function StandingsTable({ rows, country, league }: { rows: StandingRow[]; countr
               <th className="hidden px-1 py-1 text-right font-normal sm:table-cell">得失</th>
               <th className="px-1 py-1 text-right font-normal">差</th>
               <th className="px-1.5 py-1 text-right font-normal">点</th>
-              <th className="hidden px-1.5 py-1 text-left font-normal md:table-cell">直近</th>
+              <th className="px-1.5 py-1 text-left font-normal">直近</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -534,7 +534,7 @@ function StandingsTable({ rows, country, league }: { rows: StandingRow[]; countr
                   </td>
                   <td className="px-1 py-1 text-right font-mono">{x.r.goalDiff > 0 ? `+${x.r.goalDiff}` : x.r.goalDiff}</td>
                   <td className="px-1.5 py-1 text-right font-mono font-bold">{x.r.points}</td>
-                  <td className="hidden px-1.5 py-1 md:table-cell">
+                  <td className="px-1.5 py-1">
                     <TeamFormDots form={x.r.form} />
                   </td>
                 </tr>
@@ -544,7 +544,11 @@ function StandingsTable({ rows, country, league }: { rows: StandingRow[]; countr
         </table>
       </div>
       <div className="mt-1.5 flex items-start justify-between gap-2">
-        <p className="text-[10px] text-muted-foreground">集計済みの試合から計算した順位です（勝ち点 → 得失点差 → 得点）。灰色の数字はサイト表示の順位（違うときだけ）。</p>
+        <p className="text-[10px] text-muted-foreground">
+          {source === "STATIC"
+            ? "統計がまだ無いため、取得済みの終了済の試合から計算した順位です（勝ち点 → 得失点差 → 得点）。取れていない試合があると実際と違うことがあります。灰色の数字はサイト表示の順位（違うときだけ）。直近は左が新しい試合。"
+            : "集計済みの試合から計算した順位です（勝ち点 → 得失点差 → 得点）。灰色の数字はサイト表示の順位（違うときだけ）。直近は左が新しい試合。"}
+        </p>
         {(omitted || showAll) && (
           <button type="button" onClick={() => setShowAll(!showAll)} className="shrink-0 text-[10px] font-bold text-muted-foreground hover:text-foreground" data-testid="button-standings-all">
             {showAll ? "2チームの周りだけ" : `全${rows.length}チーム`}

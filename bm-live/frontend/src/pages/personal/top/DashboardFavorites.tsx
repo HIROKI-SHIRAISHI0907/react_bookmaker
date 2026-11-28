@@ -1,5 +1,6 @@
 // お気に入り（ログイン時）／ログインの案内（未ログイン時）
 //  チーム名 → チームの過去の結果（/team-results）、直近5ラウンドの W/D/L、ライブ中ならスコア、次の試合
+//  ライブ中のスコアの行 → その試合の詳細（/match-detail?seqKey=）へ、次の試合の行 → 試合予定の詳細（/upcoming-detail）へ（2026-11-28 追加）
 //  未ログインで「編集」「追加する」を押した場合はログインページへ。ログイン後は /favorite-edit に戻る
 import { Link } from "react-router-dom";
 import type { ReactNode } from "react";
@@ -7,6 +8,19 @@ import type { DashboardFavoriteItem } from "../../../api/dashboard/types";
 import { isAuthenticated } from "../../../utils/auth";
 import { RankBadge, formatKickoff } from "./parts";
 import { TeamFormDots, TeamLink } from "../teams/TeamForm";
+import { matchDetailUrl } from "../match/MatchDetail";
+import { UPCOMING_DETAIL_PATH } from "../upcoming/UpcomingDetail";
+
+/** 次の試合 → 試合予定の詳細の URL（upcomingDetailUrl と同じパラメータ）。国・リーグ・相手が無ければ null */
+function nextDetailUrl(f: DashboardFavoriteItem): string | null {
+  if (!f.country || !f.league || !f.opponent || !f.homeAway) return null;
+  const home = f.homeAway === "H" ? f.teamName : f.opponent;
+  const away = f.homeAway === "H" ? f.opponent : f.teamName;
+  const q = new URLSearchParams({ country: f.country, league: f.league, home, away });
+  if (f.kickoff) q.set("kickoff", f.kickoff);
+  if (f.roundLabel) q.set("round", f.roundLabel);
+  return `${UPCOMING_DETAIL_PATH}?${q.toString()}`;
+}
 
 export const FAVORITE_EDIT_PATH = "/favorite-edit";
 export const LOGIN_PATH = "/login";
@@ -78,8 +92,22 @@ export default function DashboardFavorites({ items, loading, loggedIn = isAuthen
               </div>
               <div className="mt-1 flex items-center justify-between gap-2">
                 <div className={`min-w-0 truncate text-xs ${f.status === "LIVE" ? "font-bold text-rose-500" : "text-emerald-600 dark:text-emerald-300"}`}>
-                  {f.status === "LIVE" && `LIVE ${f.minuteLabel}　${f.teamScore} - ${f.opponentScore}　vs ${f.opponent}`}
-                  {f.status === "NEXT" && `${formatKickoff(f.kickoff)}　vs ${f.opponent}（${f.homeAway === "H" ? "ホーム" : "アウェー"}）`}
+                  {f.status === "LIVE" &&
+                    (f.seqKey ? (
+                      <Link to={matchDetailUrl(f.seqKey)} className="hover:underline" data-testid="link-favorite-live" title="ライブの詳細を見る">
+                        {`LIVE ${f.minuteLabel}　${f.teamScore} - ${f.opponentScore}　vs ${f.opponent}`} ›
+                      </Link>
+                    ) : (
+                      `LIVE ${f.minuteLabel}　${f.teamScore} - ${f.opponentScore}　vs ${f.opponent}`
+                    ))}
+                  {f.status === "NEXT" &&
+                    (nextDetailUrl(f) ? (
+                      <Link to={nextDetailUrl(f) as string} className="hover:underline" data-testid="link-favorite-next" title="試合予定の詳細を見る">
+                        {`${formatKickoff(f.kickoff)}　vs ${f.opponent}（${f.homeAway === "H" ? "ホーム" : "アウェー"}）`} ›
+                      </Link>
+                    ) : (
+                      `${formatKickoff(f.kickoff)}　vs ${f.opponent}（${f.homeAway === "H" ? "ホーム" : "アウェー"}）`
+                    ))}
                   {f.status === "NONE" && <span className="text-muted-foreground">予定なし</span>}
                 </div>
                 {f.winProb != null && <span className={`shrink-0 font-mono text-[11px] ${f.winProb >= 50 ? "text-emerald-500" : "text-violet-500"}`}>勝つ確率 {f.winProb}%</span>}

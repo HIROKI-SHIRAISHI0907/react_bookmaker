@@ -125,6 +125,8 @@ export type UpcomingDetailResponse = {
   headToHead: HeadToHeadResponse;
   standingSeason: string | null;
   standings: StandingRow[];
+  /** 順位表の元（STATS = 統計 / STATIC = 終了済の試合から計算） */
+  standingSource?: "STATS" | "STATIC" | null;
   homeStats: TeamGoalStats;
   awayStats: TeamGoalStats;
 };
