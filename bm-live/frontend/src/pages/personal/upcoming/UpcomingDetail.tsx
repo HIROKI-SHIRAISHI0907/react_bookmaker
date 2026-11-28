@@ -379,7 +379,7 @@ function StatsCompare({ hs, aw }: { hs: TeamGoalStats; aw: TeamGoalStats }) {
   if (hs.all.games === 0 && aw.all.games === 0) return <div className="text-xs text-muted-foreground">統計のデータがありません</div>;
   const lines = statLines(h, a);
   const record = (s: GoalStats) => (s.games > 0 ? `${s.games}試合 ${s.win}勝${s.draw}分${s.lose}敗` : "データなし");
-  const source = (t: TeamGoalStats) => (t.season ? `${t.season}${t.otherLeague ? `・${t.league}` : ""}` : null);
+  const source = (t: TeamGoalStats) => (t.fromFinished ? "終了済の試合から" : t.season ? `${t.season}${t.otherLeague ? `・${t.league}` : ""}` : null);
 
   return (
     <div className="space-y-3">
@@ -414,6 +414,9 @@ function StatsCompare({ hs, aw }: { hs: TeamGoalStats; aw: TeamGoalStats }) {
         ))}
       </div>
       {(hs.otherLeague || aw.otherLeague) && <p className="text-[10px] text-muted-foreground">この大会のデータが無いチームは、最後に試合をしたリーグ・シーズンで集計しています。</p>}
+      {(hs.fromFinished || aw.fromFinished) && (
+        <p className="text-[10px] text-muted-foreground">統計がまだ無いため、取得済みの終了済の試合から集計しています。取れていない試合があると実際と違うことがあります。</p>
+      )}
       <p className="text-[10px] text-muted-foreground">前半・後半は、前半のスコアが分かる試合だけで計算しています。</p>
     </div>
   );

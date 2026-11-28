@@ -110,6 +110,8 @@ export type TeamGoalStats = {
   league: string | null;
   /** 試合のリーグと別のリーグで集計した（カップ戦など） */
   otherLeague: boolean;
+  /** 統計がまだ無いので、終了済の試合から集計した */
+  fromFinished?: boolean;
   all: GoalStats;
   home: GoalStats;
   away: GoalStats;
