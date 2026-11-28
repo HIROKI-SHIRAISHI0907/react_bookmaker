@@ -14,7 +14,7 @@ const TONE_CLASS: Record<BadgeTone, string> = {
 };
 
 /** 表示の順（分類） */
-const CATEGORY_ORDER = ["流れ", "前節", "今季", "リーグ順位", "スタイル"];
+const CATEGORY_ORDER = ["順位", "流れ", "前節", "今季", "リーグ順位", "スタイル"];
 
 function ToneIcon({ b }: { b: TeamBadge }) {
   if (b.code.endsWith("_STREAK") && b.tone === "GOOD") return <Flame className="h-3 w-3 shrink-0" />;

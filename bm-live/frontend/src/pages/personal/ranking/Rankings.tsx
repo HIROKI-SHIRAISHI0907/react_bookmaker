@@ -2,7 +2,8 @@
 //  国・リーグ → データを選ぶと、現在のランキング（左）と、ラウンドごとの順位の変遷グラフ（右）を出す。
 //  ・グラフの点と線は team_color_master の色。2色のチームは点を左右で塗り分ける（左 = メイン、右 = サブ）。
 //  ・そのラウンドの試合が無い（取れていない・未反映）ところは点を出さず、線もつなげない。
-//  ・表の行を押すとそのチームを強調（複数可）。もう一度押すと解除。
+//  ・表の行・グラフの線・点を押すとそのチームを強調（複数可）。強調したチーム以外の線はほぼ見えなくする。もう一度押すと解除。
+//  ・強調していないときは、線にカーソルを乗せたチームを一時的に強調する。
 //  ・選んだ国・リーグ・データは URL（?country=&league=&metric=）に残す。
 import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -42,7 +43,7 @@ function teamColor(t: RankingTeam, i: number): TeamColor {
 
 /** 点（2色なら左 = メイン・右 = サブの半円ずつ。白でも見えるよう灰色の縁） */
 function ColorDot({ cx, cy, c, r = 4.5, dim = false }: { cx: number; cy: number; c: TeamColor; r?: number; dim?: boolean }) {
-  const op = dim ? 0.15 : 1;
+  const op = dim ? 0.08 : 1;
   if (!c.sub) {
     return <circle cx={cx} cy={cy} r={r} fill={c.main} stroke="#6b7280" strokeWidth={0.8} opacity={op} />;
   }
@@ -187,6 +188,7 @@ function Empty({ children }: { children: React.ReactNode }) {
 
 function RankingView({ d, unitLabel }: { d: RankingResponse; unitLabel: string }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [hovered, setHovered] = useState<string | null>(null);
   const toggle = (team: string) =>
     setSelected((prev) => {
       const n = new Set(prev);
@@ -210,6 +212,11 @@ function RankingView({ d, unitLabel }: { d: RankingResponse; unitLabel: string }
   );
   const maxRank = Math.max(1, ...d.teams.flatMap((t) => t.series.map((p) => p.rank ?? 0)));
   const anySelected = selected.size > 0;
+  // 強調するチーム（選んだチーム。選んでいなければカーソルを乗せたチーム）
+  const focus: Set<string> = anySelected ? selected : hovered ? new Set([hovered]) : new Set();
+  const anyFocus = focus.size > 0;
+  // 強調するチームの線を最後に描く（ほかの線の上に出す）
+  const order = d.teams.map((t, i) => i).sort((a, b) => Number(focus.has(d.teams[a].team)) - Number(focus.has(d.teams[b].team)));
 
   return (
     <div className="space-y-2">
@@ -247,6 +254,8 @@ function RankingView({ d, unitLabel }: { d: RankingResponse; unitLabel: string }
                       key={t.team}
                       onClick={() => toggle(t.team)}
                       className={`cursor-pointer hover:bg-accent/50 ${on ? "bg-accent" : ""} ${anySelected && !on ? "opacity-50" : ""}`}
+                      onMouseEnter={() => setHovered(t.team)}
+                      onMouseLeave={() => setHovered((h) => (h === t.team ? null : h))}
                       data-testid={`row-ranking-${i}`}
                     >
                       <td className="px-1 py-1 text-right font-mono font-bold">{t.rank ?? "-"}</td>
@@ -266,7 +275,7 @@ function RankingView({ d, unitLabel }: { d: RankingResponse; unitLabel: string }
               </tbody>
             </table>
             <p className="mt-2 text-[10px] text-muted-foreground">
-              {d.higherBetter ? "値が大きいほど上位" : "値が小さいほど上位"}。行を押すとグラフでそのチームを強調します（複数可）。チーム名を押すとチームの結果へ。
+              {d.higherBetter ? "値が大きいほど上位" : "値が小さいほど上位"}。行またはグラフの線・点を押すと、そのチームを強調します（複数可。もう一度押すと解除）。チーム名を押すとチームの結果へ。
             </p>
           </div>
 
@@ -287,8 +296,11 @@ function RankingView({ d, unitLabel }: { d: RankingResponse; unitLabel: string }
                   <XAxis dataKey="round" tick={{ fontSize: 11 }} label={{ value: "ラウンド", position: "insideBottomRight", offset: -4, fontSize: 10 }} />
                   <YAxis reversed domain={[1, maxRank]} allowDecimals={false} tick={{ fontSize: 11 }} width={28} interval={0} ticks={Array.from({ length: maxRank }, (_, k) => k + 1)} />
                   <Tooltip content={<RankTooltip d={d} colors={colors} selected={selected} />} />
-                  {d.teams.map((t, i) => {
-                    const dim = anySelected && !selected.has(t.team);
+                  {order.map((i) => {
+                    const t = d.teams[i];
+                    const on = focus.has(t.team);
+                    const dim = anyFocus && !on;
+                    const onClick = () => toggle(t.team);
                     return (
                       <Line
                         key={t.team}
@@ -296,21 +308,52 @@ function RankingView({ d, unitLabel }: { d: RankingResponse; unitLabel: string }
                         dataKey={`t${i}`}
                         name={t.team}
                         stroke={colors[i].line}
-                        strokeWidth={anySelected && !dim ? 2.5 : 1.5}
-                        strokeOpacity={dim ? 0.12 : 0.9}
+                        strokeWidth={on ? 3.5 : 1.5}
+                        strokeOpacity={dim ? 0.07 : on ? 1 : 0.85}
                         connectNulls={false}
                         isAnimationActive={false}
+                        style={{ cursor: "pointer" }}
+                        onClick={onClick}
+                        onMouseEnter={() => setHovered(t.team)}
+                        onMouseLeave={() => setHovered((h) => (h === t.team ? null : h))}
                         dot={(p: { cx?: number; cy?: number; value?: number | null; index?: number }) =>
                           p.cx == null || p.cy == null || p.value == null ? (
                             <g key={`d${i}-${p.index}`} />
                           ) : (
-                            <ColorDot key={`d${i}-${p.index}`} cx={p.cx} cy={p.cy} c={colors[i]} dim={dim} />
+                            <g
+                              key={`d${i}-${p.index}`}
+                              style={{ cursor: "pointer" }}
+                              onClick={onClick}
+                              onMouseEnter={() => setHovered(t.team)}
+                              onMouseLeave={() => setHovered((h) => (h === t.team ? null : h))}
+                            >
+                              <ColorDot cx={p.cx} cy={p.cy} c={colors[i]} dim={dim} r={on ? 5.5 : 4.5} />
+                            </g>
                           )
                         }
                         activeDot={false}
                       />
                     );
                   })}
+                  {/* 押しやすいように、見えない太い線を重ねる（押す・カーソルを乗せる判定だけ） */}
+                  {d.teams.map((t, i) => (
+                    <Line
+                      key={`hit-${t.team}`}
+                      type="linear"
+                      dataKey={`t${i}`}
+                      stroke="transparent"
+                      strokeWidth={10}
+                      connectNulls={false}
+                      isAnimationActive={false}
+                      dot={false}
+                      activeDot={false}
+                      legendType="none"
+                      style={{ cursor: "pointer" }}
+                      onClick={() => toggle(t.team)}
+                      onMouseEnter={() => setHovered(t.team)}
+                      onMouseLeave={() => setHovered((h) => (h === t.team ? null : h))}
+                    />
+                  ))}
                 </LineChart>
               </ResponsiveContainer>
             </div>

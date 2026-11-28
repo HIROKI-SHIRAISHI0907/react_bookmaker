@@ -60,6 +60,7 @@ const ADMIN_MENU: AdminMenuGroup[] = [
       { label: "シーズンデータCSVアップロード", to: "csv-upload/season", desc: "country_league_season_master の登録・更新・削除・非表示" },
       { label: "チームデータCSVアップロード", to: "csv-upload/team", desc: "country_league_master の登録・更新・削除・非表示" },
       { label: "試合予定データCSVアップロード", to: "csv-upload/future", desc: "future_master の登録・更新・削除・非表示" },
+      { label: "リアルタイムデータCSVアップロード", to: "csv-upload/realtime-data", desc: "取れなかった試合のリアルタイムデータを static_data に直接登録" },
       { label: "リアルタイムデータ非表示CSVアップロード", to: "csv-upload/realtime", desc: "static_data の非表示・再表示" },
       { label: "データカテゴリ統一CSV一括アップロード", to: "csv-upload/data-category", desc: "static_data / future_master の dataCategory をまとめて書き換え" },
       { label: "大会一括アップロード", to: "csv-upload/cup", desc: "日程を取る大会（大会名・大会URL）を cup_competition_master にまとめて登録" },

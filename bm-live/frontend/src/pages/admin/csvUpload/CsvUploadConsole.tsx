@@ -22,7 +22,7 @@ import { SETUP_STATUS_QUERY_KEY } from "../SetupGate";
  */
 
 /** cup = 大会一括アップロード（バッチを使わず、その場で反映する） */
-export type CsvMasterName = "season" | "team" | "future" | "realtime" | "dataCategory" | "cup";
+export type CsvMasterName = "season" | "team" | "future" | "realtime" | "dataCategory" | "cup" | "realtimeData";
 
 /** 結果に出す件数 */
 export type CsvResultCount = "insert" | "update" | "delete" | "hide" | "show";

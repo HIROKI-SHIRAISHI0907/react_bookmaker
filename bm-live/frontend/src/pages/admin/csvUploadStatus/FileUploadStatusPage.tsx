@@ -94,6 +94,7 @@ export const MASTER_LABEL: Record<string, string> = {
   realtime: "リアルタイム",
   dataCategory: "データカテゴリ統一",
   cup: "大会",
+  realtimeData: "リアルタイムデータ登録",
 };
 
 /** 状態（file_upload_status_manage.status。B015 で PENDING → PROCESSING → SUCCESS / ERROR） */
